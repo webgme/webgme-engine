@@ -38,9 +38,9 @@ describe('corerel', function () {
 
     after(function (done) {
         Q.allDone([
-                storage.closeDatabase(),
-                gmeAuth.unload()
-            ])
+            storage.closeDatabase(),
+            gmeAuth.unload()
+        ])
             .nodeify(done);
     });
 
@@ -194,5 +194,79 @@ describe('corerel', function () {
         result = core.moveNode(children[core.getRelid(tempTo)], parent);
 
         expect(core.getAttribute(result, 'name')).to.equal(core.getRelid(tempTo));
+    });
+
+    describe('throttle', function () {
+        var throttleProjectName = 'throttleTest',
+            throttleProjectId = testFixture.projectName2Id(throttleProjectName),
+            throttleProject,
+            throttleCore,
+            throttleRootHash,
+            traverse = function (root, options, visitFn, callback) {
+                visitFn = TASYNC.wrap(visitFn);
+
+                var loadChildren = function (node) {
+                    var children = throttleCore.loadChildren(node),
+                        visitRes = visitFn(node);
+
+                    return TASYNC.call(procChildren, node, children, visitRes);
+                };
+
+                var procChildren = function (node, children, visitRes) {
+                    // console.log('proc:', self.getPath(node), children.length);
+                    var res = [];
+                    for (var i = 0; i < children.length; i++) {
+                        res[i] = loadChildren(children[i]);
+                    }
+                    return TASYNC.lift(res);
+                };
+
+                TASYNC.unwrap(loadChildren)(root, callback);
+            };
+
+        before(function (done) {
+            // storage.deleteProject({projectId: throttleProjectId})
+            //     .then(function () {
+            //         return testFixture.importProject(storage, {
+            //             projectSeed: 'test/perf/huge.webgmex',
+            //             projectName: throttleProjectName,
+            //             branchName: 'master',
+            //             gmeConfig: gmeConfig,
+            //             logger: testFixture.logger.fork('corerel:throttle')
+            //         });
+            //     })
+            //     .then(function (result) {
+            //         throttleProject = result.project;
+            //         throttleCore = new Core(throttleProject,
+            //             {globConf: gmeConfig, logger: testFixture.logger.fork('corerel:throttle')});
+            //         throttleRootHash = result.rootHash;
+            //     })
+            //     .nodeify(done);
+            testFixture.importProject(storage, {
+                projectSeed: 'test/perf/huge.webgmex',
+                projectName: throttleProjectName,
+                branchName: 'master',
+                gmeConfig: gmeConfig,
+                logger: testFixture.logger.fork('corerel:throttle')
+            })
+                .then(function (result) {
+                    throttleProject = result.project;
+                    throttleCore = new Core(throttleProject,
+                        {globConf: gmeConfig, logger: testFixture.logger.fork('corerel:throttle')});
+                    throttleRootHash = result.rootHash;
+                })
+                .nodeify(done);
+        });
+
+        it.only('should traverse a huge project with', function (done) {
+            var visit = function (node, next) {
+                next();
+            };
+
+            TASYNC.call(function (root) {
+                console.log('root loaded');
+                traverse(root, {}, visit, done);
+            }, throttleCore.loadRoot(throttleRootHash));
+        });
     });
 });
