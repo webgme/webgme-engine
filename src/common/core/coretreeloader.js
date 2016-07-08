@@ -66,6 +66,28 @@ define(['common/util/assert', 'common/core/tasync'], function (ASSERT, TASYNC) {
         };
 
         function traverse(root, options, visitFn, callback) {
+            visitFn = TASYNC.wrap(visitFn);
+
+            var loadChildren = function (node) {
+                var children = self.loadChildren(node),
+                    visitRes = visitFn(node);
+
+                return TASYNC.call(procChildren, node, children, visitRes);
+            };
+
+            var procChildren = function (node, children, visitRes) {
+                // console.log('proc:', self.getPath(node), children.length);
+                var res = [];
+                for (var i = 0; i < children.length; i++) {
+                    res[i] = loadChildren(children[i]);
+                }
+                return TASYNC.lift(res);
+            };
+
+            TASYNC.unwrap(loadChildren)(root, callback);
+        }
+
+        function _traverse(root, options, visitFn, callback) {
             ASSERT(self.isValidNode(root) && typeof visitFn === 'function' && typeof callback === 'function');
 
             var loadQueue = [],
@@ -102,7 +124,7 @@ define(['common/util/assert', 'common/core/tasync'], function (ASSERT, TASYNC) {
                 };
 
             options = options || {};
-            options.maxParallelLoad = options.maxParallelLoad || 100; //the amount of nodes we preload
+            options.maxParallelLoad = options.maxParallelLoad || 20000; //the amount of nodes we preload
             options.excludeRoot = options.excludeRoot === true || false;
             options.stopOnError = options.stopOnError === false ? false : true;
 

@@ -225,6 +225,7 @@ describe('corerel', function () {
             };
 
         before(function (done) {
+            this.timeout(120000);
             // storage.deleteProject({projectId: throttleProjectId})
             //     .then(function () {
             //         return testFixture.importProject(storage, {
@@ -243,7 +244,7 @@ describe('corerel', function () {
             //     })
             //     .nodeify(done);
             testFixture.importProject(storage, {
-                projectSeed: 'test/perf/huge.webgmex',
+                projectSeed: 'test/perf/midsize.webgmex',
                 projectName: throttleProjectName,
                 branchName: 'master',
                 gmeConfig: gmeConfig,
@@ -252,20 +253,29 @@ describe('corerel', function () {
                 .then(function (result) {
                     throttleProject = result.project;
                     throttleCore = new Core(throttleProject,
-                        {globConf: gmeConfig, logger: testFixture.logger.fork('corerel:throttle')});
+                        {globConf: gmeConfig, logger: testFixture.logger.fork('corerel:throttle'), throttled: true});
                     throttleRootHash = result.rootHash;
                 })
                 .nodeify(done);
         });
 
         it.only('should traverse a huge project with', function (done) {
+            this.timeout(1200000);
             var visit = function (node, next) {
-                next();
-            };
+                    counter += 1;
+                    // console.log(throttleCore.getPath(node));
+                    next();
+                },
+                counter = 0;
 
+            console.time('throttle');
             TASYNC.call(function (root) {
                 console.log('root loaded');
-                traverse(root, {}, visit, done);
+                traverse(root, {}, visit, function(err){
+                    console.log('finished - ',counter);
+                    console.timeEnd('throttle');
+                    done(err);
+                });
             }, throttleCore.loadRoot(throttleRootHash));
         });
     });
