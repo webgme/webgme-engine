@@ -7,6 +7,7 @@ var testFixture = require('../../_globals.js');
 
 describe('corerel', function () {
     'use strict';
+    this.timeout(120000);
     var gmeConfig = testFixture.getGmeConfig(),
         logger = testFixture.logger.fork('corerel.spec'),
         Q = testFixture.Q,
@@ -23,6 +24,7 @@ describe('corerel', function () {
         projectId = testFixture.projectName2Id(projectName),
         core,
         root,
+        baseRootHash,
 
         gmeAuth;
 
@@ -30,8 +32,38 @@ describe('corerel', function () {
         testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
             .then(function (gmeAuth_) {
                 gmeAuth = gmeAuth_;
-                storage = testFixture.getMemoryStorage(logger, gmeConfig, gmeAuth);
+                storage = testFixture.getMongoStorage(logger, gmeConfig, gmeAuth);
                 return storage.openDatabase();
+            })
+            .then(function () {
+                return storage.createProject({projectName: projectName});
+            })
+            .then(function (dbProject) {
+                var child,
+                    project = new testFixture.Project(dbProject, storage, logger, gmeConfig),
+                    persisted;
+
+                core = new Core(project, {globConf: gmeConfig, logger: testFixture.logger.fork('corerel:core')});
+                root = core.createNode();
+                child = core.createNode({parent: root});
+                core.setAttribute(child, 'name', 'child');
+                core.setRegistry(child, 'position', {x: 100, y: 100});
+                core.setPointer(child, 'parent', root);
+
+                persisted = core.persist(root);
+                baseRootHash = core.getHash(root);
+                return project.makeCommit(
+                    'master',
+                    [baseRootHash],
+                    baseRootHash,
+                    persisted.objects,
+                    'coreRelTestBase'
+                );
+            })
+            .then(function (commitResult) {
+                expect(commitResult).not.to.equal(null);
+                expect(commitResult.hash).to.contain('#');
+                expect(commitResult.hash).to.have.length(41);
             })
             .nodeify(done);
     });
@@ -44,36 +76,43 @@ describe('corerel', function () {
             .nodeify(done);
     });
 
+    // beforeEach(function (done) {
+    //     storage.openDatabase()
+    //         .then(function () {
+    //             return storage.createProject({projectName: projectName});
+    //         })
+    //         .then(function (dbProject) {
+    //             var child,
+    //                 project = new testFixture.Project(dbProject, storage, logger, gmeConfig);
+    //
+    //             core = new Core(project, {globConf: gmeConfig, logger: testFixture.logger.fork('corerel:core')});
+    //             root = core.createNode();
+    //             child = core.createNode({parent: root});
+    //             core.setAttribute(child, 'name', 'child');
+    //             core.setRegistry(child, 'position', {x: 100, y: 100});
+    //             core.setPointer(child, 'parent', root);
+    //         })
+    //         .then(done)
+    //         .catch(done);
+    // });
+
     beforeEach(function (done) {
-        storage.openDatabase()
-            .then(function () {
-                return storage.createProject({projectName: projectName});
-            })
-            .then(function (dbProject) {
-                var child,
-                    project = new testFixture.Project(dbProject, storage, logger, gmeConfig);
-
-                core = new Core(project, {globConf: gmeConfig, logger: testFixture.logger.fork('corerel:core')});
-                root = core.createNode();
-                child = core.createNode({parent: root});
-                core.setAttribute(child, 'name', 'child');
-                core.setRegistry(child, 'position', {x: 100, y: 100});
-                core.setPointer(child, 'parent', root);
-            })
-            .then(done)
-            .catch(done);
+        TASYNC.call(function (root_) {
+            root = root_;
+            done();
+        }, core.loadRoot(baseRootHash));
     });
 
-    afterEach(function (done) {
-        storage.deleteProject({projectId: projectId})
-            .then(function () {
-                storage.closeDatabase(done);
-            })
-            .catch(function (err) {
-                logger.error(err);
-                storage.closeDatabase(done);
-            });
-    });
+    // afterEach(function (done) {
+    //     storage.deleteProject({projectId: projectId})
+    //         .then(function () {
+    //             storage.closeDatabase(done);
+    //         })
+    //         .catch(function (err) {
+    //             logger.error(err);
+    //             storage.closeDatabase(done);
+    //         });
+    // });
 
     it('should load all children', function (done) {
         TASYNC.call(function (children) {
@@ -194,89 +233,5 @@ describe('corerel', function () {
         result = core.moveNode(children[core.getRelid(tempTo)], parent);
 
         expect(core.getAttribute(result, 'name')).to.equal(core.getRelid(tempTo));
-    });
-
-    describe('throttle', function () {
-        var throttleProjectName = 'throttleTest',
-            throttleProjectId = testFixture.projectName2Id(throttleProjectName),
-            throttleProject,
-            throttleCore,
-            throttleRootHash,
-            traverse = function (root, options, visitFn, callback) {
-                visitFn = TASYNC.wrap(visitFn);
-
-                var loadChildren = function (node) {
-                    var children = throttleCore.loadChildren(node),
-                        visitRes = visitFn(node);
-
-                    return TASYNC.call(procChildren, node, children, visitRes);
-                };
-
-                var procChildren = function (node, children, visitRes) {
-                    // console.log('proc:', self.getPath(node), children.length);
-                    var res = [];
-                    for (var i = 0; i < children.length; i++) {
-                        res[i] = loadChildren(children[i]);
-                    }
-                    return TASYNC.lift(res);
-                };
-
-                TASYNC.unwrap(loadChildren)(root, callback);
-            };
-
-        before(function (done) {
-            this.timeout(120000);
-            // storage.deleteProject({projectId: throttleProjectId})
-            //     .then(function () {
-            //         return testFixture.importProject(storage, {
-            //             projectSeed: 'test/perf/huge.webgmex',
-            //             projectName: throttleProjectName,
-            //             branchName: 'master',
-            //             gmeConfig: gmeConfig,
-            //             logger: testFixture.logger.fork('corerel:throttle')
-            //         });
-            //     })
-            //     .then(function (result) {
-            //         throttleProject = result.project;
-            //         throttleCore = new Core(throttleProject,
-            //             {globConf: gmeConfig, logger: testFixture.logger.fork('corerel:throttle')});
-            //         throttleRootHash = result.rootHash;
-            //     })
-            //     .nodeify(done);
-            testFixture.importProject(storage, {
-                projectSeed: 'test/perf/midsize.webgmex',
-                projectName: throttleProjectName,
-                branchName: 'master',
-                gmeConfig: gmeConfig,
-                logger: testFixture.logger.fork('corerel:throttle')
-            })
-                .then(function (result) {
-                    throttleProject = result.project;
-                    throttleCore = new Core(throttleProject,
-                        {globConf: gmeConfig, logger: testFixture.logger.fork('corerel:throttle'), throttled: true});
-                    throttleRootHash = result.rootHash;
-                })
-                .nodeify(done);
-        });
-
-        it.only('should traverse a huge project with', function (done) {
-            this.timeout(1200000);
-            var visit = function (node, next) {
-                    counter += 1;
-                    // console.log(throttleCore.getPath(node));
-                    next();
-                },
-                counter = 0;
-
-            console.time('throttle');
-            TASYNC.call(function (root) {
-                console.log('root loaded');
-                traverse(root, {}, visit, function(err){
-                    console.log('finished - ',counter);
-                    console.timeEnd('throttle');
-                    done(err);
-                });
-            }, throttleCore.loadRoot(throttleRootHash));
-        });
     });
 });
