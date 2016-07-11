@@ -225,7 +225,7 @@ define(['common/core/core', 'q'], function (Core, Q) {
                 }
             });
             return deferred.promise.nodeify(callback);
-        }
+        };
     }
 
     CoreQ.prototype = Object.create(Core.prototype);

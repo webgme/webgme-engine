@@ -33,7 +33,8 @@ define([
             stackedObjects = {},
             self = this;
 
-        storage.loadObject = TASYNC.wrap(storage.loadObject);
+        // storage.loadObject = TASYNC.wrap(storage.loadObject);
+        storage.loadObject = TASYNC.throttle(TASYNC.wrap(storage.loadObject), 5);
 
         this.loadPaths = TASYNC.wrap(storage.loadPaths);
         this.logger = logger;
