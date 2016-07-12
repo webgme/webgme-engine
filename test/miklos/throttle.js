@@ -40,48 +40,64 @@ describe.only('MiklosTests', function () {
 
             TASYNC.unwrap(loadChildren)(root, callback);
         },
-        setupForTest = function (projectName, needFullCore) {
+	setupBareTest = function (projectName) {
             var deferred = Q.defer(),
                 context = {};
 
             storage.openProject({projectId: testFixture.projectName2Id(projectName)})
                 .then(function (project) {
                     context.project = project;
-                    if (needFullCore === true) {
-                        context.core = new FullCore(project, {
-                            globConf: gmeConfig,
-                            logger: testFixture.logger.fork(projectName)
-                        });
-                    } else {
-                        context.core = new Core(project, {
-                            globConf: gmeConfig,
-                            logger: testFixture.logger.fork(projectName)
-                        });
-                    }
+                    context.core = new Core(project, {
+                        globConf: gmeConfig,
+                        logger: testFixture.logger.fork(projectName)
+                    });
                     return project.getBranches();
                 })
                 .then(function (branches) {
                     expect(typeof branches.master).to.equal('string');
-
                     context.commitHash = branches.master;
-                    return Q.ninvoke(context.project, 'loadObject', branches.master);
+                    context.project.loadObject2 = TASYNC.unwrap(context.project.loadObject);
+                    return Q.ninvoke(context.project, 'loadObject2', branches.master);
                 })
                 .then(function (commitObject) {
                     expect(typeof commitObject.root).to.equal('string');
-                    if (needFullCore) {
-                        context.core.loadRoot(commitObject.root, function (err, root) {
-                            expect(err).to.eql(null);
-                            expect(root).not.to.equal(null);
-                            context.root = root;
-                            deferred.resolve(context);
-                        });
-                    } else {
-                        TASYNC.call(function (root) {
-                            expect(root).not.to.equal(null);
-                            context.root = root;
-                            deferred.resolve(context);
-                        }, context.core.loadRoot(commitObject.root));
-                    }
+                    TASYNC.call(function (root) {
+                        expect(root).not.to.equal(null);
+                        context.root = root;
+                        deferred.resolve(context);
+                    }, context.core.loadRoot(commitObject.root));
+                })
+                .catch(deferred.reject);
+
+            return deferred.promise;
+	},
+        setupFullTest = function (projectName) {
+            var deferred = Q.defer(),
+                context = {};
+
+            storage.openProject({projectId: testFixture.projectName2Id(projectName)})
+                .then(function (project) {
+                    context.project = project;
+                    context.core = new FullCore(project, {
+                        globConf: gmeConfig,
+                        logger: testFixture.logger.fork(projectName)
+                    });
+                    return project.getBranches();
+                })
+                .then(function (branches) {
+                    expect(typeof branches.master).to.equal('string');
+                    context.commitHash = branches.master;
+                    context.project.loadObject2 = TASYNC.unwrap(context.project.loadObject);
+                    return Q.ninvoke(context.project, 'loadObject2', branches.master);
+                })
+                .then(function (commitObject) {
+                    expect(typeof commitObject.root).to.equal('string');
+                    context.core.loadRoot(commitObject.root, function (err, root) {
+                        expect(err).to.eql(null);
+                        expect(root).not.to.equal(null);
+                        context.root = root;
+                        deferred.resolve(context);
+                    });
                 })
                 .catch(deferred.reject);
 
@@ -113,11 +129,11 @@ describe.only('MiklosTests', function () {
             .nodeify(done);
     });
 
-    it.skip('should traverse small project', function (done) {
+    it('should traverse small project', function (done) {
         var context,
             counter = 0;
         console.time('test');
-        setupForTest('small')
+        setupBareTest('small')
             .then(function (context_) {
                 context = context_;
                 return Q.nfcall(traverse, context.core, context.root, function (node, next) {
@@ -136,7 +152,7 @@ describe.only('MiklosTests', function () {
         var context,
             counter = 0;
         console.time('test');
-        setupForTest('midsize')
+        setupBareTest('midsize')
             .then(function (context_) {
                 context = context_;
                 return Q.nfcall(traverse, context.core, context.root, function (node, next) {
@@ -151,11 +167,11 @@ describe.only('MiklosTests', function () {
             .nodeify(done);
     });
 
-    it.skip('should traverse midsize project with full core stack', function (done) {
+    it('should traverse midsize project with full core stack', function (done) {
         var context,
             counter = 0;
         console.time('test');
-        setupForTest('midsize', true)
+        setupFullTest('midsize')
             .then(function (context_) {
                 context = context_;
                 return context.core.traverse(context.root, {}, function (node, next) {
@@ -177,7 +193,7 @@ describe.only('MiklosTests', function () {
             prototype;
 
         console.time('test');
-        setupForTest('large', true)
+        setupFullest('large')
             .then(function (context_) {
                 context = context_;
                 return context.core.loadChild(context.root, 'G');

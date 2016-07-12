@@ -31,10 +31,31 @@ define([
             mutateCount = 0,
             checkValidTreeRunning = true,
             stackedObjects = {},
-            self = this;
+            self = this,
+	    storageLoadObject = storage.loadObject;
 
-        // storage.loadObject = TASYNC.wrap(storage.loadObject);
-        storage.loadObject = TASYNC.throttle(TASYNC.wrap(storage.loadObject), 5);
+        storage.loadObject1 = TASYNC.wrap(storage.loadObject);
+        storage.loadObject2 = TASYNC.throttle(TASYNC.wrap(storage.loadObject), 10);
+	storage.loadObject3 = TASYNC.throttle(TASYNC.wrap(function (hash, callback) {
+		console.log('SLO m ' + hash);
+		storageLoadObject(hash, function(err, ret) {
+			console.log('SLO e ' + hash);
+			callback(err, ret);
+			// console.log('SLO c ' + hash);
+		});
+	}), 10);
+	storage.loadObject4 = TASYNC.throttle(TASYNC.wrap(function (hash, callback) {
+		// console.log('SLO s ' + hash);
+		setTimeout(function() {
+			// console.log('SLO m ' + hash);
+			storageLoadObject(hash, function(err, ret) {
+				// console.log('SLO e ' + hash);
+				callback(err, ret);
+				// console.log('SLO c ' + hash);
+			});
+		}, 0);
+	}), 10);
+        storage.loadObject = storage.loadObject2;
 
         this.loadPaths = TASYNC.wrap(storage.loadPaths);
         this.logger = logger;
