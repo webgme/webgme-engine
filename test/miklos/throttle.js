@@ -11,6 +11,7 @@ describe.only('MiklosTests', function () {
     var gmeConfig = testFixture.getGmeConfig(),
         logger = testFixture.logger.fork('MiklosTest'),
         Q = testFixture.Q,
+        FS = testFixture.fs,
         storage,
         expect = testFixture.expect,
         Rel = testFixture.requirejs('common/core/corerel'),
@@ -40,7 +41,7 @@ describe.only('MiklosTests', function () {
 
             TASYNC.unwrap(loadChildren)(root, callback);
         },
-	setupBareTest = function (projectName) {
+        setupBareTest = function (projectName) {
             var deferred = Q.defer(),
                 context = {};
 
@@ -70,7 +71,7 @@ describe.only('MiklosTests', function () {
                 .catch(deferred.reject);
 
             return deferred.promise;
-	},
+        },
         setupFullTest = function (projectName) {
             var deferred = Q.defer(),
                 context = {};
@@ -129,7 +130,7 @@ describe.only('MiklosTests', function () {
             .nodeify(done);
     });
 
-    it('should traverse small project', function (done) {
+    it.skip('should traverse small project', function (done) {
         var context,
             counter = 0;
         console.time('test');
@@ -148,7 +149,7 @@ describe.only('MiklosTests', function () {
             .nodeify(done);
     });
 
-    it('should traverse midsize project', function (done) {
+    it.skip('should traverse midsize project', function (done) {
         var context,
             counter = 0;
         console.time('test');
@@ -167,7 +168,7 @@ describe.only('MiklosTests', function () {
             .nodeify(done);
     });
 
-    it('should traverse midsize project with full core stack', function (done) {
+    it.skip('should traverse midsize project with full core stack', function (done) {
         var context,
             counter = 0;
         console.time('test');
@@ -175,7 +176,38 @@ describe.only('MiklosTests', function () {
             .then(function (context_) {
                 context = context_;
                 return context.core.traverse(context.root, {}, function (node, next) {
-                    console.log(context.core.getPath(node));
+                    // console.log(context.core.getPath(node));
+                    counter += 1;
+                    next();
+                });
+            })
+            .then(function () {
+                console.log('numOfNodes:', counter);
+                console.timeEnd('test');
+            })
+            .nodeify(done);
+    });
+
+    it('should traverse huge project with full core stack', function (done) {
+        var context,
+            counter = 0;
+        console.time('test');
+        setupFullTest('hugeWithInstances')
+            .then(function (context_) {
+                context = context_;
+                return context.core.traverse(context.root, {}, function (node, next) {
+                    var line = 'path: ',
+                        base = node;
+
+                    // console.log(context.core.getPath(node));
+                    line += context.core.getPath(node);
+                    line += ' - basePathChain: ';
+                    do {
+                        line += context.core.getPath(base) + ' ';
+                        base = context.core.getBase(base);
+                    } while (base !== null);
+                    line += '\n';
+                    FS.appendFileSync('hugeTest.out', line);
                     counter += 1;
                     next();
                 });
