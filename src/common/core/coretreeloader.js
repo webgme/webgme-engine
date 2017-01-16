@@ -135,6 +135,40 @@ define(['common/core/CoreAssert', 'common/core/tasync'], function (ASSERT, TASYN
 
         }
 
+        function _traverse(root, options, visitFn, callback) {
+            ASSERT(self.isValidNode(root) && typeof visitFn === 'function' && typeof callback === 'function');
+
+            // initializations
+            visitFn = TASYNC.wrap(visitFn);
+            options = options || {};
+            options.maxParallelLoad = options.maxParallelLoad || 100; //the amount of nodes we preload
+            options.excludeRoot = options.excludeRoot === true || false;
+            options.stopOnError = options.stopOnError === false ? false : true;
+
+            var loadChildren = function (node) {
+                    var children = self.loadChildren(node),
+                        visitRes;
+
+                    if (options.excludeRoot && self.getPath(node) === '') {
+                        visitRes = null;
+                    } else {
+                        visitRes = visitFn(node);
+                    }
+                    return TASYNC.call(procChildren, node, children, visitRes);
+                },
+                procChildren = function (node, children, visitRes) {
+                    // console.log('proc:', self.getPath(node), children.length);
+                    var res = [],
+                        i;
+                    for (i = 0; i < children.length; i++) {
+                        res[i] = loadChildren(children[i]);
+                    }
+                    return TASYNC.lift(res);
+                };
+
+            TASYNC.unwrap(loadChildren)(root, callback);
+        }
+
         this.traverse = TASYNC.wrap(traverse);
         //</editor-fold>
     };

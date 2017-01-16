@@ -591,9 +591,9 @@
         second = second.path;
 
         var i, limit = first.length < second.length ? first.length : second.length;
-        for (i = 0; i < limit; ++i) {
-            if (first[i] !== second[i]) {
-                return first[i] - second[i];
+        for (i = 1; i <= limit; ++i) {
+            if (first[first.length - i] !== second[second.length - i]) {
+                return first[first.length - i] - second[second.length - i];
             }
         }
 
@@ -624,7 +624,7 @@
         queue.splice(low, 0, elem);
     }
 
-    ThrottleListener.prototype.execute = function (func, that, args) {
+    ThrottleListener.prototype.schedule = function (func, that, args) {
         if (this.running < this.limit) {
             var value = func.apply(that, args);
 
@@ -645,19 +645,26 @@
     };
 
     ThrottleListener.prototype.onResolved = function () {
-        if (this.queue.length > 0) {
-            var future = this.queue.pop();
-            future.register(this);
+        var again = true;
+        while (again) {
+            if (this.queue.length > 0) {
+                var future = this.queue.pop();
+                future.execute();
 
-            future.execute();
-        } else {
-            --this.running;
+                if (future.state === STATE_LISTEN) {
+                    future.register(this);
+                    again = false;
+                }
+            } else {
+                --this.running;
+                again = false;
+            }
         }
     };
 
     ThrottleListener.prototype.onRejected = ThrottleListener.prototype.onResolved;
 
-    // TODO: prevent recursion, otheriwise throttle will not work
+    // TODO: prevent recursion, otherwise throttle will not work
     function throttle(func, limit) {
         if (typeof func !== 'function') {
             throw new Error('function argument is expected');
@@ -668,7 +675,7 @@
         var listener = new ThrottleListener(limit);
 
         return function () {
-            return listener.execute(func, this, arguments);
+            return listener.schedule(func, this, arguments);
         };
     }
 

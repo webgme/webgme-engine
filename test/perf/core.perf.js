@@ -5,13 +5,13 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 var testFixture = require('../_globals.js'),
-    PROJECT_FILE = '../projects/Hakan132k.webgmex',
+    PROJECT_FILE = 'test/perf/Hakan265k.webgmex',
     jsonPatcher = testFixture.requirejs('common/util/jsonPatcher'),
     getPatchObject = testFixture.requirejs('common/storage/util').getPatchObject;
 //"C:\\Users\\Zsolt\\Downloads\\Nagx3.json"
 //"C:\GIT\projects\HakansBigOne.webgmex"
 
-describe.skip('Core Performance test', function () {
+describe.only('Core Performance test', function () {
     'use strict';
 
     var gmeConfig,
@@ -79,7 +79,7 @@ describe.skip('Core Performance test', function () {
         console.log('Exec time', Date.now() - tStart, '[ms]');
     });
 
-    it('should loadTree the entire-model and get all attributes', function (done) {
+    it.skip('should loadTree the entire-model and get all attributes', function (done) {
         var nodeCnt = 0,
             cnt = 0;
         this.timeout(timeout);
@@ -101,7 +101,7 @@ describe.skip('Core Performance test', function () {
             .nodeify(done);
     });
 
-    it('should loadTree the entire-model and get all pointer paths', function (done) {
+    it.skip('should loadTree the entire-model and get all pointer paths', function (done) {
         var nodeCnt = 0,
             cnt = 0;
         this.timeout(timeout);
@@ -123,7 +123,7 @@ describe.skip('Core Performance test', function () {
             .nodeify(done);
     });
 
-    it('should loadTree the entire-model and get all collections paths', function (done) {
+    it.skip('should loadTree the entire-model and get all collections paths', function (done) {
         var nodeCnt = 0,
             cnt = 0;
         this.timeout(timeout);
@@ -145,7 +145,7 @@ describe.skip('Core Performance test', function () {
             .nodeify(done);
     });
 
-    it('should loadTree the entire-model and get set-members paths', function (done) {
+    it.skip('should loadTree the entire-model and get set-members paths', function (done) {
         var nodeCnt = 0,
             cnt = 0;
         this.timeout(timeout);
@@ -167,7 +167,7 @@ describe.skip('Core Performance test', function () {
             .nodeify(done);
     });
 
-    it('should loadTree the entire-model and get all meta nodes', function (done) {
+    it.skip('should loadTree the entire-model and get all meta nodes', function (done) {
         var nodeCnt = 0,
             cnt = 0;
         this.timeout(timeout);
@@ -185,8 +185,9 @@ describe.skip('Core Performance test', function () {
             .nodeify(done);
     });
 
-    it('should traverse the whole project without issue', function (done) {
+    it.only('should traverse the whole project without issue', function (done) {
         var count = 0;
+        this.timeout(timeout);
         core.loadRoot(rootHash)
             .then(function (root) {
                 return core.traverse(root, {}, function (node, next) {
@@ -224,7 +225,7 @@ describe.skip('Core Performance test', function () {
             .nodeify(done);
     });
 
-    describe('on huge project', function () {
+    describe.skip('on huge project', function () {
         var core,
             projectName = 'hugeProjectTest',
             projectId = testFixture.projectName2Id(projectName),
@@ -356,6 +357,7 @@ describe.skip('Core Performance test', function () {
                 })
                 .nodeify(done);
         });
+
         it('should load the whole huge project without instances', function (done) {
             this.timeout(1200000);
             var count = 0;
