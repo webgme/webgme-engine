@@ -61,6 +61,8 @@ define([
                     if (innerCore.getChildrenRelids(node).indexOf(relid) !== -1) {
                         //but it is overwritten so we should load it
                         child = innerCore.loadChild(node, relid);
+                    } else {
+                        child = innerCore.loadChild(node, relid, true);
                     }
                     basechild = self.loadChild(base, relid);
                     return TASYNC.call(function (b, c, n, r) {
@@ -69,6 +71,7 @@ define([
                             child.base = b;
                             return child;
                         } else {
+                            console.error('never');
                             child = innerCore.getChild(n, r);
                             self.setHashed(child, true, true);
                             child.base = b;
@@ -1129,7 +1132,7 @@ define([
                     // Do not account for old relids..
                     if (nodeChildren[i].length <= CONSTANTS.MAXIMUM_STARTING_RELID_LENGTH) {
                         minRelidLength = nodeChildren[i].length + 1 > minRelidLength ?
-                        nodeChildren[i].length + 1 : minRelidLength;
+                            nodeChildren[i].length + 1 : minRelidLength;
                     }
                 }
 

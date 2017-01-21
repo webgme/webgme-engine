@@ -5,13 +5,13 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 var testFixture = require('../_globals.js'),
-    PROJECT_FILE = 'test/perf/Hakan265k.webgmex',
+    PROJECT_FILE = 'test/perf/1Mi.webgmex',
     jsonPatcher = testFixture.requirejs('common/util/jsonPatcher'),
     getPatchObject = testFixture.requirejs('common/storage/util').getPatchObject;
 //"C:\\Users\\Zsolt\\Downloads\\Nagx3.json"
 //"C:\GIT\projects\HakansBigOne.webgmex"
 
-describe.only('Core Performance test', function () {
+describe.skip('Core Performance test', function () {
     'use strict';
 
     var gmeConfig,
@@ -26,7 +26,7 @@ describe.only('Core Performance test', function () {
         rootHash,
         gmeAuth,
         tStart,
-        timeout = 500000;
+        timeout = 50000000;
 
     before(function (done) {
         gmeConfig = testFixture.getGmeConfig();
@@ -185,7 +185,7 @@ describe.only('Core Performance test', function () {
             .nodeify(done);
     });
 
-    it.only('should traverse the whole project without issue', function (done) {
+    it('should traverse the whole project without issue', function (done) {
         var count = 0;
         this.timeout(timeout);
         core.loadRoot(rootHash)

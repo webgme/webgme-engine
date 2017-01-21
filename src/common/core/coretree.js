@@ -17,7 +17,8 @@ define([
 
     'use strict';
 
-    var rootCounter = 0;
+    var rootCounter = 0,
+        EMPTYHASH = '#0000000000000000000000000000000000000000';
 
     function CoreTree(storage, options) {
         ASSERT(typeof options === 'object');
@@ -541,7 +542,7 @@ define([
             return root;
         };
 
-        this.getChild = function (node, relid) {
+        this.getChild = function (node, relid, inheritedChild) {
             ASSERT(typeof relid === 'string' && relid !== ID_NAME);
 
             node = self.normalize(node);
@@ -556,7 +557,7 @@ define([
                 relid: relid,
                 age: 0,
                 children: {},
-                data: __getChildData(node.data, relid)
+                data: inheritedChild ? EMPTYHASH : __getChildData(node.data, relid)
             };
             node.children[relid] = child;
 
@@ -851,10 +852,10 @@ define([
             return TASYNC.call(__loadRoot2, storage.loadObject(hash));
         };
 
-        this.loadChild = function (node, relid) {
+        this.loadChild = function (node, relid, inheritedChild) {
             ASSERT(self.isValidNode(node));
 
-            node = self.getChild(node, relid);
+            node = self.getChild(node, relid, inheritedChild);
 
             if (typeof node.data === 'object') {
                 return node.data !== null ? node : null;
