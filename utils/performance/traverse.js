@@ -21,10 +21,18 @@ var webgme = require('../../webgme'),
     REGEXP = webgme.requirejs('common/regexp'),
     main;
 
+function printInfo(filePath, text) {
+    if (filePath) {
+        FS.appendFileSync(filePath, text + '\n');
+    } else {
+        console.log(text);
+    }
+}
+
 main = function (argv) {
     var mainDeferred = Q.defer(),
-        jsonProject,
         gmeAuth,
+        start = new Date().getTime(),
         Command = require('commander').Command,
         program = new Command(),
         syntaxFailure = false,
@@ -66,6 +74,7 @@ main = function (argv) {
         .option('-o, --owner [string]', 'the owner of the project [by default, the user is the owner]')
         .option('-b, --branch [branch]',
             'the branch that should be created with the imported data [by default it is the \'master\']')
+        .option('-f --file [path]', 'if given, the measurement output will be appended to the file')
         .parse(argv);
 
     if (!program.projectName) {
@@ -80,6 +89,10 @@ main = function (argv) {
     }
 
     program.branch = program.branch || 'master';
+
+    printInfo(program.file, 'test starts');
+    printInfo(program.file, 'fields of measurement:');
+    printInfo(program.file, 'counter: path: heapUsageChange: totalHeapUsed');
 
     webgme.getGmeAuth(gmeConfig)
         .then(function (gmeAuth__) {
@@ -100,7 +113,6 @@ main = function (argv) {
                 params.projectId = gmeConfig.authentication.guestAccount +
                     STORAGE_CONSTANTS.PROJECT_ID_SEP + program.projectName;
             }
-            ;
 
             return cliStorage.openProject(params);
         })
@@ -129,18 +141,24 @@ main = function (argv) {
             throw new Error('unable to load latest commit');
         })
         .then(function (root) {
-            console.time('traverseTime');
+            var counter = 0,
+                prevMemory = Number(process.memoryUsage().heapUsed),
+                memory;
+
             return Q.nfcall(core.traverse, root, {}, function (node, next) {
-                console.log(core.getPath(node));
-                console.log(process.memoryUsage());
-                setTimeout(function () {
-                    next(null);
-                }, 10);
+                var info = '';
+                info += ++counter + ': ';
+                info += core.getPath(node) + ': ';
+                memory = Number(process.memoryUsage().heapUsed);
+                info += (memory - prevMemory) + ': ';
+                prevMemory = memory;
+                info += memory;
+                printInfo(program.file, info);
+                next(null);
             });
         })
         .then(function () {
-            console.log('traverse finished');
-            console.timeEnd('traverseTime');
+            printInfo(program.file, 'test finished: ' + (new Date().getTime() - start) + 'ms');
             finishUp(null);
         })
         .catch(finishUp);

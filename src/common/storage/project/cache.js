@@ -14,15 +14,6 @@ define([
     'common/storage/util'
 ], function (ASSERT, CONSTANTS, UTIL) {
     'use strict';
-    var EMPTYHASH = '#0000000000000000000000000000000000000000',
-        _OBJECT = {
-            _id: EMPTYHASH
-        },
-        EMPTYOBJECT = function () {
-            return _OBJECT;
-        },
-        emptyCounter = 0;
-
     function ProjectCache(storage, projectId, mainLogger, gmeConfig) {
         var self = this,
             missing = {},
@@ -79,12 +70,6 @@ define([
             ASSERT(typeof key === 'string' && typeof callback === 'function');
             logger.debug('loadObject', {metadata: key});
 
-            if (key === EMPTYHASH) {
-                setTimeout(function () {
-                    callback(null, EMPTYOBJECT());
-                }, 10);
-                return;
-            }
             var obj = cache[key];
             if (typeof obj === 'undefined') {
                 obj = backup[key];

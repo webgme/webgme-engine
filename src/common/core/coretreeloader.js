@@ -65,7 +65,7 @@ define(['common/core/CoreAssert', 'common/core/tasync'], function (ASSERT, TASYN
             return loadSubTree(root, true);
         };
 
-        function traverse(root, options, visitFn, callback) {
+        function _traverse(root, options, visitFn, callback) {
             ASSERT(self.isValidNode(root) && typeof visitFn === 'function' && typeof callback === 'function');
 
             var loadQueue = [],
@@ -135,7 +135,7 @@ define(['common/core/CoreAssert', 'common/core/tasync'], function (ASSERT, TASYN
 
         }
 
-        function _traverse(root, options, visitFn, callback) {
+        function traverse(root, options, visitFn, callback) {
             ASSERT(self.isValidNode(root) && typeof visitFn === 'function' && typeof callback === 'function');
 
             // initializations
