@@ -89,7 +89,8 @@ var path = require('path'),
         },
 
         mongo: {
-            uri: 'mongodb://127.0.0.1:27017/multi',
+            /*uri: 'mongodb://127.0.0.1:27017/multi',*/
+            uri: 'mongodb://129.59.105.197:27017/miklos',
             options: {
                 db: {
                     w: 1,
