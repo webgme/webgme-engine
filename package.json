@@ -1,14 +1,22 @@
 {
-  "name": "webgme-core",
-  "version": "0.1.0",
-  "description": "Core functionality for webgme",
+  "name": "webgme-engine",
+  "version": "2.17.0",
+  "description": "WebGME server and Client API without a GUI",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./src/bin/start_server.js",
+    "prepublish": "node ./utils/prepublish.js",
+    "postinstall": "node ./utils/postinstall.js",
+    "test": "node ./node_modules/mocha/bin/mocha --recursive test",
+    "test_ci": "node ./node_modules/mocha/bin/mocha -R dot --timeout 10000 --recursive test",
+    "test_cover": "node ./node_modules/istanbul/lib/cli.js --hook-run-in-context cover node_modules/mocha/bin/_mocha -- -R spec --timeout 10000 --recursive test",
+    "test_browser": "node ./node_modules/karma/bin/karma start karma.conf.js --browsers Firefox --single-run --no-auto-watch",
+    "docs": "./node_modules/.bin/jsdoc -c jsdoc_conf.json",
+    "tsdocs": "typedoc --out typed_docs --mode modules --includeDeclarations --target ES6 --exclude node_modules ./typings"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/webgme/webgme-core.git"
+    "url": "git+https://github.com/webgme/webgme-engine.git"
   },
   "keywords": [
     "webgme",
@@ -16,15 +24,16 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/webgme/webgme-core/issues"
+    "url": "https://github.com/webgme/webgme-engine/issues"
   },
-  "homepage": "https://github.com/webgme/webgme-core#readme",
+  "homepage": "https://github.com/webgme/webgme-engine#README.md",
   "dependencies": {
     "adm-zip": "0.4.7",
     "agentkeepalive": "2.2.0",
     "aws-sdk": "2.52.0",
     "bcryptjs": "2.4.3",
     "body-parser": "1.17.1",
+    "browserify": "^14.4.0",
     "buffer-equal-constant-time": "1.0.1",
     "chance": "1.0.8",
     "commander": "2.9.0",
@@ -58,5 +67,32 @@
     "webgme-webhook-manager": "0.1.0",
     "winston": "2.3.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "chai": "3.5.0",
+    "dynalite": "1.2.0",
+    "esprima": "3.1.3",
+    "http-proxy": "1.16.2",
+    "istanbul": "0.4.5",
+    "jscoverage": "0.6.0",
+    "jscs": "3.0.7",
+    "jshint": "2.9.4",
+    "jshint-stylish": "2.2.1",
+    "karma": "1.7.0",
+    "karma-chai": "0.1.0",
+    "karma-chrome-launcher": "2.1.1",
+    "karma-coverage": "1.1.1",
+    "karma-express-http-server": "0.0.1",
+    "karma-firefox-launcher": "1.0.1",
+    "karma-mocha": "1.3.0",
+    "karma-mocha-reporter": "2.2.3",
+    "karma-requirejs": "1.1.0",
+    "karma-safari-launcher": "1.0.0",
+    "mocha": "3.4.1",
+    "msgpack-js": "^0.3.0",
+    "node-neo4j": "2.0.3",
+    "pkginfo": "0.4.0",
+    "rimraf": "2.6.1",
+    "ssl-root-cas": "1.2.3",
+    "webgme-executor-worker": "^1.0.0"
+  }
 }

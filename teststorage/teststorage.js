@@ -9,7 +9,7 @@ var CREATE_BRANCH = false;
 //NEW_BRANCH_HASH = '#d2d00cdd50a1ca144666a52a471af59d280ac751';
 
 define([
-    'js/logger',
+    'client/logger',
     'common/storage/browserstorage',
     'common/core/core',
     'common/storage/constants'

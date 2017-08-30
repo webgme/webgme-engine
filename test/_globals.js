@@ -15,7 +15,7 @@ process.env.NODE_ENV = (process.env.NODE_ENV && process.env.NODE_ENV.indexOf('te
     process.env.NODE_ENV : 'test';
 
 //adding a local storage class to the global Namespace
-var WebGME = require('../webgme'),
+var WebGME = require('../index'),
     _gmeConfig,
     getGmeConfig = function () {
         // makes sure that for each request it returns with a unique object and tests will not interfere

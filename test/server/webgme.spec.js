@@ -34,7 +34,7 @@ describe('webgme', function () {
         // the configuration is validated
         gmeConfig.addOn.basePaths = null;
         // has two files with same name and different extension
-        gmeConfig.plugin.basePaths.push('./src/client/css/themes');
+        gmeConfig.plugin.basePaths.push('./test/server');
         // we have added the same good plugin path multiple times
         gmeConfig.plugin.basePaths.push('./src/plugin/coreplugins');
         gmeConfig.plugin.basePaths.push('./src/plugin/coreplugins');

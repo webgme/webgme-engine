@@ -12,7 +12,7 @@ describe('configuration and components', function () {
         oldNodeEnv = process.env.NODE_ENV || '',
         oldCwd = process.cwd(),
         path = require('path'),
-        webgme = require('../../webgme'),
+        webgme = require('../../index'),
         getClientConfig = require('../../config/getclientconfig'),
         configPath = path.join(__dirname, '..', '..', 'config'),
         validateConfig,

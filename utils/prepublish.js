@@ -11,7 +11,6 @@ function prepublish(jsdocConfigPath) {
         path = require('path'),
         fs = require('fs'),
         childProcess = require('child_process'),
-        bower = require('bower'),
         configWithDefaultTemplates = raml2html.getDefaultConfig();
 
     console.log('Generating REST API docs ...');
@@ -25,42 +24,34 @@ function prepublish(jsdocConfigPath) {
             process.exit(1);
         });
 
-        console.log('Installing bower components...');
-        bower.commands.install(undefined, undefined, {cwd: process.cwd()})
-            .on('end', function (/*installed*/) {
-                console.log('Done with bower components!');
-                if (process.env.TEST_FOLDER) {
-                    console.warn('TEST_FOLDER environment variable is set, skipping distribution scripts.');
-                } else {
-                    var webgmeBuild = require('./build/webgme.classes/build_classes.js'),
-                        webgmeDist = require('./build/dist/build.js');
 
-                    console.log('Generating webgme.classes.build.js ...');
-                    webgmeBuild(function (err/*, data*/) {
-                        if (err) {
-                            console.error('Failed generating webgme.classes.build.js!', err);
-                            process.exit(1);
-                        } else {
-                            //console.log(data);
-                            console.log('Done with webgme.classes.build.js!');
-                            console.log('Generating webgme.dist.build.js ...');
-                            webgmeDist(function (err/*, data*/) {
-                                if (err) {
-                                    console.error('Failed generating webgme.dist.build.js!', err);
-                                    process.exit(1);
-                                } else {
-                                    //console.log(data);
-                                    console.log('Done with webgme.dist.build.js!');
-                                }
-                            });
-                        }
-                    });
+        if (process.env.TEST_FOLDER) {
+            console.warn('TEST_FOLDER environment variable is set, skipping distribution scripts.');
+        } else {
+            var webgmeBuild = require('./build/webgme.classes/build_classes.js');
+                //webgmeDist = require('./build/dist/build.js');
+
+            console.log('Generating webgme.classes.build.js ...');
+            webgmeBuild(function (err/*, data*/) {
+                if (err) {
+                    console.error('Failed generating webgme.classes.build.js!', err);
+                    process.exit(1);
+                } else {
+                    //console.log(data);
+                    console.log('Done with webgme.classes.build.js!');
+                    // console.log('Generating webgme.dist.build.js ...');
+                    // webgmeDist(function (err/*, data*/) {
+                    //     if (err) {
+                    //         console.error('Failed generating webgme.dist.build.js!', err);
+                    //         process.exit(1);
+                    //     } else {
+                    //         //console.log(data);
+                    //         console.log('Done with webgme.dist.build.js!');
+                    //     }
+                    // });
                 }
-            })
-            .on('error', function (err) {
-                console.error(err);
-                process.exit(1);
             });
+        }
 
     if (jsdocConfigPath !== false) {
         console.log('Generating webgme source code documentation ...');

@@ -32,7 +32,7 @@ describe('gmeNodeSetter', function () {
         logger = testFixture.logger.fork('gmeNodeSetter');
         expect = testFixture.expect;
         Q = testFixture.Q;
-        NodeSetter = testFixture.requirejs('js/client/gmeNodeSetter');
+        NodeSetter = testFixture.requirejs('client/gmeNodeSetter');
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
             .then(function (gmeAuth_) {

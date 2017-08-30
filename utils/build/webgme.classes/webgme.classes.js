@@ -10,22 +10,20 @@
  */
 
 define('webgme.classes', [
-    'client/js/client',
+    'client/client',
     'blob/BlobClient',
     'executor/ExecutorClient',
-    'js/Utils/InterpreterManager',
     'common/core/core',
     'common/storage/browserstorage',
-    'js/logger',
-    'lib/superagent/superagent',
+    'client/logger',
+    'superagent',
     'teststorage/teststorage'
 ], function (Client,
              BlobClient,
              ExecutorClient,
-             InterpreterManager,
              Core,
              Storage,
-             Logger,
+             logger,
              superagent,
              TestStorage) {
 
@@ -35,10 +33,9 @@ define('webgme.classes', [
     GME.classes.Client = Client;
     GME.classes.BlobClient = BlobClient;
     GME.classes.ExecutorClient = ExecutorClient;
-    GME.classes.InterpreterManager = InterpreterManager;
     GME.classes.Core = Core;
     GME.classes.Storage = Storage;
-    GME.classes.Logger = Logger;
+    GME.classes.logger = logger;
     GME.classes.TestStorage = TestStorage;
 
     // Exposing built in libraries
