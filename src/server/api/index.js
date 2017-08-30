@@ -34,7 +34,7 @@ function createAPI(app, mountPath, middlewareOpts) {
         ensureAuthenticated = middlewareOpts.ensureAuthenticated,
         gmeConfig = middlewareOpts.gmeConfig,
         getUserId = middlewareOpts.getUserId,
-        webgme = require('../../../webgme'),
+        webgme = require('../../../index'),
         StorageUtil = webgme.requirejs('common/storage/util'),
         webgmeUtils = require('../../utils'),
         GUID = webgme.requirejs('common/util/guid'),

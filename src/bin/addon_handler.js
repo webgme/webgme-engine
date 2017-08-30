@@ -5,7 +5,7 @@
  */
 'use strict';
 
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     Express = require('express'),
     ManagerTracker = require('../addon/managertracker'),
     CONSTANTS = requireJS('common/Constants'),

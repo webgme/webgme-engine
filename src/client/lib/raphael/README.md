@@ -1,1 +1,0 @@
-N.B. raphael.svg_fixed.js contains a fix for arrow-heads resizing.

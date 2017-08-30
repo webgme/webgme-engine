@@ -6,7 +6,7 @@
  */
 'use strict';
 
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     path = require('path'),
     CONTENT_TYPES = requireJS('blob/BlobMetadata').CONTENT_TYPES,
     REGEXP = requireJS('common/regexp'),

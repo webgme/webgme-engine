@@ -14,7 +14,7 @@
  */
 'use strict';
 
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     Express = require('express'),
     Q = require('q'),
     bodyParser = require('body-parser'),

@@ -5,7 +5,7 @@
  * @author brollb / https://github.com/brollb
  */
 'use strict';
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     FS = require('fs'),
     Q = require('q'),
     cliStorage,

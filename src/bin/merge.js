@@ -5,7 +5,7 @@
  */
 
 var Q = require('q'),
-    webgme = require('../../webgme'),
+    webgme = require('../../index'),
     FS = require('fs'),
     path = require('path'),
     MongoURI = require('mongo-uri'),

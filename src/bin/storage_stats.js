@@ -7,7 +7,7 @@
  */
 'use strict';
 
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     path = require('path'),
     fs = require('fs'),
     Core = webgme.requirejs('common/core/coreQ'),

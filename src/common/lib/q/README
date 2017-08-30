@@ -1,0 +1,5 @@
+Bump the npm version and install
+
+npm install -g browserify
+
+browserify -q chance -o src/common/lib/q/q.js -s q

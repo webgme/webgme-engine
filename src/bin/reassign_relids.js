@@ -10,7 +10,7 @@
 
 'use strict';
 
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     FS = require('fs'),
     path = require('path'),
     random = webgme.requirejs('common/util/random'),

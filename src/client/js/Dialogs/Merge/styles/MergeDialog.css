@@ -1,7 +1,0 @@
-.merge-dialog .selected {
-  font-weight: bold; }
-.merge-dialog .conflict-item {
-  cursor: pointer; }
-.merge-dialog .commits {
-  /* Monospace stack */
-  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace; }

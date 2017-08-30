@@ -6,7 +6,7 @@
 
 'use strict';
 
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     Express = require('express'),
     path = require('path'),
     Q = require('q'),

@@ -8,7 +8,7 @@
 
 var path = require('path'),
     gmeConfig = require(path.join(process.cwd(), 'config')),
-    webgme = require('../../webgme'),
+    webgme = require('../../index'),
     myServer;
 
 webgme.addToRequireJsPaths(gmeConfig);

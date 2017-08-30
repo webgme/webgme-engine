@@ -13,7 +13,7 @@ main = function (argv, callback) {
         gmeConfig = require(path.join(process.cwd(), 'config')),
         mongodb = require('mongodb'),
         Q = require('q'),
-        webgme = require('../../webgme'),
+        webgme = require('../../index'),
         StorageUtil,
         Command = require('commander').Command,
         logger = webgme.Logger.create('gme:bin:migrateprojects', gmeConfig.bin.log),

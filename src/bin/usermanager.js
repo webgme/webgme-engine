@@ -8,7 +8,7 @@
  * @author lattmann / https://github.com/lattmann
  */
 
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     Q = require('q'),
     MongoURI = require('mongo-uri'),
 
@@ -18,7 +18,7 @@ var webgme = require('../../webgme'),
 
     path = require('path'),
     gmeConfig = require(path.join(process.cwd(), 'config')),
-    webgme = require('../../webgme');
+    webgme = require('../../index');
 
 webgme.addToRequireJsPaths(gmeConfig);
 

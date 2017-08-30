@@ -1,7 +1,3 @@
-bin
-!src/bin
-!test/bin
-
 */.settings
 */.idea
 *.class
@@ -20,29 +16,17 @@ tmp
 .project
 .settings
 
-src/bin/config.js
-src/bin/server.log
-src/bin/stderr.log
-src/bin/stdout.log
-src/bin/decorators.js
-src/bin/*.xme
-
 /report
 /coverage
 /profiles
 # ignore file system blob storage files
 blob-local-storage
 
+# dev config files
 config/config.dev*.js
 
-*.swp
-*~
-
-webgme-*.tgz
-
-executor-temp/
-jobList.nedb
-workerList.nedb
-
-# ignore generated documentation
-typed_docs/
+# browserified libraries
+src/common/lib/chance/chance.js
+src/common/lib/debug/debug.js
+src/common/lib/q/q.js
+src/common/lib/superagent/superagent.js

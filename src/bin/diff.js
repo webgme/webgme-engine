@@ -4,7 +4,7 @@
  * @author kecso / https://github.com/kecso
  */
 'use strict';
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     FS = require('fs'),
     Q = require('q'),
     MongoURI = require('mongo-uri'),

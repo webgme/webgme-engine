@@ -7,7 +7,7 @@
  */
 'use strict';
 
-var webgme = require('../../webgme'),
+var webgme = require('../../index'),
     Q = require('q'),
     MongoURI = require('mongo-uri'),
     GMEAuth = require('../server/middleware/auth/gmeauth'),
