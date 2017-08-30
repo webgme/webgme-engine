@@ -331,7 +331,6 @@ define([], function () {
         return this._state.core.getLibraryGuid(this._state.nodes[this._id].node);
     };
 
-    // TODO: We need to define is CrossCuts is part of client, core or just the ui!
     GMENode.prototype.getCrosscutsInfo = function () {
         return this._state.core.getRegistry(this._state.nodes[this._id].node, 'CrossCuts') || [];
     };
@@ -429,23 +428,11 @@ define([], function () {
     };
 
     GMENode.prototype.isTypeOf = function (typeId) {
-        var typeNode = _getNode(this._state.nodes, typeId);
-
-        if (typeNode) {
-            return this._state.core.isTypeOf(this._state.nodes[this._id].node, typeNode);
-        } else {
-            return false;
-        }
+        return this._state.core.isTypeOf(this._state.nodes[this._id].node, typeId);
     };
 
     GMENode.prototype.isInstanceOf = function (baseId) {
-        var baseNode = _getNode(this._state.nodes, baseId);
-
-        if (baseNode) {
-            return this._state.core.isInstanceOf(this._state.nodes[this._id].node, baseNode);
-        } else {
-            return false;
-        }
+        return this._state.core.isInstanceOf(this._state.nodes[this._id].node, baseId);
     };
 
     GMENode.prototype.isValidChildOf = function (parentPath) {
