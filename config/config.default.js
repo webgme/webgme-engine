@@ -233,15 +233,13 @@ var path = require('path'),
 
         visualization: {
             extraCss: [],
-            decoratorPaths: [path.join(__dirname, '../src/client/decorators')],
+            decoratorPaths: [],
             decoratorsToPreload: null, // array of names (ids)
             svgDirs: [],
-            visualizerDescriptors: [path.join(__dirname, '../src/client/js/Visualizers.json')],
-
-            panelPaths: [path.join(__dirname, '../src/client/js/Panels')],
-
+            visualizerDescriptors: [],
+            panelPaths: [],
             layout: {
-                basePaths: [path.join(__dirname, '../src/client/js/Layouts')]
+                basePaths: []
             }
         },
 

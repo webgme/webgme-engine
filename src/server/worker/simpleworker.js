@@ -8,7 +8,7 @@
 
 'use strict';
 
-var WEBGME = require(__dirname + '/../../../webgme'),
+var WEBGME = require(__dirname + '/../../../index'),
 
     CONSTANTS = require('./constants'),
     Logger = require('../logger'),
