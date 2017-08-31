@@ -3,6 +3,9 @@
   "version": "2.17.0",
   "description": "WebGME server and Client API without a GUI",
   "main": "index.js",
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "scripts": {
     "start": "node ./src/bin/start_server.js",
     "prepublish": "node ./utils/prepublish.js",
@@ -20,13 +23,18 @@
   },
   "keywords": [
     "webgme",
-    "metamodeling"
+    "gme",
+    "metamodeling",
+    "cooperative",
+    "modeling",
+    "domain"
   ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/webgme/webgme-engine/issues"
   },
   "homepage": "https://github.com/webgme/webgme-engine#README.md",
+  "typings": "typings/webgme.d.ts",
   "dependencies": {
     "adm-zip": "0.4.7",
     "agentkeepalive": "2.2.0",
