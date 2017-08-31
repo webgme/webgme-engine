@@ -36,7 +36,7 @@ describe.skip('issue 350 client crashes when manipulating a node that has a mode
 
     before(function (done) {
         this.timeout(10000);
-        requirejs(['js/client', 'text!gmeConfig.json', 'text!karmatest/issue/350/project.json'
+        requirejs(['client/client', 'text!gmeConfig.json', 'text!karmatest/issue/350/project.json'
         ], function (Client_, gmeConfigJSON, projectJSON) {
             Client = Client_;
             gmeConfig = JSON.parse(gmeConfigJSON);

@@ -40,7 +40,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 done();
@@ -233,7 +233,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 done();
@@ -412,7 +412,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
 
@@ -571,7 +571,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 client = new Client(gmeConfig);
@@ -1260,7 +1260,7 @@ describe('GME client', function () {
         before(function (done) {
             this.timeout(10000);
             requirejs([
-                    'js/client',
+                    'client/client',
                     'text!gmeConfig.json'],
                 function (Client_, gmeConfigJSON) {
                     Client = Client_;
@@ -1435,7 +1435,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 client = new Client(gmeConfig);
@@ -1852,7 +1852,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 client = new Client(gmeConfig);
@@ -2440,7 +2440,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 client = new Client(gmeConfig);
@@ -4167,7 +4167,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 client = new Client(gmeConfig);
@@ -4355,7 +4355,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 client = new Client(gmeConfig);
@@ -4580,7 +4580,7 @@ describe('GME client', function () {
         before(function (done) {
             this.timeout(10000);
             requirejs([
-                    'js/client',
+                    'client/client',
                     'text!gmeConfig.json'],
                 function (Client_, gmeConfigJSON) {
                     Client = Client_;

@@ -19,7 +19,7 @@ describe('Plugin', function () {
 
     before(function (done) {
         requirejs([
-            'js/client',
+            'client/client',
             'text!gmeConfig.json',
             'superagent',
             'plugin/MinimalWorkingExample/MinimalWorkingExample/MinimalWorkingExample',

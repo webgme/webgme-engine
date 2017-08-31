@@ -12,7 +12,7 @@ describe('Browser BlobClient', function () {
 
     before(function (done) {
         this.timeout(5000);
-        requirejs(['blob/BlobClient', 'blob/Artifact', 'js/logger', 'text!gmeConfig.json'],
+        requirejs(['blob/BlobClient', 'blob/Artifact', 'client/logger', 'text!gmeConfig.json'],
             function (BlobClient_, Artifact_, Logger, gmeConfig) {
                 BlobClient = BlobClient_;
                 Artifact = Artifact_;

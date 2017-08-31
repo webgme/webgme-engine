@@ -13,7 +13,7 @@ describe.skip('issue 171 server crashes when trying to switch to non-existent br
 
     before(function (done) {
         this.timeout(10000);
-        requirejs(['js/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+        requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
             Client = Client_;
             gmeConfig = JSON.parse(gmeConfigJSON);
             done();

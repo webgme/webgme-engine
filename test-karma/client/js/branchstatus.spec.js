@@ -21,8 +21,8 @@ describe('branch status', function () {
     before(function (done) {
         this.timeout(15000);
         requirejs([
-            'js/client',
-            'js/logger',
+            'client/client',
+            'client/logger',
             'common/storage/browserstorage',
             'common/core/core',
             'text!gmeConfig.json'

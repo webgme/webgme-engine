@@ -22,9 +22,10 @@ require.config({
     baseUrl: '/base',
 
     paths: {
+        client: './src/client',
         // plugin base classes
         plugin: './src/plugin',
-        text: './src/client/lib/require/require-text/text',
+        text: './src/common/lib/text',
 
         // plugins
         // TODO: populate plugin list dynamically based on config.json
@@ -35,26 +36,12 @@ require.config({
         blob: './src/common/blob',
         common: './src/common',
 
-        js: './src/client/js',
+        superagent: './src/common/lib/superagent/superagent',
+        debug: './src/common/lib/debug/debug',
+        chance: './src/common/lib/chance/chance',
+        q: './src/common/lib/q/q',
 
-        superagent: './src/client/lib/superagent/superagent',
-        jszip: './src/client/bower_components/jszip/dist/jszip',
-        debug: './src/client/lib/debug/debug',
-        chance: './src/client/bower_components/chance/chance',
-        underscore: './src/client/bower_components/underscore/underscore',
-        q: './src/client/bower_components/q/q',
-
-        karmatest: './test-karma',
-        aRtestCases: './test-karma/client/js/AutoRouter/testCases'
-
-        // external libraries used by plugins
-        //'ejs': './support/ejs/ejs.min',
-        //'xmljsonconverter': './lib/xmljsonconverter',
-        //'sax': './support/sax/sax',
-
-        // modules used by test cases
-        //'mocks': './test/mocks',
-        //'models': './test/models'
+        karmatest: './test-karma'
     },
 
 
