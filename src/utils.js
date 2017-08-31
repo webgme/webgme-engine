@@ -91,9 +91,39 @@ function getComponentNames(basePaths) {
     return names.sort();
 }
 
+/**
+ * Note, the svgs in the first directory in gmeConfig.visualization.svgDirs will be added without
+ * the dirname prefix for the svg.
+ *
+ * With the following file structure:
+ *
+ * ./icons/svg1.svg
+ * ./icons2/svg2.svg
+ * ./icons3/svg3.svg
+ *
+ * and gmeConfig.visualization.svgDirs = ['./icons', './icons2', './icons3'];
+ *
+ * then the svgMap will have keys as follows:
+ * {
+ *   'svg1.svg' : '...',
+ *   'icons2/svg2.svg': '...',
+ *   'icons3/svg3.svg': '...'
+ * }
+ *
+ *
+ * @param gmeConfig
+ * @param logger
+ * @param callback
+ * @returns {*}
+ */
 function getSVGMap(gmeConfig, logger, callback) {
-    var svgAssetDir = path.join(__dirname, 'client', 'assets', 'DecoratorSVG'),
+    var svgAssetDir = gmeConfig.visualization.svgDirs[0],
+        //path.join(__dirname, 'client', 'assets', 'DecoratorSVG'),
         svgMap;
+
+    if (!svgAssetDir) {
+        return Q.resolve({});
+    }
 
     function joinPath(paths) {
         return '/' + paths.join('/');

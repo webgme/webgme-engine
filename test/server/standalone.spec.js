@@ -189,6 +189,7 @@ describe('standalone server', function () {
             {code: 404, url: '/plugin/PluginGenerator/PluginGenerator'},
             {code: 200, url: '/plugin/PluginGenerator/PluginGenerator/PluginGenerator.js'},
             {code: 200, url: '/plugin/PluginGenerator/PluginGenerator/Templates/plugin.js.ejs'},
+            {code: 200, url: '/assets/decoratorSVGList.json'},
             //{code: 200, url: '/decorators/DefaultDecorator/DefaultDecorator.js'},
             //{code: 200, url: '/decorators/DefaultDecorator/DiagramDesigner/DefaultDecorator.DiagramDesignerWidget.css'},
             // {
@@ -387,14 +388,14 @@ describe('standalone server', function () {
         addScenario(scenarios[i]);
     }
 
-    // FIXME: How should the decorator svgs be resolved?
-    describe.skip('http server decorators and svgs', function () {
+    describe('http server decorators and svgs', function () {
         var server;
 
         before(function (done) {
             // we have to set the config here
             var gmeConfig = testFixture.getGmeConfig();
             gmeConfig.visualization.decoratorPaths = [];
+            gmeConfig.visualization.svgDirs.push(testFixture.path.join(__dirname, 'default-svgs'));
             gmeConfig.visualization.svgDirs.push(testFixture.path.join(__dirname, 'extra-svgs'));
 
             server = WebGME.standaloneServer(gmeConfig);
@@ -417,6 +418,7 @@ describe('standalone server', function () {
             agent.get(serverBaseUrl + '/assets/decoratorSVGList.json').end(function (err, res) {
                 expect(res.status).to.equal(200);
                 expect(res.body).to.include.members([
+                    'default.svg',
                     'extra-svgs/level1.svg',
                     'extra-svgs/nested/level2.svg',
                     'extra-svgs/nested/nested/level3.svg'
@@ -426,7 +428,7 @@ describe('standalone server', function () {
         });
 
         it('should return svg file if exists /assets/DecoratorSVG/Attribute.svg', function (done) {
-            agent.get(serverBaseUrl + '/assets/DecoratorSVG/Attribute.svg').end(function (err, res) {
+            agent.get(serverBaseUrl + '/assets/DecoratorSVG/default.svg').end(function (err, res) {
                 expect(res.status).to.equal(200);
                 expect(res.body.toString('utf8')).to.contain('</svg>');
                 done();
@@ -460,7 +462,7 @@ describe('standalone server', function () {
         });
     });
 
-    describe.skip('http server svgs with relative paths', function () {
+    describe('http server svgs with relative paths', function () {
         var server;
 
         before(function (done) {
