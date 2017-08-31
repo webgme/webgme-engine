@@ -24,10 +24,10 @@ var path = require('path'),
             allowUserRegistration: true,
             registeredUsersCanCreate: true,
             inferredUsersCanCreate: false,
-            userManagementPage: 'webgme-user-management-page',
+            userManagementPage: null,
             guestAccount: 'guest',
-            logOutUrl: '/profile/login',
-            logInUrl: '/profile/login',
+            logOutUrl: '/login.html',
+            logInUrl: '/login.html',
             salts: 10,
             jwt: {
                 expiresIn: 3600 * 24 * 7,
@@ -74,20 +74,12 @@ var path = require('path'),
         },
 
         client: {
-            appDir: path.join(__dirname, '../src/client'),
+            appDir: path.join(__dirname, '../src/app'),
             faviconPath: 'img/favicon.ico',
             pageTitle: null,
             log: {
                 level: 'debug'
-            },
-            defaultConnectionRouter: 'basic3', //'basic', 'basic2', 'basic3'
-            errorReporting: {
-                enable: false,
-                DSN: '',
-                // see https://docs.sentry.io/clients/javascript/config/
-                ravenOptions: null // defaults to {release: <webgme-version>}
-            },
-            allowUserDefinedSVG: true
+            }
         },
 
         core: {
@@ -204,7 +196,7 @@ var path = require('path'),
                 type: 'Memory', // Memory, Redis
                 options: {
                     //uri: '127.0.0.1:6379'
-                },
+                }
             }
         },
 

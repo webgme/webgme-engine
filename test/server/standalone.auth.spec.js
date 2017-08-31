@@ -45,7 +45,6 @@ describe('standalone http server with authentication turned on', function () {
         logger = testFixture.logger.fork('standalone.auth.spec');
         gmeConfig.authentication.enable = true;
         gmeConfig.authentication.allowGuests = false;
-        gmeConfig.authentication.logInUrl = '/login';
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
             .then(function (gmeAuth_) {

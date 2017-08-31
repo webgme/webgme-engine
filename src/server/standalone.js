@@ -195,9 +195,13 @@ function StandAloneServer(gmeConfig) {
             }
         });
 
+        logger.debug('starting server');
+
         __gmeAuth.connect()
             .then(function (db) {
                 var promises = [];
+
+                logger.debug('gmeAuth connected');
 
                 promises.push(Q.ninvoke(__workerManager, 'start'));
                 promises.push(__storage.openDatabase());
@@ -668,7 +672,7 @@ function StandAloneServer(gmeConfig) {
         logger.debug('Executor not enabled. Add \'executor.enable: true\' to configuration to activate.');
     }
 
-    if (gmeConfig.authentication.enable === true) {
+    if (gmeConfig.authentication.enable === true && gmeConfig.authentication.userManagementPage) {
         mountUserManagementPage();
     }
 

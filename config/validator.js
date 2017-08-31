@@ -142,15 +142,6 @@ function validateConfig(configOrFileName) {
     assertString('config.client.pageTitle', config.client.pageTitle, true);
     assertObject('config.client.log', config.client.log);
     assertString('config.client.log.level', config.client.log.level);
-    warnDeprecated('config.client.defaultContext', config.client.defaultContext,
-        'Use component settings for "GenericUIWebGMEStart"');
-    assertEnum('config.client.defaultConnectionRouter', config.client.defaultConnectionRouter,
-        'basic', 'basic2', 'basic3');
-    assertObject('config.client.errorReporting', config.client.errorReporting);
-    assertBoolean('config.client.errorReporting.enable', config.client.errorReporting.enable);
-    assertString('config.client.errorReporting.DSN', config.client.errorReporting.DSN);
-    assertObject('config.client.errorReporting.ravenOptions', config.client.errorReporting.ravenOptions, true);
-    assertBoolean('config.client.allowUserDefinedSVG', config.client.allowUserDefinedSVG);
 
     // core
     expectedKeys.push('core');
@@ -282,10 +273,6 @@ function validateConfig(configOrFileName) {
     assertArray('config.visualization.panelPaths', config.visualization.panelPaths);
     assertArray('config.visualization.visualizerDescriptors', config.visualization.visualizerDescriptors);
     assertObject('config.visualization.layout', config.visualization.layout);
-    warnDeprecated('config.visualization.layout.default', config.visualization.layout.default,
-        'Since v2.11.0 this is a component setting of GenericUIWebGMEStart.layout and can be configured for projects ' +
-        'based on kind, name and ID. The value in gmeConfig.visualization.layout.default will right now be used for ' +
-        'non-specified projects.');
     assertArray('config.visualization.layout.basePaths', config.visualization.layout.basePaths);
 
     //webhooks
@@ -306,7 +293,19 @@ function validateConfig(configOrFileName) {
         }
         throw new Error(errMsg);
     }
-    //TODO Check ranges and enumerations.
+
+    return config;
 }
 
-module.exports = validateConfig;
+module.exports = {
+    warnDeprecated: warnDeprecated,
+    assertObject: assertObject,
+    assertString: assertString,
+    assertNumber: assertNumber,
+    assertBoolean: assertBoolean,
+    assertArray: assertArray,
+    assertEnum: assertEnum,
+    assertBooleanOrString: assertBooleanOrString,
+
+    validateConfig: validateConfig
+};

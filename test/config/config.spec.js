@@ -90,7 +90,7 @@ describe('configuration and components', function () {
         process.env.NODE_ENV = 'test';
         config = require('../../config');
         unloadConfigs();
-        validateConfig = require('../../config/validator');
+        validateConfig = require('../../config/validator').validateConfig;
 
         (function () {
             config.extraKey = 'something';
@@ -103,7 +103,7 @@ describe('configuration and components', function () {
         process.env.NODE_ENV = 'test';
         config = require('../../config');
         unloadConfigs();
-        validateConfig = require('../../config/validator');
+        validateConfig = require('../../config/validator').validateConfig;
 
         (function () {
             config.plugin.basePaths = 'something';
@@ -116,7 +116,7 @@ describe('configuration and components', function () {
         process.env.NODE_ENV = 'test';
         config = require('../../config');
         unloadConfigs();
-        validateConfig = require('../../config/validator');
+        validateConfig = require('../../config/validator').validateConfig;
 
         try {
             config.storage.disableHashChecks = true;
