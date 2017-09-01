@@ -157,12 +157,13 @@ function getSVGMap(gmeConfig, logger, callback) {
 
     walkDir(svgAssetDir)
         .then(function (svgFiles) {
+            var extraDirs = gmeConfig.visualization.svgDirs.slice(1);
             svgFiles.forEach(function (fname) {
                 var p = joinPath(['assets', 'DecoratorSVG', path.basename(fname)]);
                 svgMap[p] = fname;
             });
 
-            return Q.all(gmeConfig.visualization.svgDirs.map(function (svgDir) {
+            return Q.all(extraDirs.map(function (svgDir) {
                 return walkExtraDir(svgDir);
             }));
         })

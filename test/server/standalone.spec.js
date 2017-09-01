@@ -401,6 +401,8 @@ describe('standalone server', function () {
                     'extra-svgs/nested/level2.svg',
                     'extra-svgs/nested/nested/level3.svg'
                 ]);
+
+                expect(Object.keys(res.body).length).to.equal(4);
                 done();
             });
         });
