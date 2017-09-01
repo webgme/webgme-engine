@@ -56,28 +56,6 @@ describe('standalone server', function () {
         });
     });
 
-    // it.skip('should start and start and stop', function (done) {
-    //     this.timeout(5000);
-    //     // we have to set the config here
-    //     var gmeConfig = testFixture.getGmeConfig();
-    //
-    //     server = WebGME.standaloneServer(gmeConfig);
-    //     server.start(function () {
-    //         server.start(function () {
-    //             server.stop(done);
-    //         });
-    //     });
-    // });
-    //
-    // it.skip('should stop if not started', function (done) {
-    //     this.timeout(5000);
-    //     // we have to set the config here
-    //     var gmeConfig = testFixture.getGmeConfig();
-    //
-    //     server = WebGME.standaloneServer(gmeConfig);
-    //     server.stop(done);
-    // });
-
 
     it('should fail to start http server if port is in use', function (done) {
         this.timeout(5000);

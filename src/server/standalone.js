@@ -559,6 +559,7 @@ function StandAloneServer(gmeConfig) {
         var userComponent = require(gmeConfig.authentication.userManagementPage);
         userComponent.initialize(middlewareOpts);
         routeComponents.push(userComponent);
+        console.log(gmeConfig.authentication.userManagementPage);
         __app.use('/profile', userComponent.router);
     }
 

@@ -32,7 +32,7 @@ config.server.log = {
     transports: [{
         transportType: 'Console',
         options: {
-            level: 'debug',
+            level: 'error',
             colorize: true,
             timestamp: true,
             prettyPrint: true,
