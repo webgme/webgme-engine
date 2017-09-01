@@ -26,7 +26,7 @@ requirejs.config({
     nodeRequire: require,
     baseUrl: requireJsBase,
     paths: {
-        text: 'common/lib/text',
+        text: 'common/lib/requirejs/text',
         blob: 'common/blob',
         executor: 'common/executor'
     }

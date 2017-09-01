@@ -23,9 +23,8 @@ require.config({
 
     paths: {
         client: './src/client',
-        // plugin base classes
         plugin: './src/plugin',
-        text: './src/common/lib/text',
+        text: './src/common/lib/requirejs/text',
 
         // plugins
         // TODO: populate plugin list dynamically based on config.json
