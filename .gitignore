@@ -25,8 +25,9 @@ blob-local-storage
 # dev config files
 config/config.dev*.js
 
-# browserified libraries
-src/common/lib/chance/chance.js
-src/common/lib/debug/debug.js
-src/common/lib/q/q.js
-src/common/lib/superagent/superagent.js
+# browserified/moved over libraries
+#src/common/lib/chance/chance.js
+#src/common/lib/debug/debug.js
+#src/common/lib/q/q.js
+#src/common/lib/superagent/superagent.js
+#src/common/lib/requirejs/require.js

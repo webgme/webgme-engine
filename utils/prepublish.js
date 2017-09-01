@@ -37,18 +37,7 @@ function prepublish(jsdocConfigPath) {
                     console.error('Failed generating webgme.classes.build.js!', err);
                     process.exit(1);
                 } else {
-                    //console.log(data);
                     console.log('Done with webgme.classes.build.js!');
-                    // console.log('Generating webgme.dist.build.js ...');
-                    // webgmeDist(function (err/*, data*/) {
-                    //     if (err) {
-                    //         console.error('Failed generating webgme.dist.build.js!', err);
-                    //         process.exit(1);
-                    //     } else {
-                    //         //console.log(data);
-                    //         console.log('Done with webgme.dist.build.js!');
-                    //     }
-                    // });
                 }
             });
         }

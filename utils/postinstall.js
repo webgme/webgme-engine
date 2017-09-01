@@ -10,18 +10,19 @@ var prepublish = require('./prepublish'),
     path = require('path'),
     fs = require('fs'),
     jsdocConfJson = require('../jsdoc_conf.json'),
+    fName = path.join(__dirname, '../dist/webgme.classes.build.js'),
     distFilesExists = true,
     jsdocConfPath;
 
-// try {
-//     fs.statSync(fName);
-// } catch (err) {
-//     if (err.code === 'ENOENT') {
-//         distFilesExists = false;
-//     } else {
-//         console.error(err);
-//     }
-// }
+try {
+    fs.statSync(fName);
+} catch (err) {
+    if (err.code === 'ENOENT') {
+        distFilesExists = false;
+    } else {
+        console.error(err);
+    }
+}
 
 if (distFilesExists === false) {
     console.log('dist files did not exist, will call prepublish');
