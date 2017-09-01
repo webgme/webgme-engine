@@ -448,6 +448,7 @@ describe('standalone server', function () {
         before(function (done) {
             // we have to set the config here
             var gmeConfig = testFixture.getGmeConfig();
+            gmeConfig.visualization.svgDirs.push(testFixture.path.join('./test', 'server', 'default-svgs'));
             gmeConfig.visualization.svgDirs.push(testFixture.path.join('./test', 'server', 'extra-svgs'));
             // Make sure we clear standalone and utlis from the cache so we get a new svgMap.
             delete require.cache[require.resolve('../../src/server/standalone')];
@@ -460,6 +461,16 @@ describe('standalone server', function () {
         after(function (done) {
             server.stop(done);
         });
+
+        it('should return default svg file if exists and relative path given /assets/DecoratorSVG/default.svg',
+            function (done) {
+                agent.get(serverBaseUrl + '/assets/DecoratorSVG/extra-svgs/level1.svg').end(function (err, res) {
+                    expect(res.status).to.equal(200);
+                    expect(res.body.toString('utf8')).to.contain('</svg>');
+                    done();
+                });
+            }
+        );
 
         it('should return svg file if exists and relative path given /assets/DecoratorSVG/extra-svgs/level1.svg',
             function (done) {
