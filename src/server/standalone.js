@@ -124,17 +124,11 @@ function StandAloneServer(gmeConfig) {
      * @returns {string}
      */
     function getUrl() {
-        var url = '';
-
-        // use the cached version if we already built the string
-        if (self.serverUrl) {
-            return self.serverUrl;
+        if (!self.serverUrl) {
+            // use the cached version if we already built the string
+            self.serverUrl = 'http://127.0.0.1:' + gmeConfig.server.port;
         }
 
-        url = 'http://127.0.0.1:' + gmeConfig.server.port;
-
-        // cache it
-        self.serverUrl = url;
         return self.serverUrl;
     }
 
@@ -765,6 +759,12 @@ function StandAloneServer(gmeConfig) {
         res.status(200);
         res.setHeader('Content-type', 'application/json');
         res.end(JSON.stringify(clientConfig));
+    });
+
+    __app.get(/^\/(gme-dist)\/.*\.(js|map)$/, function (req, res) {
+        var resolvedPath = path.join(__baseDir, '../dist', req.url.substring('/gme-dist/'.length));
+        console.log(resolvedPath);
+        res.sendFile(resolvedPath);
     });
 
     logger.debug('creating decorator specific routing rules');

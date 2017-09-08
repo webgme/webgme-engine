@@ -2,9 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebGME</title>
+    <title><%=pageTitle%></title>
+    <link rel="shortcut icon" type="image/x-icon" href="<%=favicon%>">
+    <meta property="webgme-version" content="<%=webgmeVersion%>">
+    <meta property="og:type" content="website"/>
+    <meta property="og:site_name" content="WebGME"/>
+    <meta property="og:description" content="Web-based Generic Modeling Environment"/>
+
+    <meta property="og:title" content="<%=projectId%>"/>
+    <meta property="og:url" content="<%=url%>"/>
+    <meta property="og:image" content="<%=imageUrl%>"/>
+
+    <script type="text/javascript">
+        var myInit = function () {
+            console.log('myInit function was called');
+
+            // you can use GME.classes.Client from this point
+            console.log(GME);
+
+            var client = new GME.classes.Client(GME.gmeConfig);
+
+            client.connectToDatabase(function (err) {
+                if (err) {
+                    alert('Failed to connect to database:' + err);
+                    return;
+                }
+
+                client.getProjects({
+                    info: true,
+                    rights: true,
+                    branches: true
+                }, function (err, projectInfo) {
+                    if (err) {
+                        alert('Failed to connect to database:' + err);
+                        return;
+                    }
+
+                    document.getElementById('#info').innerHTML = JSON.stringify(projectInfo, null, 4);
+                })
+            });
+
+            GME.utils.superagent.get('/api/user', function (err, res) {
+                if (err) {
+                    alert('Failed to connect to database:' + err);
+                    return;
+                }
+
+                console.log(res.body);
+
+                document.getElementById('#user').innerHTML = res.body._id;
+            });
+        };
+
+    </script>
+
+    <script type="text/javascript" src="/gme-dist/webgme.classes.build.js"></script>
+
 </head>
-<body>
-WebGME
+
+<body on-gme-init="myInit()">
+
+<h3>Available projects for current user:</h3>
+<h4 id="#user"></h4>
+<pre id="#info">
+    <!--This is were the projects will be printed-->
+</pre>
 </body>
 </html>
