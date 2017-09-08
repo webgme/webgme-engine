@@ -66,20 +66,16 @@ describe('gmeNodeSetter', function () {
                     basicState.nodes[path] = {node: metaNodes[path]};
                 }
 
-                return context.core.loadByPath(context.rootNode, '/1303043463/2119137141');
+                return Q.allDone([
+                    context.core.loadByPath(context.rootNode, '/1303043463/2119137141'),
+                    context.core.loadByPath(context.rootNode, '/1303043463'),
+                    context.core.loadByPath(context.rootNode, '/1303043463/1044885565')
+                ]);
             })
-            .then(function (node) {
-                basicState.nodes['/1303043463/2119137141'] = {node: node};
-
-                return context.core.loadByPath(context.rootNode, '/1303043463');
-            })
-            .then(function (node) {
-                basicState.nodes['/1303043463'] = {node: node};
-
-                return context.core.loadByPath(context.rootNode, '/1303043463/1044885565');
-            })
-            .then(function (node) {
-                basicState.nodes['/1303043463/1044885565'] = {node: node};
+            .then(function (nodes) {
+                nodes.forEach(function (node) {
+                    basicState.nodes[context.core.getPath(node)] = {node: node};
+                });
 
                 setNode = new NodeSetter(
                     logger,
@@ -103,6 +99,44 @@ describe('gmeNodeSetter', function () {
         lastWarning = null;
         lastCoreError = null;
         saveCalled = false;
+    });
+
+    afterEach(function (done) {
+        var metaNodes = context.core.getAllMetaNodes(context.rootNode),
+            path;
+
+        basicState.nodes = { '': {node: context.rootNode}};
+
+        for (path in metaNodes) {
+            basicState.nodes[path] = {node: metaNodes[path]};
+        }
+
+        Q.allDone([
+            context.core.loadByPath(context.rootNode, '/1303043463/2119137141'),
+            context.core.loadByPath(context.rootNode, '/1303043463'),
+            context.core.loadByPath(context.rootNode, '/1303043463/1044885565')
+        ])
+            .then(function (nodes) {
+                nodes.forEach(function (node) {
+                    basicState.nodes[context.core.getPath(node)] = {node: node};
+                });
+
+                setNode = new NodeSetter(
+                    logger,
+                    basicState,
+                    function () {
+                        saveCalled = true;
+                    },
+                    function (node) {
+                        var path = context.core.getPath(node);
+                        basicState.nodes[path] = {node: node};
+                        return path;
+                    },
+                    function (error) {
+                        lastCoreError = error;
+                    });
+            })
+            .nodeify(done);
     });
 
     after(function (done) {
@@ -437,7 +471,8 @@ describe('gmeNodeSetter', function () {
                 numOfCopies += 1;
             }
         }
-        expect(numOfCopies).to.eql(2);
+
+        expect(numOfCopies).to.eql(2, containerId + ':' + Object.keys(basicState.nodes));
 
         setNode.deleteNode(containerId);
     });
