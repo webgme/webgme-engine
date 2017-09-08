@@ -879,16 +879,16 @@ function StandAloneServer(gmeConfig) {
     //client contents - js/html/css
     __app.get(/^\/.*\.(css|ico|ttf|woff|woff2|js|cur)$/, Express.static(__clientBaseDir));
 
-    cacheManifest = 'CACHE MANIFEST\n\n#' + nmpPackageJson.version + '\n' +
-        '/dist/webgme.' + nmpPackageJson.version + '.dist.main.css\n' +
-        '/dist/webgme.' + nmpPackageJson.version + '.lib.build.js\n'+
-        '/dist/webgme.' + nmpPackageJson.version + '.dist.build.js\n' +
-        'NETWORK:\n*';
-
-    __app.get('/webgme.dist.' + nmpPackageJson.version + '.appcache', function (req, res) {
-        res.set('Content-Type', 'text/cache-manifest');
-        res.send(cacheManifest);
-    });
+    // cacheManifest = 'CACHE MANIFEST\n\n#' + nmpPackageJson.version + '\n' +
+    //     '/dist/webgme.' + nmpPackageJson.version + '.dist.main.css\n' +
+    //     '/dist/webgme.' + nmpPackageJson.version + '.lib.build.js\n'+
+    //     '/dist/webgme.' + nmpPackageJson.version + '.dist.build.js\n' +
+    //     'NETWORK:\n*';
+    //
+    // __app.get('/webgme.dist.' + nmpPackageJson.version + '.appcache', function (req, res) {
+    //     res.set('Content-Type', 'text/cache-manifest');
+    //     res.send(cacheManifest);
+    // });
 
     __app.get('/package.json', ensureAuthenticated, Express.static(path.join(__baseDir, '..')));
     __app.get(/^\/.*\.(_js|html|gif|png|bmp|svg|json|map)$/, ensureAuthenticated, Express.static(__clientBaseDir));
