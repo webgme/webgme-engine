@@ -8,7 +8,7 @@ The easiest way to set your custom configuration is to include the default confi
 ./config/config.mine.js
 - ---------------------
 
-var config = require('./config.default');
+var config = require('webgme-engine/config/config.default');
 
 config.addOns.enable = true;
 config.addOns.basePaths.push('C:/addons');
@@ -28,11 +28,6 @@ windows
 ubuntu
 
 `NODE_ENV=mine npm start`
-
-### components.json
-To configure the default behaviour of individual components (e.g. plugins, ui-widgets) that also support user settings - add the keys to the settings that you would like to overwrite inside of `components.json`.
-`componentsGenericUIDefaults.json` contains all the default settings for the generic UI. For more info about how the settings are resolved see [Component Settings](https://github.com/webgme/webgme/wiki/Component-Settings).
-
 
 ### Configuration groups
 
@@ -108,23 +103,15 @@ To configure the default behaviour of individual components (e.g. plugins, ui-wi
 ##### client
 
 - `config.client.appDir = './src/client'`
- - Directory from where to serve the static files for the webapp. This should only be modified if you are using a custom UI.
+ - Directory from where to serve the static files for the webapp.
+- `config.client.appVersion = '1.0.0'`
+ - Version of the app, for instance the [generic-ui](https://github.com/webgme/webgme) sets this to load the correct distribution files.
 - `config.client.faviconPath = 'img/favicon.ico'`
  - Path to favicon (e.g. put an ico file in your app's root dir and set this to `/extlib/favicon.ico`).
 - `config.client.pageTitle = null`
  - Custom title for app, if not given the default title will be the name/id of the open project (or WebGME).
 - `config.client.log.level = 'debug'`
- - When [debug](https://github.com/visionmedia/debug) is activated in the browser (type `localStorage.debug = gme*` in the console and refresh the page) messages below this level will not be printed.
-- `config.client.defaultConnectionRouter = 'basic3'`
- - Default connection router to use when opening up a new model, available options (ordered by level of complexity and sophistication) are: 'basic', 'basic2' and 'basic3'.
-- `config.client.errorReporting.enable = false`
- - Enable [raven-js](https://docs.sentry.io/clients/javascript/) to automatically send reports to the provided url. [Sentry.io](https://sentry.io) provides free plans and comes with an easy ui that supports releases, source maps etc.
-- `config.client.errorReporting.DSN = ''`
- - Url like endpoint for raven-js e.g. 'https://****@sentry.io/999999'.
-- `config.client.errorReporting.ravenOptions = null`
- - Options passed to the [raven-client](https://docs.sentry.io/clients/javascript/config/), if not specified {release: <webgmeversion>} will be passed.
-- `config.client.allowUserDefinedSVG = true`
- - Set to false to disabled injection of user-defined svgs into the DOM. 
+ - When [debug](https://github.com/visionmedia/debug) is activated in the browser messages below this level will not be printed.
 
 ##### core
 
@@ -134,7 +121,7 @@ To configure the default behaviour of individual components (e.g. plugins, ui-wi
 ##### debug
 
 - `config.debug = false`
- - If true will add extra debug messages and also enable experimental Visualizers, (URL equivalent (only on client side) `?debug=true`).
+ - If true will add extra debug messages.
 
 ##### executor
 
@@ -245,21 +232,17 @@ To configure the default behaviour of individual components (e.g. plugins, ui-wi
  - Options passed to database client (unless mongo is specified, in that case `config.mongo.options` are used).
 
 ##### visualization
-- `config.visualization.decoratorPaths = ['./src/client/decorators']`
+Note that although these can be used for serving files from different locations - they are mainly targeted for serving the generic UI and visual extensions added to it.
+
+- `config.visualization.decoratorPaths = []`
  - Array of paths to decorators that should be available.
-- `config.visualization.decoratorToPreload = null`
- - Array of decorators (by id) that should be downloaded from the server before the editor starts - when set to null all available decorators will be downloaded.
-- `config.visualization.extraCss = []`
- - Array of paths (in the requirejs sense) to css files that should be loaded at start up. (To use this option a path would typically have to be added at `config.requirejsPaths`.)
 - `config.visualization.svgDirs = []`
- - Array of paths to directories containing SVG-files that will be copied and made available as SVGs for decorators (`ConstraintIcons` is currently reserved).
-- `config.visualization.visualizerDescriptors = ['../src/client/js/Visualizers.json']`
+ - Array of paths to directories containing SVG-files that will be available at `<host>/assets/DecoratorSVG/<%path%>` (full list of paths is available at `<host>/assets/decoratorSVGList.json`).
+- `config.visualization.visualizerDescriptors = []`
  - Array of paths to json-files containing meta-data about the used visualizers.
-- `config.visualization.panelPaths = ['../src/client/js/Panels']`
+- `config.visualization.panelPaths = []`
  - Array of base paths that will be mapped from `'panels'` in requirejs.
-- `config.visualization.layout.default = 'DefaultLayout'`
- - Specifies which layout to use (directory name must be present in any of the provided base-paths).
-- `config.visualization.layout.basePaths = ['../src/client/js/Layouts']`
+- `config.visualization.layout.basePaths = []`
  - Array of base paths for the layouts.
 
 ##### webhooks

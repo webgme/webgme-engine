@@ -138,6 +138,7 @@ function validateConfig(configOrFileName) {
     expectedKeys.push('client');
     assertObject('config.client', config.client);
     assertString('config.client.appDir', config.client.appDir);
+    assertString('config.client.appVersion', config.client.appVersion);
     assertString('config.client.faviconPath', config.client.faviconPath);
     assertString('config.client.pageTitle', config.client.pageTitle, true);
     assertObject('config.client.log', config.client.log);
@@ -267,7 +268,6 @@ function validateConfig(configOrFileName) {
     //visualization
     expectedKeys.push('visualization');
     assertObject('config.visualization', config.visualization);
-    assertArray('config.visualization.extraCss', config.visualization.extraCss);
     assertArray('config.visualization.decoratorPaths', config.visualization.decoratorPaths);
     assertArray('config.visualization.svgDirs', config.visualization.svgDirs);
     assertArray('config.visualization.panelPaths', config.visualization.panelPaths);

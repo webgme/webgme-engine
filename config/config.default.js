@@ -225,9 +225,7 @@ var path = require('path'),
         },
 
         visualization: {
-            extraCss: [],
             decoratorPaths: [],
-            decoratorsToPreload: null, // array of names (ids)
             svgDirs: [],
             visualizerDescriptors: [],
             panelPaths: [],
