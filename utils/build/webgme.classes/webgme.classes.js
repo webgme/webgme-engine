@@ -17,6 +17,8 @@ define('webgme.classes', [
     'common/storage/browserstorage',
     'client/logger',
     'superagent',
+    'q',
+    'chance',
     'teststorage/teststorage'
 ], function (Client,
              BlobClient,
@@ -25,21 +27,26 @@ define('webgme.classes', [
              Storage,
              logger,
              superagent,
+             Q,
+             chance,
              TestStorage) {
 
     'use strict';
     // Setting global classes
-
     GME.classes.Client = Client;
     GME.classes.BlobClient = BlobClient;
     GME.classes.ExecutorClient = ExecutorClient;
     GME.classes.Core = Core;
     GME.classes.Storage = Storage;
     GME.classes.logger = logger;
-    GME.classes.TestStorage = TestStorage;
 
     // Exposing built in libraries
     GME.utils.superagent = superagent;
+    GME.utils.Q = q;
+    GME.utils.chance = chance;
+
+    // TODO: Can this be removed?
+    GME.classes.TestStorage = TestStorage;
 
     // Pure JavaScript equivalent to jQuery's $.ready() from https://github.com/jfriend00/docReady
 
