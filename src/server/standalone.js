@@ -696,6 +696,7 @@ function StandAloneServer(gmeConfig) {
 
                 res.send(ejs.render(indexTemp, {
                     webgmeVersion: nmpPackageJson.version,
+                    appVersion: gmeConfig.client.appVersion,
                     url: url,
                     imageUrl: imageUrl,
                     projectId: projectId ? projectId.replace('+', '/') : 'WebGME',
