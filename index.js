@@ -193,7 +193,7 @@ Object.defineProperties(exports, {
     AuthorizerBase: {
         get: function () {
             if (!_AuthorizerBase) {
-                _AuthorizerBase = require('./src/server/auth/middleware/authorizerbase');
+                _AuthorizerBase = require('./src/server/middleware/auth/authorizerbase');
             }
 
             return _AuthorizerBase;
