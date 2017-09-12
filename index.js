@@ -16,6 +16,9 @@ var requirejs = require('requirejs'),
     _Logger,
     _REGEXP,
     _PluginCliManager,
+    _WorkerManagerBase,
+    _AuthorizerBase,
+    _ServerWorkerManager,
     exports = {
         requirejs: requirejs
     };
@@ -108,7 +111,7 @@ function addToRequireJsPaths(gmeConfig) {
                 }
             } else {
                 throw new Error('Given requirejsPaths value is not a string nor array "' + keys[i] + '": ' +
-                '"' + requireJsPaths[keys[i]] + '"');
+                    '"' + requireJsPaths[keys[i]] + '"');
             }
         }
 
@@ -167,6 +170,33 @@ Object.defineProperties(exports, {
             }
 
             return _PluginCliManager;
+        }
+    },
+    WorkerManagerBase: {
+        get: function () {
+            if (!_WorkerManagerBase) {
+                _WorkerManagerBase = require('./src/server/worker/WorkerManagerBase');
+            }
+
+            return _WorkerManagerBase;
+        }
+    },
+    ServerWorkerManager: {
+        get: function () {
+            if (!_ServerWorkerManager) {
+                _ServerWorkerManager = require('./src/server/worker/serverworkermanager');
+            }
+
+            return _ServerWorkerManager;
+        }
+    },
+    AuthorizerBase: {
+        get: function () {
+            if (!_AuthorizerBase) {
+                _AuthorizerBase = require('./src/server/middleware/auth/authorizerbase');
+            }
+
+            return _AuthorizerBase;
         }
     }
 });
