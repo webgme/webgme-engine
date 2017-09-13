@@ -19,6 +19,7 @@ var requirejs = require('requirejs'),
     _WorkerManagerBase,
     _AuthorizerBase,
     _ServerWorkerManager,
+    _WorkerRequests,
     exports = {
         requirejs: requirejs
     };
@@ -170,6 +171,15 @@ Object.defineProperties(exports, {
             }
 
             return _PluginCliManager;
+        }
+    },
+    WorkerRequests: {
+        get: function () {
+            if (!_WorkerRequests) {
+                _WorkerRequests = require('./src/server/worker/workerrequests');
+            }
+
+            return _WorkerRequests;
         }
     },
     WorkerManagerBase: {

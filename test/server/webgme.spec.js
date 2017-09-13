@@ -28,6 +28,7 @@ describe('webgme', function () {
         expect(typeof webGME.WorkerManagerBase.prototype.request).to.equal('function');
         expect(typeof webGME.ServerWorkerManager).to.equal('function');
         expect(typeof webGME.AuthorizerBase.prototype.getAccessRights).to.equal('function');
+        expect(typeof webGME.WorkerRequests).to.equal('function');
     });
 
     it('should addToRequireJsPaths', function () {
