@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.18.1](https://github.com/webgme/webgme-engine/tree/v2.18.1) (2017-09-13)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.0...v2.18.1)
+
+**Implemented enhancements:**
+
+- Expose server modules at require\('webgme-engine'\) [\#4](https://github.com/webgme/webgme-engine/pull/4) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Fix randomly failing test regarding copying multiple nodes [\#3](https://github.com/webgme/webgme-engine/pull/3) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.18.0](https://github.com/webgme/webgme-engine/tree/v2.18.0) (2017-09-11)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.17.0...v2.18.0)
 
