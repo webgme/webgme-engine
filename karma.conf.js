@@ -39,7 +39,12 @@ var testFixture = require('./test/_globals.js'),
         },
         {name: 'pluginProject', path: './test-karma/client/js/client/pluginProject.webgmex'},
         {name: 'branchWatcher', path: './test-karma/client/js/client/pluginProject.webgmex'},
-        {name: 'branchStatus', path: './test-karma/client/js/client/pluginProject.webgmex'}
+        {name: 'branchStatus', path: './test-karma/client/js/client/pluginProject.webgmex'},
+        {
+            name: 'ServerWorkerRequests',
+            path: './seeds/EmptyProject.webgmex',
+            branches: ['b1', 'b2']
+        }
     ];
 
 (function initializeServer() {
