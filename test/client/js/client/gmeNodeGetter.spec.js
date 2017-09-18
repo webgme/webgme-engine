@@ -608,6 +608,23 @@ describe('gmeNodeGetter', function () {
         });
     });
 
+    it('should return the own meta rules of the node as a JSON object', function () {
+        var node = getNode('', logger, basicState, basicStoreNode);
+
+        expect(node.getOwnJsonMeta()).to.deep.eql({
+            attributes: {
+                name: {
+                    type: 'string'
+                }
+            },
+            children: {
+                items: ['/1'],
+                maxItems: [-1],
+                minItems: [-1]
+            }
+        });
+    });
+
     it('should check if the node is a connection', function () {
         var node = getNode('', logger, basicState, basicStoreNode);
 

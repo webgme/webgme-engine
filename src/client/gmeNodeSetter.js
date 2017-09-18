@@ -694,6 +694,16 @@ define([], function () {
             }
         }
 
+        function clearMetaRules(path, msg) {
+            var node = _getNode(path);
+
+            if (node) {
+                state.core.clearMetaRules(node);
+
+                saveRoot(typeof msg === 'string' ? msg : 'clearMetaRules(' + path + ')');
+            }
+        }
+
         function addMixin(path, mixinPath, msg) {
             var error,
                 node = _getNode(path);
@@ -1507,6 +1517,7 @@ define([], function () {
 
             // --- Meta ---
             setMeta: setMeta,
+            clearMetaRules: clearMetaRules,
 
             // containment
             setChildrenMeta: setChildrenMeta,

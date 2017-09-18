@@ -63,6 +63,7 @@ describe('gmeNodeSetter', function () {
                     }
                 };
                 for (path in metaNodes) {
+                    console.log(path);
                     basicState.nodes[path] = {node: metaNodes[path]};
                 }
 
@@ -509,5 +510,33 @@ describe('gmeNodeSetter', function () {
 
         newPaths = setNode.copyNodes(['/1303043463/2119137141', '/1303043463/1044885565'], '');
         expect(newPaths).to.have.length(2);
+    });
+
+    it('should clear the meta-rules', function () {
+        var nodeId = setNode.copyNode('/175547009/1104061497', '');
+
+        expect(context.core.getOwnJsonMeta(basicState.nodes[nodeId].node))
+            .to.deep.equal({
+            pointers: {
+                setPtr: {
+                    items: [
+                        '/175547009/871430202'
+                    ],
+                    max: undefined,
+                    maxItems: [
+                        -1
+                    ],
+                    min: undefined,
+                    minItems: [
+                        -1
+                    ]
+                }
+            }
+        });
+
+        setNode.clearMetaRules(nodeId);
+
+        expect(context.core.getOwnJsonMeta(basicState.nodes[nodeId].node))
+            .to.deep.equal({});
     });
 });
