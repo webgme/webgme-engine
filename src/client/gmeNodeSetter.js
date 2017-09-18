@@ -699,7 +699,7 @@ define([], function () {
             if (node) {
                 state.core.clearMetaRules(node);
 
-                saveRoot(typeof msg === 'string' ? msg : 'addMixin(' + path + ')');
+                saveRoot(typeof msg === 'string' ? msg : 'clearMetaRules(' + path + ')');
             }
         }
 
