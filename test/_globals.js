@@ -746,14 +746,14 @@ if (process.cwd() === exports.path.join(__dirname, '..')) {
     WebGME.addToRequireJsPaths(getGmeConfig());
 }
 
-// This is for the client side test-cases (only add paths here!)
-requireJS.config({
-    paths: {
-        js: 'client/js',
-        ' /socket.io/socket.io.js': 'socketio-client',
-        underscore: 'client/bower_components/underscore/underscore-min'
-    }
-});
+
+// requireJS.config({
+//     paths: {
+//         js: 'client/js',
+//         ' /socket.io/socket.io.js': 'socketio-client',
+//         underscore: 'client/bower_components/underscore/underscore-min'
+//     }
+// });
 
 exports.getGmeConfig = getGmeConfig;
 exports.getMongoStorage = getMongoStorage;
