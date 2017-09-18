@@ -2,6 +2,7 @@
 /*jshint browser: true*/
 /**
  * @author kecso / https://github.com/kecso
+ * @author pmeijer / https://github.com/pmeijer
  */
 
 define(['common/Constants'], function (CONSTANTS) {
@@ -211,7 +212,7 @@ define(['common/Constants'], function (CONSTANTS) {
                 }
 
                 if (result) {
-                    client.dispatchEvent(CONSTANTS.CLIENT.META_RULES_RESULT, result);
+                    client.dispatchEvent(client.CONSTANTS.META_RULES_RESULT, result);
                 } else {
                     client.notifyUser({
                         severity: 'error',
@@ -247,7 +248,7 @@ define(['common/Constants'], function (CONSTANTS) {
                 }
 
                 if (result) {
-                    client.dispatchEvent(CONSTANTS.CLIENT.CONSTRAINT_RESULT, result);
+                    client.dispatchEvent(client.CONSTANTS.CONSTRAINT_RESULT, result);
                 } else {
                     client.notifyUser({
                         severity: 'error',

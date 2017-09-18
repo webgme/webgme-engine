@@ -2,6 +2,7 @@
 /*jshint browser: true*/
 /**
  * @author kecso / https://github.com/kecso
+ * @author pmeijer / https://github.com/pmeijer
  */
 define([], function () {
     'use strict';
