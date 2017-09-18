@@ -45,6 +45,14 @@
  */
 
 /**
+ * @typedef {object} DefinitionInfo - Contains the owner and the target of the meta-rule that makes the
+ * relationship between the given node and related node a valid one. There can be multiple meta-rules that make
+ * the relationship valid, but this is the first one that answers the question isValidChildOf, isValidTargetOf etc.
+ * @prop {Core~Node} ownerNode - The meta-node where the meta-rule is stored.
+ * @prop {Core~Node} targetNode - The meta-node the meta-rule is targeting.
+ */
+
+/**
  * @typedef {object} RelationRule - An object that represents a relational type rule-set (pointer/set).
  * @prop {integer} [min] - The minimum amount of target necessary for the relationship (if not present or '-1'
  * then there is no minimum rule that applies)
@@ -325,7 +333,7 @@ define([
          *
          * @return {module:Core~Node|null} Returns the parent of the node or NULL if it has no parent.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getParent = function (node) {
@@ -340,7 +348,7 @@ define([
          *
          * @return {string|null} Returns the last segment of the node path.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getRelid = function (node) {
@@ -355,7 +363,7 @@ define([
          *
          * @return {module:Core~Node} Returns the root of the containment hierarchy (it can be the node itself).
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getRoot = function (node) {
@@ -372,7 +380,7 @@ define([
          * The path can be empty as well if the node in question is the  root itself, otherwise it should be a chain
          * of relative ids from the root of the containment hierarchy.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getPath = function (node) {
@@ -390,7 +398,7 @@ define([
          * @return {module:Core~Node} Return an empty node if it was created as a result of the function or
          * return the already existing and loaded node if it found.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getChild = function (node, relativeId) {
@@ -407,7 +415,7 @@ define([
          * @return {bool} Returns true if the node is 'empty' meaning that it is not reserved by real data.
          * Returns false if the node is exists and have some meaningful value.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isEmpty = function (node) {
@@ -423,7 +431,7 @@ define([
          * @return {module:Core~ObjectHash} Returns the hash value of the data for the given node.
          * An empty string is returned when the node was mutated and not persisted.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getHash = function (node) {
@@ -440,7 +448,7 @@ define([
          * @return {module:Core~GmePersisted} The function returns an object which collects all the changes
          * on data level and necessary to update the database on server side
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.persist = function (node) {
@@ -459,7 +467,7 @@ define([
          * @return {External~Promise} If no callback is given, the result will be provided in
          * a promiselike manner.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadRoot = function (hash, callback) {
             var error = null;
@@ -487,7 +495,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result will be provided in a promise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadChild = function (node, relativeId, callback) {
             var error = null;
@@ -514,7 +522,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result will be provided in a promise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadByPath = function (node, relativePath, callback) {
             var error = null;
@@ -540,7 +548,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result will be provided in a promise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadChildren = function (node, callback) {
             var error = null;
@@ -566,7 +574,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result will be provided in a promise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadOwnChildren = function (node, callback) {
             var error = null;
@@ -594,7 +602,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result will be provided in a promise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadPointer = function (node, pointerName, callback) {
             var error = null;
@@ -621,7 +629,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result will be provided in a promise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadCollection = function (node, pointerName, callback) {
             var error = null;
@@ -646,7 +654,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result will be provided in a promise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadSubTree = function (node, callback) {
             var error = null;
@@ -671,7 +679,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result will be provided in a promise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadOwnSubTree = function (node, callback) {
             var error = null;
@@ -696,7 +704,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result will be provided in a promise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadTree = function (hash, callback) {
             var error = null;
@@ -730,7 +738,7 @@ define([
          *
          * @return {string[]} The function returns an array of the relative ids.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnChildrenRelids = function (node) {
@@ -745,7 +753,7 @@ define([
          *
          *@return {string[]} The function returns an array of the absolute paths of the children.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getChildrenPaths = function (node) {
@@ -760,7 +768,7 @@ define([
          *
          *@return {string[]} The function returns an array of the absolute paths of the children.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnChildrenPaths = function (node) {
@@ -782,7 +790,7 @@ define([
          * @return {module:Core~Node} The function returns the created node or null if no node was created
          * or an error if the creation with the given parameters are not allowed.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -808,7 +816,7 @@ define([
          * Removes a node from the containment hierarchy.
          * @param {module:Core~Node} node - the node to be removed.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -828,7 +836,7 @@ define([
          *
          * @return {module:Core~Node} The function returns the copied node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -847,7 +855,7 @@ define([
          * @return {module:Core~Node[]} The function returns an array of the copied nodes. The order follows
          * the order of originals.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -869,7 +877,7 @@ define([
          *
          * @return {boolean} True if the supplied parent is a valid parent for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isValidNewParent = function (node, parent) {
@@ -886,7 +894,7 @@ define([
          *
          * @return {module:Core~Node} The function returns the node after the move.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -903,7 +911,7 @@ define([
          *
          * @return {string[]} The function returns an array of the names of the attributes of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getAttributeNames = function (node) {
@@ -921,7 +929,7 @@ define([
          * The value can be an object or any primitive type. If the value is undefined that means the node do not have
          * such attribute defined. [The retrieved attribute should not be modified as is - it should be copied first!!]
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getAttribute = function (node, name) {
@@ -939,7 +947,7 @@ define([
          * @param {object | primitive | null} value - the new of the attribute. Can be any primitive type or object.
          * Undefined is not allowed.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -956,7 +964,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the attribute.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -973,7 +981,7 @@ define([
          *
          * @return {string[]} The function returns an array of the names of the registry entries of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getRegistryNames = function (node) {
@@ -992,7 +1000,7 @@ define([
          * the node do not have such attribute defined. [The retrieved registry value should
          * not be modified as is - it should be copied first!!]
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getRegistry = function (node, name) {
@@ -1010,7 +1018,7 @@ define([
          * @param {object | primitive | null} value - the new of the registry entry. Can be any primitive
          * type or object. Undefined is not allowed.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1028,7 +1036,7 @@ define([
          * @param {string} name - the name of the registry entry.
          *
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1045,7 +1053,7 @@ define([
          *
          * @return {string[]} The function returns an array of the names of the pointers of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getPointerNames = function (node) {
@@ -1063,7 +1071,7 @@ define([
          * if there is a valid target. It returns null if though the pointer is defined it does not have any
          * valid target. Finally, it return undefined if there is no pointer defined for the node under the given name.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getPointerPath = function (node, name) {
@@ -1078,7 +1086,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the pointer in question.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1095,7 +1103,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the pointer in question.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1107,7 +1115,7 @@ define([
          * @param {string} name - the name of the pointer in question.
          * @param {module:Core~Node|null} target - the new target of the pointer.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1127,7 +1135,7 @@ define([
          *
          * @return {string[]} The function returns an array of the names of the pointers pointing to the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getCollectionNames = function (node) {
@@ -1144,7 +1152,7 @@ define([
          * @return {string[]} The function returns an array of absolute paths of nodes that
          * has the pointer pointing to the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getCollectionPaths = function (node, name) {
@@ -1161,7 +1169,7 @@ define([
          * @return {Object<string, module:Core~ObjectHash>} The function returns a dictionary of {@link module:Core~ObjectHash} that stored in pair
          * with the relative id of the corresponding child of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getChildrenHashes = function (node) {
@@ -1176,7 +1184,7 @@ define([
          *
          * @return {module:Core~Node | null} Returns the base of the given node or null if there is no such node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getBase = function (node) {
@@ -1191,7 +1199,7 @@ define([
          *
          * @return {module:Core~Node} Returns the root of the inheritance chain (usually the FCO).
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getBaseRoot = function (node) {
@@ -1207,7 +1215,7 @@ define([
          *
          * @return {string[]} The function returns an array of the names of the own attributes of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnAttributeNames = function (node) {
@@ -1223,7 +1231,7 @@ define([
          *
          * @return {string[]} The function returns an array of the names of the own registry entries of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnRegistryNames = function (node) {
@@ -1241,7 +1249,7 @@ define([
          * the node. If undefined then it means that there is no such attribute defined directly for the node, meaning
          * that it either inherits some value or there is no such attribute at all.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnAttribute = function (node, name) {
@@ -1260,7 +1268,7 @@ define([
          * for the node. If undefined then it means that there is no such registry entry defined directly for the node,
          * meaning that it either inherits some value or there is no such registry entry at all.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnRegistry = function (node, name) {
@@ -1276,7 +1284,7 @@ define([
          *
          * @return {string[]} Returns an array of names of pointers defined specifically for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnPointerNames = function (node) {
@@ -1294,7 +1302,7 @@ define([
          * 'no-target' was defined specifically for this node for the pointer. If undefined it means that the node
          * either inherits the target of the pointer or there is no pointer defined at all.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnPointerPath = function (node, name) {
@@ -1311,7 +1319,7 @@ define([
          *
          * @return {boolean} True if the supplied base is a valid base for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isValidNewBase = function (node, base) {
@@ -1329,7 +1337,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {module:Core~Node | null} base - the new base.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1349,7 +1357,7 @@ define([
          * @return {module:Core~Node | null} Returns the root of the inheritance chain of the node. If returns null,
          * that means the node in question is the root of the chain.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getTypeRoot = function (node) {
@@ -1364,7 +1372,7 @@ define([
          *
          * @return {string[]} Returns an array of set names that the node has.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getSetNames = function (node) {
@@ -1380,7 +1388,7 @@ define([
          *
          * @return {string[]} Returns an array of set names that were specifically created at the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnSetNames = function (node) {
@@ -1394,7 +1402,7 @@ define([
          * @param {module:Core~Node} node - the owner of the set.
          * @param {string} name - the name of the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1410,7 +1418,7 @@ define([
          * @param {module:Core~Node} node - the owner of the set.
          * @param {string} name - the name of the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1427,7 +1435,7 @@ define([
          * @param {module:Core~Node} node - the owner of the set.
          * @param {string} name - the name of the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1440,7 +1448,7 @@ define([
          *
          * @return {string[]} Returns the array of names of attribute entries in the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1462,7 +1470,7 @@ define([
          *
          * @return {string[]} Returns the array of names of attribute entries defined in the set at the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1486,7 +1494,7 @@ define([
          * @return {object|primitive|null|undefined} Return the value of the attribute. If it is undefined, than there
          * is no such attribute at the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1511,7 +1519,7 @@ define([
          * @return {object|primitive|null|undefined} Return the value of the attribute. If it is undefined, than there
          * is no such attribute at the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1534,7 +1542,7 @@ define([
          * @param {string} attrName - the name of the attribute entry.
          * @param {object|primitive|null} value - the new value of the attribute.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1557,7 +1565,7 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} attrName - the name of the attribute entry.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1582,7 +1590,7 @@ define([
          *
          * @return {string[]} Returns the array of names of registry entries in the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1604,7 +1612,7 @@ define([
          *
          * @return {string[]} Returns the array of names of registry entries defined in the set at the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1628,7 +1636,7 @@ define([
          * @return {object|primitive|null|undefined} Return the value of the registry. If it is undefined, than there
          * is no such registry at the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1653,7 +1661,7 @@ define([
          * @return {object|primitive|null|undefined} Return the value of the registry. If it is undefined, than there
          * is no such registry at the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnSetRegistry = function (node, setName, regName) {
@@ -1675,7 +1683,7 @@ define([
          * @param {string} regName - the name of the registry entry.
          * @param {object|primitive|null} value - the new value of the registry.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1698,7 +1706,7 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} regName - the name of the registry entry.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1721,7 +1729,7 @@ define([
          *
          * @return {string[]} Returns an array of absolute path strings of the member nodes of the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1745,7 +1753,7 @@ define([
          * @return {string[]} Returns an array of absolute path strings of the member nodes of the set that has
          * information on the node's inheritance level.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1767,7 +1775,7 @@ define([
          * @param {string} name - the name of the set.
          * @param {string} path - the absolute path of the member to be removed.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1789,7 +1797,7 @@ define([
          * @param {string} name - the name of the set.
          * @param {module:Core~Node} member - the new member of the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1808,7 +1816,7 @@ define([
          *
          * @return {string[]} Returns the array of names of attributes that represents some property of the membership.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1836,7 +1844,7 @@ define([
          *
          * @return {string[]} Returns the array of names of attributes that represents some property of the membership.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1866,7 +1874,7 @@ define([
          * @return {object|primitive|null|undefined} Return the value of the attribute. If it is undefined, than there
          * is no such attributed connected to the given set membership.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1897,7 +1905,7 @@ define([
          * @return {object|primitive|null|undefined} Return the value of the attribute. If it is undefined, than there
          * is no such attributed connected to the given set membership.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1926,7 +1934,7 @@ define([
          * @param {string} attrName - the name of the attribute.
          * @param {object|primitive|null} value - the new value of the attribute.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1955,7 +1963,7 @@ define([
          * @param {string} memberPath - the absolute path of the member node.
          * @param {string} attrName - the name of the attribute.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -1985,7 +1993,7 @@ define([
          * @return {string[]} Returns the array of names of registry entries that represents some property of the
          * membership.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2015,7 +2023,7 @@ define([
          * @return {string[]} Returns the array of names of registry entries that represents some property of the
          * membership.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2045,7 +2053,7 @@ define([
          * @return {object|primitive|null|undefined} Return the value of the registry. If it is undefined, than there
          * is no such registry connected to the given set membership.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2076,7 +2084,7 @@ define([
          * @return {object|primitive|null|undefined} Return the value of the registry. If it is undefined, than there
          * is no such registry connected to the given set membership.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2105,7 +2113,7 @@ define([
          * @param {string} regName - the name of the registry entry.
          * @param {object|primitive|null} value - the new value of the registry.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2134,7 +2142,7 @@ define([
          * @param {string} path - the absolute path of the member node.
          * @param {string} regName - the name of the registry entry.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2162,7 +2170,7 @@ define([
          * @return {object} Returns a dictionary where every the key of every entry is an absolute path of a set owner
          * node. The value of each entry is an array with the set names in which the node can be found as a member.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isMemberOf = function (node) {
@@ -2177,7 +2185,7 @@ define([
          *
          * @return {module:Core~GUID} Returns the globally unique identifier.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getGuid = function (node) {
@@ -2196,7 +2204,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreIllegalOperationError|CoreAssertError|null} callback.error - the
          * result of the execution.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.setGuid = function (node, guid, callback) {
             var error = null;
@@ -2220,7 +2228,7 @@ define([
          * @return {module:Core~Constraint | null} Returns the defined constraint or null if it was not
          * defined for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          *
@@ -2244,7 +2252,7 @@ define([
          * @param {string} name - the name of the constraint.
          * @param {module:Core~Constraint} constraint  - the constraint to be set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2261,7 +2269,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the constraint.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2278,7 +2286,7 @@ define([
          *
          * @return {string[]} Returns the array of names of constraints available for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getConstraintNames = function (node) {
@@ -2293,7 +2301,7 @@ define([
          *
          * @return {string[]} Returns the array of names of constraints for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnConstraintNames = function (node) {
@@ -2312,7 +2320,7 @@ define([
          * or a mixin of any of the base nodes, of the node.
          * Every node is considered to be a type of itself.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isTypeOf = function (node, typeNodeOrPath) {
@@ -2335,7 +2343,7 @@ define([
          * parent. The check does not cover multiplicity (so if the parent can only have twi children and it already
          * has them, this function will still returns true).
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isValidChildOf = function (node, parent) {
@@ -2351,7 +2359,7 @@ define([
          *
          * @return {string[]} The function returns all the pointer names that are defined among the META rules of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getValidPointerNames = function (node) {
@@ -2366,7 +2374,7 @@ define([
          *
          * @return {string[]} The function returns all the pointer names that are defined among the META rules of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnValidPointerNames = function (node) {
@@ -2381,7 +2389,7 @@ define([
          *
          * @return {string[]} The function returns all the set names that are defined among the META rules of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getValidSetNames = function (node) {
@@ -2396,7 +2404,7 @@ define([
          *
          * @return {string[]} The function returns all the set names that are defined among the META rules of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnValidSetNames = function (node) {
@@ -2414,7 +2422,7 @@ define([
          * @return {bool} The function returns true if according to the META rules, the given node is a valid
          * target of the given pointer of the source.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isValidTargetOf = function (node, source, name) {
@@ -2432,7 +2440,7 @@ define([
          * @return {string[]} The function returns all the attribute names that are defined among the META rules of the
          * node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getValidAttributeNames = function (node) {
@@ -2447,7 +2455,7 @@ define([
          *
          * @return {string[]} The function returns the attribute names that are defined specifically for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnValidAttributeNames = function (node) {
@@ -2464,7 +2472,7 @@ define([
          *
          * @return {bool} Returns true if the value matches the META definitions.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isValidAttributeValueOf = function (node, name, value) {
@@ -2482,7 +2490,7 @@ define([
          * @return {string[]} The function returns all the aspect names that are defined among the META rules of the
          * node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getValidAspectNames = function (node) {
@@ -2497,7 +2505,7 @@ define([
          *
          * @return {string[]} The function returns the aspect names that are specifically defined for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnValidAspectNames = function (node) {
@@ -2515,7 +2523,7 @@ define([
          * and fits to the META rules defined for the aspect. Any children, visible under the given aspect of the node
          * must be an instance of at least one node represented by the absolute paths.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getAspectMeta = function (node, name) {
@@ -2531,7 +2539,7 @@ define([
          *
          * @return {object} Returns an object that represents all the META rules of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          *
          * @example
@@ -2595,7 +2603,7 @@ define([
          * @return {object} The function returns an object that represent the META rules that were defined
          * specifically for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnJsonMeta = function (node) {
@@ -2609,7 +2617,7 @@ define([
          * inherited rules).
          * @param {module:Core~Node} node - the node in question.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2630,7 +2638,7 @@ define([
          * @param {string|number|boolean} [rule.default] - The value the attribute should have at the node. If not given
          * it should be set at some point.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2648,7 +2656,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the attribute.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2666,7 +2674,7 @@ define([
          *
          * @return {object} The function returns the definition object, where type is always defined.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          *
@@ -2728,7 +2736,7 @@ define([
          * @return {string[]} The function returns an array of absolute paths of the nodes that was defined as valid
          * children for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getValidChildrenPaths = function (node) {
@@ -2744,7 +2752,7 @@ define([
          * @return {module:Core~RelationRule} The function returns a detailed JSON structure that represents the META
          * rules regarding the possible children of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          *
          * @example
@@ -2771,7 +2779,7 @@ define([
          * @param {integer} [max] - the allowed maximum number of children from this given node type (if not given or
          * -1 is set, then there will be no minimum rule according this child type)
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2789,7 +2797,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} path - the absolute path of the child which rule is to be removed from the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2808,7 +2816,7 @@ define([
          * @param {integer} [max] - the allowed maximum number of children (if not given or
          * -1 is set, then there will be no maximum rule according children)
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2830,7 +2838,7 @@ define([
          * @param {integer} [max] - the allowed maximum number of target/member from this given node type (if not
          * given or -1 is set, then there will be no minimum rule according this target type)
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2850,8 +2858,8 @@ define([
          * @param {string} name - the name of the pointer/set
          * @param {string} path - the absolute path of the possible target type.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
-         * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
+         * @throws {CoreIllegalOperationError} If node is read-only, or definition does not exist.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.delPointerMetaTarget = function (node, name, path) {
@@ -2870,13 +2878,14 @@ define([
          * Sets the global target limits for pointer/set of the node. On META level the only distinction between
          * pointer and sets is the global multiplicity which has to maximize the number of possible targets to 1 in
          * case of 'pure' pointer definitions.
-         *
+         * @param {module:Core~Node} node - the node in question.
+         * @param {string} name - the name of the pointer/set.
          * @param {integer} [min] - the allowed minimum number of children (if not given or
          * -1 is set, then there will be no minimum rule according targets)
          * @param {integer} [max] - the allowed maximum number of children (if not given or
          * -1 is set, then there will be no maximum rule according targets)
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2894,7 +2903,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the pointer/set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2913,7 +2922,7 @@ define([
          * @return {module:Core~RelationRule|undefined} The function returns a detailed JSON structure that
          * represents the META rules regarding the given pointer/set of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          *
          * @example
@@ -2945,7 +2954,7 @@ define([
          * @param {string} name - the name of the aspect.
          * @param {module:Core~Node} target - the valid type for the aspect.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2963,7 +2972,7 @@ define([
          * @param {string} name - the name of the aspect.
          * @param {string} path - the absolute path of the valid type of the aspect.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -2984,7 +2993,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the aspect.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3004,7 +3013,7 @@ define([
          * that is a META node. It returns null if it does not find such node (ideally the only node with this result
          * is the ROOT).
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If node is not a Node
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getMetaType = function (node) {
@@ -3023,7 +3032,7 @@ define([
          * that is a META node. It returns null if it does not find such node (ideally the only node with this result
          * is the ROOT).
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If node is not a Node
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getBaseType = this.getMetaType;
@@ -3036,7 +3045,7 @@ define([
          * @return {bool} Returns true if the base is on the inheritance chain of node.
          * A node is considered to be an instance of itself here.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isInstanceOf = function (node, baseNodeOrPath) {
@@ -3067,7 +3076,7 @@ define([
          * @return {External~Promise} - if the callback is not defined, the result is provided in a promise
          * like manner.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.generateTreeDiff = function (sourceRoot, targetRoot, callback) {
             var error;
@@ -3089,7 +3098,7 @@ define([
          * @param {function} [callback]
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.applyTreeDiff = function (node, patch, callback) {
             var error;
@@ -3114,7 +3123,7 @@ define([
          * @return {object} The function returns with an object that contains the conflicts (if any) and the merged
          * patch.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.tryToConcatChanges = function (mine, theirs) {
@@ -3135,7 +3144,7 @@ define([
          * @return {object} The function results in a tree structured patch object that contains the changesthat cover
          * both parties modifications (and the conflicts are resolved according the input settings).
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.applyResolution = function (conflict) {
@@ -3151,7 +3160,7 @@ define([
          * @return {bool} The function returns true if the registry entry 'isAbstract' of the node if true hence
          * the node is abstract.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isAbstract = function (node) {
@@ -3166,7 +3175,7 @@ define([
          *
          * @return {bool} Returns true if both the 'src' and 'dst' pointer are defined as valid for the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isConnection = function (node) {
@@ -3190,7 +3199,7 @@ define([
          * @return {module:Core~Node[]} The function returns a list of valid nodes that can be instantiated as a
          * child of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getValidChildrenMetaNodes = function (parameters) {
@@ -3230,7 +3239,7 @@ define([
          * @return {module:Core~Node[]} The function returns a list of valid nodes that can be instantiated as a
          * member of the set of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getValidSetElementsMetaNodes = function (parameters) {
@@ -3259,7 +3268,7 @@ define([
          * @return {Object<string, module:Core~Node>} The function returns a dictionary. The keys of the dictionary are the absolute paths of
          * the META nodes of the project. Every value of the dictionary is a {@link module:Core~Node}.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getAllMetaNodes = function (node) {
@@ -3275,7 +3284,7 @@ define([
          * @return {bool} Returns true if the node is a member of the METAAspectSet of the ROOT node hence can be
          * seen as a META node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isMetaNode = function (node) {
@@ -3295,7 +3304,7 @@ define([
          * or the member do not have a 'base' member or just some property was overridden, the function returns
          * false.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3321,7 +3330,7 @@ define([
          * @return {module:Core~MixinViolation[]} Returns the array of violations. If the array is empty,
          * there is no violation.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getMixinErrors = function (node) {
@@ -3338,7 +3347,7 @@ define([
          * @return {string[]} The paths of the mixins in an array ordered by their order of use (which is important
          * in case of some collision among definitions would arise).
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getMixinPaths = function (node) {
@@ -3354,7 +3363,7 @@ define([
          *
          * @return {Object<string, module:Core~Node>} The dictionary of the mixin nodes keyed by their paths.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getMixinNodes = function (node) {
@@ -3369,7 +3378,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} path - the path of the mixin node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3386,7 +3395,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} path - the path of the mixin node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3402,7 +3411,7 @@ define([
          *
          * @param {module:Core~Node} node - the node in question.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.clearMixins = function (node) {
@@ -3418,7 +3427,7 @@ define([
          * @return {Object<string, module:Core~Node>} Returns the closest Meta node that is a base of the given node
          * plus it returns all the mixin nodes associated with the base in a path-node dictionary.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getBaseTypes = function (node) {
@@ -3433,7 +3442,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} path - the path of the mixin node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.canSetAsMixin = function (node, path) {
@@ -3465,7 +3474,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result is provided in a promise like manner.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.addLibrary = function (node, name, libraryRootHash, libraryInfo, callback) {
             ensureType(callback, 'callback', 'function');
@@ -3509,7 +3518,7 @@ define([
          *
          * @return {External~Promise} If no callback is given, the result is presented in a promise like manner.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.updateLibrary = function (node, name, libraryRootHash, libraryInfo, updateInstructions, callback) {
             ensureType(callback, 'callback', 'function');
@@ -3544,7 +3553,7 @@ define([
          * @return {string[]} - Returns the fully qualified names of all the libraries in your project
          * (even embedded ones).
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getLibraryNames = function (node) {
@@ -3560,7 +3569,7 @@ define([
          *
          * @return {module:Core~Node} - Returns the acting FCO of your project.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getFCO = function (node) {
@@ -3577,7 +3586,7 @@ define([
          * @return {bool} - Returns true if your node is a library root (even if it is embedded in other library),
          * false otherwise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isLibraryRoot = function (node) {
@@ -3593,7 +3602,7 @@ define([
          *
          * @return {bool} - Returns true if your node is a library element, false otherwise.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isLibraryElement = function (node) {
@@ -3611,7 +3620,7 @@ define([
          *
          * @return {string} - Returns the name space of the node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          *
          * @example NS1.NS2
@@ -3631,7 +3640,7 @@ define([
          * @return {string} - Returns the fully qualified name of the node,
          * i.e. its namespaces and name join together by dots.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          *
          * @example NS1.NS2.name
@@ -3648,7 +3657,7 @@ define([
          * @param {module:Core~Node} node - any node in your project.
          * @param {string} name - the name of your library.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3673,7 +3682,7 @@ define([
          * @return {module:Core~GUID | Error} - Returns the origin GUID of the node or
          * error if the query cannot be fulfilled.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3693,7 +3702,7 @@ define([
          * @param {string} oldName - the current name of the library.
          * @param {string} newName - the new name of the project.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3714,7 +3723,7 @@ define([
          * @return {object} - Returns the information object, stored alongside the library (that basically
          * carries metaData about the library).
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3733,7 +3742,7 @@ define([
          *
          * @return {module:Core~Node | null} - Returns the library root node or null, if the library is unknown.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getLibraryRoot = function (node, name) {
@@ -3754,7 +3763,7 @@ define([
          * @return {module:Core~Node[]} - Returns an array of core nodes that are part of your meta from
          * the given library.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getLibraryMetaNodes = function (node, name, onlyOwn) {
@@ -3790,7 +3799,7 @@ define([
          * @return {External~Promise} If no callback is given, the end of traverse is marked in a promise like
          * manner.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.traverse = function (root, options, visitFn, callback) {
             ensureType(callback, 'callback', 'function');
@@ -3831,7 +3840,7 @@ define([
          * will contain information about the necessary data that needs to be exported as well as relations
          * that will need to be recreated in the destination project to preserve the structure of nodes.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3856,7 +3865,7 @@ define([
          * @return {object} If the closure cannot be imported the resulting error highlights the causes,
          * otherwise a specific object will be returned that holds information about the closure.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.importClosure = function (node, closureInformation) {
@@ -3872,7 +3881,7 @@ define([
          *
          *@return {string[]} The function returns an array of the absolute paths of the instances.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getInstancePaths = function (node) {
@@ -3891,7 +3900,7 @@ define([
          * @return {External~Promise} If no callback is given, the result will be provided in a promise
          * like manner.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadInstances = function (node, callback) {
             ensureType(callback, 'callback', 'function');
@@ -3914,7 +3923,7 @@ define([
          * @return {External~Promise} If no callback is given, the result will be provided in a promise
          * like manner.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadMembers = function (node, setName, callback) {
             ensureType(setName, 'setName', 'string');
@@ -3938,7 +3947,7 @@ define([
          * @return {External~Promise} If no callback is given, the result will be provided in a promise
          * like manner.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.loadOwnMembers = function (node, setName, callback) {
             ensureType(setName, 'setName', 'string');
@@ -3957,7 +3966,7 @@ define([
          * @param {string} oldName - the current name of the pointer in question.
          * @param {string} newName - the new name of the pointer.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -3979,7 +3988,7 @@ define([
          * @param {string} oldName - the current name of the attribute in question.
          * @param {string} newName - the new name of the attribute.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4000,7 +4009,7 @@ define([
          * @param {string} oldName - the current name of the registry in question.
          * @param {string} newName - the new name of the registry.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4022,7 +4031,7 @@ define([
          * @param {string} oldName - the current name of the set in question.
          * @param {string} newName - the new name of the set.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4042,9 +4051,10 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the attribute in question.
          *
-         * @return {module:Core~Node} The meta concept that defines the attribute for the given node.
+         * @return {module:Core~Node} The meta-node that defines the attribute and makes it valid attribute for the
+         * given node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4065,9 +4075,10 @@ define([
          * @param {string} name - the name of the pointer in question.
          * @param {module:Core~Node} target - the target node.
          *
-         * @return {Object} The result information contains the source of the rule and the target of the rule.
+         * @return {module:Core~DefinitionInfo} The owner and the target of the pointer meta-rule that makes target a
+         * valid target of the named pointer of node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4093,9 +4104,10 @@ define([
          * @param {string} name - the name of the set in question.
          * @param {module:Core~Node} member - the member.
          *
-         * @return {Object} The result information contains the source of the rule and the target of the rule.
+         * @return {module:Core~DefinitionInfo} The owner and the target of the set meta-rule that makes member a
+         * valid member of the named set of node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4120,9 +4132,10 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {module:Core~Node} child - the child.
          *
-         * @return {Object} The result information contains the source of the rule and the target of the rule.
+         * @return {module:Core~DefinitionInfo} The owner and the target of the containment meta-rule that makes child a
+         * valid child of node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4143,9 +4156,10 @@ define([
          * @param {string} name - the name of the set in question.
          * @param {module:Core~Node} member - the child.
          *
-         * @return {Object} The result information contains the source of the rule and the target of the rule.
+         * @return {module:Core~DefinitionInfo} The owner and the target of the aspect meta-rule that makes member a
+         * valid member of the named aspect of node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4172,7 +4186,7 @@ define([
          *
          * @return {string[]} The paths of the meta nodes whose instances could be members of the aspect.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4195,7 +4209,7 @@ define([
          *
          * @return {string[]} The paths of the meta nodes whose instances could be members of the aspect.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4215,9 +4229,9 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the set in question.
          *
-         * @return {module:Core~Node} The result is the closest base that defines the given aspect.
+         * @return {module:Core~Node} The meta-node that defines the aspect and makes a valid aspect for the given node.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4239,7 +4253,7 @@ define([
          * @param {string} oldSetName - the name of the set where the member is currently reside.
          * @param {string} newSetName - the name of the target set where the member should be moved to.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4269,7 +4283,7 @@ define([
          * @param {string} oldName - the current name of the attribute definition in question.
          * @param {string} newName - the new name of the attribute.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4293,7 +4307,7 @@ define([
          * @param {string} oldName - the current name of the pointer/set definition in question.
          * @param {string} newName - the new name of the relation towards the target.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4324,7 +4338,7 @@ define([
          * @param {string} oldName - the current name of the aspect that has the target.
          * @param {string} newName - the new aspect name where the target should be moved over.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
@@ -4353,7 +4367,7 @@ define([
          *
          * @return {bool} The function returns true if the given container could contain the node in the asked aspect.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.isValidAspectMemberOf = function (node, parent, name) {
@@ -4371,7 +4385,7 @@ define([
          *
          * @return {string[]} The function returns the paths of valid nodes.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getOwnValidTargetPaths = function (node, name) {
@@ -4388,7 +4402,7 @@ define([
          *
          * @return {string[]} The function returns the paths of valid nodes.
          *
-         * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
          */
         this.getValidTargetPaths = function (node, name) {

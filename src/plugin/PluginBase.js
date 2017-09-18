@@ -286,8 +286,11 @@ define([
      * @returns {boolean} - True if the given object was of the META type.
      */
     PluginBase.prototype.isMetaTypeOf = function (node, metaNode) {
-        // This includes mixins.
-        return this.core.isTypeOf(node, metaNode);
+        if (metaNode) {
+            return this.core.isTypeOf(node, metaNode);
+        }
+
+        return false;
     };
 
     /**
@@ -296,24 +299,7 @@ define([
      * @returns {module:Core~Node} - Node object defining the meta type of node.
      */
     PluginBase.prototype.getMetaType = function (node) {
-        var self = this,
-            namespace,
-            name;
-
-        while (node) {
-            name = self.core.getAttribute(node, 'name');
-            namespace = self.core.getNamespace(node).substr(self.namespace.length);
-
-            if (namespace) {
-                name = namespace + '.' + name;
-            }
-
-            if (self.META.hasOwnProperty(name) && self.core.getGuid(node) === self.core.getGuid(self.META[name])) {
-                break;
-            }
-            node = self.core.getBase(node);
-        }
-        return node;
+        return this.core.getMetaType(node);
     };
 
     /**

@@ -72,9 +72,9 @@ define([], function () {
             }
         } else if (basePath === undefined || basePath === null) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     };
 
     GMENode.prototype.isValidNewParent = function (parentPath) {
@@ -523,42 +523,42 @@ define([], function () {
 
     GMENode.prototype.getPointerDefinitionInfo = function (name, targetId) {
         var coreInfo = this._state.core.getPointerDefinitionInfo(this._state.nodes[this._id].node, name,
-            this._state.nodes[targetId]),
-            nodeInfo = {
-                ownerId: this._storeNode(coreInfo.ownerNode),
-                targetId: this._storeNode(coreInfo.targetNode)
-            };
-        return nodeInfo;
+            this._state.nodes[targetId]);
+
+        return {
+            ownerId: this._storeNode(coreInfo.ownerNode),
+            targetId: this._storeNode(coreInfo.targetNode)
+        };
     };
 
     GMENode.prototype.getAspectDefinitionInfo = function (name, targetId) {
         var coreInfo = this._state.core.getAspectDefinitionInfo(this._state.nodes[this._id].node,
-            name, this._state.nodes[targetId]),
-            nodeInfo = {
-                ownerId: this._storeNode(coreInfo.ownerNode),
-                targetId: this._storeNode(coreInfo.targetNode)
-            };
-        return nodeInfo;
+            name, this._state.nodes[targetId]);
+
+        return {
+            ownerId: this._storeNode(coreInfo.ownerNode),
+            targetId: this._storeNode(coreInfo.targetNode)
+        };
     };
 
     GMENode.prototype.getSetDefinitionInfo = function (name, targetId) {
         var coreInfo = this._state.core.getSetDefinitionInfo(this._state.nodes[this._id].node,
-            name, this._state.nodes[targetId]),
-            nodeInfo = {
-                ownerId: this._storeNode(coreInfo.ownerNode),
-                targetId: this._storeNode(coreInfo.targetNode)
-            };
-        return nodeInfo;
+            name, this._state.nodes[targetId]);
+
+        return {
+            ownerId: this._storeNode(coreInfo.ownerNode),
+            targetId: this._storeNode(coreInfo.targetNode)
+        };
     };
 
     GMENode.prototype.getChildDefinitionInfo = function (name, targetId) {
         var coreInfo = this._state.core.getChildDefinitionInfo(this._state.nodes[this._id].node,
-            name, this._state.nodes[targetId]),
-            nodeInfo = {
-                ownerId: this._storeNode(coreInfo.ownerNode),
-                targetId: this._storeNode(coreInfo.targetNode)
-            };
-        return nodeInfo;
+            name, this._state.nodes[targetId]);
+
+        return {
+            ownerId: this._storeNode(coreInfo.ownerNode),
+            targetId: this._storeNode(coreInfo.targetNode)
+        };
     };
 
     // GetNode from another node...
