@@ -2605,8 +2605,8 @@ define([
         };
 
         /**
-         * Removes all META rules that were specifically defined for the node (so the function do not touches
-         * inherited rules).
+         * Removes all META rules defined at the node. Note that it does not clear any rules from other meta-nodes
+         * where the node if referenced.
          * @param {module:Core~Node} node - the node in question.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters doesn't match the input criteria.
