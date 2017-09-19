@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.18.2](https://github.com/webgme/webgme-engine/tree/v2.18.2) (2017-09-19)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.1...v2.18.2)
+
+**Implemented enhancements:**
+
+- Add missing client meta methods [\#8](https://github.com/webgme/webgme-engine/pull/8) ([pmeijer](https://github.com/pmeijer))
+- Make plugin.isMetaTypeOf more robust and better core documentation [\#7](https://github.com/webgme/webgme-engine/pull/7) ([pmeijer](https://github.com/pmeijer))
+- Remove obsolete client side paths in globals. [\#6](https://github.com/webgme/webgme-engine/pull/6) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Meta-rules and constraint checking throws exception in client [\#5](https://github.com/webgme/webgme-engine/pull/5) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.18.1](https://github.com/webgme/webgme-engine/tree/v2.18.1) (2017-09-13)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.0...v2.18.1)
 
