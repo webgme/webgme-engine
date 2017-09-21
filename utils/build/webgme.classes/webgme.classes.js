@@ -42,7 +42,7 @@ define('webgme.classes', [
 
     // Exposing built in libraries
     GME.utils.superagent = superagent;
-    GME.utils.Q = q;
+    GME.utils.Q = Q;
     GME.utils.chance = chance;
 
     // TODO: Can this be removed?
