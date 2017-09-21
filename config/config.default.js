@@ -95,6 +95,10 @@ var path = require('path'),
 
         debug: false,
 
+        documentEditing: {
+            acknowledgementDelay: 2000
+        },
+
         executor: {
             enable: false,
             nonce: null,

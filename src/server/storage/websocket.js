@@ -11,7 +11,7 @@ var io = require('socket.io'),
     redis = require('socket.io-redis'),
     Q = require('q'),
     UTIL = require('../../utils'),
-    URL = requireJS('common/util/url'),
+    DocumentServer = require('./documentserver'),    URL = requireJS('common/util/url'),
     CONSTANTS = requireJS('common/storage/constants'),
     PACKAGE_JSON;
 
@@ -24,6 +24,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         projectAuthParams = {
             entityType: authorizer.ENTITY_TYPES.PROJECT
         },
+        documents = {}, // TODO: This is a single state on one server!
         webSocket;
 
     logger.debug('ctor');
@@ -247,19 +248,40 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.onclose = function () {
                 var i,
                     roomIds,
-                    projectIdBranchName;
+                    projectIdBranchName,
+                    roomDividerCnt;
 
                 if (webSocket) {
                     roomIds = Object.keys(socket.rooms);
                     for (i = 0; i < roomIds.length; i += 1) {
-                        if (roomIds[i].indexOf(CONSTANTS.ROOM_DIVIDER) > -1) {
-                            logger.debug('Socket was in branchRoom', roomIds[i]);
+                        // This is not the prettiest, but we know that branchRooms
+                        // are divided by one ROOM_DIVIDER (projectId % branchName),
+                        // whereas document rooms are divided by 3 ROOM_DIVIDER
+                        // (projectId % branchName % nodeId % attrName).
+                        roomDividerCnt = roomIds[i].split(CONSTANTS.ROOM_DIVIDER).length;
+
+                        if (roomDividerCnt === 2) {
+                            logger.debug('Disconnected was in branchRoom', roomIds[i]);
                             projectIdBranchName = roomIds[i].split(CONSTANTS.ROOM_DIVIDER);
                             // We cannot wait for this since socket.onclose is synchronous.
                             leaveBranchRoom(socket, projectIdBranchName[0], projectIdBranchName[1])
                                 .fail(function (err) {
                                     logger.error(err);
                                 });
+                        } else if (roomDividerCnt === 4) {
+                            logger.info('Disconnected socket was in document room', roomIds[i]);
+                            if (documents.hasOwnProperty(roomIds[i])) {
+                                delete documents[roomIds[i]].users[socket.id];
+                                socket.leave(roomIds[i]);
+                                logger.info('Client left document', roomIds[i]);
+
+                                if (Object.keys(documents[roomIds[i]].users).length === 0) {
+                                    logger.info('No more connected clients in document', roomIds[i]);
+                                    delete documents[roomIds[i]];
+                                }
+                            } else {
+                                logger.error('No document server object for active room');
+                            }
                         }
                     }
                 }
@@ -287,7 +309,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     });
             });
 
-            // watcher functions
+            // Watchers
             socket.on('watchDatabase', function (data, callback) {
                 logger.debug('watchDatabase', {metadata: data});
                 if (data && data.join) {
@@ -362,7 +384,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     });
             });
 
-            // model editing functions
+            // Model editing
             socket.on('openProject', function (data, callback) {
                 var branches,
                     access;
@@ -631,6 +653,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     });
             });
 
+            // Project operations and getters
             socket.on('getProjects', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
@@ -737,6 +760,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     });
             });
 
+            // Tags, commits and branches
             socket.on('getBranches', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
@@ -899,7 +923,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     });
             });
 
-            //worker commands
+            // Worker commands
             socket.on('simpleRequest', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
@@ -933,6 +957,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 callback('simpleQuery is not implemented!');
             });
 
+            // Notification handling
             socket.on('notification', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
@@ -971,6 +996,155 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             callback(err.message);
                         }
                     });
+            });
+
+            // OT handling
+            socket.on('watchDocument', function (data, callback) {
+                var docId = data.join ? [
+                    data.projectId,
+                    data.branchName,
+                    data.nodeId,
+                    data.attrName].join(CONSTANTS.ROOM_DIVIDER) : data.docId;
+
+                logger.info('watchDocument', docId, 'join?', data.join, 'rejoin?', data.rejoin);
+
+                projectAccess(socket, data.webgmeToken, data.projectId)
+                    .then(function (access) {
+                        if (data.join === true) {
+                            if (!access.read) {
+                                logger.warn('socket not authorized to join document room', docId);
+                                throw new Error('No read access for ' + data.projectId);
+                            }
+
+                            if (documents.hasOwnProperty(docId) === false) {
+                                logger.info('First user joining document, will create it..');
+                                documents[docId] = {
+                                    otServer: new DocumentServer(logger, data.attrValue, docId, gmeConfig),
+                                    users: {}
+                                };
+                            }
+
+                            documents[docId].users[socket.id] = {
+                                userId: socket.userId,
+                                access: access
+                            };
+
+                            socket.join(docId);
+
+                            callback(null, {
+                                docId: docId,
+                                str: documents[docId].otServer.document,
+                                revision: documents[docId].otServer.operations.length,
+                                clients: documents[docId].users
+                            });
+                        } else if (data.rejoin === true) {
+                            if (!access.read) {
+                                logger.warn('socket not authorized to join document room', docId);
+                                throw new Error('No longer has read access to ' + data.projectId);
+                            }
+
+                            if (documents.hasOwnProperty(docId) === false) {
+                                throw new Error('Document room was closed ' + docId);
+                            }
+
+                            documents[docId].otServer.getOperationsSince(data.revision);
+
+                            documents[docId].users[socket.id] = {
+                                userId: socket.userId,
+                                access: access
+                            };
+
+                            socket.join(docId);
+
+                            callback(null, {
+                                docId: docId,
+                                str: documents[docId].otServer.document,
+                                revision: documents[docId].otServer.operations.length,
+                                operations: documents[docId].otServer.getOperationsSince(data.revision),
+                                clients: documents[docId].users
+                            });
+                        } else {
+                            if (documents.hasOwnProperty(docId) && documents[docId].users.hasOwnProperty(socket.id)) {
+                                delete documents[docId].users[socket.id];
+                                // FIXME: Introduce a special event for this?
+                                socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, {
+                                    docId: data.docId,
+                                    clientId: socket.id,
+                                    userId: socket.userId,
+                                    selection: undefined
+                                });
+                                socket.leave(docId);
+                                logger.info('Client left document', docId);
+                                if (Object.keys(documents[docId].users).length === 0) {
+                                    logger.info('No more connected clients in document', docId);
+                                    delete documents[docId];
+                                }
+                                callback();
+                            } else {
+                                logger.warn('Client was never watching document', docId);
+                                callback();
+                            }
+                        }
+                    })
+                    .catch(function (err) {
+                        if (gmeConfig.debug) {
+                            callback(err.stack);
+                        } else {
+                            callback(err.message);
+                        }
+                    });
+            });
+
+            socket.on(CONSTANTS.DOCUMENT_OPERATION, function (data, callback) {
+
+                if (documents.hasOwnProperty(data.docId) && documents[data.docId].users.hasOwnProperty(socket.id)) {
+
+                    if (documents[data.docId].users[socket.id].access.write === true) {
+                        data.userId = documents[data.docId].users[socket.id].userId;
+                        documents[data.docId].otServer.onOperation(data, function (err, wrappedOperation) {
+                            if (err) {
+                                callback(err.message);
+                            } else {
+                                // Acknowledge the operation.
+                                callback();
+
+                                socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, {
+                                    docId: data.docId,
+                                    clientId: socket.id,
+                                    userId: socket.userId,
+                                    operation: wrappedOperation.wrapped.toJSON(),
+                                    selection: wrappedOperation.selection
+                                });
+                            }
+                        });
+                    } else {
+                        callback('Does not have write access to', data.docId);
+                    }
+                } else {
+                    logger.error('Client not watching current document', data.docId);
+                    callback('Cannot send operation to document not being watched');
+                }
+            });
+
+            socket.on(CONSTANTS.DOCUMENT_SELECTION, function (data) {
+                var transformedSelection;
+
+                if (documents.hasOwnProperty(data.docId) && documents[data.docId].users.hasOwnProperty(socket.id)) {
+                    // TODO: The selection needs to be transformed..
+                    try {
+                        transformedSelection = documents[data.docId].otServer.onSelection(data.revision, data.selection);
+                        socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, {
+                            docId: data.docId,
+                            clientId: socket.id,
+                            userId: socket.userId,
+                            selection: transformedSelection
+                        });
+                    } catch (err) {
+                        logger.error(err);
+                    }
+                } else {
+                    logger.error('Client not watching current document', data.docId);
+                }
             });
         });
     };

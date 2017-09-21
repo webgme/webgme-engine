@@ -40,6 +40,7 @@ requirejs.config({
         debug: './src/common/lib/debug/debug',
         chance: './src/common/lib/chance/chance',
         q: './src/common/lib/q/q',
+        ot: './src/common/lib/ot/ot',
 
         karmatest: './test-karma'
     },

@@ -104,6 +104,23 @@ define([
             return Q.ninvoke(storage, 'squashCommits', self.projectId, fromCommit, toCommitOrBranch, message)
                 .nodeify(callback);
         };
+
+        // TODO: Implement these as plugins and other agents might want to participate in a document.
+        this.watchDocument = function (data, atOperation, atSelection, callback) {
+            throw new Error('Not implemented!');
+        };
+
+        this.unwatchDocument = function (data, callback) {
+            throw new Error('Not implemented!');
+        };
+
+        this.sendDocumentOperation = function (data) {
+            throw new Error('Not implemented!');
+        };
+
+        this.sendDocumentSelection = function (data) {
+            throw new Error('Not implemented!');
+        };
     }
 
     Project.prototype = Object.create(ProjectInterface.prototype);

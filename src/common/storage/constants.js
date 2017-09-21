@@ -89,6 +89,9 @@ define([], function () {
         INCOMPATIBLE_CONNECTION: 'INCOMPATIBLE_CONNECTION',
         CONNECTION_ERROR: 'CONNECTION_ERROR',
 
+        RECONNECTING: 'RECONNECTING', // Internal storage state where the websocket connection has been established,
+        // but work is still be done to join branch and document rooms correctly.
+
         // Branch commit status - this is the status returned after setting the hash of a branch
         SYNCED: 'SYNCED', // The commitData was inserted in the database and the branchHash updated.
         FORKED: 'FORKED', // The commitData was inserted in the database, but the branchHash NOT updated.
@@ -124,6 +127,9 @@ define([], function () {
         BRANCH_LEFT: 'BRANCH_LEFT',
 
         NOTIFICATION: 'NOTIFICATION',
+
+        DOCUMENT_OPERATION: 'DOCUMENT_OPERATION',
+        DOCUMENT_SELECTION: 'DOCUMENT_SELECTION',
         // Types of notifications
         BRANCH_ROOM_SOCKETS: 'BRANCH_ROOM_SOCKETS',
         PLUGIN_NOTIFICATION: 'PLUGIN_NOTIFICATION',

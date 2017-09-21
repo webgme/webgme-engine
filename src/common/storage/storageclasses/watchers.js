@@ -7,20 +7,33 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-define(['common/storage/constants', 'q'], function (CONSTANTS, Q) {
+define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CONSTANTS, Q, GUID, ot) {
     'use strict';
 
     function StorageWatcher(webSocket, logger, gmeConfig) {
         // watcher counters determining when to join/leave a room on the sever
         this.watchers = {
+            sessionId: GUID(), // Need at reconnect since socket.id changes.
             database: 0,
-            projects: {}
+            projects: {},
+            documents: {}
         };
         this.webSocket = webSocket;
         this.logger = this.logger || logger.fork('storage');
         this.gmeConfig = gmeConfig;
         this.logger.debug('StorageWatcher ctor');
         this.connected = false;
+    }
+
+    function _splitDocId(docId) {
+        var pieces = docId.split(CONSTANTS.ROOM_DIVIDER);
+
+        return {
+            projectId: pieces[0],
+            branchName: pieces[1],
+            nodeId: pieces[2],
+            attrName: pieces[3]
+        }
     }
 
     StorageWatcher.prototype.watchDatabase = function (eventHandler, callback) {
@@ -142,9 +155,208 @@ define(['common/storage/constants', 'q'], function (CONSTANTS, Q) {
         return deferred.promise.nodeify(callback);
     };
 
+    /**
+     * 
+     * @param {object} data
+     * @param {string} data.projectId
+     * @param {string} data.branchName
+     * @param {string} data.nodeId
+     * @param {string} data.attrName
+     * @param {string} data.attrValue
+     * @param {function} atOperation
+     * @param {function} atSelection
+     * @param {function} [callback]
+     * @returns {Promise}
+     */
+    StorageWatcher.prototype.watchDocument = function (data, atOperation, atSelection, callback) {
+        var self = this,
+            deferred = Q.defer(),
+            docUpdateEventName = this.webSocket.getDocumentUpdatedEventName(data),
+            docSelectionEventName = this.webSocket.getDocumentSelectionEventName(data),
+            docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length);
+
+        if (this.watchers.documents.hasOwnProperty(docId)) {
+            return Q.reject(new Error('Document is already being watched ' + docId));
+        }
+
+        this.logger.debug('watchDocument - handler added for project', data);
+        this.watchers.documents[docId] = {
+            eventHandler: function (_ws, eData) {
+                var otClient = self.watchers.documents[eData.docId].otClient;
+                if (eData.operation) {
+                    if (self.reconnecting) {
+                        // We are reconnecting.. Put these on the queue.
+                        self.watchers.documents[docId].applyBuffer.push(eData);
+                    } else {
+                        otClient.applyServer(ot.TextOperation.fromJSON(eData.operation));
+                    }
+                }
+
+                if (eData.selection && !self.reconnecting) {
+                    atSelection({
+                        selection: otClient.transformSelection(ot.Selection.fromJSON(eData.selection)),
+                        clientId: eData.clientId,
+                        userId: eData.userId
+                    });
+                }
+            },
+            applyBuffer: [],
+            awaitingAck: null
+        };
+
+        this.logger.debug('First watcher will enter document room:', docId);
+        this.webSocket.addEventListener(docUpdateEventName, this.watchers.documents[docId].eventHandler);
+        this.webSocket.addEventListener(docSelectionEventName, this.watchers.documents[docId].eventHandler);
+
+        data.join = true;
+        this.webSocket.watchDocument(data, function (err, initData) {
+            if (err) {
+                deferred.reject(err);
+            } else {
+                self.watchers.documents[initData.docId].otClient = new ot.Client(initData.revision);
+
+                self.watchers.documents[initData.docId].otClient.sendOperation = function (revision, operation) {
+                    var sendData = {
+                        docId: initData.docId,
+                        projectId: initData.projectId,
+                        branchName: initData.branchName,
+                        revision: revision,
+                        operation: operation,
+                        selection: self.watchers.documents[initData.docId].selection,
+                        sessionId: self.watchers.sessionId
+                    };
+
+                    self.watchers.documents[initData.docId].awaitingAck = {
+                        revision: revision,
+                        operation: operation
+                    };
+
+                    self.webSocket.sendDocumentOperation(sendData, function (err) {
+                        if (err) {
+                            self.logger.error('Failed to sendDocument', err);
+                            return;
+                        }
+
+                        if (self.watchers.documents.hasOwnProperty(initData.docId)) {
+                            self.watchers.documents[initData.docId].awaitingAck = null;
+                            self.watchers.documents[initData.docId].otClient.serverAck(revision);
+                        } else {
+                            self.logger.error(new Error('Received document acknowledgement ' +
+                                'after leaving document ' + initData.docId));
+                        }
+                    });
+                };
+
+                self.watchers.documents[initData.docId].otClient.applyOperation = atOperation;
+
+                deferred.resolve(initData);
+            }
+        });
+
+        return deferred.promise.nodeify(callback);
+    };
+
+    /**
+     *
+     * @param {object} data
+     * @param {string} [data.docId] - document id, if not provided projectId, branchName, nodeId, attrName must be.
+     * @param {string} [data.projectId]
+     * @param {string} [data.branchName]
+     * @param {string} [data.nodeId]
+     * @param {string} [data.attrName]
+     * @param callback
+     * @returns {*}
+     */
+    StorageWatcher.prototype.unwatchDocument = function (data, callback) {
+        var deferred = Q.defer(),
+            docUpdateEventName = this.webSocket.getDocumentUpdatedEventName(data),
+            docSelectionEventName = this.webSocket.getDocumentSelectionEventName(data),
+            pieces;
+
+        if (typeof data.docId === 'string') {
+            pieces = _splitDocId(data.docId);
+            Object.keys(pieces).forEach(function (key) {
+                    data[key] = pieces[key];
+                });
+        } else {
+            data.docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length);
+        }
+
+        if (this.watchers.documents.hasOwnProperty(data.docId) === false) {
+            deferred.reject(new Error('Document is not being watched ' + data.docId));
+        } else {
+            // Remove handler from web-socket module.
+            this.webSocket.removeEventListener(docUpdateEventName, this.watchers.documents[data.docId].eventHandler);
+            this.webSocket.removeEventListener(docSelectionEventName, this.watchers.documents[data.docId].eventHandler);
+
+            // "Remove" handlers attached to the otClient.
+            this.watchers.documents[data.docId].otClient.sendOperation =
+                this.watchers.documents[data.docId].otClient.applyOperation = function () {};
+
+            delete this.watchers.documents[data.docId];
+
+            // Finally exit socket.io room on server.
+            data.join = false;
+            this.webSocket.watchDocument(data, function (err) {
+                if (err) {
+                    deferred.reject(err);
+                } else {
+                    deferred.resolve();
+                }
+            });
+        }
+
+        return deferred.promise.nodeify(callback);
+    };
+
+    /**
+     *
+     * @param {object} data
+     * @param {string} data.docId
+     * @param {object} data.operation
+     * @param {object} [data.selection]
+     */
+    StorageWatcher.prototype.sendDocumentOperation = function (data) {
+        // TODO: Do we need to add a callback for confirmation here?
+        if (this.watchers.documents.hasOwnProperty(data.docId) &&
+            this.watchers.documents[data.docId].otClient instanceof ot.Client) {
+
+            this.watchers.documents[data.docId].selection = data.selection;
+            this.watchers.documents[data.docId].otClient.applyClient(data.operation);
+        } else {
+            throw new Error('Document not being watched ' + data.docId +
+                '. (If "watchDocument" was initiated make sure to wait for the callback.)');
+        }
+    };
+
+    StorageWatcher.prototype.sendDocumentSelection = function (data) {
+        var otClient;
+        if (this.watchers.documents.hasOwnProperty(data.docId) &&
+            this.watchers.documents[data.docId].otClient instanceof ot.Client) {
+
+            otClient = this.watchers.documents[data.docId].otClient;
+
+            if (otClient.state instanceof ot.Client.Synchronized) {
+                // Only broadcast the selection when synchronized
+                this.webSocket.sendDocumentSelection({
+                    docId: data.docId,
+                    revision: otClient.revision,
+                    selection: data.selection
+                });
+            }
+
+        } else {
+            throw new Error('Document not being watched ' + data.docId +
+                '. (If "watchDocument" was initiated make sure to wait for the callback.)');
+        }
+    };
+
     StorageWatcher.prototype._rejoinWatcherRooms = function (callback) {
-        var projectId,
-            promises = [];
+        var self = this,
+            promises = [],
+            projectId;
+
+        // When this is called were are in the self.reconnecting === true state until callback resolved.
 
         this.logger.debug('rejoinWatcherRooms');
         if (this.watchers.database > 0) {
@@ -158,6 +370,74 @@ define(['common/storage/constants', 'q'], function (CONSTANTS, Q) {
                 promises.push(Q.ninvoke(this.webSocket, 'watchProject', {projectId: projectId, join: true}));
             }
         }
+
+        promises = Object.keys(this.watchers.documents)
+            .map(function (docId) {
+                var rejoinData = _splitDocId(docId);
+                rejoinData.docId = docId;
+                rejoinData.rejoin = true;
+                rejoinData.revision = self.watchers.documents[docId].otClient.revision;
+
+                return Q.ninvoke(self.webSocket, 'watchDocument', rejoinData)
+                    .then(function (joinData) {
+                        var awaiting,
+                            sendData;
+
+                        function applyFromServer() {
+                            joinData.operations.forEach(function (op) {
+                                self.watchers.documents[docId].otClient.applyServer(op.wrapped);
+                            });
+
+                            self.watchers.documents[docId].applyBuffer.forEach(function (op) {
+                                self.watchers.documents[docId].otClient.applyServer(op);
+                            });
+                        }
+
+                        if (self.watchers.documents[docId].awaitingAck === null) {
+                            applyFromServer();
+                        } else {
+                            // We were awaiting an acknowledgement, did it make it?
+                            awaiting = self.watchers.documents[docId].awaitingAck;
+
+                            if (joinData.operations.length > 0 &&
+                                joinData.operations[0].metadata.sessionId === self.watchers.sessionId) {
+                                // It made it to the server - so send the acknowledgement to the otClient.
+                                self.watchers.documents[docId].awaitingAck = null;
+                                self.watchers.documents[docId].otClient.serverAck(awaiting.revision);
+
+                                // Remove it from the operations and apply the other
+                                joinData.operations.shift();
+                                applyFromServer();
+                            } else {
+                                applyFromServer();
+                                sendData = {
+                                    docId: docId,
+                                    projectId: rejoinData.projectId,
+                                    branchName: rejoinData.branchName,
+                                    revision: awaiting.revision,
+                                    operation: awaiting.operation,
+                                    sessionId: self.watchers.sessionId
+                                };
+
+                                self.webSocket.sendDocumentOperation(sendData, function (err) {
+                                    if (err) {
+                                        self.logger.error('Failed to sendDocument', err);
+                                        return;
+                                    }
+
+                                    if (self.watchers.documents.hasOwnProperty(docId)) {
+                                        self.watchers.documents[docId].awaitingAck = null;
+                                        self.watchers.documents[docId].otClient.serverAck(revision);
+                                    } else {
+                                        self.logger.error(new Error('Received document acknowledgement ' +
+                                            'after leaving document ' + docId));
+                                    }
+                                });
+                            }
+                        }
+                    });
+            })
+            .concat(promises);
 
         return Q.all(promises).nodeify(callback);
     };
