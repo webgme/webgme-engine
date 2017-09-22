@@ -553,7 +553,6 @@ function StandAloneServer(gmeConfig) {
         var userComponent = require(gmeConfig.authentication.userManagementPage);
         userComponent.initialize(middlewareOpts);
         routeComponents.push(userComponent);
-        console.log(gmeConfig.authentication.userManagementPage);
         __app.use('/profile', userComponent.router);
     }
 
@@ -764,7 +763,6 @@ function StandAloneServer(gmeConfig) {
 
     __app.get(/^\/(gme-dist)\/.*\.(js|map)$/, function (req, res) {
         var resolvedPath = path.join(__baseDir, '../dist', req.url.substring('/gme-dist/'.length));
-        console.log(resolvedPath);
         res.sendFile(resolvedPath);
     });
 
