@@ -71,7 +71,7 @@ define([
 
                 undoRedoChain: null, //{commitHash: '#hash', rootHash: '#hash', previous: object, next: object}
 
-                inTransaction: false,
+                openedTransactions: 0,
                 msg: '',
                 gHash: 0,
                 loadError: null,
@@ -649,7 +649,7 @@ define([
                     state.msg = msg;
                 }
 
-                if (!state.inTransaction) {
+                if (state.openedTransactions === 0) {
                     ASSERT(state.project && state.core && state.branchName);
 
                     logger.debug('is NOT in transaction - will persist.');
@@ -776,7 +776,7 @@ define([
                 state.loadError = 0;
                 state.rootHash = null;
                 //state.rootObject = null;
-                state.inTransaction = false;
+                state.openedTransactions = 0;
                 state.msg = '';
 
                 cleanUsersTerritories();
@@ -1098,7 +1098,7 @@ define([
                 logger.debug('hashUpdateHandler invoked. project, branch, commitHash',
                     commitData.projectId, commitData.branchName, commitHash);
 
-                if (state.inTransaction) {
+                if (state.openedTransactions > 0) {
                     logger.warn('Is in transaction, will not load in changes');
                     callback(null, false); // proceed: false
                     return;
@@ -1780,11 +1780,8 @@ define([
         };
 
         this.startTransaction = function (msg) {
-            if (state.inTransaction) {
-                logger.error('Already in transaction, will proceed though..');
-            }
             if (state.core) {
-                state.inTransaction = true;
+                state.openedTransactions += 1;
                 msg = typeof msg === 'string' ? msg : '[';
                 saveRoot(msg);
             } else {
@@ -1793,7 +1790,10 @@ define([
         };
 
         this.completeTransaction = function (msg, callback) {
-            state.inTransaction = false;
+            state.openedTransactions -= 1;
+            // TODO: Maybe we should simply log this an error and reset it to 0..
+            ASSERT(state.openedTransactions > -1, 'More calls to completeTransaction than transactions started!');
+
             if (state.core) {
                 msg = msg || ']';
                 saveRoot(msg, callback);
