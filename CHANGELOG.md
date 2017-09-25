@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.18.3](https://github.com/webgme/webgme-engine/tree/v2.18.3) (2017-09-25)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.2...v2.18.3)
+
+**Fixed bugs:**
+
+- Typo in build classes regarding Q [\#9](https://github.com/webgme/webgme-engine/pull/9) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.18.2](https://github.com/webgme/webgme-engine/tree/v2.18.2) (2017-09-19)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.1...v2.18.2)
 
