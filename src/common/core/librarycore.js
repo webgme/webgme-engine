@@ -350,8 +350,10 @@ define([
                     i;
 
                 for (i = 0; i < keys.length; i += 1) {
-                    if ((self.isLibraryElement(allMetaNodes[keys[i]]) &&
-                        closureInformation.bases[baseGuid].originGuid === self.getLibraryGuid(allMetaNodes[keys[i]])) ||
+                    if ((self.isLibraryElement(
+                            allMetaNodes[keys[i]]) &&
+                            closureInformation.bases[baseGuid].originGuid === self.getLibraryGuid(allMetaNodes[keys[i]]
+                            )) ||
                         closureInformation.bases[baseGuid].originGuid === self.getGuid(allMetaNodes[keys[i]])) {
                         occurrences.push(allMetaNodes[keys[i]]);
                     }
@@ -971,89 +973,129 @@ define([
                 }, self.loadChild(root, libraryRelid));
             };
 
-            this.updateLibrary = function (node, name, updatedLibraryRootHash, libraryInfo/*, updateInstructions*/) {
-                var logs = {added: {}, updated: {}, moved: {}, removed: {}},
-                    root = self.getRoot(node),
-                    libraryRoot = getRootOfLibrary(root, name),
-                    relid,
-                    FCO = self.getFCO(root);
+            this.updateLibrary = function (node, name, updatedLibraryRootHash, libraryInfo) {
+                var root = self.getRoot(node);
+                return TASYNC.call(function () {
+                    var oldRoot = self.getLibraryRoot(node, name),
+                        newRoot = self.getLibraryRoot(node, name + '_UPD_'),
+                        relid = self.getRelid(oldRoot),
+                        tempRelid = self.getRelid(newRoot);
 
-                if (!libraryRoot) { //do nothing if not valid library
-                    return logs;
-                }
+                    return TASYNC.call(function (oldInfo, newInfo) {
+                        // console.log(oldInfo);
+                        // console.log(newInfo);
+                        var i,
+                            moves = [],
+                            guid;
 
-                relid = self.getRelid(libraryRoot);
-
-                return TASYNC.call(function (oldInfo, newInfo) {
-                    var newNodePaths = [],
-                        removedNodePaths = [],
-                        i,
-                        moves = [],
-                        guid;
-
-                    for (guid in newInfo) {
-                        if (!oldInfo[guid]) {
-                            newNodePaths.push('/' + relid + newInfo[guid].path);
-                        } else if (oldInfo[guid].path !== newInfo[guid].path) {
-                            moves.push({from: '/' + relid + oldInfo[guid].path, to: '/' + relid + newInfo[guid].path});
-                        }
-                    }
-
-                    for (guid in oldInfo) {
-                        if (!newInfo[guid]) {
-                            removedNodePaths.push('/' + relid + oldInfo[guid].path);
-                        }
-                    }
-
-                    for (i = 0; i < removedNodePaths.length; i += 1) {
-                        removeLibraryRelations(root, removedNodePaths[i]);
-                    }
-
-                    for (i = 0; i < moves.length; i += 1) {
-                        moveLibraryRelations(root, moves[i].from, moves[i].to);
-                    }
-
-                    innerCore.setProperty(root, relid, updatedLibraryRootHash);
-                    root = self.removeChildFromCache(root, relid);
-                    return TASYNC.call(function (newLibraryRoot) {
-                        return TASYNC.call(function (newLibraryNodes) {
-                            var i,
-                                inMeta = self.getMemberPaths(newLibraryRoot, CONSTANTS.META_SET_NAME),
-                                libraryInfoAttribute = libraryInfo,
-                                libraryFCO;
-
-                            newLibraryNodes.shift();
-                            //set the name of the library root
-                            innerCore.setAttribute(newLibraryRoot, 'name', name);
-
-                            //add library_info
-                            libraryInfoAttribute.hash = updatedLibraryRootHash;
-                            innerCore.setAttribute(newLibraryRoot, '_libraryInfo', libraryInfoAttribute);
-
-                            if (newLibraryNodes.length > 0) {
-                                //connect the FCO as base of libraryFCO, but be sure to remove the nullPtr
-
-                                libraryFCO = self.getBaseRoot(newLibraryNodes[0]);
-                                innerCore.deletePointer(libraryFCO, 'base');
-                                innerCore.setBase(libraryFCO, FCO);
-
-                                //adding new nodes to the global META
-                                for (i = 0; i < newLibraryNodes.length; i += 1) {
-                                    if (newNodePaths.indexOf(self.getPath(newLibraryNodes[i])) !== -1 &&
-                                        inMeta.indexOf(self.getPath(newLibraryNodes[i])) !== -1) {
-                                        innerCore.addMember(root, CONSTANTS.META_SET_NAME, newLibraryNodes[i]);
-                                    }
-                                }
+                        for (guid in newInfo) {
+                            if (oldInfo[guid]) {
+                                moves.push({
+                                    from: '/' + relid + oldInfo[guid].path,
+                                    to: '/' + tempRelid + newInfo[guid].path
+                                });
+                                //the new library should not have any outgoing relations at this point
+                                removeLibraryRelations(root, '/' + tempRelid + newInfo[guid].path);
                             }
+                        }
 
-                            root.libraryRoots[name] = newLibraryRoot;
+                        for (i = 0; i < moves.length; i += 1) {
+                            moveLibraryRelations(root, moves[i].from, moves[i].to);
+                        }
 
-                            return logs;
-                        }, self.loadSubTree(newLibraryRoot));
-                    }, self.loadChild(root, relid));
-                }, getLibraryInfo(libraryRoot), getLibraryInfo(updatedLibraryRootHash));
+                        self.removeLibrary(node, name);
+                        root = self.removeChildFromCache(root, relid);
+                        self.renameLibrary(node, name + '_UPD_', name);
+                        innerCore.moveNode(newRoot, root, relid);
 
+                        return {};
+                    }, getLibraryInfo(oldRoot), getLibraryInfo(newRoot));
+                }, self.addLibrary(node, name + '_UPD_', updatedLibraryRootHash, libraryInfo));
             };
+
+            // this.updateLibrary = function (node, name, updatedLibraryRootHash, libraryInfo/*, updateInstructions*/) {
+            //     var logs = {added: {}, updated: {}, moved: {}, removed: {}},
+            //         root = self.getRoot(node),
+            //         libraryRoot = getRootOfLibrary(root, name),
+            //         relid,
+            //         FCO = self.getFCO(root);
+            //
+            //     if (!libraryRoot) { //do nothing if not valid library
+            //         return logs;
+            //     }
+            //
+            //     relid = self.getRelid(libraryRoot);
+            //
+            //     return TASYNC.call(function (oldInfo, newInfo) {
+            //         var newNodePaths = [],
+            //             removedNodePaths = [],
+            //             i,
+            //             moves = [],
+            //             guid;
+            //
+            //         for (guid in newInfo) {
+            //             if (!oldInfo[guid]) {
+            //                 newNodePaths.push('/' + relid + newInfo[guid].path);
+            //             } else if (oldInfo[guid].path !== newInfo[guid].path) {
+            //                 moves.push({from: '/' + relid + oldInfo[guid].path, to: '/' + relid + newInfo[guid].path});
+            //             }
+            //         }
+            //
+            //         for (guid in oldInfo) {
+            //             if (!newInfo[guid]) {
+            //                 removedNodePaths.push('/' + relid + oldInfo[guid].path);
+            //             }
+            //         }
+            //
+            //         for (i = 0; i < removedNodePaths.length; i += 1) {
+            //             removeLibraryRelations(root, removedNodePaths[i]);
+            //         }
+            //
+            //         for (i = 0; i < moves.length; i += 1) {
+            //             moveLibraryRelations(root, moves[i].from, moves[i].to);
+            //         }
+            //
+            //         innerCore.setProperty(root, relid, updatedLibraryRootHash);
+            //         root = self.removeChildFromCache(root, relid);
+            //         return TASYNC.call(function (newLibraryRoot) {
+            //             return TASYNC.call(function (newLibraryNodes) {
+            //                 var i,
+            //                     inMeta = self.getMemberPaths(newLibraryRoot, CONSTANTS.META_SET_NAME),
+            //                     libraryInfoAttribute = libraryInfo,
+            //                     libraryFCO;
+            //
+            //                 newLibraryNodes.shift();
+            //                 //set the name of the library root
+            //                 innerCore.setAttribute(newLibraryRoot, 'name', name);
+            //
+            //                 //add library_info
+            //                 libraryInfoAttribute.hash = updatedLibraryRootHash;
+            //                 innerCore.setAttribute(newLibraryRoot, '_libraryInfo', libraryInfoAttribute);
+            //
+            //                 if (newLibraryNodes.length > 0) {
+            //                     //connect the FCO as base of libraryFCO, but be sure to remove the nullPtr
+            //
+            //                     libraryFCO = self.getBaseRoot(newLibraryNodes[0]);
+            //                     innerCore.deletePointer(libraryFCO, 'base');
+            //                     innerCore.setBase(libraryFCO, FCO);
+            //
+            //                     //adding new nodes to the global META
+            //                     for (i = 0; i < newLibraryNodes.length; i += 1) {
+            //                         if (newNodePaths.indexOf(self.getPath(newLibraryNodes[i])) !== -1 &&
+            //                             inMeta.indexOf(self.getPath(newLibraryNodes[i])) !== -1) {
+            //                             innerCore.addMember(root, CONSTANTS.META_SET_NAME, newLibraryNodes[i]);
+            //                         }
+            //                     }
+            //                 }
+            //
+            //                 root.libraryRoots[name] = newLibraryRoot;
+            //
+            //                 return logs;
+            //             }, self.loadSubTree(newLibraryRoot));
+            //         }, self.loadChild(root, relid));
+            //     }, getLibraryInfo(libraryRoot), getLibraryInfo(updatedLibraryRootHash));
+            //
+            // };
 
             this.removeLibrary = function (node, name) {
                 ASSERT(self.isValidNode(node));

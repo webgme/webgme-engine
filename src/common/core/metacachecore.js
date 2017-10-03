@@ -107,10 +107,10 @@ define([
                 innerCore.deleteNode(node, technical);
             };
 
-            this.moveNode = function (node, parent) {
+            this.moveNode = function (node, parent, newRelid) {
                 var root = self.getRoot(node),
                     oldpath = self.getPath(node),
-                    moved = innerCore.moveNode(node, parent);
+                    moved = innerCore.moveNode(node, parent, newRelid);
 
                 if (root.metaNodes[oldpath]) {
                     delete root.metaNodes[oldpath];
