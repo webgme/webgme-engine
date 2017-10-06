@@ -21,6 +21,7 @@ define([
 
             var logger = options.logger,
                 self = this,
+                checkOperationsForLibraryUpdate,
                 key;
 
             for (key in innerCore) {
@@ -470,6 +471,54 @@ define([
                         closureInformation.relations.preserved[source];
                     delete closureInformation.relations.preserved[source];
                 }
+            }
+
+            checkOperationsForLibraryUpdate = {
+                'renameAttribute': function (node, operation) {
+                    var typeNodeGuid = operation.guid,
+                        name = operation.parameters.oldName;
+
+                    if (self.getValidAttributeNames(node).indexOf(name) !== 1 &&
+                        self.getOwnAttribute(node, name) !== undefined &&
+                        self.getGuid(self.getAttributeDefinitionOwner(node, name)) === typeNodeGuid) {
+                        return true;
+                    }
+                    return false;
+                },
+                'renamePointer': function (node, operation) {
+                    var typeNode = self.getAllMetaNodes(node)[operation.guid],
+                        name = operation.parameters.oldName;
+
+                    if (self.getValidPointerNames(node).indexOf(name) !== 1 &&
+                        self.getOwnPointerPath(node, name) !== undefined &&
+                        self.isTypeOf(node, typeNode)) {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+
+            function doesOperationApply(node, operation) {
+                return checkOperationsForLibraryUpdate[operation.operation](node, operation);
+            }
+
+            function collectPropagatedChanges(root, declarativeOperations, callback) {
+                var changes = {},
+                    visit = function (node, next) {
+                        var i,
+                            path = self.getPath(node);
+
+                        for (i = 0; i < declarativeOperations.length; i += 1) {
+                            if (doesOperationApply(node, declarativeOperations[i])) {
+                                changes[path] = changes[path] || [];
+                                changes[path].push(declarativeOperations[i]);
+                            }
+                        }
+                    };
+
+                self.traverse(root, {excludeRoot: true, stopOnError: true}, visit, function (err) {
+                    callback(err, changes);
+                });
             }
 
             //</editor-fold>
@@ -973,7 +1022,7 @@ define([
                 }, self.loadChild(root, libraryRelid));
             };
 
-            this.updateLibrary = function (node, name, updatedLibraryRootHash, libraryInfo) {
+            this.updateLibrary = function (node, name, updatedLibraryRootHash, libraryInfo, updateInstructions) {
                 var root = self.getRoot(node);
                 return TASYNC.call(function () {
                     var oldRoot = self.getLibraryRoot(node, name),
@@ -982,6 +1031,9 @@ define([
                         tempRelid = self.getRelid(newRoot);
 
                     return TASYNC.call(function (oldInfo, newInfo) {
+                        // collectPropagatedChanges(root,updateInstructions.operations,function(err,changes){
+                        //
+                        // });
                         // console.log(oldInfo);
                         // console.log(newInfo);
                         var i,
