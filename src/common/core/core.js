@@ -3540,7 +3540,7 @@ define([
             if (error) {
                 callback(error);
             } else {
-                core.updateLibrary(node, name, libraryRootHash, libraryInfo, callback);
+                core.updateLibrary(node, name, libraryRootHash, libraryInfo, updateInstructions, callback);
             }
 
         };

@@ -22,6 +22,7 @@ define([
             var logger = options.logger,
                 self = this,
                 checkOperationsForLibraryUpdate,
+                changeCommandForLibraryUpdate,
                 key;
 
             for (key in innerCore) {
@@ -478,9 +479,9 @@ define([
                     var typeNodeGuid = operation.guid,
                         name = operation.parameters.oldName;
 
-                    if (self.getValidAttributeNames(node).indexOf(name) !== 1 &&
+                    if (self.getValidAttributeNames(node).indexOf(name) !== -1 &&
                         self.getOwnAttribute(node, name) !== undefined &&
-                        self.getGuid(self.getAttributeDefinitionOwner(node, name)) === typeNodeGuid) {
+                        self.getLibraryGuid(self.getAttributeDefinitionOwner(node, name)) === typeNodeGuid) {
                         return true;
                     }
                     return false;
@@ -502,7 +503,7 @@ define([
                 return checkOperationsForLibraryUpdate[operation.operation](node, operation);
             }
 
-            function collectPropagatedChanges(root, declarativeOperations, callback) {
+            function collectChangesToPropagate(root, declarativeOperations, libraryInfo, libraryBasePath) {
                 var changes = {},
                     visit = function (node, next) {
                         var i,
@@ -514,11 +515,75 @@ define([
                                 changes[path].push(declarativeOperations[i]);
                             }
                         }
+                        next(null);
                     };
 
-                self.traverse(root, {excludeRoot: true, stopOnError: true}, visit, function (err) {
-                    callback(err, changes);
-                });
+                return TASYNC.call(function (err) {
+                    for (var guid in libraryInfo) {
+                        delete changes[libraryBasePath + libraryInfo[guid].path];
+                    }
+                    return changes;
+                }, self.traverse(root, {excludeRoot: true, stopOnError: true}, visit));
+            }
+
+            changeCommandForLibraryUpdate = {
+                'renameAttribute': function (node, command) {
+                    self.renameAttribute(node, command.oldName, command, newName);
+                }
+            };
+
+            function executeChange(node, command) {
+                return changeCommandForLibraryUpdate[command.operation](node, command);
+            }
+
+            function executeChanges(root, changes) {
+                var changes = {},
+                    visit = function (node, next) {
+                        var i,
+                            path = self.getPath(node);
+
+                        if (changes.hasOwnProperty(path) !== true) {
+                            next(null);
+                            return;
+                        }
+
+                        TASYNC.call(function () {
+                            var i,
+                                commands = [];
+
+                            for (i = 0; i < changes[path].length; i += 1) {
+                                commands.push(executeChange(node, changes[path][i]));
+                            }
+
+                            TASYNC.call(function () {
+
+                            }, TASYNC.lift(commands));
+                        });
+                        return TASYNC.call(function () {
+                            for (i = 0; i < paths.length; i += 1) {
+                                nodes[i] = self.loadByPath(root, paths[i]);
+                            }
+                            return TASYNC.call(function (n) {
+                                var newn = [];
+                                for (var i = 0; i < n.length; i++) {
+                                    if (n[i] !== null) {
+                                        newn.push(n[i]);
+                                    }
+                                }
+                                return newn;
+                            }, TASYNC.lift(nodes));
+                        }, self.loadPaths(rootHash, paths));
+                        for (i = 0; i < declarativeOperations.length; i += 1) {
+                            if (doesOperationApply(node, declarativeOperations[i])) {
+                                changes[path] = changes[path] || [];
+                                changes[path].push(declarativeOperations[i]);
+                            }
+                        }
+                    };
+
+                return TASYNC.call(function (err) {
+                    return null;
+                }, self.traverse(root, {excludeRoot: true, stopOnError: true}, visit));
             }
 
             //</editor-fold>
@@ -1024,6 +1089,12 @@ define([
 
             this.updateLibrary = function (node, name, updatedLibraryRootHash, libraryInfo, updateInstructions) {
                 var root = self.getRoot(node);
+
+                updateInstructions = updateInstructions || {};
+                updateInstructions.operations = updateInstructions.operations || [];
+                updateInstructions.script = updateInstructions.script || function () {
+                };
+
                 return TASYNC.call(function () {
                     var oldRoot = self.getLibraryRoot(node, name),
                         newRoot = self.getLibraryRoot(node, name + '_UPD_'),
@@ -1031,36 +1102,40 @@ define([
                         tempRelid = self.getRelid(newRoot);
 
                     return TASYNC.call(function (oldInfo, newInfo) {
-                        // collectPropagatedChanges(root,updateInstructions.operations,function(err,changes){
-                        //
-                        // });
-                        // console.log(oldInfo);
-                        // console.log(newInfo);
-                        var i,
-                            moves = [],
-                            guid;
+                        return TASYNC.call(function (changes) {
+                            // console.log(oldInfo);
+                            // console.log(newInfo);
+                            // console.log(changes);
 
-                        for (guid in newInfo) {
-                            if (oldInfo[guid]) {
-                                moves.push({
-                                    from: '/' + relid + oldInfo[guid].path,
-                                    to: '/' + tempRelid + newInfo[guid].path
-                                });
-                                //the new library should not have any outgoing relations at this point
-                                removeLibraryRelations(root, '/' + tempRelid + newInfo[guid].path);
-                            }
-                        }
+                            return TASYNC.call(function(){
+                                var i,
+                                    moves = [],
+                                    guid;
 
-                        for (i = 0; i < moves.length; i += 1) {
-                            moveLibraryRelations(root, moves[i].from, moves[i].to);
-                        }
+                                for (guid in newInfo) {
+                                    if (oldInfo[guid]) {
+                                        moves.push({
+                                            from: '/' + relid + oldInfo[guid].path,
+                                            to: '/' + tempRelid + newInfo[guid].path
+                                        });
+                                        //the new library should not have any outgoing relations at this point
+                                        removeLibraryRelations(root, '/' + tempRelid + newInfo[guid].path);
+                                    }
+                                }
 
-                        self.removeLibrary(node, name);
-                        root = self.removeChildFromCache(root, relid);
-                        self.renameLibrary(node, name + '_UPD_', name);
-                        innerCore.moveNode(newRoot, root, relid);
+                                for (i = 0; i < moves.length; i += 1) {
+                                    moveLibraryRelations(root, moves[i].from, moves[i].to);
+                                }
 
-                        return {};
+                                self.removeLibrary(node, name);
+                                root = self.removeChildFromCache(root, relid);
+                                self.renameLibrary(node, name + '_UPD_', name);
+                                innerCore.moveNode(newRoot, root, relid);
+
+                                return {};
+                            },executeChanges(root,changes));
+                            
+                        }, collectChangesToPropagate(root, updateInstructions.operations, oldInfo, '/' + relid));
                     }, getLibraryInfo(oldRoot), getLibraryInfo(newRoot));
                 }, self.addLibrary(node, name + '_UPD_', updatedLibraryRootHash, libraryInfo));
             };
