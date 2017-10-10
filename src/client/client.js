@@ -410,7 +410,8 @@ define([
             var i;
             for (i in state.users) {
                 if (state.users.hasOwnProperty(i)) {
-                    if (typeof state.users[i].UI.reLaunch === 'function') {
+                    if (state.users[i].UI && typeof state.users[i].UI === 'object' &&
+                        typeof state.users[i].UI.reLaunch === 'function') {
                         state.users[i].UI.reLaunch();
                     }
                 }
@@ -576,8 +577,7 @@ define([
             for (i = 0; i < userIds.length; i++) {
                 if (state.users[userIds[i]]) {
                     events = [{eid: null, etype: 'complete'}];
-                    for (j in state.users[userIds[i]].PATHS
-                        ) {
+                    for (j in state.users[userIds[i]].PATHS) {
                         events.push({etype: 'unload', eid: j});
                     }
                     state.users[userIds[i]].PATTERNS = {};
