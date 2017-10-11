@@ -510,10 +510,10 @@ describe('corediff scenarios', function () {
                         relid: 'instance'
                     }),
                     conflictChild = core.createNode({
-                    parent: base,
-                    base: r.fco,
-                    relid: 'conflictRelid'
-                });
+                        parent: base,
+                        base: r.fco,
+                        relid: 'conflictRelid'
+                    });
 
                 basePath = core.getPath(base);
                 toBecomeInstancePath = core.getPath(instance);
@@ -575,6 +575,153 @@ describe('corediff scenarios', function () {
             .nodeify(done);
     });
 
+    it('should give conflict when container is removed while other branch added children', function (done) {
+        var originRoot,
+            basePath,
+            containerPath;
+
+        loadRootAndFCO(context.rootHash)
+            .then(function (r) {
+                var base = core.createNode({
+                        parent: r.root,
+                        base: r.fco
+                    }),
+                    container = core.createNode({
+                        parent: r.root,
+                        base: r.fco
+                    });
+
+                basePath = core.getPath(base);
+                containerPath = core.getPath(container);
+
+                originRoot = r.root;
+                return save(r.root);
+            })
+            .then(function (rootHash) {
+                return Q.all([
+                    loadRootAndFCO(rootHash, [basePath, containerPath]),
+                    loadRootAndFCO(rootHash, [basePath, containerPath]),
+                ]);
+            })
+            .then(function (trees) {
+                // We've loaded two trees from the same rootHash
+                // now let's make changes.
+
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childOne'
+                });
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childTwo'
+                });
+
+
+                core.deleteNode(trees[1][containerPath]);
+
+                // Save to ensure the added nodes are persisted.
+                return Q.all([
+                    save(trees[0].root),
+                    save(trees[1].root)
+                ])
+                    .then(function () {
+                        return Q.all([
+                            core.generateTreeDiff(originRoot, trees[0].root),
+                            core.generateTreeDiff(originRoot, trees[1].root),
+                        ]);
+                    });
+            })
+            .then(function (diffs) {
+                var concatChanges01 = core.tryToConcatChanges(diffs[0], diffs[1]),
+                    concatChanges10 = core.tryToConcatChanges(diffs[1], diffs[0]);
+
+                expect(concatChanges01.items.length).to.equal(2);
+                expect(concatChanges10.items.length).to.equal(2);
+
+                expect(concatChanges01.items[0].theirs).to.eql(concatChanges10.items[0].mine);
+                expect(concatChanges01.items[1].theirs).to.eql(concatChanges10.items[1].mine);
+            })
+            .nodeify(done);
+    });
+
+    it.only('should keep children created by the two branches', function (done) {
+        var originRoot,
+            basePath,
+            containerPath;
+
+        loadRootAndFCO(context.rootHash)
+            .then(function (r) {
+                var base = core.createNode({
+                        parent: r.root,
+                        base: r.fco
+                    }),
+                    container = core.createNode({
+                        parent: r.root,
+                        base: r.fco
+                    });
+
+                basePath = core.getPath(base);
+                containerPath = core.getPath(container);
+
+                originRoot = r.root;
+                return save(r.root);
+            })
+            .then(function (rootHash) {
+                return Q.all([
+                    loadRootAndFCO(rootHash, [basePath, containerPath]),
+                    loadRootAndFCO(rootHash, [basePath, containerPath]),
+                ]);
+            })
+            .then(function (trees) {
+                // We've loaded two trees from the same rootHash
+                // now let's make changes.
+
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childOne'
+                });
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childTwo'
+                });
+
+
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childThree'
+                });
+                core.copyNode(trees[1][basePath],trees[1][containerPath]);
+
+                // Save to ensure the added nodes are persisted.
+                return Q.all([
+                    save(trees[0].root),
+                    save(trees[1].root)
+                ])
+                    .then(function () {
+                        return Q.all([
+                            core.generateTreeDiff(originRoot, trees[0].root),
+                            core.generateTreeDiff(originRoot, trees[1].root),
+                        ]);
+                    });
+            })
+            .then(function (diffs) {
+                var concatChanges01 = core.tryToConcatChanges(diffs[0], diffs[1]),
+                    concatChanges10 = core.tryToConcatChanges(diffs[1], diffs[0]);
+
+                expect(concatChanges01.items.length).to.equal(0);
+                expect(concatChanges10.items.length).to.equal(0);
+
+
+            })
+            .nodeify(done);
+    });
+
+    
     // Symmetry
     it('should give conflict when del base in one tree and mod instance in other', function (done) {
         var originRoot,

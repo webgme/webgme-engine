@@ -828,7 +828,8 @@ define(['common/util/canon',
                     set: true,
                     meta: true,
                     movedFrom: true,
-                    removed: true
+                    removed: true,
+                    childrenListChanged: true
                 },
                 i;
 
@@ -1711,10 +1712,17 @@ define(['common/util/canon',
         function getWhomIObstructGuids(guid) {
             //this function is needed when the extension contains a deletion where the base did not delete the node
             var guids = [],
+                reachedItself = false,
                 checkNode = function (diffNode) {
                     var relids, i;
                     if ((diffNode.oGuids && diffNode.oGuids[guid]) || (diffNode.ooGuids && diffNode.ooGuids[guid])) {
                         guids.push(diffNode.guid);
+                    }
+
+                    if (reachedItself) {
+                        guids.push(diffNode.guid);
+                    } else if (diffNode.guid === guid) {
+                        reachedItself = true;
                     }
 
                     relids = getDiffChildrenRelids(diffNode);
@@ -1749,34 +1757,34 @@ define(['common/util/canon',
             if (diffMeta.children) {
                 if (diffMeta.children === CONSTANTS.TO_DELETE_STRING) {
                     conflict[path + '/children'] = conflict[path + '/children'] || {
-                            value: CONSTANTS.TO_DELETE_STRING,
-                            conflictingPaths: {}
-                        };
+                        value: CONSTANTS.TO_DELETE_STRING,
+                        conflictingPaths: {}
+                    };
                     conflict[path + '/children'].conflictingPaths[opposingPath] = true;
                     opposingConflict.conflictingPaths[path + '/children'] = true;
                 } else {
                     if (diffMeta.children.max) {
                         conflict[path + '/children/max'] = conflict[path + '/children/max'] || {
-                                value: diffMeta.children.max,
-                                conflictingPaths: {}
-                            };
+                            value: diffMeta.children.max,
+                            conflictingPaths: {}
+                        };
                         conflict[path + '/children/max'].conflictingPaths[opposingPath] = true;
                         opposingConflict.conflictingPaths[path + '/children/max'] = true;
                     }
                     if (diffMeta.children.min) {
                         conflict[path + '/children/min'] = conflict[path + '/children/min'] || {
-                                value: diffMeta.children.min,
-                                conflictingPaths: {}
-                            };
+                            value: diffMeta.children.min,
+                            conflictingPaths: {}
+                        };
                         conflict[path + '/children/min'].conflictingPaths[opposingPath] = true;
                         opposingConflict.conflictingPaths[path + '/children/min'] = true;
                     }
                     relids = getDiffChildrenRelids(diffMeta.children);
                     for (i = 0; i < relids.length; i++) {
                         conflict[path + '/children/' + relids[i]] = conflict[path + '/children/' + relids[i]] || {
-                                value: diffMeta.children[relids[i]],
-                                conflictingPaths: {}
-                            };
+                            value: diffMeta.children[relids[i]],
+                            conflictingPaths: {}
+                        };
                         conflict[path + '/children/' + relids[i]].conflictingPaths[opposingPath] = true;
                         opposingConflict.conflictingPaths[path + '/children/' + relids[i]] = true;
                     }
@@ -1786,9 +1794,9 @@ define(['common/util/canon',
             if (diffMeta.attributes) {
                 if (diffMeta.attributes === CONSTANTS.TO_DELETE_STRING) {
                     conflict[path + '/attributes'] = conflict[path + '/attributes'] || {
-                            value: CONSTANTS.TO_DELETE_STRING,
-                            conflictingPaths: {}
-                        };
+                        value: CONSTANTS.TO_DELETE_STRING,
+                        conflictingPaths: {}
+                    };
                     conflict[path + '/attributes'].conflictingPaths[opposingPath] = true;
                     opposingConflict.conflictingPaths[path + '/attributes'] = true;
                 } else {
@@ -1796,9 +1804,9 @@ define(['common/util/canon',
                     for (i = 0; i < keys.length; i++) {
                         key = path + '/attributes/' + keys[i];
                         conflict[key] = conflict[key] || {
-                                value: diffMeta.attributes[keys[i]],
-                                conflictingPaths: {}
-                            };
+                            value: diffMeta.attributes[keys[i]],
+                            conflictingPaths: {}
+                        };
                         conflict[key].conflictingPaths[opposingPath] = true;
                         opposingConflict.conflictingPaths[key] = true;
                     }
@@ -1808,9 +1816,9 @@ define(['common/util/canon',
             if (diffMeta.pointers) {
                 if (diffMeta.pointers === CONSTANTS.TO_DELETE_STRING) {
                     conflict[path + '/pointers'] = conflict[path + '/pointers'] || {
-                            value: CONSTANTS.TO_DELETE_STRING,
-                            conflictingPaths: {}
-                        };
+                        value: CONSTANTS.TO_DELETE_STRING,
+                        conflictingPaths: {}
+                    };
                     conflict[path + '/pointers'].conflictingPaths[opposingPath] = true;
                     opposingConflict.conflictingPaths[path + '/pointers'] = true;
                 } else {
@@ -1818,9 +1826,9 @@ define(['common/util/canon',
                     for (i = 0; i < keys.length; i++) {
                         if (diffMeta.pointers[keys[i]] === CONSTANTS.TO_DELETE_STRING) {
                             conflict[path + '/pointers/' + keys[i]] = conflict[path + '/pointers/' + keys[i]] || {
-                                    value: CONSTANTS.TO_DELETE_STRING,
-                                    conflictingPaths: {}
-                                };
+                                value: CONSTANTS.TO_DELETE_STRING,
+                                conflictingPaths: {}
+                            };
                             conflict[path + '/pointers/' + keys[i]].conflictingPaths[opposingPath] = true;
                             opposingConflict.conflictingPaths[path + '/pointers/' + keys[i]] = true;
                         } else {
@@ -1902,9 +1910,9 @@ define(['common/util/canon',
                 if (diffSet[relids[i]] === CONSTANTS.TO_DELETE_STRING) {
                     //single conflict as the element was removed
                     conflict[path + '/' + relids[i] + '/'] = conflict[path + '/' + relids[i] + '/'] || {
-                            value: CONSTANTS.TO_DELETE_STRING,
-                            conflictingPaths: {}
-                        };
+                        value: CONSTANTS.TO_DELETE_STRING,
+                        conflictingPaths: {}
+                    };
                     conflict[path + '/' + relids[i] + '/'].conflictingPaths[opposingPath] = true;
                     opposingConflict.conflictingPaths[path + '/' + relids[i] + '/'] = true;
                 } else {
@@ -1941,9 +1949,9 @@ define(['common/util/canon',
                     keys = Object.keys(data);
                     for (i = 0; i < keys.length; i++) {
                         conflict[pathBase + '/' + keys[i]] = conflict[pathBase + '/' + keys[i]] || {
-                                value: data[keys[i]],
-                                conflictingPaths: {}
-                            };
+                            value: data[keys[i]],
+                            conflictingPaths: {}
+                        };
                         conflict[pathBase + '/' + keys[i]].conflictingPaths[opposingPath] = true;
                         opposingConflict.conflictingPaths[pathBase + '/' + keys[i]] = true;
                     }
@@ -1971,9 +1979,9 @@ define(['common/util/canon',
             if (diffNode.set) {
                 if (diffNode.set === CONSTANTS.TO_DELETE_STRING) {
                     conflict[path + '/set'] = conflict[path + '/set'] || {
-                            value: CONSTANTS.TO_DELETE_STRING,
-                            conflictingPaths: {}
-                        };
+                        value: CONSTANTS.TO_DELETE_STRING,
+                        conflictingPaths: {}
+                    };
                     conflict[path + '/set'].conflictingPaths[opposingPath] = true;
                     opposingConflict.conflictingPaths[path + '/set'] = true;
                 } else {
@@ -1981,9 +1989,9 @@ define(['common/util/canon',
                     for (i = 0; i < keys.length; i++) {
                         if (diffNode.set[keys[i]] === CONSTANTS.TO_DELETE_STRING) {
                             conflict[path + '/set/' + keys[i]] = conflict[path + '/set/' + keys[i]] || {
-                                    value: CONSTANTS.TO_DELETE_STRING,
-                                    conflictingPaths: {}
-                                };
+                                value: CONSTANTS.TO_DELETE_STRING,
+                                conflictingPaths: {}
+                            };
                             conflict[path + '/set/' + keys[i]].conflictingPaths[opposingPath] = true;
                             opposingConflict.conflictingPaths[path + '/set/' + keys[i]] = true;
                         } else {
@@ -2152,14 +2160,14 @@ define(['common/util/canon',
                             if (bData.max && bData.max !== eData.max) {
                                 tPath = bPath + '/max';
                                 _conflictMine[tPath] = _conflictMine[tPath] || {
-                                        value: bData.max,
-                                        conflictingPaths: {}
-                                    };
+                                    value: bData.max,
+                                    conflictingPaths: {}
+                                };
                                 _conflictMine[tPath].conflictingPaths[tPath] = true;
                                 _conflictTheirs[tPath] = _conflictTheirs[tPath] || {
-                                        value: eData.max,
-                                        conflictingPaths: {}
-                                    };
+                                    value: eData.max,
+                                    conflictingPaths: {}
+                                };
                                 _conflictTheirs[tPath].conflictingPaths[tPath] = true;
                             } else {
                                 bData.max = eData.max;
@@ -2170,14 +2178,14 @@ define(['common/util/canon',
                             if (bData.min && bData.min !== eData.min) {
                                 tPath = bPath + '/min';
                                 _conflictMine[tPath] = _conflictMine[tPath] || {
-                                        value: bData.min,
-                                        conflictingPaths: {}
-                                    };
+                                    value: bData.min,
+                                    conflictingPaths: {}
+                                };
                                 _conflictMine[tPath].conflictingPaths[tPath] = true;
                                 _conflictTheirs[tPath] = _conflictTheirs[tPath] || {
-                                        value: eData.min,
-                                        conflictingPaths: {}
-                                    };
+                                    value: eData.min,
+                                    conflictingPaths: {}
+                                };
                                 _conflictTheirs[tPath].conflictingPaths[tPath] = true;
                             } else {
                                 bData.min = eData.min;
@@ -2194,14 +2202,14 @@ define(['common/util/canon',
                                 t2Path = tPath;
                                 tPath = bPath + '/' + tPath + '//';
                                 _conflictMine[tPath] = _conflictMine[tPath] || {
-                                        value: bData[t2Path],
-                                        conflictingPaths: {}
-                                    };
+                                    value: bData[t2Path],
+                                    conflictingPaths: {}
+                                };
                                 _conflictMine[tPath].conflictingPaths[tPath] = true;
                                 _conflictTheirs[tPath] = _conflictTheirs[tPath] || {
-                                        value: eData[tKeys[i]],
-                                        conflictingPaths: {}
-                                    };
+                                    value: eData[tKeys[i]],
+                                    conflictingPaths: {}
+                                };
                                 _conflictTheirs[tPath].conflictingPaths[tPath] = true;
                             } else {
                                 bData[tPath] = eData[tKeys[i]];
@@ -2212,16 +2220,16 @@ define(['common/util/canon',
             if (CANON.stringify(base) !== CANON.stringify(extension)) {
                 if (base === CONSTANTS.TO_DELETE_STRING) {
                     _conflictMine[path] = _conflictMine[path] || {
-                            value: CONSTANTS.TO_DELETE_STRING,
-                            conflictingPaths: {}
-                        };
+                        value: CONSTANTS.TO_DELETE_STRING,
+                        conflictingPaths: {}
+                    };
                     gatherFullMetaConflicts(extension, false, path, path);
                 } else {
                     if (extension === CONSTANTS.TO_DELETE_STRING) {
                         _conflictTheirs[path] = _conflictTheirs[path] || {
-                                value: CONSTANTS.TO_DELETE_STRING,
-                                conflictingPaths: {}
-                            };
+                            value: CONSTANTS.TO_DELETE_STRING,
+                            conflictingPaths: {}
+                        };
                         gatherFullMetaConflicts(base, true, path, path);
                     } else {
                         //now check for sub-meta conflicts
@@ -2244,14 +2252,14 @@ define(['common/util/canon',
                                     if (CANON.stringify(base.pointers) !== CANON.stringify(extension.pointers)) {
                                         tPath = path + '/pointers';
                                         _conflictMine[tPath] = _conflictMine[tPath] || {
-                                                value: base.pointers,
-                                                conflictingPaths: {}
-                                            };
+                                            value: base.pointers,
+                                            conflictingPaths: {}
+                                        };
                                         _conflictMine[tPath].conflictingPaths[tPath] = true;
                                         _conflictTheirs[tPath] = _conflictTheirs[tPath] || {
-                                                value: extension.pointers,
-                                                conflictingPaths: {}
-                                            };
+                                            value: extension.pointers,
+                                            conflictingPaths: {}
+                                        };
                                         _conflictTheirs[tPath].conflictingPaths[tPath] = true;
                                     }
                                 } else {
@@ -2277,14 +2285,14 @@ define(['common/util/canon',
                                     if (CANON.stringify(base.attributes) !== CANON.stringify(extension.attributes)) {
                                         tPath = path + '/attributes';
                                         _conflictMine[tPath] = _conflictMine[tPath] || {
-                                                value: base.attributes,
-                                                conflictingPaths: {}
-                                            };
+                                            value: base.attributes,
+                                            conflictingPaths: {}
+                                        };
                                         _conflictMine[tPath].conflictingPaths[tPath] = true;
                                         _conflictTheirs[tPath] = _conflictTheirs[tPath] || {
-                                                value: extension.attributes,
-                                                conflictingPaths: {}
-                                            };
+                                            value: extension.attributes,
+                                            conflictingPaths: {}
+                                        };
                                         _conflictTheirs[tPath].conflictingPaths[tPath] = true;
                                     }
                                 } else {
@@ -2299,14 +2307,14 @@ define(['common/util/canon',
 
                                                     tPath = path + '/attributes/' + [keys[i]];
                                                     _conflictMine[tPath] = _conflictMine[tPath] || {
-                                                            value: base.attributes[keys[i]],
-                                                            conflictingPaths: {}
-                                                        };
+                                                        value: base.attributes[keys[i]],
+                                                        conflictingPaths: {}
+                                                    };
                                                     _conflictMine[tPath].conflictingPaths[tPath] = true;
                                                     _conflictTheirs[tPath] = _conflictTheirs[tPath] || {
-                                                            value: extension.attributes[keys[i]],
-                                                            conflictingPaths: {}
-                                                        };
+                                                        value: extension.attributes[keys[i]],
+                                                        conflictingPaths: {}
+                                                    };
                                                     _conflictTheirs[tPath].conflictingPaths[tPath] = true;
                                                 }
                                             } else {
@@ -2332,14 +2340,14 @@ define(['common/util/canon',
                                     if (CANON.stringify(base.aspects) !== CANON.stringify(extension.aspects)) {
                                         tPath = path + '/aspects';
                                         _conflictMine[tPath] = _conflictMine[tPath] || {
-                                                value: base.aspects,
-                                                conflictingPaths: {}
-                                            };
+                                            value: base.aspects,
+                                            conflictingPaths: {}
+                                        };
                                         _conflictMine[tPath].conflictingPaths[tPath] = true;
                                         _conflictTheirs[tPath] = _conflictTheirs[tPath] || {
-                                                value: extension.aspects,
-                                                conflictingPaths: {}
-                                            };
+                                            value: extension.aspects,
+                                            conflictingPaths: {}
+                                        };
                                         _conflictTheirs[tPath].conflictingPaths[tPath] = true;
                                     }
                                 } else {
@@ -2352,14 +2360,14 @@ define(['common/util/canon',
                                                     CANON.stringify(extension.aspects[keys[i]])) {
                                                     tPath = path + '/aspects/' + keys[i];
                                                     _conflictMine[tPath] = _conflictMine[tPath] || {
-                                                            value: base.aspects[keys[i]],
-                                                            conflictingPaths: {}
-                                                        };
+                                                        value: base.aspects[keys[i]],
+                                                        conflictingPaths: {}
+                                                    };
                                                     _conflictMine[tPath].conflictingPaths[tPath] = true;
                                                     _conflictTheirs[tPath] = _conflictTheirs[tPath] || {
-                                                            value: extension.aspects[keys[i]],
-                                                            conflictingPaths: {}
-                                                        };
+                                                        value: extension.aspects[keys[i]],
+                                                        conflictingPaths: {}
+                                                    };
                                                     _conflictTheirs[tPath].conflictingPaths[tPath] = true;
                                                 }
                                             } else {
@@ -2372,14 +2380,14 @@ define(['common/util/canon',
                                                             t2Path = tPath;
                                                             tPath = path + '/aspects/' + keys[i] + '/' + tPath + '//';
                                                             _conflictMine[tPath] = _conflictMine[tPath] || {
-                                                                    value: base.aspects[keys[i]][t2Path],
-                                                                    conflictingPaths: {}
-                                                                };
+                                                                value: base.aspects[keys[i]][t2Path],
+                                                                conflictingPaths: {}
+                                                            };
                                                             _conflictMine[tPath].conflictingPaths[tPath] = true;
                                                             _conflictTheirs[tPath] = _conflictTheirs[tPath] || {
-                                                                    value: extension.aspects[keys[i]][paths[j]],
-                                                                    conflictingPaths: {}
-                                                                };
+                                                                value: extension.aspects[keys[i]][paths[j]],
+                                                                conflictingPaths: {}
+                                                            };
                                                             _conflictTheirs[tPath].conflictingPaths[tPath] = true;
                                                         }
                                                     } else {
@@ -2437,15 +2445,15 @@ define(['common/util/canon',
                         basePath = getPathOfGuid(_concatBase, oGuids[i]);
                         if (hasRealChange(extNode)) {
                             _conflictMine[basePath + '/removed'] = _conflictMine[basePath + '/removed'] || {
-                                    value: true,
-                                    conflictingPaths: {}
-                                };
+                                value: true,
+                                conflictingPaths: {}
+                            };
                             gatherFullNodeConflicts(extNode, false, path, basePath + '/removed');
                         } else {
                             _conflictTheirs[basePath + '/removed'] = _conflictTheirs[basePath + '/removed'] || {
-                                    value: true,
-                                    conflictingPaths: {}
-                                };
+                                value: true,
+                                conflictingPaths: {}
+                            };
                             gatherFullNodeConflicts(realBaseNode, true, path, basePath + '/removed');
                         }
                     }
@@ -2455,9 +2463,9 @@ define(['common/util/canon',
                     if (extNode.movedFrom) {
                         if (baseNode.movedFrom && path !== basePath) {
                             _conflictMine[basePath] = _conflictMine[basePath] || {
-                                    value: 'move',
-                                    conflictingPaths: {}
-                                };
+                                value: 'move',
+                                conflictingPaths: {}
+                            };
                             _conflictTheirs[path] = _conflictTheirs[path] || {value: 'move', conflictingPaths: {}};
                             _conflictMine[basePath].conflictingPaths[path] = true;
                             _conflictTheirs[path].conflictingPaths[basePath] = true;
@@ -2720,6 +2728,8 @@ define(['common/util/canon',
 
             fixInheritanceCollision('', _concatBase, _concatExtension, true);
             fixInheritanceCollision('', _concatExtension, _concatBase, false);
+            normalize(_concatBase);
+            normalize(_concatExtension);
 
             completeConcatBase(_concatBase, _concatExtension);
             getMoveSources(_concatBase,
