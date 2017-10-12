@@ -1340,10 +1340,13 @@ describe('corediff-merge', function () {
                     changeB.computedDiff = results[1].value;
 
                     change.conflict = core.tryToConcatChanges(changeA.computedDiff, changeB.computedDiff);
-                    expect(change.conflict.items).to.have.length(2);
+                    expect(change.conflict.items).to.have.length(5);
 
                     expect(change.conflict.items[0].theirs.path).to.equal('/Y/S/removed');
                     expect(change.conflict.items[1].theirs.path).to.equal('/Y/S/removed');
+                    expect(change.conflict.items[2].theirs.path).to.equal('/Y/S/removed');
+                    expect(change.conflict.items[3].theirs.path).to.equal('/Y/S/removed');
+                    expect(change.conflict.items[4].theirs.path).to.equal('/Y/S/removed');
                     change.diff = core.applyResolution(change.conflict);
 
                     applyParams.changeObject = change;

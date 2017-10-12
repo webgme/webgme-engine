@@ -510,10 +510,10 @@ describe('corediff scenarios', function () {
                         relid: 'instance'
                     }),
                     conflictChild = core.createNode({
-                    parent: base,
-                    base: r.fco,
-                    relid: 'conflictRelid'
-                });
+                        parent: base,
+                        base: r.fco,
+                        relid: 'conflictRelid'
+                    });
 
                 basePath = core.getPath(base);
                 toBecomeInstancePath = core.getPath(instance);
@@ -571,6 +571,185 @@ describe('corediff scenarios', function () {
                 // Root, fco, base, instance, 3 children
                 // logNodes(st);
                 expect(st.length).to.equal(7);
+            })
+            .nodeify(done);
+    });
+
+    it('should give conflict when container is removed while other branch added children', function (done) {
+        var originRoot,
+            basePath,
+            containerPath;
+
+        loadRootAndFCO(context.rootHash)
+            .then(function (r) {
+                var base = core.createNode({
+                        parent: r.root,
+                        base: r.fco
+                    }),
+                    container = core.createNode({
+                        parent: r.root,
+                        base: r.fco
+                    });
+
+                basePath = core.getPath(base);
+                containerPath = core.getPath(container);
+
+                originRoot = r.root;
+                return save(r.root);
+            })
+            .then(function (rootHash) {
+                return Q.all([
+                    loadRootAndFCO(rootHash, [basePath, containerPath]),
+                    loadRootAndFCO(rootHash, [basePath, containerPath]),
+                ]);
+            })
+            .then(function (trees) {
+                // We've loaded two trees from the same rootHash
+                // now let's make changes.
+
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childOne'
+                });
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childTwo'
+                });
+
+                core.deleteNode(trees[1][containerPath]);
+
+                // Save to ensure the added nodes are persisted.
+                return Q.all([
+                    save(trees[0].root),
+                    save(trees[1].root)
+                ])
+                    .then(function () {
+                        return Q.all([
+                            core.generateTreeDiff(originRoot, trees[0].root),
+                            core.generateTreeDiff(originRoot, trees[1].root),
+                        ]);
+                    });
+            })
+            .then(function (diffs) {
+                var concatChanges01 = core.tryToConcatChanges(diffs[0], diffs[1]),
+                    concatChanges10 = core.tryToConcatChanges(diffs[1], diffs[0]);
+
+                expect(concatChanges01.items.length).to.equal(2);
+                expect(concatChanges10.items.length).to.equal(2);
+
+                expect(concatChanges01.items[0].theirs).to.eql(concatChanges10.items[0].mine);
+                expect(concatChanges01.items[1].theirs).to.eql(concatChanges10.items[1].mine);
+            })
+            .nodeify(done);
+    });
+
+    it('should keep children created by the two branches', function (done) {
+        var originRoot,
+            basePath,
+            containerPath,
+            countRelid = function (nodes, relid) {
+                var count = 0,
+                    i;
+                for (i = 0; i < nodes.length; i += 1) {
+                    if (core.getRelid(nodes[i]) === relid) {
+                        count += 1;
+                    }
+                }
+                return count;
+            };
+
+        loadRootAndFCO(context.rootHash)
+            .then(function (r) {
+                var base = core.createNode({
+                        parent: r.root,
+                        base: r.fco
+                    }),
+                    container = core.createNode({
+                        parent: r.root,
+                        base: r.fco,
+                        relid: 'containerNode'
+                    });
+
+                basePath = core.getPath(base);
+                containerPath = core.getPath(container);
+
+                originRoot = r.root;
+                return save(r.root);
+            })
+            .then(function (rootHash) {
+                return Q.all([
+                    loadRootAndFCO(rootHash, [basePath, containerPath]),
+                    loadRootAndFCO(rootHash, [basePath, containerPath]),
+                ]);
+            })
+            .then(function (trees) {
+                // We've loaded two trees from the same rootHash
+                // now let's make changes.
+
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childOne'
+                });
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childTwo'
+                });
+
+                core.createNode({
+                    parent: trees[0][containerPath],
+                    base: trees[0].fco,
+                    relid: 'childThree'
+                });
+                core.copyNode(trees[1][basePath], trees[1][containerPath]);
+
+                // Save to ensure the added nodes are persisted.
+                return Q.all([
+                    save(trees[0].root),
+                    save(trees[1].root)
+                ])
+                    .then(function () {
+                        return Q.all([
+                            core.generateTreeDiff(originRoot, trees[0].root),
+                            core.generateTreeDiff(originRoot, trees[1].root),
+                        ]);
+                    });
+            })
+            .then(function (diffs) {
+                var concatChanges01 = core.tryToConcatChanges(diffs[0], diffs[1]),
+                    concatChanges10 = core.tryToConcatChanges(diffs[1], diffs[0]);
+
+                expect(concatChanges01.items.length).to.equal(0);
+                expect(concatChanges10.items.length).to.equal(0);
+                return core.applyTreeDiff(originRoot, concatChanges01.merge);
+            })
+            .then(function () {
+                // This use-case requires a persist and reload before actions to take place..
+                //TODO: In general which kind of changes requires this? setBase and moveNode??
+                return save(originRoot);
+            })
+            .then(function (newRootHash) {
+                return loadRootAndFCO(newRootHash);
+            })
+            .then(function (r) {
+                return core.loadSubTree(r.root);
+            })
+            .then(function (st) {
+                // Root, fco, base, container, 4 children
+                // logNodes(st);
+                expect(st.length).to.equal(8);
+                expect(countRelid(st, 'childOne')).to.equal(1);
+                expect(countRelid(st, 'childTwo')).to.equal(1);
+                expect(countRelid(st, 'childThree')).to.equal(1);
+
+                for (var i = 0; i < st.length; i += 1) {
+                    if (core.getRelid(st[i]) === 'containerNode') {
+                        expect(core.getChildrenRelids(st[i]).length).to.equal(4);
+                    }
+                }
             })
             .nodeify(done);
     });
