@@ -618,7 +618,6 @@ describe('corediff scenarios', function () {
                     relid: 'childTwo'
                 });
 
-
                 core.deleteNode(trees[1][containerPath]);
 
                 // Save to ensure the added nodes are persisted.
@@ -646,10 +645,20 @@ describe('corediff scenarios', function () {
             .nodeify(done);
     });
 
-    it.only('should keep children created by the two branches', function (done) {
+    it('should keep children created by the two branches', function (done) {
         var originRoot,
             basePath,
-            containerPath;
+            containerPath,
+            countRelid = function (nodes, relid) {
+                var count = 0,
+                    i;
+                for (i = 0; i < nodes.length; i += 1) {
+                    if (core.getRelid(nodes[i]) === relid) {
+                        count += 1;
+                    }
+                }
+                return count;
+            };
 
         loadRootAndFCO(context.rootHash)
             .then(function (r) {
@@ -659,7 +668,8 @@ describe('corediff scenarios', function () {
                     }),
                     container = core.createNode({
                         parent: r.root,
-                        base: r.fco
+                        base: r.fco,
+                        relid: 'containerNode'
                     });
 
                 basePath = core.getPath(base);
@@ -689,13 +699,12 @@ describe('corediff scenarios', function () {
                     relid: 'childTwo'
                 });
 
-
                 core.createNode({
                     parent: trees[0][containerPath],
                     base: trees[0].fco,
                     relid: 'childThree'
                 });
-                core.copyNode(trees[1][basePath],trees[1][containerPath]);
+                core.copyNode(trees[1][basePath], trees[1][containerPath]);
 
                 // Save to ensure the added nodes are persisted.
                 return Q.all([
@@ -715,13 +724,36 @@ describe('corediff scenarios', function () {
 
                 expect(concatChanges01.items.length).to.equal(0);
                 expect(concatChanges10.items.length).to.equal(0);
+                return core.applyTreeDiff(originRoot, concatChanges01.merge);
+            })
+            .then(function () {
+                // This use-case requires a persist and reload before actions to take place..
+                //TODO: In general which kind of changes requires this? setBase and moveNode??
+                return save(originRoot);
+            })
+            .then(function (newRootHash) {
+                return loadRootAndFCO(newRootHash);
+            })
+            .then(function (r) {
+                return core.loadSubTree(r.root);
+            })
+            .then(function (st) {
+                // Root, fco, base, container, 4 children
+                // logNodes(st);
+                expect(st.length).to.equal(8);
+                expect(countRelid(st, 'childOne')).to.equal(1);
+                expect(countRelid(st, 'childTwo')).to.equal(1);
+                expect(countRelid(st, 'childThree')).to.equal(1);
 
-
+                for (var i = 0; i < st.length; i += 1) {
+                    if (core.getRelid(st[i]) === 'containerNode') {
+                        expect(core.getChildrenRelids(st[i]).length).to.equal(4);
+                    }
+                }
             })
             .nodeify(done);
     });
 
-    
     // Symmetry
     it('should give conflict when del base in one tree and mod instance in other', function (done) {
         var originRoot,
