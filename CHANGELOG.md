@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.18.4](https://github.com/webgme/webgme-engine/tree/v2.18.4) (2017-10-13)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.3...v2.18.4)
+
+**Fixed bugs:**
+
+- Relaunching users in client throws exception [\#14](https://github.com/webgme/webgme-engine/issues/14)
+- Merging branches with children created in a container and container removed resolves with no conflict [\#13](https://github.com/webgme/webgme-engine/issues/13)
+- Merging two branches with new nodes only keeps one [\#12](https://github.com/webgme/webgme-engine/issues/12)
+- Merge fixes [\#16](https://github.com/webgme/webgme-engine/pull/16) ([kecso](https://github.com/kecso))
+- Fixes \#14 make sure UI is not null before accessing relaunch [\#15](https://github.com/webgme/webgme-engine/pull/15) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.18.3](https://github.com/webgme/webgme-engine/tree/v2.18.3) (2017-09-25)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.2...v2.18.3)
 
