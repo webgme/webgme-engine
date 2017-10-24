@@ -354,6 +354,10 @@ define([
         }
 
         // ------- static methods
+        this.copyIfObject = function (val) {
+            return typeof val === 'object' && val !== null ? JSON.parse(JSON.stringify(val)) : val;
+        };
+
         this.getParent = function (node) {
             ASSERT(typeof node.parent === 'object');
 
