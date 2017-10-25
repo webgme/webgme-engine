@@ -43,6 +43,7 @@ define(['q', 'common/core/constants'], function (Q, CONSTANTS) {
 
         function visitForPointer(visited, next) {
             var definitionInfo,
+                validTargetPaths,
                 deferred = Q.defer();
 
             if (parameters.excludeOriginNode === true && core.getPath(visited) === nodePath) {
@@ -57,14 +58,27 @@ define(['q', 'common/core/constants'], function (Q, CONSTANTS) {
             core.loadPointer(visited, parameters.oldName)
                 .then(function (target) {
                     if (target !== null) {
-                        definitionInfo = core.getPointerDefinitionInfo(visited, parameters.newName, target);
+                        console.log(JSON.stringify(core.getJsonMeta(visited)));
+                        try{
+                            definitionInfo = core.getPointerDefinitionInfo(visited, parameters.newName, target);
 
-                        if (definitionInfo.ownerPath === nodePath &&
-                            definitionInfo.targetPath === parameters.targetPath) {
-                            core.renamePointer(visited, parameters.oldName, parameters.newName);
+                            if (definitionInfo.ownerPath === nodePath &&
+                                definitionInfo.targetPath === parameters.targetPath) {
+                                core.renamePointer(visited, parameters.oldName, parameters.newName);
+
+                                if (core.getPath(visited) === nodePath &&
+                                    core.getValidTargetPaths(visited, parameters.oldName).length > 0) {
+                                    core.setPointer(visited, parameters.oldName, null);
+                                }
+                            }
+                        } catch (e) {
+                            // do nothing as the target must be there for other reasons, or just became wrong
                         }
                     } else if (core.getPath(visited) === nodePath) {
                         core.renamePointer(visited, parameters.oldName, parameters.newName);
+                        if (core.getValidTargetPaths(visited, parameters.oldName).length > 1) {
+                            core.setPointer(visited, parameters.oldName, null);
+                        }
                     }
                     deferred.resolve(null);
                 })
@@ -403,12 +417,14 @@ define(['q', 'common/core/constants'], function (Q, CONSTANTS) {
                         definitionInfo = core.getPointerDefinitionInfo(visited, parameters.name, target);
 
                         if (definitionInfo.ownerPath === nodePath &&
-                            definitionInfo.targetPath === parameters.targetPath) {
+                            definitionInfo.targetPath === parameters.targetPath &&
+                            definitionInfo.hasMultipleOwner !== true) {
                             core.deletePointer(visited, parameters.name);
                         }
-                    } else if (core.getPath(visited) === nodePath) {
-                        core.deletePointer(visited, parameters.name);
                     }
+                    /*else if (core.getPath(visited) === nodePath) {
+                                           core.deletePointer(visited, parameters.name);
+                                       }*/
                     deferred.resolve(null);
                 })
                 .catch(deferred.reject);

@@ -6,8 +6,9 @@
 
 var testFixture = require('../../../_globals');
 
-describe('Meta Rename', function () {
+describe.only('Meta Rename', function () {
     'use strict';
+    this.timeout(10000);
 
     var logger = testFixture.logger.fork('MetaRename'),
         gmeConfig = testFixture.getGmeConfig(),
@@ -248,5 +249,9 @@ describe('Meta Rename', function () {
 
             })
             .nodeify(done);
+    });
+
+    it('should keep definition after rename if still valid', function(done){
+        
     });
 });

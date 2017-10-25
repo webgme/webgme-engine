@@ -608,7 +608,15 @@ define([
         };
 
         this.getPointerDefinitionInfo = function (node, name, target) {
-            return getFirstMatchingRuleInfo(node, name, target, self.getOwnValidTargetPaths, {});
+            var alreadyVisited = {},
+                info = getFirstMatchingRuleInfo(node, name, target, self.getOwnValidTargetPaths, alreadyVisited);
+
+            if (info &&
+                getFirstMatchingRuleInfo(node, name, target, self.getOwnValidTargetPaths, alreadyVisited) !== null) {
+                info.hasMultipleOwner = true;
+            }
+
+            return info;
         };
 
         this.getSetDefinitionInfo = function (node, name, target) {
