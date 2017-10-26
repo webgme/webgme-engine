@@ -1543,6 +1543,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
     function renameMetaPointerTarget(webgmeToken, parameters, callback) {
         var storage,
             context,
+            sourceNode,
+            targetNode,
             finish = function (err, result) {
                 if (err) {
                     err = err instanceof Error ? err : new Error(err);
@@ -1567,13 +1569,18 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     context.core.loadByPath(context.rootNode, parameters.targetPath)]);
             })
             .then(function (nodes) {
-                context.core.movePointerMetaTarget(nodes[0], nodes[1], parameters.oldName, parameters.newName);
-                return metaRename.propagateMetaDefinitionRename(context.core, nodes[0], parameters);
+                sourceNode = node[0];
+                targetNode = node[1];
+                context.core.movePointerMetaTarget(sourceNode, targetNode, parameters.oldName, parameters.newName);
+                return metaRename.propagateMetaDefinitionRename(context.core, sourceNode, parameters);
             })
             .then(function () {
                 var deferred = Q.defer(),
                     persisted;
 
+                if (context.core.getOwnValidTargetPaths(sourceNode, parameters.oldName).length > 0) {
+                    context.core.setPointer(sourceNode, parameters.oldName, null);
+                }
                 persisted = context.core.persist(context.rootNode);
 
                 context.project.makeCommit(
@@ -1752,8 +1759,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     case 'pointer':
                     case 'set':
                         context.core.delPointerMetaTarget(node, parameters.name, parameters.targetPath);
-                        if (context.core.getValidTargetPaths(node, parameters.name).length === 0) {
-                            context.core.delPointerMeta(node, parameters.name);
+                        if (context.core.getOwnValidTargetPaths(node, parameters.name).length > 0) {
+                            context.core.setPointer(node, parameters.name, null);
                         }
                         break;
                     case 'containment':

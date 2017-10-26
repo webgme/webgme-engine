@@ -623,6 +623,10 @@ define([
             var metaNode = getMetaPointerNode(node, name);
             if (metaNode) {
                 self.delMember(metaNode, CONSTANTS.SET_ITEMS, targetPath);
+
+                if(self.getOwnValidTargetPaths(node,name).length === 0){
+                    self.delPointerMeta(node,name);
+                }
             }
         };
 

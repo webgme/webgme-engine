@@ -218,39 +218,67 @@ define([
             return null;
         }
 
-        function getFirstMatchingRuleInfo(node, name, target, getter, alreadyVisited) {
-            var base = self.getBase(node),
-                path = self.getPath(node),
-                mixins = getOrderedMixinList(node),
+        function getFirstMatchingRuleInfo(parameters) {
+            var base = self.getBase(parameters.node),
+                path = self.getPath(parameters.node),
+                mixins = getOrderedMixinList(parameters.node),
+                newParams,
                 info,
                 i;
 
-            if (alreadyVisited[path]) {
+            if (parameters.alreadyVisited[path]) {
                 return null;
             }
 
             //when it comes to rule holder, always the given node's own rule-set is the first
-            alreadyVisited[path] = true;
-            info = getOwnRuleInfo(node, name, target, getter);
+            parameters.alreadyVisited[path] = true;
+            info = getOwnRuleInfo(parameters.node, parameters.name, parameters.target, parameters.getter);
             if (info) {
-                return info;
+                if (parameters.info) {
+                    parameters.info.hasMultipleOwner = true;
+                    return parameters.info;
+                } else {
+                    parameters.info = info;
+                }
             }
 
             if (base) {
-                info = getFirstMatchingRuleInfo(base, name, target, getter, alreadyVisited);
-                if (info) {
-                    return info;
+                newParams = {
+                    node: base,
+                    name: parameters.name,
+                    target: parameters.target,
+                    alreadyVisited: parameters.alreadyVisited,
+                    info: parameters.info,
+                    getter: parameters.getter
+                };
+                info = getFirstMatchingRuleInfo(newParams);
+                if (parameters.info) {
+                    parameters.info.hasMultipleOwner = true;
+                    return parameters.info;
+                } else {
+                    parameters.info = info;
                 }
             }
 
             for (i = 0; i < mixins.length; i += 1) {
-                info = getFirstMatchingRuleInfo(mixins[i], name, target, getter, alreadyVisited);
-                if (info) {
-                    return info;
+                newParams = {
+                    node: mixins[i],
+                    name: parameters.name,
+                    target: parameters.target,
+                    alreadyVisited: parameters.alreadyVisited,
+                    info: parameters.info,
+                    getter: parameters.getter
+                };
+                info = getFirstMatchingRuleInfo(newParams);
+                if (parameters.info) {
+                    parameters.info.hasMultipleOwner = true;
+                    return parameters.info;
+                } else {
+                    parameters.info = info;
                 }
             }
 
-            return null;
+            return parameters.info;
         }
 
         function getAllMatchingRuleHolders(node, name, getter, alreadyVisited) {
@@ -604,27 +632,47 @@ define([
         };
 
         this.getAspectDefinitionInfo = function (node, name, member) {
-            return getFirstMatchingRuleInfo(node, name, member, self.getOwnValidAspectTargetPaths, {});
+            return getFirstMatchingRuleInfo({
+                node: node,
+                name: name,
+                target: member,
+                getter: self.getOwnValidAspectTargetPaths,
+                alreadyVisited: {},
+                info: null
+            });
         };
 
         this.getPointerDefinitionInfo = function (node, name, target) {
-            var alreadyVisited = {},
-                info = getFirstMatchingRuleInfo(node, name, target, self.getOwnValidTargetPaths, alreadyVisited);
-
-            if (info &&
-                getFirstMatchingRuleInfo(node, name, target, self.getOwnValidTargetPaths, alreadyVisited) !== null) {
-                info.hasMultipleOwner = true;
-            }
-
-            return info;
+            return getFirstMatchingRuleInfo({
+                node: node,
+                name: name,
+                target: target,
+                getter: self.getOwnValidTargetPaths,
+                alreadyVisited: {},
+                info: null
+            });
         };
 
         this.getSetDefinitionInfo = function (node, name, target) {
-            return getFirstMatchingRuleInfo(node, name, target, self.getOwnValidTargetPaths, {});
+            return getFirstMatchingRuleInfo({
+                node: node,
+                name: name,
+                target: target,
+                getter: self.getOwnValidTargetPaths,
+                alreadyVisited: {},
+                info: null
+            });
         };
 
         this.getChildDefinitionInfo = function (node, child) {
-            return getFirstMatchingRuleInfo(node, undefined, child, self.getOwnValidChildrenPaths, {});
+            return getFirstMatchingRuleInfo({
+                node: node,
+                name: undefined,
+                target: child,
+                getter: self.getOwnValidChildrenPaths,
+                alreadyVisited: {},
+                info: null
+            });
         };
         //</editor-fold>
 

@@ -6,7 +6,7 @@
 
 var testFixture = require('../../../_globals');
 
-describe.only('Meta Rename', function () {
+describe('Meta Rename', function () {
     'use strict';
     this.timeout(10000);
 
@@ -16,9 +16,11 @@ describe.only('Meta Rename', function () {
         expect = testFixture.expect,
         Q = testFixture.Q,
         renames = requireJS('common/core/users/metarename'),
+        CONSTANTS = requireJS('common/core/constants'),
         propagateMetaDefinitionRename = renames.propagateMetaDefinitionRename,
         metaConceptRename = renames.metaConceptRename,
         metaConceptRenameInMeta = renames.metaConceptRenameInMeta,
+        propagateMetaDefinitionRemove = renames.propagateMetaDefinitionRemove,
         projectName = 'MetaRename',
         branchName = 'master',
         ir,
@@ -251,7 +253,4 @@ describe.only('Meta Rename', function () {
             .nodeify(done);
     });
 
-    it('should keep definition after rename if still valid', function(done){
-        
-    });
 });
