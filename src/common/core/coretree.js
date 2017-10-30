@@ -858,7 +858,7 @@ define([
         };
 
         this.persist = function (node, stackedObjects) {
-            var updated = false,
+            var updated,
                 result;
 
             stackedObjects = stackedObjects || {};

@@ -1569,8 +1569,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     context.core.loadByPath(context.rootNode, parameters.targetPath)]);
             })
             .then(function (nodes) {
-                sourceNode = node[0];
-                targetNode = node[1];
+                sourceNode = nodes[0];
+                targetNode = nodes[1];
                 context.core.movePointerMetaTarget(sourceNode, targetNode, parameters.oldName, parameters.newName);
                 return metaRename.propagateMetaDefinitionRename(context.core, sourceNode, parameters);
             })
