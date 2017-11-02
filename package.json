@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node ./src/bin/start_server.js",
-    "prepublish": "node ./utils/prepublish.js",
+    "prepublishOnly": "node ./utils/prepublish.js",
     "postinstall": "node ./utils/postinstall.js",
     "test": "node ./node_modules/mocha/bin/mocha --recursive test",
     "test_ci": "node ./node_modules/mocha/bin/mocha -R dot --timeout 10000 --recursive test",
