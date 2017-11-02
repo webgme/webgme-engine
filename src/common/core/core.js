@@ -1532,7 +1532,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.getOwnSetAttribute(node, setName, attrName);
+            return core.copyIfObject(core.getOwnSetAttribute(node, setName, attrName));
         };
 
         /**
@@ -1556,7 +1556,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.copyIfObject(core.setSetAttribute(node, setName, attrName, value));
+            core.setSetAttribute(node, setName, attrName, value);
         };
 
         /**
