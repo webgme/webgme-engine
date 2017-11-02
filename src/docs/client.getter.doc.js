@@ -135,32 +135,6 @@
  */
 
 /**
- * @description Retrieves the value of the given attribute of the given node.
- * @function getEditableAttribute
- * @memberOf GMENode
- * @instance
- *
- * @param {string} name - the name of the attribute.
- *
- * @return {(object|primitive|null|undefined)} The function returns the value of the attribute of the node.
- * The value can be an object or any primitive type. If the value is undefined that means the node do not have
- * such attribute defined.
- */
-
-/**
- * @description Returns the value of the attribute defined for the given node.
- * @function getOwnEditableAttribute
- * @memberOf GMENode
- * @instance
- *
- * @param {string} name - the name of the attribute.
- *
- * @return {(object|primitive|null|undefined)} Returns the value of the attribute defined specifically for
- * the node. If undefined then it means that there is no such attribute defined directly for the node, meaning
- * that it either inherits some value or there is no such attribute at all.
- */
-
-/**
  * @description Returns the value of the given registry entry.
  * Please note that this return value should not be mutated!
  * @function getRegistry
@@ -176,28 +150,6 @@
  * @description Returns the value of the registry entry defined for the given node.
  * Please note that this return value should not be mutated!
  * @function getOwnRegistry
- * @memberOf GMENode
- * @instance
- *
- * @param {string} name - The name of the registry entry.
- *
- * @return {primitive|object|null|undefined} The value of the registry entry.
- */
-
-/**
- * @description Returns the value of the given registry entry.
- * @function getEditableRegistry
- * @memberOf GMENode
- * @instance
- *
- * @param {string} name - The name of the registry entry.
- *
- * @return {primitive|object|null|undefined} The value of the registry entry.
- */
-
-/**
- * @description Returns the value of the registry entry defined for the given node.
- * @function getOwnEditableRegistry
  * @memberOf GMENode
  * @instance
  *
@@ -352,10 +304,8 @@
 // expect(typeof node.getSetNames).to.equal('function');
 // expect(typeof node.getMemberAttributeNames).to.equal('function');
 // expect(typeof node.getMemberAttribute).to.equal('function');
-// expect(typeof node.getEditableMemberAttribute).to.equal('function');
 // expect(typeof node.getMemberRegistryNames).to.equal('function');
 // expect(typeof node.getMemberRegistry).to.equal('function');
-// expect(typeof node.getEditableMemberRegistry).to.equal('function');
 // expect(typeof node.getSetRegistry).to.equal('function');
 // expect(typeof node.getSetRegistryNames).to.equal('function');
 // expect(typeof node.getSetAttribute).to.equal('function');
