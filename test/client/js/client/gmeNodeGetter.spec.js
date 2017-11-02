@@ -4,7 +4,7 @@
  */
 var testFixture = require('../../../_globals.js');
 
-describe.only('gmeNodeGetter', function () {
+describe('gmeNodeGetter', function () {
     'use strict';
 
     var gmeConfig,
