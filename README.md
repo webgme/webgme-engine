@@ -1,8 +1,11 @@
 # Webgme-Engine
 This is the "engine" of the webgme app containing all server code, common-modules and client-api. 
-The webgme-engine was forked off from webgme/webgme at [version v2.17.0](https://github.com/webgme/webgme/releases/tag/v2.17.0) and since then is released separately from webgme starting off from v2.18.0 (note that all previous webgme code and tags still exist in this repo).
+The webgme-engine was forked off from webgme/webgme at [version v2.17.0](https://github.com/webgme/webgme/releases/tag/v2.17.0) and since then is released separately from webgme starting off from v2.18.0.
 
 Most documentation in the [webgme/webgme - wiki](https://github.com/webgme/webgme/wiki) is still applicable for this repository (all except the GUI specifics).
+
+[webgme/webgme](https://github.com/webgme/webgme) uses the engine as a dependency and a repository should only depend on
+one of these libraries.
 
 # Command line interface
 

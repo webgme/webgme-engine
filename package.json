@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node ./src/bin/start_server.js",
-    "prepublish": "node ./utils/prepublish.js",
+    "prepublishOnly": "node ./utils/prepublish.js",
     "postinstall": "node ./utils/postinstall.js",
     "test": "node ./node_modules/mocha/bin/mocha --recursive test",
     "test_ci": "node ./node_modules/mocha/bin/mocha -R dot --timeout 10000 --recursive test",
@@ -60,7 +60,7 @@
     "debug": "2.6.8",
     "express": "4.15.2",
     "ink-docstrap": "1.3.0",
-    "jsdoc": "3.4.3",
+    "jsdoc": "3.5.5",
     "jsonwebtoken": "7.4.1",
     "jszip": "2.5.0",
     "method-override": "2.3.8",

@@ -380,7 +380,7 @@ define([
      * @param {string} [message.severity='info'] - Severity level ('success', 'info', 'warn', 'error')
      * @param {boolean} [message.toBranch=false] - If true, and the plugin is running on the server on a branch -
      * will broadcast to all sockets in the branch room.
-     * @param {string} [callback] - optional callback invoked when message has been emitted from server.
+     * @param {function(Error)} [callback] - optional callback invoked when message has been emitted from server.
      */
     PluginBase.prototype.sendNotification = function (message, callback) {
         var self = this,
@@ -428,7 +428,7 @@ define([
      * To report the commits in the PluginResult make sure to invoke this.addCommitToResult with the given status.
      *
      * @param {string|null} message - commit message
-     * @param {function(Error|string, module:Storage~commitResult)} callback
+     * @param {function(Error, module:Storage~commitResult)} callback
      */
     PluginBase.prototype.save = function (message, callback) {
         var self = this,
@@ -533,7 +533,7 @@ define([
      * previous commit. Additionally if the namespaces have changed between commits - the this.META might end up
      * being empty.
      *
-     * @param {[function(Error, boolean)]} callback - Resolved with true if branch had moved forward.
+     * @param {function(Error, boolean)} [callback] - Resolved with true if branch had moved forward.
      * @returns {Promise}
      */
     PluginBase.prototype.fastForward = function (callback) {

@@ -46,8 +46,16 @@ function prepublish(jsdocConfigPath) {
         console.log('Generating webgme source code documentation ...');
         childProcess.execFile(process.execPath, [
             path.join(__dirname, './jsdoc_build.js'),
-            '-c', jsdocConfigPath || './jsdoc_conf.json']);
-        console.log('Done with source code documentation!');
+            '-c', jsdocConfigPath || './jsdoc_conf.json'],
+            null,
+            function (err) {
+                if (err) {
+                    console.error('Failed generating source code documentation!', err);
+                    process.exit(1);
+                } else {
+                    console.log('Done with source code documentation!');
+                }
+            });
     }
 }
 
