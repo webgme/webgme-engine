@@ -115,7 +115,7 @@ describe('Connected worker', function () {
             modulesToUnload = [];
 
         for (key in require.cache) {
-            if (require.cache.hasOwnProperty(key)) {
+            if (require.cache[key]) {
                 if (key.indexOf('connectedworker.js') > -1) {
                     modulesToUnload.push(key);
                 }
