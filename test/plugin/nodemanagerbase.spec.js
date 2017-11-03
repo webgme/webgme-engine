@@ -96,12 +96,12 @@ describe('climanager', function () {
     it('should throw exception when initializePlugin on a non-existing plugin', function (done) {
         var manager = new PluginCliManager(null, logger, gmeConfig);
 
-        manager.initializePlugin(pluginName)
+        manager.initializePlugin('PluginDoesNotExist')
             .then(function () {
                 throw new Error('Should have failed!');
             })
             .catch(function (err) {
-                expect(err).to.deep.equal({});
+                expect(err.message).to.include('Tried loading "plugin/PluginDoesNotExist/PluginDoesNotExist/PluginDoesNotExist"');
             })
             .nodeify(done);
     });
