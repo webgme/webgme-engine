@@ -64,7 +64,7 @@
     "jsonwebtoken": "8.1.0",
     "jszip": "2.5.0",
     "method-override": "2.3.10",
-    "mime": "2.0.3",
+    "mime": "1.4.1",
     "minimatch": "3.0.4",
     "mongo-uri": "0.1.2",
     "mongodb": "2.2.33",
