@@ -28,6 +28,8 @@ config.storage.database.options = {
 
 config.addOn.basePaths.push(path.join(__dirname, '../test/addon/addOns'));
 
+config.socketIO.clientOptions.reconnection = false;
+
 config.server.log = {
     transports: [{
         transportType: 'Console',
