@@ -296,7 +296,7 @@ describe('gmeNodeGetter', function () {
             originalAttribute = {field: 'one'};
 
         context.core.setAttribute(basicState.nodes['/175547009/871430202'].node, 'testing', originalAttribute);
-        expect(node.getAttribute('testing')).to.equal(originalAttribute);
+        expect(node.getAttribute('testing')).to.deep.equal(originalAttribute);
         expect(node.getEditableAttribute('testing')).not.to.equal(originalAttribute);
         expect(node.getEditableAttribute('name')).to.equal('InSet');
     });
@@ -306,7 +306,7 @@ describe('gmeNodeGetter', function () {
             originalAttribute = {field: 'one'};
 
         context.core.setAttribute(basicState.nodes['/175547009/871430202'].node, 'testing', originalAttribute);
-        expect(node.getOwnAttribute('testing')).to.equal(originalAttribute);
+        expect(node.getOwnAttribute('testing')).to.deep.equal(originalAttribute);
         expect(node.getOwnEditableAttribute('testing')).not.to.equal(originalAttribute);
         expect(node.getOwnEditableAttribute('name')).to.equal('InSet');
     });
@@ -473,8 +473,8 @@ describe('gmeNodeGetter', function () {
         context.core.setMemberAttribute(basicState.nodes[''].node,
             'MetaAspectSet', '/175547009/871430202', 'testing', originalAttribute);
 
-        expect(node.getMemberAttribute('MetaAspectSet', '/175547009/871430202', 'testing')).to.equal(originalAttribute);
-        expect(node.getEditableMemberAttribute('MetaAspectSet', '/175547009/871430202', 'other')).to.equal(null);
+        expect(node.getMemberAttribute('MetaAspectSet', '/175547009/871430202', 'testing')).to.deep.equal(originalAttribute);
+        expect(node.getEditableMemberAttribute('MetaAspectSet', '/175547009/871430202', 'other')).to.equal(undefined);
         expect(node.getEditableMemberAttribute('MetaAspectSet', '/175547009/871430202', 'testing'))
             .not.to.equal(originalAttribute);
 
@@ -496,7 +496,7 @@ describe('gmeNodeGetter', function () {
         var node = getNode('', logger, basicState, basicStoreNode),
             originalRegistry = node.getMemberRegistry('MetaAspectSet', '/175547009/871430202', 'position');
 
-        expect(node.getEditableMemberRegistry('MetaAspectSet', '/175547009/871430202', 'other')).to.equal(null);
+        expect(node.getEditableMemberRegistry('MetaAspectSet', '/175547009/871430202', 'other')).to.equal(undefined);
         expect(node.getEditableMemberRegistry('MetaAspectSet', '/175547009/871430202', 'position'))
             .not.to.equal(originalRegistry);
 

@@ -2,6 +2,7 @@
 
 /**
  * @author kecso / https://github.com/kecso
+ * @author pmeijer / https://github.com/pmeijer
  */
 
 var testFixture = require('../../_globals.js');
@@ -4821,4 +4822,112 @@ describe('core', function () {
         }
     });
 
+    // Avoiding mutation at getters
+    function prepRootNode() {
+        var newRootHash,
+            rooti;
+
+        return Q.nfcall(core.loadRoot, originalRootHash)
+            .then(function (root_) {
+                rooti = root_;
+
+                core.setAttribute(rooti, 'complex', {b: 2});
+                core.setRegistry(rooti, 'complex', {b: 2});
+                core.createSet(rooti, 'complex');
+                core.setSetAttribute(rooti, 'complex', 'complex', {b: 2});
+                core.setSetRegistry(rooti, 'complex', 'complex', {b: 2});
+                core.addMember(rooti, 'complex', rooti);
+                core.setMemberAttribute(rooti, 'complex', '', 'complex', {b: 2});
+                core.setMemberRegistry(rooti, 'complex', '', 'complex', {b: 2});
+                core.setAttributeMeta(rooti, 'complex', {type: 'string'});
+                core.setAspectMetaTarget(rooti, 'complex', rooti);
+                core.setPointerMetaTarget(rooti, 'complex', rooti, 1, 1);
+                core.setConstraint(rooti, 'complex',{script: 'function(){}', info: 'hello', priority: 1});
+
+                return Q.nfcall(core.addLibrary, rooti, 'complex', originalRootHash,
+                    {projectId: project.projectId, commitHash: originalRootHash});
+            })
+            .then(function () {
+                var persisted = core.persist(rooti);
+                newRootHash = persisted.rootHash;
+                return project.makeCommit(null,
+                    [commit],
+                    persisted.rootHash,
+                    persisted.objects,
+                    'some message')
+            })
+            .then(function () {
+                return Q.nfcall(core.loadRoot, newRootHash);
+            })
+    }
+
+    function genTests(methods) {
+        methods.forEach(function (method) {
+            it('should not modify internal value at ' + (method.name ? method.name : method), function (done) {
+                prepRootNode()
+                    .then(function (rootNode) {
+                        var obj;
+                        if (method.name) {
+                            obj = core[method.name](rootNode, 'complex', method.memberPath, 'complex');
+                            obj.a = 2;
+                            expect(core[method.name](rootNode, 'complex', method.memberPath, 'complex').a).to.equal(undefined);
+                        } else {
+                            obj = core[method](rootNode, 'complex', 'complex');
+                            obj.a = 2;
+                            expect(core[method](rootNode, 'complex', 'complex').a).to.equal(undefined);
+                        }
+                    })
+                    .nodeify(done);
+            });
+        });
+    }
+
+    genTests(['getAttribute', 'getOwnAttribute', 'getSetAttribute', 'getOwnSetAttribute']);
+    genTests(['getRegistry', 'getOwnRegistry', 'getSetRegistry', 'getOwnSetRegistry']);
+    genTests([
+        {name: 'getMemberAttribute', memberPath: '' },
+        {name: 'getMemberOwnAttribute', memberPath: '' },
+        {name: 'getMemberRegistry', memberPath: '' },
+        {name: 'getMemberOwnRegistry', memberPath: '' }
+        ]);
+    genTests(['getAttributeMeta', 'getLibraryInfo']);
+
+    function mutateComplex(obj) {
+        var key, key2;
+        for (key in obj) {
+            for (key2 in obj[key]) {
+                if (typeof obj[key][key2] === 'object' && obj[key][key2] !== null) {
+                    if (obj[key][key2] instanceof Array) {
+                        obj[key][key2].push(41);
+                    } else {
+                        obj[key][key2].mod = 41;
+                    }
+                }
+            }
+            obj[key].mod = 41;
+        }
+        obj.mod = 41;
+    }
+
+    it('should not modify internal value at getJsonMeta', function (done) {
+        prepRootNode()
+            .then(function (rootNode) {
+                var obj = core.getJsonMeta(rootNode);
+
+                mutateComplex(obj);
+                expect(JSON.stringify(core.getJsonMeta(rootNode)).indexOf('41')).to.equal(-1);
+            })
+            .nodeify(done);
+    });
+
+    it('should not modify internal value at getOwnJsonMeta', function (done) {
+        prepRootNode()
+            .then(function (rootNode) {
+                var obj = core.getOwnJsonMeta(rootNode);
+
+                mutateComplex(obj);
+                expect(JSON.stringify(core.getOwnJsonMeta(rootNode)).indexOf('41')).to.equal(-1);
+            })
+            .nodeify(done);
+    });
 });

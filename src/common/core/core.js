@@ -936,7 +936,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.getAttribute(node, name);
+            return core.copyIfObject(core.getAttribute(node, name));
         };
 
         /**
@@ -1007,7 +1007,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.getRegistry(node, name);
+            return core.copyIfObject(core.getRegistry(node, name));
         };
 
         /**
@@ -1256,7 +1256,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.getOwnAttribute(node, name);
+            return core.copyIfObject(core.getOwnAttribute(node, name));
         };
 
         /**
@@ -1275,7 +1275,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.getOwnRegistry(node, name);
+            return core.copyIfObject(core.getOwnRegistry(node, name));
         };
 
         /**
@@ -1347,7 +1347,7 @@ define([
                 ensureNode(base, 'base');
             }
 
-            return core.setBase(node, base);
+            core.setBase(node, base);
         };
 
         /**
@@ -1410,7 +1410,7 @@ define([
             ensureNode(node, 'node');
             ensureRelationName(name, 'name');
 
-            return core.createSet(node, name);
+            core.createSet(node, name);
         };
 
         /**
@@ -1426,7 +1426,7 @@ define([
             ensureNode(node, 'node');
             ensureRelationName(name, 'name');
 
-            return core.deleteSet(node, name);
+            core.deleteSet(node, name);
         };
 
         /**
@@ -1507,7 +1507,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.getSetAttribute(node, setName, attrName);
+            return core.copyIfObject(core.getSetAttribute(node, setName, attrName));
         };
 
         /**
@@ -1532,7 +1532,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.getOwnSetAttribute(node, setName, attrName);
+            return core.copyIfObject(core.getOwnSetAttribute(node, setName, attrName));
         };
 
         /**
@@ -1556,7 +1556,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.setSetAttribute(node, setName, attrName, value);
+            core.setSetAttribute(node, setName, attrName, value);
         };
 
         /**
@@ -1578,7 +1578,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.delSetAttribute(node, setName, attrName);
+            core.delSetAttribute(node, setName, attrName);
         };
 
         //Regs
@@ -1649,7 +1649,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.getSetRegistry(node, setName, regName);
+            return core.copyIfObject(core.getSetRegistry(node, setName, regName));
         };
 
         /**
@@ -1673,7 +1673,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.getOwnSetRegistry(node, setName, regName);
+            return core.copyIfObject(core.getOwnSetRegistry(node, setName, regName));
         };
 
         /**
@@ -1697,7 +1697,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.setSetRegistry(node, setName, regName, value);
+            core.setSetRegistry(node, setName, regName, value);
         };
 
         /**
@@ -1719,7 +1719,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of unknown set.');
             }
 
-            return core.delSetRegistry(node, setName, regName);
+            core.delSetRegistry(node, setName, regName);
         };
 
         /**
@@ -1788,7 +1788,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access member information of unknown set.');
             }
 
-            return core.delMember(node, name, path);
+            core.delMember(node, name, path);
         };
 
         /**
@@ -1805,7 +1805,8 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
             ensureNode(member, 'member');
-            return core.addMember(node, name, member);
+
+            core.addMember(node, name, member);
         };
 
         /**
@@ -1892,7 +1893,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of an unknown member.');
             }
 
-            return core.getMemberAttribute(node, setName, path, attrName);
+            return core.copyIfObject(core.getMemberAttribute(node, setName, path, attrName));
         };
 
         /**
@@ -1923,7 +1924,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of an unknown member.');
             }
 
-            return core.getMemberOwnAttribute(node, setName, path, attrName);
+            return core.copyIfObject(core.getMemberOwnAttribute(node, setName, path, attrName));
         };
 
         /**
@@ -1953,7 +1954,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of an unknown member.');
             }
 
-            return core.setMemberAttribute(node, setName, path, attrName, value);
+            core.setMemberAttribute(node, setName, path, attrName, value);
         };
 
         /**
@@ -1981,7 +1982,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access attributes of an unknown member.');
             }
 
-            return core.delMemberAttribute(node, setName, memberPath, attrName);
+            core.delMemberAttribute(node, setName, memberPath, attrName);
         };
 
         /**
@@ -2071,7 +2072,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access registry of an unknown member.');
             }
 
-            return core.getMemberRegistry(node, setName, path, regName);
+            return core.copyIfObject(core.getMemberRegistry(node, setName, path, regName));
         };
 
         /**
@@ -2102,7 +2103,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access registry of an unknown member.');
             }
 
-            return core.getMemberOwnRegistry(node, setName, path, regName);
+            return core.copyIfObject(core.getMemberOwnRegistry(node, setName, path, regName));
         };
 
         /**
@@ -2132,7 +2133,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access registry of an unknown member.');
             }
 
-            return core.setMemberRegistry(node, setName, path, regName, value);
+            core.setMemberRegistry(node, setName, path, regName, value);
         };
 
         /**
@@ -2160,7 +2161,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access registry of an unknown member.');
             }
 
-            return core.delMemberRegistry(node, setName, path, regName);
+            core.delMemberRegistry(node, setName, path, regName);
         };
 
         /**
@@ -2261,7 +2262,7 @@ define([
             ensureType(name, 'name', 'string');
             ensureType(constraint, 'constraint', 'object');
 
-            return core.setConstraint(node, name, constraint);
+            core.setConstraint(node, name, constraint);
         };
 
         /**
@@ -2277,7 +2278,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.delConstraint(node, name);
+            core.delConstraint(node, name);
         };
 
         /**
@@ -2624,7 +2625,7 @@ define([
         this.clearMetaRules = function (node) {
             ensureNode(node, 'node');
 
-            return core.clearMetaRules(node);
+            core.clearMetaRules(node);
         };
 
         /**
@@ -2648,7 +2649,7 @@ define([
             ensureType(rule, 'rule', 'object');
             ensureType(rule.type, 'rule.type', 'string');
 
-            return core.setAttributeMeta(node, name, rule);
+            core.setAttributeMeta(node, name, rule);
         };
 
         /**
@@ -2664,7 +2665,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.delAttributeMeta(node, name);
+            core.delAttributeMeta(node, name);
         };
 
         /**
@@ -2726,7 +2727,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.getAttributeMeta(node, name);
+            return core.copyIfObject(core.getAttributeMeta(node, name));
         };
 
         /**
@@ -2789,7 +2790,7 @@ define([
             ensureMinMax(min, 'min');
             ensureMinMax(max, 'max');
 
-            return core.setChildMeta(node, child, min, max);
+            core.setChildMeta(node, child, min, max);
         };
 
         /**
@@ -2805,7 +2806,7 @@ define([
             ensureNode(node, 'node');
             ensurePath(path, 'path');
 
-            return core.delChildMeta(node, path);
+            core.delChildMeta(node, path);
         };
 
         /**
@@ -2825,7 +2826,7 @@ define([
             ensureMinMax(min, 'min');
             ensureMinMax(max, 'max');
 
-            return core.setChildrenMetaLimits(node, min, max);
+            core.setChildrenMetaLimits(node, min, max);
         };
 
         /**
@@ -2849,7 +2850,7 @@ define([
             ensureMinMax(min, 'min');
             ensureMinMax(max, 'max');
 
-            return core.setPointerMetaTarget(node, name, target, min, max);
+            core.setPointerMetaTarget(node, name, target, min, max);
         };
 
         /**
@@ -2871,7 +2872,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot access definition of unknown pointer.');
             }
 
-            return core.delPointerMetaTarget(node, name, path);
+            core.delPointerMetaTarget(node, name, path);
         };
 
         /**
@@ -2895,7 +2896,7 @@ define([
             ensureMinMax(min, 'min');
             ensureMinMax(max, 'max');
 
-            return core.setPointerMetaLimits(node, name, min, max);
+            core.setPointerMetaLimits(node, name, min, max);
         };
 
         /**
@@ -2911,7 +2912,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.delPointerMeta(node, name);
+            core.delPointerMeta(node, name);
         };
 
         /**
@@ -2963,7 +2964,7 @@ define([
             ensureRelationName(name, 'name');
             ensureNode(target, 'target');
 
-            return core.setAspectMetaTarget(node, name, target);
+            core.setAspectMetaTarget(node, name, target);
         };
 
         /**
@@ -2985,7 +2986,7 @@ define([
                 throw new CoreIllegalOperationError('Cannot change definition of unknown aspect.');
             }
 
-            return core.delAspectMetaTarget(node, name, path);
+            core.delAspectMetaTarget(node, name, path);
         };
 
         /**
@@ -3001,7 +3002,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.delAspectMeta(node, name);
+            core.delAspectMeta(node, name);
         };
 
         /**
@@ -3711,7 +3712,7 @@ define([
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
 
-            return core.renameLibrary(node, oldName, newName);
+            core.renameLibrary(node, oldName, newName);
         };
 
         /**
@@ -3731,7 +3732,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            return core.getLibraryInfo(node, name);
+            return core.copyIfObject(core.getLibraryInfo(node, name));
         };
 
         /**
@@ -3979,7 +3980,7 @@ define([
                 throw new CoreIllegalOperationError('Only pointers with values can be renamed.');
             }
 
-            return core.renamePointer(node, oldName, newName);
+            core.renamePointer(node, oldName, newName);
         };
 
         /**
@@ -4000,7 +4001,8 @@ define([
             if (core.getOwnAttribute(node, oldName) === undefined) {
                 throw new CoreIllegalOperationError('Only attributes with own values can be renamed.');
             }
-            return core.renameAttribute(node, oldName, newName);
+
+            core.renameAttribute(node, oldName, newName);
         };
 
         /**
@@ -4022,7 +4024,7 @@ define([
                 throw new CoreIllegalOperationError('Only registry entries with own values can be renamed.');
             }
 
-            return core.renameRegistry(node, oldName, newName);
+            core.renameRegistry(node, oldName, newName);
         };
 
         /**
@@ -4043,7 +4045,8 @@ define([
             if (core.getOwnSetNames(node).indexOf(oldName) === -1) {
                 throw new CoreIllegalOperationError('Cannot rename nonexistent/inherited set [' + oldName + ']');
             }
-            return core.renameSet(node, oldName, newName);
+
+            core.renameSet(node, oldName, newName);
         };
 
         /**
@@ -4272,7 +4275,7 @@ define([
                 throw new CoreIllegalOperationError('Not own member of the set therefore cannot be moved.');
             }
 
-            return core.moveMember(node, memberPath, oldSetName, newSetName);
+            core.moveMember(node, memberPath, oldSetName, newSetName);
         };
 
         /**
@@ -4296,7 +4299,7 @@ define([
                 throw new CoreIllegalOperationError('Unknown definition [' + oldName + '] cannot be renamed.');
             }
 
-            return core.renameAttributeMeta(node, oldName, newName);
+            core.renameAttributeMeta(node, oldName, newName);
         };
 
         /**
@@ -4326,7 +4329,7 @@ define([
                 throw new CoreIllegalOperationError('Not a valid target of [' + oldName + '] defined for the node.');
             }
 
-            return core.movePointerMetaTarget(node, target, oldName, newName);
+            core.movePointerMetaTarget(node, target, oldName, newName);
         };
 
         /**
@@ -4356,7 +4359,7 @@ define([
                 throw new CoreIllegalOperationError('Not a valid target of [' + oldName + '] defined for the node.');
             }
 
-            return core.moveAspectMetaTarget(node, target, oldName, newName);
+            core.moveAspectMetaTarget(node, target, oldName, newName);
         };
 
         /**

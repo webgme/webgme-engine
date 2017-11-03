@@ -475,7 +475,7 @@ define([
             //attributes
             names = self.getValidAttributeNames(node);
             for (i = 0; i < names.length; i += 1) {
-                meta.attributes[names[i]] = self.getAttributeMeta(node, names[i]);
+                meta.attributes[names[i]] = self.copyIfObject(self.getAttributeMeta(node, names[i]));
             }
 
             //pointers

@@ -1669,7 +1669,7 @@ describe('GME client', function () {
         });
 
         it('should return a copy of the value of the attribute of the set containment', function () {
-            expect(clientNode.getEditableMemberAttribute('set', '/1400778473', 'no_attribute')).to.equal(null);
+            expect(clientNode.getEditableMemberAttribute('set', '/1400778473', 'no_attribute')).to.equal(undefined);
         });
 
         it('should return a list of available registry entries of the set containment', function () {
@@ -1686,7 +1686,7 @@ describe('GME client', function () {
         });
 
         it('should return null as copy of the value of unknown set registry item', function () {
-            expect(clientNode.getEditableMemberRegistry('set', '/1400778473', 'no_registry')).to.equal(null);
+            expect(clientNode.getEditableMemberRegistry('set', '/1400778473', 'no_registry')).to.equal(undefined);
         });
 
         it('should return a list of paths of the possible child node types', function () {

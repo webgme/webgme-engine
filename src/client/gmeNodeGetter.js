@@ -104,19 +104,15 @@ define([], function () {
     };
 
     GMENode.prototype.getEditableAttribute = function (name) {
-        var value = this._state.core.getAttribute(this._state.nodes[this._id].node, name);
-        if (typeof value === 'object') {
-            return JSON.parse(JSON.stringify(value));
-        }
-        return value;
+        _logDeprecated('getEditableAttribute', 'getAttribute',
+            ' All returned values from the core can now be mutated without any issues.');
+        return this._state.core.getAttribute(this._state.nodes[this._id].node, name);
     };
 
     GMENode.prototype.getOwnEditableAttribute = function (name) {
-        var value = this._state.core.getOwnAttribute(this._state.nodes[this._id].node, name);
-        if (typeof value === 'object') {
-            return JSON.parse(JSON.stringify(value));
-        }
-        return value;
+        _logDeprecated('getOwnEditableAttribute', 'getOwnAttribute',
+            ' All returned values from the core can now be mutated without any issues.');
+        return this._state.core.getOwnAttribute(this._state.nodes[this._id].node, name);
     };
 
     GMENode.prototype.getRegistry = function (name) {
@@ -128,19 +124,17 @@ define([], function () {
     };
 
     GMENode.prototype.getEditableRegistry = function (name) {
-        var value = this._state.core.getRegistry(this._state.nodes[this._id].node, name);
-        if (typeof value === 'object') {
-            return JSON.parse(JSON.stringify(value));
-        }
-        return value;
+        _logDeprecated('getEditableRegistry', 'getRegistry',
+            ' All returned values from the core can now be mutated without any issues.');
+
+        return this._state.core.getRegistry(this._state.nodes[this._id].node, name);
     };
 
     GMENode.prototype.getOwnEditableRegistry = function (name) {
-        var value = this._state.core.getOwnRegistry(this._state.nodes[this._id].node, name);
-        if (typeof value === 'object') {
-            return JSON.parse(JSON.stringify(value));
-        }
-        return value;
+        _logDeprecated('getOwnEditableRegistry', 'getOwnRegistry',
+            ' All returned values from the core can now be mutated without any issues.');
+
+        return this._state.core.getOwnRegistry(this._state.nodes[this._id].node, name);
     };
 
     GMENode.prototype.getPointer = function (name) {
@@ -209,11 +203,9 @@ define([], function () {
     };
 
     GMENode.prototype.getEditableMemberAttribute = function (setName, memberId, attrName) {
-        var attr = this._state.core.getMemberAttribute(this._state.nodes[this._id].node, setName, memberId, attrName);
-        if (attr !== null && attr !== undefined) {
-            return JSON.parse(JSON.stringify(attr));
-        }
-        return null;
+        _logDeprecated('getEditableMemberAttribute', 'getMemberAttribute',
+            ' All returned values from the core can now be mutated without any issues.');
+        return this._state.core.getMemberAttribute(this._state.nodes[this._id].node, setName, memberId, attrName);
     };
 
     GMENode.prototype.getMemberRegistryNames = function (setName, memberId) {
@@ -225,11 +217,9 @@ define([], function () {
     };
 
     GMENode.prototype.getEditableMemberRegistry = function (setName, memberId, regName) {
-        var attr = this._state.core.getMemberRegistry(this._state.nodes[this._id].node, setName, memberId, regName);
-        if (attr !== null && attr !== undefined) {
-            return JSON.parse(JSON.stringify(attr));
-        }
-        return null;
+        _logDeprecated('getEditableMemberRegistry', 'getMemberRegistry',
+            ' All returned values from the core can now be mutated without any issues.');
+        return this._state.core.getMemberRegistry(this._state.nodes[this._id].node, setName, memberId, regName);
     };
 
     GMENode.prototype.getSetRegistry = function (setName, regName) {
