@@ -637,18 +637,18 @@ function StandAloneServer(gmeConfig) {
 
     //__app.configure(function () {
     //counting of requests works only in debug mode
-    if (gmeConfig.debug === true) {
-        setInterval(function () {
-            if (__reportedRequestCounter !== __requestCounter) {
-                __reportedRequestCounter = __requestCounter;
-                logger.debug('...handled ' + __reportedRequestCounter + ' requests so far...');
-            }
-        }, __requestCheckInterval);
-        __app.use(function (req, res, next) {
-            __requestCounter++;
-            next();
-        });
-    }
+    // if (gmeConfig.debug === true) {
+    //     setInterval(function () {
+    //         if (__reportedRequestCounter !== __requestCounter) {
+    //             __reportedRequestCounter = __requestCounter;
+    //             logger.debug('...handled ' + __reportedRequestCounter + ' requests so far...');
+    //         }
+    //     }, __requestCheckInterval);
+    //     __app.use(function (req, res, next) {
+    //         __requestCounter++;
+    //         next();
+    //     });
+    // }
 
     __app.use(compression());
     __app.use(cookieParser());
