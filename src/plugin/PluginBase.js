@@ -143,7 +143,9 @@ define([
      * <br>- Do NOT put any user interaction logic UI, etc. inside this function.
      * <br>- callback always have to be called even if error happened.
      *
-     * @param {function(string|Error, PluginResult)} callback - the result callback
+     * @param {function} callback - the result callback
+     * @param {null|Error} callback.err - status of the call
+     * @param {PluginResult} callback.result - plugin result
      */
     PluginBase.prototype.main = function (/*callback*/) {
         throw new Error('implement this function in the derived class');
@@ -381,6 +383,7 @@ define([
      * @param {boolean} [message.toBranch=false] - If true, and the plugin is running on the server on a branch -
      * will broadcast to all sockets in the branch room.
      * @param {function(Error)} [callback] - optional callback invoked when message has been emitted from server.
+     * @param {null|Error} callback.err - status of the call
      */
     PluginBase.prototype.sendNotification = function (message, callback) {
         var self = this,
@@ -428,7 +431,10 @@ define([
      * To report the commits in the PluginResult make sure to invoke this.addCommitToResult with the given status.
      *
      * @param {string|null} message - commit message
-     * @param {function(Error, module:Storage~commitResult)} callback
+     * @param {function} [callback] - the result callback
+     * @param {null|Error} callback.err - status of the call
+     * @param {module:Storage~commitResult} callback.commitResult - status of the commit made
+     * @return {external:Promise} If no callback is given, the result will be provided in a promise
      */
     PluginBase.prototype.save = function (message, callback) {
         var self = this,
@@ -532,9 +538,10 @@ define([
      * N.B. Use this with caution, for instance manually referenced nodes in a plugin will still be part of the
      * previous commit. Additionally if the namespaces have changed between commits - the this.META might end up
      * being empty.
-     *
-     * @param {function(Error, boolean)} [callback] - Resolved with true if branch had moved forward.
-     * @returns {Promise}
+     * @param {function} [callback] - the result callback
+     * @param {null|Error} callback.err - status of the call
+     * @param {boolean} callback.didUpdate - true if there was a change and it updated the state to it
+     * @return {external:Promise} If no callback is given, the result will be provided in a promise
      */
     PluginBase.prototype.fastForward = function (callback) {
         var self = this,
@@ -622,11 +629,13 @@ define([
     };
 
     /**
-     * Loads all the nodes starting from node and returns a map from paths to nodes.
+     * Loads all the nodes in the subtree starting from node and returns a map from paths to nodes.
      * @param {module:Core~Node} [node=self.rootNode] - Optional node to preload nodes from,
      * by default all will be loaded.
-     * @param {function} [callback] - if defined no promise will be returned
-     * @return {external:Promise} - If successful will resolve with object where keys are paths and values nodes.
+     * @param {function} [callback] - the result callback
+     * @param {null|Error} callback.err - status of the call
+     * @param {object} callback.nodeMap - keys are paths and values are nodes
+     * @return {external:Promise} If no callback is given, the result will be provided in a promise
      */
     PluginBase.prototype.loadNodeMap = function (node, callback) {
         var self = this;
@@ -660,8 +669,10 @@ define([
      * @param {object} [context.pluginConfig] - Specific configuration parameters that should be used for the invocation.
      * If not provided will first check if the currentConfig of this plugin contains this plugin as dependency within
      * the array this._currentConfig._dependencies. Finally it will fall back to the default config of the plugin.
-     * @param {function(Error, InterPluginResult)} [callback]
-     * @returns {*}
+     * @param {function} [callback] - the result callback
+     * @param {null|Error} callback.err - status of the call
+     * @param {InterPluginResult} callback.result - result from the invoked plugin
+     * @return {external:Promise} If no callback is given, the result will be provided in a promise
      */
     PluginBase.prototype.invokePlugin = function (pluginId, context, callback) {
         var self = this,

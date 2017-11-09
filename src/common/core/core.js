@@ -464,7 +464,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
          * @param {module:Core~Node} callback.node - the resulting root node
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in
+         * @return {external:Promise} If no callback is given, the result will be provided in
          * a promiselike manner.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -493,7 +493,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
          * @param {module:Core~Node} callback.node - the resulting child
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise.
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -520,7 +520,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
          * @param {module:Core~Node} callback.node - the resulting node
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise.
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -546,7 +546,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
          * @param {module:Core~Node[]} callback.children - the resulting children
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise.
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -572,7 +572,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
          * @param {module:Core~Node[]} callback.node - the resulting children
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise.
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -600,7 +600,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
          * @param {module:Core~Node} callback.node - the resulting target
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise.
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -627,7 +627,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
          * @param {module:Core~Node[]} callback.node - the resulting sources
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise.
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -652,7 +652,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
          * @param {module:Core~Node[]} callback.node - the resulting sources
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise.
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -677,7 +677,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
          * @param {module:Core~Node[]} callback.node - the resulting sources
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise.
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -702,7 +702,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution.
          * @param {module:Core~Node[]} callback.nodes - the resulting nodes.
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise.
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -2205,6 +2205,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreIllegalOperationError|CoreAssertError|null} callback.error - the
          * result of the execution.
          *
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
         this.setGuid = function (node, guid, callback) {
@@ -3074,7 +3075,7 @@ define([
          * @param {object} callback.treeDiff - the difference between the two containment hierarchies in
          * a special JSON object
          *
-         * @return {External~Promise} - if the callback is not defined, the result is provided in a promise
+         * @return {external:Promise} - if the callback is not defined, the result is provided in a promise
          * like manner.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3098,6 +3099,8 @@ define([
          * @param {object} patch - the tree structured collection of changes represented with a special JSON object
          * @param {function} [callback]
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution.
+         *
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -3473,7 +3476,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreIllegalOperationError|CoreAssertError|null} callback.error - the
          * result of the execution.
          *
-         * @return {External~Promise} If no callback is given, the result is provided in a promise like manner.
+         * @return {external:Promise} If no callback is given, the result is provided in a promise like manner.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -3517,7 +3520,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreIllegalOperationError|CoreAssertError|null} callback.error - the
          * status of the execution.
          *
-         * @return {External~Promise} If no callback is given, the result is presented in a promise like manner.
+         * @return {external:Promise} If no callback is given, the result is presented in a promise like manner.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          */
@@ -3797,7 +3800,7 @@ define([
          * @param {function} [callback]
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the status of the execution.
          *
-         * @return {External~Promise} If no callback is given, the end of traverse is marked in a promise like
+         * @return {external:Promise} If no callback is given, the end of traverse is marked in a promise like
          * manner.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3898,7 +3901,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the status of the execution.
          * @param {module:Core~Node[]} callback.nodes - the found instances of the node.
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise
          * like manner.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3921,7 +3924,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the status of the execution.
          * @param {module:Core~Node[]} callback.nodes - the found members of the set of the node.
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise
          * like manner.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3945,7 +3948,7 @@ define([
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the status of the execution.
          * @param {module:Core~Node[]} callback.nodes - the found own members of the set of the node.
          *
-         * @return {External~Promise} If no callback is given, the result will be provided in a promise
+         * @return {external:Promise} If no callback is given, the result will be provided in a promise
          * like manner.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
