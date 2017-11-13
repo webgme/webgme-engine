@@ -2025,7 +2025,6 @@ function createAPI(app, mountPath, middlewareOpts) {
 
     router.get('/plugins/metadata', ensureAuthenticated, function (req, res, next) {
         var pluginNames = webgmeUtils.getComponentNames(gmeConfig.plugin.basePaths),
-            result = {},
             promises = [],
             basePath,
             i;
@@ -2037,24 +2036,25 @@ function createAPI(app, mountPath, middlewareOpts) {
 
         Q.allSettled(promises)
             .then(function (fileRes) {
+                var result = {};
                 for (i = 0; i < fileRes.length; i += 1) {
                     if (fileRes[i].state === 'fulfilled') {
                         try {
                             result[pluginNames[i]] = JSON.parse(fileRes[i].value);
                         } catch (e) {
-                            logger.error(e);
+                            logger.error('Parsing metadata.json at "' +
+                                path.join(basePath, pluginNames[i], 'metadata.json') + '", failed with error:\n' +
+                                e.stack);
                         }
                     } else if (fileRes[i].state === 'rejected') {
                         if (fileRes[i].reason.code === 'ENOENT') {
-                            logger.warn('Plugin does not have a metadata.json', pluginNames[i]);
+                            logger.error('Plugin does not have a metadata.json', pluginNames[i]);
                         } else {
                             logger.error(fileRes[i].reason);
                         }
                     } else {
                         logger.error(new Error('Unknown q promise state'));
                     }
-
-                    result[pluginNames[i]] = result[pluginNames[i]] || null;
                 }
 
                 res.json(result);
