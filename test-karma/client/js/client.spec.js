@@ -1967,7 +1967,7 @@ describe('GME client', function () {
                     if (testState === 'init') {
 
                         expect(events).not.to.equal(null);
-                        expect(events).to.include({eid: '/323573539', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
@@ -1998,7 +1998,7 @@ describe('GME client', function () {
                     testState = 'close';
 
                     expect(events).not.to.equal(null);
-                    expect(events).to.include({eid: '/323573539', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
 
                     client.disconnectFromDatabase(function (err) {
                         expect(err).to.equal(null);
@@ -2016,7 +2016,7 @@ describe('GME client', function () {
                 if (testState === 'close') {
                     expect(events).not.to.equal(null);
 
-                    expect(events).to.include({eid: '/323573539', etype: 'unload'});
+                    expect(events).to.deep.include({eid: '/323573539', etype: 'unload'});
 
                     client.removeUI(guid);
                     return;
@@ -2049,7 +2049,7 @@ describe('GME client', function () {
                     testState = 'close';
 
                     expect(events).not.to.equal(null);
-                    expect(events).to.include({eid: '/323573539', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
 
                     client.disconnectFromDatabase(function (err) {
                         expect(err).to.equal(null);
@@ -2069,7 +2069,7 @@ describe('GME client', function () {
                 if (testState === 'close') {
                     expect(events).not.to.equal(null);
 
-                    expect(events).to.include({eid: '/323573539', etype: 'unload'});
+                    expect(events).to.deep.include({eid: '/323573539', etype: 'unload'});
 
                     return;
                 }
@@ -2130,7 +2130,6 @@ describe('GME client', function () {
 
                     expect(newNodePath).to.not.equal(null);
                     tOneState = 'modified';
-                    return;
 
                 } else if (tOneState === 'modified') {
                     expect(events).to.have.length(6);
@@ -2210,7 +2209,7 @@ describe('GME client', function () {
 
                     expect(newNodePath).to.not.equal(null);
                     tOneState = 'modified';
-                    return;
+
                 } else if (tOneState === 'modified') {
                     expect(events).to.have.length(6);
 
@@ -2269,7 +2268,7 @@ describe('GME client', function () {
                 } else if (tOneState === 'tCreate') {
                     tOneState = 'territoryUpdate';
                     expect(events.length).to.equal(4);
-                    expect(events).to.include({etype: 'load', eid: '/XXXXX'});
+                    expect(events).to.deep.include({etype: 'load', eid: '/XXXXX'});
 
                     territory['/' + newNodeRelid] = {children: 1};
                     client.updateTerritory(tOneId, territory);
@@ -2300,7 +2299,7 @@ describe('GME client', function () {
                         expect(events[i].etype).to.equal('update');
                     }
                     // and especially the child should be updated (#1172)!
-                    expect(events).to.include({etype: 'update', eid: childPath});
+                    expect(events).to.deep.include({etype: 'update', eid: childPath});
 
                     client.removeUI(tOneId);
                     done();
@@ -2338,7 +2337,7 @@ describe('GME client', function () {
                 } else if (tOneState === 'tCreate') {
                     tOneState = 'territoryUpdate';
                     expect(events.length).to.equal(4);
-                    expect(events).to.include({etype: 'load', eid: '/XXXXX'});
+                    expect(events).to.deep.include({etype: 'load', eid: '/XXXXX'});
 
                     territory['/' + newNodeRelid] = {children: 1};
                     client.updateTerritory(tOneId, territory);
@@ -2355,7 +2354,7 @@ describe('GME client', function () {
                     tOneState = null;
                     // Only the root should have an event.
                     expect(events.length).to.equal(2);
-                    expect(events).to.include({etype: 'update', eid: ''});
+                    expect(events).to.deep.include({etype: 'update', eid: ''});
 
                     client.removeUI(tOneId);
                     done();
@@ -2655,7 +2654,7 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(2);
-                    expect(events).to.include({eid: '/1', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1', etype: 'load'});
 
                     node = client.getNode('/1');
                     expect(node).not.to.equal(null);
@@ -2673,7 +2672,7 @@ describe('GME client', function () {
                     testState = null;
 
                     expect(events).to.have.length(2);
-                    expect(events).to.include({eid: '/1', etype: 'update'});
+                    expect(events).to.deep.include({eid: '/1', etype: 'update'});
 
                     node = client.getNode('/1');
                     expect(node).not.to.equal(null);
@@ -2743,8 +2742,8 @@ describe('GME client', function () {
                         testState = 'checking';
 
                         expect(events).to.have.length(3);
-                        expect(events).to.include({eid: '/323573539', etype: 'load'});
-                        expect(events).to.include({eid: '/1', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/1', etype: 'load'});
 
                         node = client.getNode(events[1].eid);
                         expect(node).not.to.equal(null);
@@ -2756,8 +2755,8 @@ describe('GME client', function () {
                     if (testState === 'checking') {
                         expect(events).to.have.length(3,
                             'should set the given pointer of the node to the specified target');
-                        expect(events).to.include({eid: '/323573539', etype: 'update'});
-                        expect(events).to.include({eid: '/1', etype: 'update'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'update'});
+                        expect(events).to.deep.include({eid: '/1', etype: 'update'});
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
@@ -2783,7 +2782,7 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(2);
-                    expect(events).to.include({eid: '/1697300825', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
 
                     node = client.getNode(events[1].eid);
                     expect(node).not.to.equal(null);
@@ -2795,7 +2794,7 @@ describe('GME client', function () {
 
                 if (testState === 'checking') {
                     expect(events).to.have.length(2);
-                    expect(events).to.include({eid: '/1697300825', etype: 'update'});
+                    expect(events).to.deep.include({eid: '/1697300825', etype: 'update'});
 
                     node = client.getNode('/1697300825');
                     expect(node).not.to.equal(null);
@@ -2864,8 +2863,8 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '/1697300825', etype: 'load'});
-                    expect(events).to.include({eid: '/1400778473', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1400778473', etype: 'load'});
 
                     //save the paths of the initial nodes so that we can figure out the new nodes later
                     for (i = 1; i < events.length; i++) {
@@ -2946,8 +2945,8 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '/1697300825', etype: 'load'});
-                    expect(events).to.include({eid: '/1400778473', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1400778473', etype: 'load'});
 
                     //save the paths of the initial nodes so that we can figure out the new nodes later
                     for (i = 1; i < events.length; i++) {
@@ -3031,9 +3030,9 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '/323573539', etype: 'load'});
-                    expect(events).to.include({eid: '/1697300825', etype: 'load'});
-                    expect(events).to.include({eid: '/1400778473', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1400778473', etype: 'load'});
 
                     //save the paths of the initial nodes so that we can figure out the new nodes later
                     for (i = 1; i < events.length; i++) {
@@ -3136,7 +3135,7 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '/1400778473', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1400778473', etype: 'load'});
 
                     //save the paths of the initial nodes so that we can figure out the new nodes later
                     for (i = 1; i < events.length; i++) {
@@ -3233,8 +3232,8 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '/323573539', etype: 'load'});
-                    expect(events).to.include({eid: '', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                    expect(events).to.deep.include({eid: '', etype: 'load'});
 
                     //save the paths of the initial nodes so that we can figure out the new nodes later
                     for (i = 1; i < events.length; i++) {
@@ -3247,7 +3246,7 @@ describe('GME client', function () {
 
                 if (testState === 'checking') {
                     expect(events).to.have.length(4);
-                    expect(events).to.include({eid: '', etype: 'update'});
+                    expect(events).to.deep.include({eid: '', etype: 'update'});
 
                     for (i = 1; i < events.length; i++) {
                         if (initialPaths.indexOf(events[i].eid) === -1) {
@@ -3290,8 +3289,8 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '/323573539', etype: 'load'});
-                    expect(events).to.include({eid: '', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                    expect(events).to.deep.include({eid: '', etype: 'load'});
 
                     //save the paths of the initial nodes so that we can figure out the new nodes later
                     for (i = 1; i < events.length; i++) {
@@ -3304,7 +3303,7 @@ describe('GME client', function () {
 
                 if (testState === 'checking') {
                     expect(events).to.have.length(4);
-                    expect(events).to.include({eid: '', etype: 'update'});
+                    expect(events).to.deep.include({eid: '', etype: 'update'});
 
                     for (i = 1; i < events.length; i++) {
                         if (initialPaths.indexOf(events[i].eid) === -1) {
@@ -3347,9 +3346,9 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '/323573539', etype: 'load'});
-                    expect(events).to.include({eid: '/1697300825', etype: 'load'});
-                    expect(events).to.include({eid: '/1400778473', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1400778473', etype: 'load'});
 
                     //save the paths of the initial nodes so that we can figure out the new nodes later
                     for (i = 1; i < events.length; i++) {
@@ -3456,9 +3455,9 @@ describe('GME client', function () {
                     testState = 'containerCreated';
 
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '/1697300825', etype: 'load'});
-                    expect(events).to.include({eid: '/1400778473', etype: 'load'});
-                    expect(events).to.include({eid: '/701504349', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1400778473', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/701504349', etype: 'load'});
 
                     for (i = 1; i < events.length; i++) {
                         initialPaths.push(events[i].eid);
@@ -3511,10 +3510,10 @@ describe('GME client', function () {
                 if (testState === 'final') {
                     //FIXME: extra events from version upgrade
                     //expect(events).to.have.length(9);
-                    expect(events).to.include({eid: '/1697300825', etype: 'unload'});
-                    expect(events).to.include({eid: '/1400778473', etype: 'unload'});
-                    expect(events).to.include({eid: containerId + '/1697300825', etype: 'load'});
-                    expect(events).to.include({eid: containerId + '/1400778473', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1697300825', etype: 'unload'});
+                    expect(events).to.deep.include({eid: '/1400778473', etype: 'unload'});
+                    expect(events).to.deep.include({eid: containerId + '/1697300825', etype: 'load'});
+                    expect(events).to.deep.include({eid: containerId + '/1400778473', etype: 'load'});
 
                     node = client.getNode(containerId + '/1697300825');
                     expect(node).not.to.equal(null);
@@ -3549,12 +3548,12 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(2);
-                    expect(events).to.include({eid: '/1400778473', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1400778473', etype: 'load'});
 
                     node = client.getNode('/1400778473');
                     expect(node).not.to.equal(null);
                     expect(node.getConstraintNames()).to.have.members(['constraint', 'meta']);
-                    expect(node.getOwnConstraintNames()).to.empty;
+                    expect(node.getOwnConstraintNames()).to.be.empty;
 
                     client.setConstraint('/1400778473', 'myNewConstraint', {
                         info: 'just a plain constraint',
@@ -3566,7 +3565,7 @@ describe('GME client', function () {
 
                 if (testState === 'checking') {
                     expect(events).to.have.length(2);
-                    expect(events).to.include({eid: '/1400778473', etype: 'update'});
+                    expect(events).to.deep.include({eid: '/1400778473', etype: 'update'});
 
                     //the copies keep the target
                     node = client.getNode(events[1].eid);
@@ -3603,7 +3602,7 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(2);
-                    expect(events).to.include({eid: '/701504349', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/701504349', etype: 'load'});
 
                     node = client.getNode('/701504349');
                     expect(node).not.to.equal(null);
@@ -3616,13 +3615,13 @@ describe('GME client', function () {
 
                 if (testState === 'checking') {
                     expect(events).to.have.length(2);
-                    expect(events).to.include({eid: '/701504349', etype: 'update'});
+                    expect(events).to.deep.include({eid: '/701504349', etype: 'update'});
 
                     //the copies keep the target
                     node = client.getNode(events[1].eid);
                     expect(node).not.to.equal(null);
                     expect(node.getConstraintNames()).not.to.include('constraint');
-                    expect(node.getOwnConstraintNames()).to.empty;
+                    expect(node.getOwnConstraintNames()).to.be.empty;
                 }
             });
         });
@@ -3646,8 +3645,8 @@ describe('GME client', function () {
 
                         expect(events).to.have.length(3,
                             '[first] should add the given node as a new member to the specified set of our node');
-                        expect(events).to.include({eid: '/323573539', etype: 'load'});
-                        expect(events).to.include({eid: '/1697300825', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
@@ -3688,8 +3687,8 @@ describe('GME client', function () {
 
                         expect(events).to.have.length(3,
                             '[first] should remove the given member of the specified set of the node');
-                        expect(events).to.include({eid: '/323573539', etype: 'load'});
-                        expect(events).to.include({eid: '/1697300825', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
@@ -3730,8 +3729,8 @@ describe('GME client', function () {
 
                         expect(events).to.have.length(3,
                             'should set the given attribute of the specified member of the set');
-                        expect(events).to.include({eid: '/323573539', etype: 'load'});
-                        expect(events).to.include({eid: '/1697300825', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
@@ -3784,8 +3783,8 @@ describe('GME client', function () {
                         testState = 'add';
                         expect(events).to.have.length(3,
                             'should remove the specific attribute of the set member');
-                        expect(events).to.include({eid: '/323573539', etype: 'load'});
-                        expect(events).to.include({eid: '/1697300825', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
@@ -3846,8 +3845,8 @@ describe('GME client', function () {
                         testState = 'checking';
 
                         expect(events).to.have.length(3, 'should set the given registry key of the set member');
-                        expect(events).to.include({eid: '/323573539', etype: 'load'});
-                        expect(events).to.include({eid: '/1697300825', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
@@ -3901,8 +3900,8 @@ describe('GME client', function () {
 
                         expect(events).to.have.length(3,
                             '[first] should remove the specified registry key of the set member');
-                        expect(events).to.include({eid: '/323573539', etype: 'load'});
-                        expect(events).to.include({eid: '/1697300825', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/1697300825', etype: 'load'});
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
@@ -3966,7 +3965,7 @@ describe('GME client', function () {
                     testState = 'checking';
 
                     expect(events).to.have.length(2);
-                    expect(events).to.include({eid: '/323573539', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
 
                     node = client.getNode('/323573539');
                     expect(node).not.to.equal(null);
@@ -3982,7 +3981,7 @@ describe('GME client', function () {
                     node = client.getNode('/323573539');
                     expect(node).not.to.equal(null);
                     expect(node.getSetNames()).to.include('newSet');
-                    expect(node.getMemberIds('newSet')).to.empty;
+                    expect(node.getMemberIds('newSet')).to.be.empty;
                 }
             });
         });
@@ -4006,13 +4005,13 @@ describe('GME client', function () {
 
                         expect(events).to.have.length(3,
                             '[first] should remove the given set of the node');
-                        expect(events).to.include({eid: '/323573539', etype: 'load'});
-                        expect(events).to.include({eid: '/701504349', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/323573539', etype: 'load'});
+                        expect(events).to.deep.include({eid: '/701504349', etype: 'load'});
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
                         expect(node.getSetNames()).to.include('set');
-                        expect(node.getMemberIds('set')).not.to.empty;
+                        expect(node.getMemberIds('set')).not.to.be.empty;
 
                         node = client.getNode('/701504349');
                         expect(node).not.to.equal(null);
@@ -4028,13 +4027,13 @@ describe('GME client', function () {
                         node = client.getNode('/701504349');
                         expect(node).not.to.equal(null);
                         expect(node.getSetNames()).not.to.include('set');
-                        expect(node.getMemberIds('set')).to.empty;
+                        expect(node.getMemberIds('set')).to.be.empty;
 
                         node = client.getNode('/323573539');
                         expect(node).not.to.equal(null);
                         //FIXME probably this set should be also removed, although it was overwritten
                         //expect(node.getSetNames()).not.to.include('set');
-                        //expect(node.getMemberIds('set')).to.empty;
+                        //expect(node.getMemberIds('set')).to.be.empty;
                     }
                 }
             );
@@ -4058,9 +4057,9 @@ describe('GME client', function () {
                 if (testState === 'init') {
                     testState = 'checking';
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '', etype: 'load'});
-                    expect(events).to.include({eid: '/1', etype: 'load'});
-                    expect(events).to.include({eid: '/701504349', etype: 'load'});
+                    expect(events).to.deep.include({eid: '', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/701504349', etype: 'load'});
 
                     client.startTransaction();
                     newId = client.createChild({parentId: '', baseId: '/1'}, 'create a node - instance of FCO');
@@ -4082,7 +4081,7 @@ describe('GME client', function () {
 
                 if (testState === 'checking') {
                     expect(events).to.have.length(4);
-                    expect(events).to.include({eid: newId, etype: 'load'});
+                    expect(events).to.deep.include({eid: newId, etype: 'load'});
 
                     node = client.getNode(newId);
                     expect(node).not.to.equal(null);
@@ -4107,8 +4106,8 @@ describe('GME client', function () {
                 if (testState === 'init') {
                     testState = 'checking';
                     expect(events).to.have.length(8);
-                    expect(events).to.include({eid: '', etype: 'load'});
-                    expect(events).to.include({eid: '/1', etype: 'load'});
+                    expect(events).to.deep.include({eid: '', etype: 'load'});
+                    expect(events).to.deep.include({eid: '/1', etype: 'load'});
 
                     client.startTransaction();
                     newId = client.createChild({parentId: '', baseId: '/1'}, 'create a node - instance of FCO');
@@ -4130,13 +4129,13 @@ describe('GME client', function () {
 
                 if (testState === 'checking') {
                     expect(events).to.have.length(3);
-                    expect(events).to.include({eid: newId, etype: 'load'});
+                    expect(events).to.deep.include({eid: newId, etype: 'load'});
 
                     node = client.getNode(newId);
                     expect(node).not.to.equal(null);
                     expect(node.getAttribute('name')).to.equal(undefined);
                     expect(node.getBaseId()).to.equal(null);
-                    expect(node.getAttributeNames()).to.empty;
+                    expect(node.getAttributeNames()).to.be.empty;
 
                 }
             });

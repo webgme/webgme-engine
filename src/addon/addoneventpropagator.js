@@ -83,7 +83,11 @@ function AddOnEventPropagator(storage, mainLogger, gmeConfig) {
     this.stop = function (callback) {
         storage.removeEventListener(CONSTANTS.STORAGE.BRANCH_JOINED, branchJoined);
         storage.removeEventListener(CONSTANTS.STORAGE.BRANCH_HASH_UPDATED, branchUpdated);
-        return Q.resolve().nodeify(callback);
+        if (gmeConfig.addOn.workerUrl) {
+            return Q.resolve().nodeify(callback);
+        } else {
+            return addOnWorkerManager.stop().nodeify(callback);
+        }
     };
 
     this.getStatus = function (opts, callback) {

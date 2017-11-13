@@ -114,9 +114,10 @@ function ServerWorkerManager(parameters) {
             closeHandlers = {};
         logger.debug('there are ' + len + ' workers to close');
         Object.keys(_workers).forEach(function (workerPid) {
+            var worker = _workers[workerPid];
             // Clear the previously assigned handlers for the child process.
-            _workers[workerPid].childProcess.removeAllListeners('exit');
-            _workers[workerPid].childProcess.removeAllListeners('message');
+            worker.childProcess.removeAllListeners('exit');
+            worker.childProcess.removeAllListeners('message');
 
             // Define and store a close-handler.
             closeHandlers[workerPid] = function (err) {
@@ -127,7 +128,6 @@ function ServerWorkerManager(parameters) {
                 // Reset the handler since both error and close may be triggered.
                 closeHandlers[workerPid].closeHandler = function () {};
 
-                delete _workers[workerPid];
                 len -= 1;
                 if (len === 0) {
                     callback(null);
@@ -135,10 +135,11 @@ function ServerWorkerManager(parameters) {
             };
 
             // Assign the close handler to both error and close event.
-            _workers[workerPid].childProcess.on('error', closeHandlers[workerPid]);
-            _workers[workerPid].childProcess.on('close', closeHandlers[workerPid]);
+            worker.childProcess.on('error', closeHandlers[workerPid]);
+            worker.childProcess.on('close', closeHandlers[workerPid]);
             // Send kill to child process.
-            _workers[workerPid].childProcess.kill('SIGINT');
+            worker.childProcess.kill('SIGINT');
+            delete _workers[workerPid];
             logger.debug('request closing workerPid: ' + workerPid);
         });
 

@@ -63,7 +63,7 @@ describe('gmeNodeSetter', function () {
                     }
                 };
                 for (path in metaNodes) {
-                    console.log(path);
+                    //console.log(path);
                     basicState.nodes[path] = {node: metaNodes[path]};
                 }
 

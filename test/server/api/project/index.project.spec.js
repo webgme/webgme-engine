@@ -1532,7 +1532,7 @@ describe('PROJECT REST API', function () {
             it('should squash commits', function (done) {
                 agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/branches')
                     .end(function (err, res) {
-                        expect(res.body).to.contains.keys.master;
+                        expect(res.body).to.have.property('master');
                         agent.put(server.getUrl() + '/api/projects/' +
                             projectName2APIPath(projectName) + '/squash')
                             .send({

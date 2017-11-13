@@ -631,7 +631,8 @@ function openSocketIo(server, agent, userName, password, token) {
         .then(function (/*res*/) {
             var split,
                 options = {
-                    multiplex: false
+                    multiplex: false,
+                    reconnection: false
                 };
 
             agent._attachCookies(socketReq);

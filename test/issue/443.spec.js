@@ -73,7 +73,7 @@ describe('issue443 testing', function () {
                 return Q.nfcall(context.core.loadChildren, instance);
             })
             .then(function (children) {
-                expect(children).to.have.length[1];
+                expect(children).to.have.length(1);
                 expect(context.core.getRelid(children[0])).to.equal(context.core.getRelid(child));
 
                 //now we modify the inherited child

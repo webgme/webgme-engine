@@ -1021,7 +1021,7 @@ describe('GME authentication', function () {
             .then(function () {
                 return auth.listOrganizations({});
             }).then(function (organizations) {
-            expect(organizations).to.include({
+            expect(organizations).to.deep.include({
                     _id: orgName,
                     info: {},
                     projects: {},
