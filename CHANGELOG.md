@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.18.5](https://github.com/webgme/webgme-engine/tree/v2.18.5) (2017-11-14)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.4...v2.18.5)
+
+**Implemented enhancements:**
+
+- Referenced objects returned from the core should be copied at return [\#17](https://github.com/webgme/webgme-engine/issues/17)
+- Better source code documentation for callbacks in plugin-base  [\#23](https://github.com/webgme/webgme-engine/pull/23) ([pmeijer](https://github.com/pmeijer))
+- Better error handling at faulty metadata.json for plugins [\#22](https://github.com/webgme/webgme-engine/pull/22) ([pmeijer](https://github.com/pmeijer))
+- Fix colliding debugger ports in workers for nodejs \> 8  [\#21](https://github.com/webgme/webgme-engine/pull/21) ([pmeijer](https://github.com/pmeijer))
+- Bump node-module versions [\#20](https://github.com/webgme/webgme-engine/pull/20) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#17 Copies all returned objects from core [\#19](https://github.com/webgme/webgme-engine/pull/19) ([pmeijer](https://github.com/pmeijer))
+- Use Node 8 and 6 for CI tests and make appropriate changes [\#18](https://github.com/webgme/webgme-engine/pull/18) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.18.4](https://github.com/webgme/webgme-engine/tree/v2.18.4) (2017-10-13)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.3...v2.18.4)
 
