@@ -3677,11 +3677,11 @@ define([
         };
 
         /**
-         * Returns the origin GUID of any library node.
-         *
+         * Returns the origin GUID of any library node. (If name is not provided the returned GUID will be the same
+         * across all projects where the library node is contained - regardless of library hierarchy.)
          * @param {module:Core~Node} node - the node in question.
-         * @param {undefined | string} [name] - name of the library where we want to deduct the GUID from. If not given,
-         * than the GUID is computed from the direct library root of the node
+         * @param {undefined | string} [name] - name of the library where we want to compute the GUID from. If not given,
+         * then the GUID is computed from the direct library root of the node.
          *
          * @return {module:Core~GUID | Error} - Returns the origin GUID of the node or
          * error if the query cannot be fulfilled.

@@ -374,7 +374,7 @@ define([
 
                 for (i = 0; i < keys.length; i += 1) {
                     if (!closureInformation.destinationBases[keys[i]]) {
-                        // ... if no match try to find a unique match based on library GUIDs in the current project.
+                        // ... if no match try to find a unique match based on library GUIDs.
                         occurrences = gatherOccurancesOfType(keys[i], closureInformation, allMetaNodes);
                         if (occurrences.length === 0) {
                             throw new CoreIllegalOperationError('Cannot find necessary base [' +
