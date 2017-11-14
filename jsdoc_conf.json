@@ -17,6 +17,7 @@
       "src/plugin/PluginMessage.js",
       "src/plugin/PluginNodeDescription.js",
       "src/plugin/PluginResult.js",
+      "src/plugin/InterPluginResult.js",
       "src/common/executor",
       "src/common/core/core.js",
       "src/server/middleware/auth/gmeauth.js",
