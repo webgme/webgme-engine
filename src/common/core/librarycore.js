@@ -361,11 +361,10 @@ define([
             }
 
             function checkClosure(allMetaNodes, closureInformation) {
-                //here we only check for exact GUID matches
-                //TODO we might be able to map even with no exact GUID match based on library information
                 var keys = Object.keys(allMetaNodes),
                     occurrences, i, j, errorTxt;
 
+                // First check against direct GUID matches..
                 closureInformation.destinationBases = {};
                 for (i = 0; i < keys.length; i += 1) {
                     closureInformation.destinationBases[self.getGuid(allMetaNodes[keys[i]])] = keys[i];
@@ -375,6 +374,7 @@ define([
 
                 for (i = 0; i < keys.length; i += 1) {
                     if (!closureInformation.destinationBases[keys[i]]) {
+                        // ... if no match try to find a unique match based on library GUIDs in the current project.
                         occurrences = gatherOccurancesOfType(keys[i], closureInformation, allMetaNodes);
                         if (occurrences.length === 0) {
                             throw new CoreIllegalOperationError('Cannot find necessary base [' +
