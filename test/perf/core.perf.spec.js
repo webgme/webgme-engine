@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true*/
+/*eslint-env node, mocha*/
 
 /**
  * TODO: This is outdated as serializer does not exist anymore.

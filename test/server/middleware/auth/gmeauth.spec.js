@@ -1,5 +1,5 @@
 /*globals require*/
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author ksmyth / https://github.com/ksmyth
  * @author lattmann / https://github.com/lattmann

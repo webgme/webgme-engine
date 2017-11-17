@@ -1,5 +1,5 @@
 /*globals*/
-/*jshint node:true, newcap:false, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */

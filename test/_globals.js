@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/* jshint node:true */
+/*eslint-env node, mocha*/
 
 /**
  * @author kecso / https://github.com/kecso

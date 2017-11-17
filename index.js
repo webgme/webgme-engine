@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * @author kecso / https://github.com/kecso
  * @author nabana / https://github.com/nabana
@@ -132,6 +132,14 @@ function addToRequireJsPaths(gmeConfig) {
 }
 
 Object.defineProperties(exports, {
+    Core: {
+        get: function () {
+            if (!_core) {
+                _core = requirejs('common/core/core');
+            }
+            return _core;
+        }
+    },
     core: {
         get: function () {
             if (!_core) {

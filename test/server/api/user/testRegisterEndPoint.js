@@ -1,4 +1,4 @@
-/*jshint node:true, camelcase:false*/
+/*eslint-env node*/
 /**
  * Test example for switching register end point..
  * gmeConfig.authentication.allowUserRegistration = <pathToThisFile>;

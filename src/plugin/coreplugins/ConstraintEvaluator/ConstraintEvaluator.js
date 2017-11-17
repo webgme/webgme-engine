@@ -30,7 +30,7 @@ define([
     'plugin/PluginBase',
     'text!./metadata.json',
     './Constraints',
-    'text!./Templates/Constraints.js.ejs',
+    'text!./Templates/Constraints.ejs',
     'common/util/ejs',
     'q'
 ], function (PluginBase, pluginMetadata, Constraints, TEMPLATE, ejs, Q) {

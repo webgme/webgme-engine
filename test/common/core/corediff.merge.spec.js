@@ -1,5 +1,4 @@
-/*jshint node:true, mocha: true, expr:true*/
-/*jscs:disable disallowQuotedKeysInObjects*/
+/*eslint-env node, mocha*/
 
 /**
  * @author kecso / https://github.com/kecso

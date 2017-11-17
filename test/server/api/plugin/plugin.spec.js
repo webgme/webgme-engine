@@ -1,5 +1,5 @@
 /*globals require*/
-/*jshint node:true, mocha:true, expr:true*/
+/*eslint-env node, mocha*/
 /*jscs:disable maximumLineLength*/
 
 /**

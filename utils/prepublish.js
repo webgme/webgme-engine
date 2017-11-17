@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * Arguments passed to this script are propagated to jsdoc.
  * @author pmeijer / https://github.com/pmeijer

@@ -1,5 +1,5 @@
-/*globals define, document, console, window, GME, docReady, setTimeout*/
-/*jshint browser:true, evil:true*/
+/*globals define, GME*/
+/*eslint-env browser*/
 
 /**
  * @author kecso / https://github.com/kecso

@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * Runs the prepublish script if distribution files does not exist.
  * @author pmeijer / https://github.com/pmeijer

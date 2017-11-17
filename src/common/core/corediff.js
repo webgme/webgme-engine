@@ -15,8 +15,6 @@ define(['common/util/canon',
 ], function (CANON, TASYNC, ASSERT, REGEXP, RANDOM, CONSTANTS, DIFF) {
     'use strict';
 
-    window.document;
-
     function DiffCore(innerCore, options) {
         ASSERT(typeof options === 'object');
         ASSERT(typeof options.globConf === 'object');

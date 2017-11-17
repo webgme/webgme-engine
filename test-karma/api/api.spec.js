@@ -1,5 +1,5 @@
 /*globals requirejs, expect, console, before*/
-/* jshint browser: true, mocha: true, expr: true */
+/*eslint-env browser, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  */
@@ -28,7 +28,6 @@ describe('API access from webbrowser', function () {
     });
 
     it('should get source code documentation link', function (done) {
-        /*jshint camelcase: false */
         superagent.get('/api').end(function (err, res) {
             expect(res.status).equal(200, err);
             expect(res.body.hasOwnProperty('source_code_documentation_url')).to.equal(true);

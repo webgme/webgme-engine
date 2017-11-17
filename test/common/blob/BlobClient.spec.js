@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author ksmyth / https://github.com/ksmyth
  * @author pmeijer / https://github.com/pmeijer

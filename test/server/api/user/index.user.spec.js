@@ -1,6 +1,5 @@
 /*globals require*/
-/*jshint node:true, mocha:true, expr:true, camelcase: false*/
-/*jscs:disable maximumLineLength*/
+/*eslint-env node, mocha*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -221,7 +220,6 @@ describe('USER REST API', function () {
             });
 
             it('should get api documentation link', function (done) {
-                /*jshint camelcase: false */
                 agent.get(server.getUrl() + '/api').end(function (err, res) {
                     expect(res.status).equal(200, err);
                     expect(res.body.hasOwnProperty('api_documentation_url')).true;
@@ -585,7 +583,6 @@ describe('USER REST API', function () {
 
             // NO AUTH methods
             it('should get api documentation link', function (done) {
-                /*jshint camelcase: false */
                 agent.get(server.getUrl() + '/api').end(function (err, res) {
                     expect(res.status).equal(200, err);
                     expect(res.body.hasOwnProperty('api_documentation_url')).true;
@@ -2305,7 +2302,6 @@ describe('USER REST API', function () {
 
             // NO AUTH methods
             it('should get api documentation link', function (done) {
-                /*jshint camelcase: false */
                 agent.get(server.getUrl() + '/api').end(function (err, res) {
                     expect(res.status).equal(200, err);
                     expect(res.body.hasOwnProperty('api_documentation_url')).true;

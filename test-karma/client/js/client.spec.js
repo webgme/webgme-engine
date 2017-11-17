@@ -1,5 +1,5 @@
 /*globals requirejs, expect, console, before*/
-/* jshint browser: true, mocha: true, expr: true */
+/*eslint-env browser, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  * @author kesco / https://github.com/kesco

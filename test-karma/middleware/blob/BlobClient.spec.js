@@ -1,5 +1,5 @@
 /*globals requirejs, expect, Buffer, File*/
-/*jshint node: true, mocha: true, bitwise: false, expr: true*/
+/*eslint-env node, mocha*/
 /**
  * @author ksmyth / https://github.com/ksmyth
  */

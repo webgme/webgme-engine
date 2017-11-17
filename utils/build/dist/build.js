@@ -1,5 +1,5 @@
 /*globals*/
-/*jshint node:true, camelcase:false*/
+/*eslint-env node*/
 /**
  *
  *

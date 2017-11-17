@@ -11,7 +11,7 @@ define([
     'plugin/PluginBase',
     'text!./metadata.json',
     'common/util/ejs',
-    'text!./Templates/addOn.js.ejs'
+    'text!./Templates/addOn.ejs'
 ], function (PluginBase, pluginMetadata, ejs, TEMPLATE) {
     'use strict';
 

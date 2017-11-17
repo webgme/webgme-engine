@@ -1,7 +1,7 @@
 /**
  * @author kecso / https://github.com/kecso
  */
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 
 var testFixture = require('../../../_globals.js');
 

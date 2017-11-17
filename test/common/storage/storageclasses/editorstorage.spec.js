@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  */
@@ -479,8 +479,6 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should persist commits with no open project', function (done) {
-        // jshint ignore:start
-        // jscs:disable
         var projectId = projectName2Id(projectName),
             commitQueueDump = {
                 "webgmeVersion": "2.10.0-beta3",
@@ -612,9 +610,6 @@ describe('storage storageclasses editorstorage', function () {
                 expect(result.hash).to.equal(commitQueueDump.commitQueue[1].commitObject._id);
             })
             .nodeify(done);
-
-        // jshint ignore:end
-        // jscs:enable
     });
 
     it('should makeCommit with open branch and get canceled', function (done) {
