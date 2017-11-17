@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * This serves the login.html in src/client/app without authentication at profile/login
  *

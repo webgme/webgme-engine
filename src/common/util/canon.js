@@ -1,4 +1,4 @@
-//jshint ignore: start
+/*eslint-disable*/
 /* 2012 David Chambers <dc@hashify.me>  */
 define([], function() {
     var CANON = {},

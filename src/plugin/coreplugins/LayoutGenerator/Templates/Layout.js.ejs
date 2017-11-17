@@ -69,14 +69,14 @@ define([
                 closable: false,
                 resizable: false,
                 slidable: false,
-                spacing_open: 0, //jshint ignore: line
+                spacing_open: 0,
                 size: 64
             },
             south: {
                 closable: false,
                 resizable: false,
                 slidable: false,
-                spacing_open: 0, //jshint ignore: line
+                spacing_open: 0,
                 size: 27        //has to match footer CSS settings (height + border)
             },
             east: {
@@ -84,8 +84,8 @@ define([
                 minSize: SIDE_PANEL_WIDTH,
                 resizable: true,
                 slidable: false,
-                spacing_open: SPACING_OPEN, //jshint ignore: line
-                spacing_closed: SPACING_CLOSED, //jshint ignore: line
+                spacing_open: SPACING_OPEN,
+                spacing_closed: SPACING_CLOSED,
                 onresize: function (/*paneName, paneElement, paneState, paneOptions, layoutName*/) {
                     self._onToolboxResize();
                 }

@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser:true*/
+/*eslint-env browser*/
 /**
  *
  * @author pmeijer / https://github.com/pmeijer

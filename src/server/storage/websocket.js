@@ -1,5 +1,6 @@
 /*globals requireJS*/
-/*jshint node:true, newcap:false, camelcase:false*/
+/*eslint-env node*/
+
 /**
  * @module Server:WebSockets
  * @author pmeijer / https://github.com/pmeijer
@@ -10,7 +11,6 @@ var io = require('socket.io'),
     redis = require('socket.io-redis'),
     Q = require('q'),
     UTIL = require('../../utils'),
-//COOKIE = require('cookie-parser'),
     URL = requireJS('common/util/url'),
     CONSTANTS = requireJS('common/storage/constants'),
     PACKAGE_JSON;
@@ -74,7 +74,6 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     }
 
     function projectAccess(socket, token, projectId, callback) {
-        var userId = userId;
         return getUserIdFromToken(socket, token)
             .then(function (userId) {
                 return authorizer.getAccessRights(userId, projectId, projectAuthParams);

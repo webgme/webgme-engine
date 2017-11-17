@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * Monitors given branch and starts/stops/runs the registered add-ons.
  * @author pmeijer / https://github.com/pmeijer

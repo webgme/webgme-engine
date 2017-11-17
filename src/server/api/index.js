@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true, camelcase:false*/
+/*eslint-env node*/
 
 /**
  * @module Server:API
@@ -149,12 +149,12 @@ function createAPI(app, mountPath, middlewareOpts) {
 
     router.get('/', function (req, res/*, next*/) {
         res.json({
-            current_user_url: getFullUrl(req, '/user'), //jshint ignore: line
-            organization_url: getFullUrl(req, '/orgs/{org}'), //jshint ignore: line
-            project_url: getFullUrl(req, '/projects/{owner}/{project}'), //jshint ignore: line
-            user_url: getFullUrl(req, '/users/{user}'), //jshint ignore: line
-            api_documentation_url: req.protocol + '://' + req.headers.host + apiDocumentationMountPoint, //jshint ignore: line
-            source_code_documentation_url: req.protocol + '://' + req.headers.host + '/docs/source/index.html'//jshint ignore: line
+            current_user_url: getFullUrl(req, '/user'),
+            organization_url: getFullUrl(req, '/orgs/{org}'),
+            project_url: getFullUrl(req, '/projects/{owner}/{project}'),
+            user_url: getFullUrl(req, '/users/{user}'),
+            api_documentation_url: req.protocol + '://' + req.headers.host + apiDocumentationMountPoint,
+            source_code_documentation_url: req.protocol + '://' + req.headers.host + '/docs/source/index.html'
         });
     });
 
@@ -2282,7 +2282,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     // error handling (NOTE: it is important to have this function signature with 4 arguments!)
-    router.use(function (err, req, res, next) { //jshint ignore:line
+    router.use(function (err, req, res, next) {
         var errorMessage = {
                 401: 'Authentication required',
                 403: 'Forbidden',
@@ -2307,7 +2307,7 @@ function createAPI(app, mountPath, middlewareOpts) {
 
         res.json({
             message: message,
-            documentation_url: '', //jshint ignore: line
+            documentation_url: '',
             error: err.message ? err.message : err // FIXME: only in dev mode
         });
     });
@@ -2319,7 +2319,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     logger.debug('Latest api path: ' + latestAPIPath);
     app.use(latestAPIPath, router);
 
-    return Q(); //jshint ignore: line
+    return Q();
 }
 
 module.exports = {

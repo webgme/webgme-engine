@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser:true, node:true*/
+/*eslint-env node, browser*/
 
 /**
  * This is a partial implementation of RFC 6902

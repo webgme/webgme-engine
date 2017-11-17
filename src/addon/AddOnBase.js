@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true*/
+/*eslint-env node*/
 
 /**
  * This is the base class that add-ons should inherit from.

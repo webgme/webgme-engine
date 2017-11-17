@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node: true, expr: true*/
+/*eslint-env node*/
 
 /**
  * @author lattmann / https://github.com/lattmann

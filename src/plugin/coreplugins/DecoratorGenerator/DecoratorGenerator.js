@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 /**
  * Plugin for generating a decorator. Generating a META aware plugin is experimental and the generated code
  * may need some tweaks.

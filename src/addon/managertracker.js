@@ -1,5 +1,5 @@
 /*globals*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * This is keeps track of all addon-managers that create their own storages and in turn keeps track of the
  * branch-monitors.

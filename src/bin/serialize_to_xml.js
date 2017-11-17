@@ -1,4 +1,4 @@
-//jshint ignore: start
+/*eslint-disable*/
 /*
  * Copyright (C) 2013 Vanderbilt University, All rights reserved.
  *

@@ -1,5 +1,6 @@
 /*globals define*/
-/*jshint node:true, browser: true, evil:true*/
+/*eslint-env node, browser*/
+
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -34,17 +35,17 @@ define(['common/core/users/metarules', 'q'], function (metaRules, Q) {
     }
 
     ConstraintChecker.prototype.reinitialize =
-    ConstraintChecker.prototype.initialize = function (rootNode, commitHash, constraintType) {
-        this.rootNode = rootNode;
-        this.logger.debug('ConstraintChecker constraintType, commitHash', constraintType, commitHash);
-        this.type = constraintType || CONSTRAINT_TYPES.META;
-        this.commitHash = commitHash;
-        this.initialized = true;
-    };
+        ConstraintChecker.prototype.initialize = function (rootNode, commitHash, constraintType) {
+            this.rootNode = rootNode;
+            this.logger.debug('ConstraintChecker constraintType, commitHash', constraintType, commitHash);
+            this.type = constraintType || CONSTRAINT_TYPES.META;
+            this.commitHash = commitHash;
+            this.initialized = true;
+        };
 
     ConstraintChecker.prototype._loadNode = function (path, callback) {
         var self = this,
-            deferred = new Q.defer();
+            deferred = Q.defer();
 
         if (this.initialized === false) {
             deferred.reject(new Error('ConstraintChecker was never initialized!'));
@@ -66,7 +67,7 @@ define(['common/core/users/metarules', 'q'], function (metaRules, Q) {
     ConstraintChecker.prototype._checkNode = function (node, callback) {
         var self = this,
             deferred = Q.defer(),
-        //TODO: These messages need some sort of type/class!!
+            //TODO: These messages need some sort of type/class!!
             message = {
                 info: 'node [' + self.core.getPath(node) + '] validation',
                 _path: self.core.getPath(node),

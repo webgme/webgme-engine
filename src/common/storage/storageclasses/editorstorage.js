@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * This class implements the functionality needed to edit a model in a specific project and branch in a
  * collaborative fashion.

@@ -1,5 +1,5 @@
 /*globals requirejs, define*/
-/*jshint node:true, newcap:false, browser: true*/
+/*eslint-env node, browser, new-cap: 0*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */

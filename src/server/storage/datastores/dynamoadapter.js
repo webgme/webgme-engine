@@ -1,4 +1,4 @@
-/*jshint node:true, newcap:false*/
+/*eslint-env node, new-cap: 0*/
 
 /**
  * @module Server:Storage:Dynamo

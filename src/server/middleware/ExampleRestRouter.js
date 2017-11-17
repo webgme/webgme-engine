@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * To use in the server add the following to the gme config;
  * gmeConfig.rest.component['path/subPath'] = './middleware/ExampleRestRouter'.

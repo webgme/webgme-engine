@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true, camelcase:false*/
+/*eslint-env node*/
 
 /**
  * @module Server:StandAlone

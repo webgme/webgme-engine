@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser: true*/
+/*eslint-env node, browser*/
 /**
  * This class defines the common interface for a storage-project.
  *

@@ -1,4 +1,4 @@
-/* jshint node:true */
+/*eslint-env node*/
 /**
  * @module Bin:Import
  * @author kecso / https://github.com/kecso

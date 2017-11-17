@@ -1,4 +1,4 @@
-/*jshint node: true*/
+/*eslint-env node*/
 /**
  * @module Bin:StartServer
  * @author kecso / https://github.com/kecso

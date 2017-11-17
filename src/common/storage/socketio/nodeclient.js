@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, camelcase:false*/
+/*eslint-env node*/
 /**
  * //TODO: Consider moving this to src/server/..
  * Socket io client used on the server. Typical use-case is from the users.

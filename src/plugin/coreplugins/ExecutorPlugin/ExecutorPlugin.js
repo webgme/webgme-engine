@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser:true*/
+/*eslint-env node, browser*/
 
 /**
  * This plugin creates a job for the executor and writes back the results to the model. It also illustrates

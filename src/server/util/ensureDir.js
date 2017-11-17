@@ -1,4 +1,4 @@
-/*jshint node: true*/
+/*eslint-env node*/
 
 /**
  * @module EnsureDir
@@ -62,9 +62,8 @@ function ensureDir(dir, mode, callback) {
         mode = null;
     }
 
-    //jshint bitwise: false
     mode = mode || parseInt('0777', 8) & (~process.umask());
-    //jshint bitwise: true
+
 
     _ensureDir(dir, mode, function (err) {
         if (err) {

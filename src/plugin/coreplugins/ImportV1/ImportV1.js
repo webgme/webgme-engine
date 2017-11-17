@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser:true*/
+/*eslint-env node, browser*/
 
 /**
  * This plugin can be used for importing projects from webgme v1.x.

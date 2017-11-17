@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 
 /**
  * @author ksmyth / https://github.com/ksmyth

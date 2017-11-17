@@ -1,4 +1,4 @@
-/* jshint node:true */
+/*eslint-env node*/
 /**
  * This tool can re-assign relids of an exported project. It keeps every other information intact.
  * This tool is advised to be used if someone has an old large project, as the reassigned relids

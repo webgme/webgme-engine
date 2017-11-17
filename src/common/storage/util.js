@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser: true*/
+/*eslint-env node, browser*/
 /**
  * @author lattmann / https://github.com/lattmann
  */

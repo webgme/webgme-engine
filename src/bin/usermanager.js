@@ -1,4 +1,4 @@
-/*jshint node: true*/
+/*eslint-env node*/
 /**
  * NOTE: Expected to be run only under nodejs.
  *

@@ -1,4 +1,5 @@
-/*jshint node:true, camelcase:false*/
+/*eslint-env node*/
+
 /**
  * This is the default registration end point. It either allows or disallows users to register.
  * It will be used if gmeConfig.authentication.allowUserRegistration is either false or true.

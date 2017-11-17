@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true, newcap:false*/
+/*eslint-env node, new-cap: 0*/
 
 /**
  * @author pmeijer / https://github.com/pmeijer

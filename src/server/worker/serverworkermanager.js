@@ -1,4 +1,4 @@
-/*jshint node: true*/
+/*eslint-env node*/
 /**
  * @module Server:ServerWorkerManager
  * @author kecso / https://github.com/kecso

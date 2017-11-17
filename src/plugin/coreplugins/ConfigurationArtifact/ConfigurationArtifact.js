@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * Simple plugin illustrating how to configure a configuration for the plugin and how to generate

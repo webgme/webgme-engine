@@ -1,5 +1,5 @@
 /*globals define, debug*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */

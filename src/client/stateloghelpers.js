@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true*/
+/*eslint-env browser*/
 /**
  * Contains helper functions for logging/downloading the state of the client.
  *
@@ -121,11 +121,9 @@ define([
             };
 
         if (typeof WebGMEGlobal !== 'undefined') {
-            /* jshint -W117 */
             errData.webgme.NpmVersion = WebGMEGlobal.NpmVersion;
             errData.webgme.GitHubVersion = WebGMEGlobal.GitHubVersion;
             errData.webgme.version = WebGMEGlobal.version;
-            /* jshint +W117 */
         }
 
         if (typeof client.uiStateGetter === 'function') {

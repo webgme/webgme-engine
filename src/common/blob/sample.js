@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/*eslint-env node*/
 
 /**
  * Client module for accessing the blob.

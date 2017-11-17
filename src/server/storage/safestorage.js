@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * This class forwards function calls to the storage and in addition:
  *  - checks that input data is of correct format.

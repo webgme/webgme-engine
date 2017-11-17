@@ -1,5 +1,6 @@
 /*globals requireJS*/
-/*jshint node: true*/
+/*eslint-env node*/
+
 /**
  * TODO: This is more or less copied from serverworkermanager...
  * TODO: It can be simplified and merged with AddOnEventPropagator..

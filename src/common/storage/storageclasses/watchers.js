@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 /**
  * Provides watching-functionality of the database and specific projects.
  * Keeps a state of the registered watchers.

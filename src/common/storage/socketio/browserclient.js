@@ -1,5 +1,5 @@
 /*globals define, require, document*/
-/*jshint browser:true, camelcase:false*/
+/*eslint-env browser*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */

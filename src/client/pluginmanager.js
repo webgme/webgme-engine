@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true*/
+/*eslint-env browser*/
 
 /**
  * @author pmeijer / https://github.com/pmeijer
@@ -46,11 +46,9 @@ define([
 
             // If executed from the Generic UI we can access the active- and selected-nodes.
             if (typeof WebGMEGlobal !== 'undefined') {
-                /* jshint -W117 */
                 activeNodeId = typeof activeNodeId === 'string' ? activeNodeId : WebGMEGlobal.State.getActiveObject();
                 context.managerConfig.activeSelection = WebGMEGlobal.State.getActiveSelection();
                 context.managerConfig.activeNode = activeNodeId;
-                /* jshint +W117 */
             }
 
             if (activeSelectionIds) {

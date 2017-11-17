@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true*/
+/*eslint-env node*/
 
 /**
  * Continuously validates the meta rules for the entire project. Will send notifications when violations

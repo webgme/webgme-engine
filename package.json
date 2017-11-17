@@ -24,7 +24,8 @@
     "pluginHook": "node ./src/bin/plugin_hook.js",
     "users": "node ./src/bin/usermanager.js",
     "clean_up": "node ./src/bin/clean_up.js",
-    "stats": "node ./src/bin/storage_stats.js"
+    "stats": "node ./src/bin/storage_stats.js",
+    "lint": "eslint src/**"
   },
   "repository": {
     "type": "git",
@@ -85,6 +86,7 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "dynalite": "^1.2.0",
+    "eslint": "^4.11.0",
     "esprima": "^4.0.0",
     "http-proxy": "^1.16.2",
     "istanbul": "^0.4.5",

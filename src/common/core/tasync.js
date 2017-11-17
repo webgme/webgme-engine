@@ -1,5 +1,6 @@
 /*globals define*/
-/*jshint node: true, browser: true, camelcase: false*/
+/*eslint-env node, browser*/
+/*eslint camelcase: 0*/
 
 /**
  * @author mmaroti / https://github.com/mmaroti

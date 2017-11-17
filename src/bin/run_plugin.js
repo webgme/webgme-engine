@@ -1,4 +1,4 @@
-/*jshint node: true*/
+/*eslint-env node*/
 /**
  * @module Bin:RunPlugin
  * @author lattmann / https://github.com/lattmann

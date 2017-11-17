@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * This is just to illustrate how to receive events from the webgme server and establish a secure and authenticated
  * connection to the webgme storage.

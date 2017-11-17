@@ -1,4 +1,4 @@
-/*jshint node: true*/
+/*eslint-env node*/
 /**
  * @module Bin:Export
  * @author kecso / https://github.com/kecso

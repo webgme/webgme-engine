@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser:true*/
+/*eslint-env node, browser*/
 
 /**
  * Plugin for facilitating construction of constraints. This plugin is mainly intended for developers.
@@ -30,10 +30,10 @@ define([
     'plugin/PluginBase',
     'text!./metadata.json',
     './Constraints',
-    './Templates/Templates',
+    'text!./Templates/Constraints.js.ejs',
     'common/util/ejs',
     'q'
-], function (PluginBase, pluginMetadata, Constraints, TEMPLATES, ejs, Q) {
+], function (PluginBase, pluginMetadata, Constraints, TEMPLATE, ejs, Q) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -249,7 +249,7 @@ define([
             });
         });
 
-        fileContent = ejs.render(TEMPLATES['Constraints.js.ejs'], {constraints: cInfos})
+        fileContent = ejs.render(TEMPLATE, {constraints: cInfos})
             .replace(/&lt;/g, '<')
             .replace(/&gt;/g, '>')
             .replace(/&#39;/g, '\'')

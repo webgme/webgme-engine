@@ -1,5 +1,5 @@
 /*globals define, requirejs*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 
 /**
  * This is the base class that plugins should inherit from.

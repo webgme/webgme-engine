@@ -1,5 +1,5 @@
 /*globals console*/
-/*jshint node: true*/
+/*eslint-env node*/
 
 /**
  * Script for listing, adding and removing webhooks in projects.

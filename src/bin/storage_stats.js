@@ -1,4 +1,4 @@
-/*jshint node: true*/
+/*eslint-env node*/
 
 /**
  * Script for gathering data about the project collections.

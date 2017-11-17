@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * Converter from XML to Json using sax parser. See the doc of constructor for info on how to use.

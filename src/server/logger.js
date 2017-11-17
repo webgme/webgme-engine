@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * example usage
  * create('moduleName', gmeConfig.server.log);

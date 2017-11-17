@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -14,6 +14,8 @@ define(['common/util/canon',
     'common/util/diff'
 ], function (CANON, TASYNC, ASSERT, REGEXP, RANDOM, CONSTANTS, DIFF) {
     'use strict';
+
+    window.document;
 
     function DiffCore(innerCore, options) {
         ASSERT(typeof options === 'object');
@@ -2062,14 +2064,12 @@ define(['common/util/canon',
                         } else {
                             //now check the set attribute and registry differences
                             if (base[names[i]].attr && extension[names[i]].attr) {
-                                concatSingleKeyValuePairs(path + '/' +
-                                    names[i] + '/attr',
+                                concatSingleKeyValuePairs(path + '/' + names[i] + '/attr',
                                     base[names[i]].attr,
                                     extension[names[i]].attr);
                             }
                             if (base[names[i]].reg && extension[names[i]].reg) {
-                                concatSingleKeyValuePairs(path + '/' +
-                                    names[i] + '/reg',
+                                concatSingleKeyValuePairs(path + '/' + names[i] + '/reg',
                                     base[names[i]].reg,
                                     extension[names[i]].reg);
                             }
@@ -2104,8 +2104,7 @@ define(['common/util/canon',
                                         } else {
                                             if (extension[names[i]][members[j]].attr) {
                                                 if (base[names[i]][memberPath].attr) {
-                                                    concatSingleKeyValuePairs(path + '/' +
-                                                        names[i] + '/' + memberPath + '/' + '/attr',
+                                                    concatSingleKeyValuePairs(path + '/' + names[i] + '/' + memberPath + '/' + '/attr',
                                                         base[names[i]][memberPath].attr,
                                                         extension[names[i]][members[j]].attr);
                                                 } else {
@@ -2115,8 +2114,7 @@ define(['common/util/canon',
                                             }
                                             if (extension[names[i]][members[j]].reg) {
                                                 if (base[names[i]][memberPath].reg) {
-                                                    concatSingleKeyValuePairs(path + '/' +
-                                                        names[i] + '/' + memberPath + '/' + '/reg',
+                                                    concatSingleKeyValuePairs(path + '/' + names[i] + '/' + memberPath + '/' + '/reg',
                                                         base[names[i]][memberPath].reg,
                                                         extension[names[i]][members[j]].reg);
                                                 } else {
