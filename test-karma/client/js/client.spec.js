@@ -2629,6 +2629,7 @@ describe('GME client', function () {
 
             buildUpForTest(testId, {}, branchStatusHandler, function () {
                 client.removeUI(testId);//we do not need a UI and it would just make test code more complex
+                client.startTransaction('hello');
                 client.completeTransaction('should not persist anything', function (err) {
                     expect(err).to.equal(null);
                     expect(baseCommitHash).to.equal(client.getActiveCommitHash());

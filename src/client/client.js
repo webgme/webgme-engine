@@ -1792,7 +1792,14 @@ define([
 
         this.completeTransaction = function (msg, callback) {
             state.transactions.opened -= 1;
-            ASSERT(state.transactions.opened < 0, 'More calls to completeTransaction than transactions started!');
+            if (callback) {
+                state.transactions.callbacks.push(callback);
+            }
+
+            if (state.transactions.opened < 0) {
+                state.transactions.opened = 0;
+                logger.error(new Error('More calls to completeTransaction than transactions started!'));
+            }
 
             if (state.core) {
                 msg = msg || ']';
