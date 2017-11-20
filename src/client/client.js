@@ -1,4 +1,4 @@
-/*globals define, console*/
+/*globals define*/
 /*eslint-env browser*/
 /*eslint new-cap: 0*/
 /**

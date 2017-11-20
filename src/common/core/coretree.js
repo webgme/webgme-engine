@@ -1,5 +1,6 @@
 /*globals define*/
 /*eslint-env node, browser*/
+/*eslint new-cap: 0*/
 
 /**
  * @author mmaroti / https://github.com/mmaroti
@@ -643,7 +644,8 @@ define([
 
             // TODO: infinite cycle if MAX_MUTATE is smaller than depth!
             // gmeConfig.storage.autoPersist is removed and always false
-            if (false && ++mutateCount > CONSTANTS.MAX_MUTATE) {
+            var autoPersist = false;
+            if (autoPersist && ++mutateCount > CONSTANTS.MAX_MUTATE) {
                 mutateCount = 0;
 
                 for (var i = 0; i < roots.length; ++i) {

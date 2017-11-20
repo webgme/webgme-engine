@@ -1,5 +1,6 @@
 /*globals define*/
 /*eslint-env node, browser*/
+/*eslint new-cap: 0*/
 
 /**
  * @author mmaroti / https://github.com/mmaroti
@@ -711,7 +712,7 @@ define([
                                 list.push({
                                     s: path,                // source
                                     n: name,                // name
-                                    t: overlays[path][name],// target
+                                    t: overlays[path][name], // target
                                     p: true                 // is forward relation
                                 });
                             }
@@ -1537,8 +1538,7 @@ define([
                             if (name.indexOf('_') === -1) {
                                 if (complexOverlayObject[shardId].items[source][name] === '/_nullptr') {
                                     completeOverlayInfo[source][name] = null;
-                                } else if (complexOverlayObject[shardId].items[source][name]
-                                        .indexOf('_') === -1) {
+                                } else if (complexOverlayObject[shardId].items[source][name].indexOf('_') === -1) {
                                     completeOverlayInfo[source][name] =
                                         complexOverlayObject[shardId].items[source][name];
                                 }
