@@ -1,4 +1,6 @@
 /*globals define*/
+/*eslint-env node, browser*/
+
 /**
  * Module for finding strongly connected components in a directed graph, that is circular references.
  *
