@@ -47,7 +47,7 @@ describe('InvalidActiveNode test', function () {
                 return Q.allDone([
                     testFixture.loadRootNodeFromCommit(project, core, commitHash),
                     project.createBranch('b1', commitHash)
-                    ]);
+                ]);
             })
             .then(function (res) {
                 var persisted;

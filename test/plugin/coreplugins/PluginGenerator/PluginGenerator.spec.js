@@ -17,7 +17,7 @@ describe('PluginGenerator', function () {
             pluginName: 'New Plugin',
             description: '',
             test: true,
-            templateType: 'None',// "JavaScript", "Python", "CSharp",
+            templateType: 'None', // "JavaScript", "Python", "CSharp",
             configStructure: false,
             meta: true
         };
@@ -27,8 +27,7 @@ describe('PluginGenerator', function () {
 
         try {
             esprima.parse(testString);
-        }
-        catch (e) {
+        } catch (e) {
             err = e;
             if (logError) {
                 logger.error(err.toString());
@@ -38,7 +37,7 @@ describe('PluginGenerator', function () {
         return err;
     }
 
-    function runPlugin (pluginName, configuration, callback) {
+    function runPlugin(pluginName, configuration, callback) {
         var pluginBasePaths = 'plugin/coreplugins/',
             Plugin = requirejs(pluginBasePaths + pluginName + '/' + pluginName),
             plugin = new Plugin(),

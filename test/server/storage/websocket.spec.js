@@ -43,7 +43,7 @@ describe('WebSocket', function () {
         server,
         serverBaseUrl,
         agent,
-        webgmeToken,//TODO: this is not a nice approach, but don't want change all openSocketIo
+        webgmeToken, //TODO: this is not a nice approach, but don't want change all openSocketIo
 
         openSocketIo = function (token, returnToken, callback) {
             return testFixture.openSocketIo(server, agent, guestAccount, guestAccount, token)

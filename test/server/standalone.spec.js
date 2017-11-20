@@ -522,16 +522,16 @@ describe('standalone server', function () {
                         redirectUrl: '/gmeConfig.json'
                     })
                     .end(function (err, res) {
-                    try {
-                        expect(err).to.equal(null);
-                        expect(res.status).to.equal(200);
-                        expect(res.redirects.length).to.equal(1);
-                        expect(res.redirects[0]).to.equal(serverBaseUrl + '/profile/login');
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
-                });
+                        try {
+                            expect(err).to.equal(null);
+                            expect(res.status).to.equal(200);
+                            expect(res.redirects.length).to.equal(1);
+                            expect(res.redirects[0]).to.equal(serverBaseUrl + '/profile/login');
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
             });
         });
 

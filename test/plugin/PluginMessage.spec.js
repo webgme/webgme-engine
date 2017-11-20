@@ -70,13 +70,13 @@ describe('Plugin Message', function () {
         pluginMessage.severity.should.equal('info');
 
         pluginMessage.serialize().should.deep.equal({
-            'activeNode': {
-                'id': '123456',
-                'name': 'node name'
+            activeNode: {
+                id: '123456',
+                name: 'node name'
             },
-            'commitHash': 'abcdefgth1234',
-            'message': 'test message',
-            'severity': 'info'
+            commitHash: 'abcdefgth1234',
+            message: 'test message',
+            severity: 'info'
         });
     });
 });

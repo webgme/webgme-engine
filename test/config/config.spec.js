@@ -122,7 +122,7 @@ describe('configuration and components', function () {
             config.storage.disableHashChecks = true;
             config.storage.requireHashesToMatch = true;
             validateConfig(config);
-           throw new Error('Did not throw');
+            throw new Error('Did not throw');
         } catch (err) {
             expect(err.message).to.equal('Cannot set config.storage.disableHashChecks and requireHashesToMatch ' +
                 'to true at the same time!');

@@ -208,7 +208,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(200, err);
@@ -239,7 +239,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(400);
@@ -268,7 +268,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
@@ -504,25 +504,25 @@ describe('ORGANIZATION REST API', function () {
             it('should force delete org site-admin DELETE /api/v1/orgs/orgToDelete2?force=true', function (done) {
                 var orgName = 'orgDisabledForceDelete';
 
-                    agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
-                        .query({force: true})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
-                        .end(function (err, res2) {
-                            try {
-                                expect(res2.status).equal(204, err);
-                            } catch (e) {
-                                done(e);
-                                return;
-                            }
-                            gmeAuth.getOrganization(orgName, {disabled: undefined})
-                                .then(function() {
-                                    throw new Error('Should have failed!');
-                                })
-                                .catch(function (err) {
-                                    expect(err.message).to.include('no such organization');
-                                })
-                                .nodeify(done);
-                        });
+                agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
+                    .query({force: true})
+                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .end(function (err, res2) {
+                        try {
+                            expect(res2.status).equal(204, err);
+                        } catch (e) {
+                            done(e);
+                            return;
+                        }
+                        gmeAuth.getOrganization(orgName, {disabled: undefined})
+                            .then(function () {
+                                throw new Error('Should have failed!');
+                            })
+                            .catch(function (err) {
+                                expect(err.message).to.include('no such organization');
+                            })
+                            .nodeify(done);
+                    });
             });
 
             it('should 204 force delete non existing org site-admin DELETE /api/v1/orgs/orgToDelete2?force=true',
@@ -573,7 +573,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
 
@@ -695,7 +695,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
 
@@ -718,7 +718,7 @@ describe('ORGANIZATION REST API', function () {
 
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
                         .set('Authorization', 'Basic ' + new Buffer('admin:admin')
-                                .toString('base64'))
+                            .toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(404, err);
                             done();
@@ -733,7 +733,7 @@ describe('ORGANIZATION REST API', function () {
 
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
                         .set('Authorization', 'Basic ' + new Buffer('admin:admin')
-                                .toString('base64'))
+                            .toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(204, err);
                             done();

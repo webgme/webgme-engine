@@ -39,7 +39,7 @@ describe('SafeStorage with Passing Authorizer', function () {
                 return Q.allDone([
                     gmeAuth.addUser('user1', '@', 'pass', true, {overwrite: true}),
                     gmeAuth.addUser('user2', '@', 'pass', false, {overwrite: true}),
-                    ]);
+                ]);
             })
             .then(function () {
                 safeStorage = testFixture.getMemoryStorage(logger, gmeConfig, gmeAuth);

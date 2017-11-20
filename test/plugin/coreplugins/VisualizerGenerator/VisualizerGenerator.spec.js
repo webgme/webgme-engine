@@ -17,13 +17,12 @@ describe('VisualizerGenerator', function () {
             visualizerID: 'MyCustomVisualizer'
         };
 
-    var isValidJs = function(testString, logError) {
+    var isValidJs = function (testString, logError) {
         var err = null;
 
         try {
             esprima.parse(testString);
-        }
-        catch (e) {
+        } catch (e) {
             err = e;
             if (logError) {
                 logger.error(err.toString());
@@ -101,8 +100,8 @@ describe('VisualizerGenerator', function () {
         plugin.main(callback);
     };
 
-    describe('VisualizerID', function() {
-        it('should not allow spaces', function() {
+    describe('VisualizerID', function () {
+        it('should not allow spaces', function () {
             var Plugin = requirejs('plugin/coreplugins/VisualizerGenerator/VisualizerGenerator'),
                 plugin = new Plugin(),
                 pluginStructure = plugin.getConfigStructure(),
@@ -113,13 +112,13 @@ describe('VisualizerGenerator', function () {
         });
     });
 
-    it('should have a string for getName', function() {
+    it('should have a string for getName', function () {
         var Plugin = requirejs('plugin/coreplugins/VisualizerGenerator/VisualizerGenerator'),
             plugin = new Plugin();
         expect(plugin.getName()).to.equal('Visualizer Generator');
     });
 
-    it('should have a string for getVersion', function() {
+    it('should have a string for getVersion', function () {
         var Plugin = requirejs('plugin/coreplugins/VisualizerGenerator/VisualizerGenerator'),
             plugin = new Plugin();
         expect(typeof plugin.getVersion()).to.equal('string');
@@ -143,7 +142,7 @@ describe('VisualizerGenerator', function () {
         });
     });
 
-    describe('Generated Files', function() {
+    describe('Generated Files', function () {
         var files,
             basePath = 'src/client/js/',
             visualizerID = 'CheckingMyFiles',
@@ -154,7 +153,7 @@ describe('VisualizerGenerator', function () {
                 scss: 'Widgets/' + visualizerID + '/styles/' + visualizerID + 'Widget.scss'
             };
 
-        before(function(done) {
+        before(function (done) {
             var config = Object.create(pluginConfig);
             config.visualizerID = visualizerID ;
             runPlugin('VisualizerGenerator', config, function (err, result) {
@@ -166,38 +165,38 @@ describe('VisualizerGenerator', function () {
 
         // Check every file listed in filePaths
         var types = Object.keys(filePaths);
-        var testFile = function(type, shortPath) {
-                var filePath = basePath+shortPath,
-                    isJs = path.extname(filePath) === '.js';
+        var testFile = function (type, shortPath) {
+            var filePath = basePath + shortPath,
+                isJs = path.extname(filePath) === '.js';
 
-                it('should generate a '+type.toLowerCase()+' file', function () {
+            it('should generate a ' + type.toLowerCase() + ' file', function () {
 
-                    expect(files[filePath]).to.not.equal(undefined);
+                expect(files[filePath]).to.not.equal(undefined);
+            });
+
+            // Extra check only if it is a .js file
+            if (isJs) {
+                it('should be valid js', function () {
+                    expect(isValidJs(files[filePath])).to.equal(null);
                 });
-
-                // Extra check only if it is a .js file
-                if (isJs) {
-                    it('should be valid js', function () {
-                        expect(isValidJs(files[filePath])).to.equal(null);
-                    });
-                }
-            };
+            }
+        };
 
         for (var i = types.length; i--;) {
             describe(types[i], testFile.bind(null, types[i], filePaths[types[i]]));
         }
     });
 
-    describe('misc', function() {
+    describe('misc', function () {
         var pluginBasePaths = 'plugin/coreplugins/',
             Plugin = requirejs(pluginBasePaths + 'VisualizerGenerator/VisualizerGenerator');
 
-        it('should convert camelCase to camel-case', function() {
+        it('should convert camelCase to camel-case', function () {
             var word = 'camelCase';
             expect(Plugin.toDashed(word)).to.equal('camel-case');
         });
 
-        it('should convert CamelCase to camel-case', function() {
+        it('should convert CamelCase to camel-case', function () {
             var word = 'CamelCase';
             expect(Plugin.toDashed(word)).to.equal('camel-case');
         });

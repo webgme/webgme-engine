@@ -120,12 +120,12 @@ describe('Plugin ImportV1 - assets', function () {
             .then(function () {
                 // Add the exported assets
                 return Q.allDone(files.map(function (fName) {
-                        if (fName === '7c2be6ee36611cb8a7e27a0a91b34a1066b3c756.metadata') {
-                            return Q.ninvoke(artifact, 'addFileAsSoftLink',
-                                fName, testFixture.fs.readFileSync(dir + fName));
-                        }
-                        return Q();
-                    })
+                    if (fName === '7c2be6ee36611cb8a7e27a0a91b34a1066b3c756.metadata') {
+                        return Q.ninvoke(artifact, 'addFileAsSoftLink',
+                            fName, testFixture.fs.readFileSync(dir + fName));
+                    }
+                    return Q();
+                })
                 );
             })
             .then(function () {

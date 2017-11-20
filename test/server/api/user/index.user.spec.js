@@ -610,10 +610,10 @@ describe('USER REST API', function () {
             it('should 401 all users /api/v1/users', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users')
                     .end(function (err, res) {
-                    expect(res.status).equal(401, err);
+                        expect(res.status).equal(401, err);
 
-                    done();
-                });
+                        done();
+                    });
             });
 
             it('should 401 all orgs /api/v1/orgs', function (done) {
@@ -1213,7 +1213,7 @@ describe('USER REST API', function () {
 
                                     done();
                                 });
-                    });
+                        });
                 });
             });
 

@@ -354,7 +354,7 @@ describe('GME client', function () {
                         persisted = result.core.persist(result.rootNode);
 
                         result.project.makeCommit(null, [result.commitHash], persisted.rootHash, persisted.objects,
-                        'differentCommitHashGetCoreInstance')
+                            'differentCommitHashGetCoreInstance')
                             .then(function (commitRes) {
                                 client.getCoreInstance({commitHash: commitRes.hash}, function (err, res2) {
                                     expect(err).to.equal(null);
@@ -1260,24 +1260,24 @@ describe('GME client', function () {
         before(function (done) {
             this.timeout(10000);
             requirejs([
-                    'client/client',
-                    'text!gmeConfig.json'],
-                function (Client_, gmeConfigJSON) {
-                    Client = Client_;
-                    gmeConfig = JSON.parse(gmeConfigJSON);
-                    client = new Client(gmeConfig);
-                    projectId = projectName2Id(projectName, gmeConfig, client);
-                    client.connectToDatabase(function (err) {
-                        expect(err).to.equal(null);
+                'client/client',
+                'text!gmeConfig.json'],
+            function (Client_, gmeConfigJSON) {
+                Client = Client_;
+                gmeConfig = JSON.parse(gmeConfigJSON);
+                client = new Client(gmeConfig);
+                projectId = projectName2Id(projectName, gmeConfig, client);
+                client.connectToDatabase(function (err) {
+                    expect(err).to.equal(null);
 
-                        client.selectProject(projectId, null, function (err) {
-                            expect(err).to.equal(null);
-                            masterHash = client.getActiveCommitHash();
-                            expect(masterHash).to.include('#');
-                            done();
-                        });
+                    client.selectProject(projectId, null, function (err) {
+                        expect(err).to.equal(null);
+                        masterHash = client.getActiveCommitHash();
+                        expect(masterHash).to.include('#');
+                        done();
                     });
-                }
+                });
+            }
             );
         });
 
@@ -1782,7 +1782,7 @@ describe('GME client', function () {
                 relid = relidPool[i];
                 node = client.getNode(client.createChild({parentId: container.getId(), relid: relid}));
                 childrenIds.unshift(node.getId());
-                copyParams[childrenIds[0]] = {attributes: {'name': 'copy'}};
+                copyParams[childrenIds[0]] = {attributes: {name: 'copy'}};
 
                 //we aslo set the name
                 client.setAttribute(childrenIds[0], 'name', childrenIds[0]);
@@ -2994,11 +2994,11 @@ describe('GME client', function () {
                     expect(node.getPointer('ptr')).to.deep.equal({to: '/323573539', from: []});
 
                     client.copyMoreNodes({
-                            parentId: '',
-                            '/1697300825': {attributes: {name: 'member2copy'}, registry: {}},
-                            '/1400778473': {attributes: {name: 'member1copy'}}
-                        },
-                        'basic copy nodes test');
+                        parentId: '',
+                        '/1697300825': {attributes: {name: 'member2copy'}, registry: {}},
+                        '/1400778473': {attributes: {name: 'member1copy'}}
+                    },
+                    'basic copy nodes test');
                     return;
                 }
 
@@ -3077,11 +3077,11 @@ describe('GME client', function () {
 
                     client.startTransaction();
                     client.copyMoreNodes({
-                            parentId: '',
-                            '/1697300825': {attributes: {name: 'member2copy'}, registry: {}},
-                            '/1400778473': {attributes: {name: 'member1copy'}}
-                        },
-                        'basic copy nodes test');
+                        parentId: '',
+                        '/1697300825': {attributes: {name: 'member2copy'}, registry: {}},
+                        '/1400778473': {attributes: {name: 'member1copy'}}
+                    },
+                    'basic copy nodes test');
                     client.completeTransaction();
                     return;
                 }
@@ -3166,12 +3166,12 @@ describe('GME client', function () {
                     expect(node.getAttribute('name')).to.equal('check');
 
                     client.copyMoreNodes({
-                            parentId: '',
-                            '/1697300825': {attributes: {name: 'member2copy'}},
-                            '/1400778473': {attributes: {name: 'member1copy'}},
-                            '/323573539': {attributes: {name: 'check-copy'}, registry: {position: {x: 100, y: 100}}}
-                        },
-                        'basic copy nodes test');
+                        parentId: '',
+                        '/1697300825': {attributes: {name: 'member2copy'}},
+                        '/1400778473': {attributes: {name: 'member1copy'}},
+                        '/323573539': {attributes: {name: 'check-copy'}, registry: {position: {x: 100, y: 100}}}
+                    },
+                    'basic copy nodes test');
                     return;
                 }
 
@@ -3261,13 +3261,13 @@ describe('GME client', function () {
                     expect(node.getPointer('ptr')).to.deep.equal({to: '/323573539', from: []});
 
                     client.copyMoreNodes({
-                            parentId: '',
-                            '/1400778473': {
-                                attributes: {name: 'member1copy'},
-                                registry: {position: {x: 100, y: 100}}
-                            }
-                        },
-                        'copy single node test');
+                        parentId: '',
+                        '/1400778473': {
+                            attributes: {name: 'member1copy'},
+                            registry: {position: {x: 100, y: 100}}
+                        }
+                    },
+                    'copy single node test');
                     return;
                 }
 
@@ -3482,12 +3482,12 @@ describe('GME client', function () {
                     expect(node.getAttribute('name')).to.equal('check');
 
                     client.createChildren({
-                            parentId: '',
-                            '/1697300825': {attributes: {name: 'member2copy'}},
-                            '/1400778473': {attributes: {name: 'member1copy'}},
-                            '/323573539': {attributes: {name: 'check-copy'}, registry: {position: {x: 400, y: 400}}}
-                        },
-                        'basic copy nodes test');
+                        parentId: '',
+                        '/1697300825': {attributes: {name: 'member2copy'}},
+                        '/1400778473': {attributes: {name: 'member1copy'}},
+                        '/323573539': {attributes: {name: 'check-copy'}, registry: {position: {x: 400, y: 400}}}
+                    },
+                    'basic copy nodes test');
                     return;
                 }
 
@@ -4518,11 +4518,11 @@ describe('GME client', function () {
                     },
                     pointers: {},
                     aspects: {},
-                    "constraints": {
-                        "meta": {
-                            "script": "function(core, node, callback) {\n    \"use strict\";\n    var error = null,\n        returnValue = {hasViolation:false,message:\"\"},\n        i,\n        neededChekings = 4,\n        meta = core.getJsonMeta(node),\n        typeIndexOfChild = function(typePathsArray,childNode){\n            var index = -1;\n\n            while(childNode && index === -1){\n                index = typePathsArray.indexOf(core.getPath(childNode));\n                childNode = core.getBase(childNode);\n            }\n\n            return index;\n        },\n        checkChildrenRules = function(){\n            var childCount = [],\n                index;\n            core.loadChildren(node,function(err,children){\n                if(err){\n                    returnValue.message += \"error during loading of node\\'s children\\n\";\n                    error = error || err;\n                    return checkingDone();\n                }\n\n                //global count check\n                //min\n                if(meta.children.min && meta.children.min !== -1){\n                    if(children.length < meta.children.min){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \"node hase fewer nodes than needed\\n\";\n                    }\n                }\n                //max\n                if(meta.children.max && meta.children.max !== -1){\n                    if(children.length > meta.children.max){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \"node hase more nodes than allowed\\n\";\n                    }\n                }\n\n                //typedCounts\n                for(i=0;i<meta.children.items.length;i++){\n                    childCount.push(0);\n                }\n                for(i=0;i<children.length;i++){\n                    index = typeIndexOfChild(meta.children.items,children[i]);\n                    if(index === -1 ){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \"child \" + core.getGuid(children[i]) +\" is from prohibited type\\n\";\n                    }\n                    else {\n                        childCount[index]++;\n                    }\n                }\n                for(i=0;i<meta.children.items.length;i++){\n                    //min\n                    if(meta.children.minItems[i] !== -1){\n                        if(meta.children.minItems[i] > childCount[i]){\n                            returnValue.hasViolation = true;\n                            returnValue.message += \"too few type \"+ meta.children.items[i] +\" children\\n\";\n                        }\n                    }\n                    //max\n                    if(meta.children.maxItems[i] !== -1){\n                        if(meta.children.maxItems[i] < childCount[i]){\n                            returnValue.hasViolation = true;\n                            returnValue.message += \"too many type \"+ meta.children.items[i] +\" children\\n\";\n                        }\n                    }\n                }\n                return checkingDone();\n            });\n        },\n        checkPointerRules = function(){\n            //TODO currently there is no quantity check\n            var validNames = core.getValidPointerNames(node),\n                names = core.getPointerNames(node),\n                checkPointer = function(name){\n                    core.loadPointer(node,name,function(err,target){\n                        if(err || !target){\n                            error = error || err;\n                            returnValue.message += \"error during pointer \"+ name +\" load\\n\";\n                            return checkDone();\n                        }\n\n                        if(!core.isValidTargetOf(target,node,name)){\n                            returnValue.hasViolation = true;\n                            returnValue.message += \"target of pointer \"+ name +\" is invalid\\n\";\n                        }\n                        return checkDone();\n                    });\n                },\n                checkDone = function(){\n                    if(--needs === 0){\n                        checkingDone();\n                    }\n                },\n                needs,i;\n            \n            needs = names.length;\n            if(needs > 0){\n                for(i=0;i<names.length;i++){\n                    if(validNames.indexOf(names[i]) === -1){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \" invalid pointer \"+ names[i] +\" has been found\\n\";\n                        checkDone();\n                    } else {\n                        checkPointer(names[i]);\n                    }\n\n                }\n            } else {\n                checkDone();\n            }\n\n        },\n        checkSetRules = function(){\n            //TODO this part is missing yet\n            checkingDone();\n        },\n        checkAttributeRules = function(){\n            var names = core.getAttributeNames(node),\n                validNames = core.getValidAttributeNames(node);\n            for(i=0;i<names.length;i++){\n                if(validNames.indexOf(names[i]) !== -1){\n                    if(!core.isValidAttributeValueOf(node,names[i],core.getAttribute(node,names[i]))){\n                        returnValue.hasViolation = true;\n                        returnValue.message += \"attribute \"+names[i]+\" has invalid value\\n\";\n                    }\n                }\n                else {\n                    returnValue.hasViolation = true;\n                    returnValue.message += \"node has an undefined attribute: \"+names[i];\n                }\n            }\n            checkingDone();\n        },\n        checkingDone = function(){\n            if(--neededChekings === 0){\n                callback(error,returnValue);\n            }\n        };\n\n    checkChildrenRules();\n    checkPointerRules();\n    checkSetRules();\n    checkAttributeRules();\n}",
-                            "priority": 10,
-                            "info": "this constraint will check all the meta rules defined to an object"
+                    constraints: {
+                        meta: {
+                            script: 'function(core, node, callback) {\n    "use strict";\n    var error = null,\n        returnValue = {hasViolation:false,message:""},\n        i,\n        neededChekings = 4,\n        meta = core.getJsonMeta(node),\n        typeIndexOfChild = function(typePathsArray,childNode){\n            var index = -1;\n\n            while(childNode && index === -1){\n                index = typePathsArray.indexOf(core.getPath(childNode));\n                childNode = core.getBase(childNode);\n            }\n\n            return index;\n        },\n        checkChildrenRules = function(){\n            var childCount = [],\n                index;\n            core.loadChildren(node,function(err,children){\n                if(err){\n                    returnValue.message += "error during loading of node\\\'s children\\n";\n                    error = error || err;\n                    return checkingDone();\n                }\n\n                //global count check\n                //min\n                if(meta.children.min && meta.children.min !== -1){\n                    if(children.length < meta.children.min){\n                        returnValue.hasViolation = true;\n                        returnValue.message += "node hase fewer nodes than needed\\n";\n                    }\n                }\n                //max\n                if(meta.children.max && meta.children.max !== -1){\n                    if(children.length > meta.children.max){\n                        returnValue.hasViolation = true;\n                        returnValue.message += "node hase more nodes than allowed\\n";\n                    }\n                }\n\n                //typedCounts\n                for(i=0;i<meta.children.items.length;i++){\n                    childCount.push(0);\n                }\n                for(i=0;i<children.length;i++){\n                    index = typeIndexOfChild(meta.children.items,children[i]);\n                    if(index === -1 ){\n                        returnValue.hasViolation = true;\n                        returnValue.message += "child " + core.getGuid(children[i]) +" is from prohibited type\\n";\n                    }\n                    else {\n                        childCount[index]++;\n                    }\n                }\n                for(i=0;i<meta.children.items.length;i++){\n                    //min\n                    if(meta.children.minItems[i] !== -1){\n                        if(meta.children.minItems[i] > childCount[i]){\n                            returnValue.hasViolation = true;\n                            returnValue.message += "too few type "+ meta.children.items[i] +" children\\n";\n                        }\n                    }\n                    //max\n                    if(meta.children.maxItems[i] !== -1){\n                        if(meta.children.maxItems[i] < childCount[i]){\n                            returnValue.hasViolation = true;\n                            returnValue.message += "too many type "+ meta.children.items[i] +" children\\n";\n                        }\n                    }\n                }\n                return checkingDone();\n            });\n        },\n        checkPointerRules = function(){\n            //TODO currently there is no quantity check\n            var validNames = core.getValidPointerNames(node),\n                names = core.getPointerNames(node),\n                checkPointer = function(name){\n                    core.loadPointer(node,name,function(err,target){\n                        if(err || !target){\n                            error = error || err;\n                            returnValue.message += "error during pointer "+ name +" load\\n";\n                            return checkDone();\n                        }\n\n                        if(!core.isValidTargetOf(target,node,name)){\n                            returnValue.hasViolation = true;\n                            returnValue.message += "target of pointer "+ name +" is invalid\\n";\n                        }\n                        return checkDone();\n                    });\n                },\n                checkDone = function(){\n                    if(--needs === 0){\n                        checkingDone();\n                    }\n                },\n                needs,i;\n            \n            needs = names.length;\n            if(needs > 0){\n                for(i=0;i<names.length;i++){\n                    if(validNames.indexOf(names[i]) === -1){\n                        returnValue.hasViolation = true;\n                        returnValue.message += " invalid pointer "+ names[i] +" has been found\\n";\n                        checkDone();\n                    } else {\n                        checkPointer(names[i]);\n                    }\n\n                }\n            } else {\n                checkDone();\n            }\n\n        },\n        checkSetRules = function(){\n            //TODO this part is missing yet\n            checkingDone();\n        },\n        checkAttributeRules = function(){\n            var names = core.getAttributeNames(node),\n                validNames = core.getValidAttributeNames(node);\n            for(i=0;i<names.length;i++){\n                if(validNames.indexOf(names[i]) !== -1){\n                    if(!core.isValidAttributeValueOf(node,names[i],core.getAttribute(node,names[i]))){\n                        returnValue.hasViolation = true;\n                        returnValue.message += "attribute "+names[i]+" has invalid value\\n";\n                    }\n                }\n                else {\n                    returnValue.hasViolation = true;\n                    returnValue.message += "node has an undefined attribute: "+names[i];\n                }\n            }\n            checkingDone();\n        },\n        checkingDone = function(){\n            if(--neededChekings === 0){\n                callback(error,returnValue);\n            }\n        };\n\n    checkChildrenRules();\n    checkPointerRules();\n    checkSetRules();\n    checkAttributeRules();\n}',
+                            priority: 10,
+                            info: 'this constraint will check all the meta rules defined to an object'
                         }
                     }
                 });
@@ -4693,18 +4693,18 @@ describe('GME client', function () {
         before(function (done) {
             this.timeout(10000);
             requirejs([
-                    'client/client',
-                    'text!gmeConfig.json'],
-                function (Client_, gmeConfigJSON) {
-                    Client = Client_;
-                    gmeConfig = JSON.parse(gmeConfigJSON);
-                    client = new Client(gmeConfig);
+                'client/client',
+                'text!gmeConfig.json'],
+            function (Client_, gmeConfigJSON) {
+                Client = Client_;
+                gmeConfig = JSON.parse(gmeConfigJSON);
+                client = new Client(gmeConfig);
 
-                    client.connectToDatabase(function (err) {
-                        expect(err).to.equal(null);
-                        done();
-                    });
-                }
+                client.connectToDatabase(function (err) {
+                    expect(err).to.equal(null);
+                    done();
+                });
+            }
             );
         });
 

@@ -63,7 +63,7 @@ describe('Saving dependency plugin', function () {
                     project.createBranch('b4', commitHash),
                     project.createBranch('b5', commitHash),
                     project.createBranch('b6', commitHash)
-                    ]);
+                ]);
             })
             .nodeify(done);
     });

@@ -1021,7 +1021,7 @@ describe('GME authentication', function () {
             .then(function () {
                 return auth.listOrganizations({});
             }).then(function (organizations) {
-            expect(organizations).to.deep.include({
+                expect(organizations).to.deep.include({
                     _id: orgName,
                     info: {},
                     projects: {},
@@ -1037,7 +1037,7 @@ describe('GME authentication', function () {
                     admins: [],
                     users: []
                 });
-        }).nodeify(done);
+            }).nodeify(done);
     });
 
     it('should fail to add dup organization', function (done) {

@@ -338,7 +338,7 @@ describe('StorageHelpers', function () {
         });
 
         it('should start from 3 and 2 and stop at target', function (done) {
-            var heads = [chain[0],chain[1]];
+            var heads = [chain[0], chain[1]];
 
             storageHelpers.loadHistory(project, -1, '#1', heads)
                 .then(function (result) {

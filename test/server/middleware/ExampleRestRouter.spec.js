@@ -102,7 +102,7 @@ describe('ExampleRestRouter', function () {
                     try {
                         expect(err).equal(null);
                         expect(res.status).equal(200);
-                    }catch (e) {
+                    } catch (e) {
                         error = e;
                     }
 
@@ -127,7 +127,7 @@ describe('ExampleRestRouter', function () {
                     try {
                         expect(err).equal(null);
                         expect(res.status).equal(200);
-                    }catch (e) {
+                    } catch (e) {
                         error = e;
                     }
 
@@ -149,13 +149,13 @@ describe('ExampleRestRouter', function () {
                 agent.post(serverBaseUrl + '/ExampleRestRouter/postExample')
                     .send({data: 42})
                     .end(function (err, res) {
-                    expect(err).equal(null);
-                    expect(res.status).equal(201);
-                    server.stop(function (err) {
-                        server = null;
-                        done(err);
+                        expect(err).equal(null);
+                        expect(res.status).equal(201);
+                        server.stop(function (err) {
+                            server = null;
+                            done(err);
+                        });
                     });
-                });
             });
         });
 

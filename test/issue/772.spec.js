@@ -44,8 +44,8 @@ describe.skip('issue772 testing', function () {
 
     afterEach(function (done) {
         storage.deleteProject({
-                projectId: projectId
-            })
+            projectId: projectId
+        })
             .nodeify(done);
     });
 

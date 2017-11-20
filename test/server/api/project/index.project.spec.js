@@ -1033,9 +1033,9 @@ describe('PROJECT REST API', function () {
                                         '/branches')
                                         .end(function (err, res) {
                                             var commitObject = importResult.project.createCommitObject([hash],
-                                                importResult.rootHash,
-                                                'tester',
-                                                '15'),
+                                                    importResult.rootHash,
+                                                    'tester',
+                                                    '15'),
                                                 commitData = {
                                                     projectId: projectName2Id(projectName),
                                                     commitObject: commitObject,

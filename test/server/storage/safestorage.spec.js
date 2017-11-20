@@ -425,23 +425,23 @@ describe('SafeStorage', function () {
         before(function (done) {
             var configWithDefaults = JSON.parse(JSON.stringify(gmeConfig));
             configWithDefaults.webhooks.defaults = {
-                'myHook': {
+                myHook: {
                     options: {
                         only: 'options'
                     }
                 },
-                'myHook1': {
+                myHook1: {
                     url: 'localhost:9001',
                     events: 'all'
                 },
-                'myHook2': {
+                myHook2: {
                     url: 'localhost:9002',
                     events: 'all',
                     options: {
                         myLittle: 'options'
                     }
                 },
-                'myHook3': {
+                myHook3: {
                     options: {
                         only: 'options'
                     }

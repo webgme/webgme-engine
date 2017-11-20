@@ -159,7 +159,7 @@ function genOpenCloseDatabase(AdapterClass, logger, gmeConfig, Q, expect) {
         Q.allDone([
             databaseAdapter1.openDatabase(),
             databaseAdapter2.openDatabase()
-            ])
+        ])
             .then(function () {
                 expect(databaseAdapter1.client).to.not.equal(null);
                 expect(databaseAdapter2.client).to.not.equal(null);
@@ -1162,7 +1162,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
                 return Q.allDone([
                     databaseAdapter.openProject('newProject19'),
                     databaseAdapter.openProject('project19')
-                    ]);
+                ]);
             })
             .then(function (result) {
                 return Q.allDone([

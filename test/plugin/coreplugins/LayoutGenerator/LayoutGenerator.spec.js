@@ -17,13 +17,12 @@ describe('LayoutGenerator', function () {
             layoutID: 'MyCustomLayout'
         };
 
-    var isValidJs = function(testString, logError) {
+    var isValidJs = function (testString, logError) {
         var err = null;
 
         try {
             esprima.parse(testString);
-        }
-        catch (e) {
+        } catch (e) {
             err = e;
             if (logError) {
                 logger.error(err.toString());
@@ -101,8 +100,8 @@ describe('LayoutGenerator', function () {
         plugin.main(callback);
     };
 
-    describe('LayoutID', function() {
-        it('should not allow spaces', function() {
+    describe('LayoutID', function () {
+        it('should not allow spaces', function () {
             var Plugin = requirejs('plugin/coreplugins/LayoutGenerator/LayoutGenerator'),
                 plugin = new Plugin(),
                 pluginStructure = plugin.getConfigStructure(),
@@ -113,13 +112,13 @@ describe('LayoutGenerator', function () {
         });
     });
 
-    it('should have a string for getName', function() {
+    it('should have a string for getName', function () {
         var Plugin = requirejs('plugin/coreplugins/LayoutGenerator/LayoutGenerator'),
             plugin = new Plugin();
         expect(plugin.getName()).to.equal('Layout Generator');
     });
 
-    it('should have a string for getVersion', function() {
+    it('should have a string for getVersion', function () {
         var Plugin = requirejs('plugin/coreplugins/LayoutGenerator/LayoutGenerator'),
             plugin = new Plugin();
         expect(typeof plugin.getVersion()).to.equal('string');
@@ -143,7 +142,7 @@ describe('LayoutGenerator', function () {
         });
     });
 
-    describe('Generated Files', function() {
+    describe('Generated Files', function () {
         var files,
             basePath = 'src/client/js/',
             layoutID = 'CheckingMyFiles',
@@ -153,7 +152,7 @@ describe('LayoutGenerator', function () {
                 template: 'Layouts/' + layoutID + '/templates/' + layoutID + '.html'
             };
 
-        before(function(done) {
+        before(function (done) {
             var config = Object.create(pluginConfig);
             config.layoutID = layoutID ;
             runPlugin('LayoutGenerator', config, function (err, result) {
@@ -165,22 +164,22 @@ describe('LayoutGenerator', function () {
 
         // Check every file listed in filePaths
         var types = Object.keys(filePaths);
-        var testFile = function(type, shortPath) {
-                var filePath = basePath+shortPath,
-                    isJs = path.extname(filePath) === '.js';
+        var testFile = function (type, shortPath) {
+            var filePath = basePath + shortPath,
+                isJs = path.extname(filePath) === '.js';
 
-                it('should generate a '+type.toLowerCase()+' file', function () {
+            it('should generate a ' + type.toLowerCase() + ' file', function () {
 
-                    expect(files[filePath]).to.not.equal(undefined);
+                expect(files[filePath]).to.not.equal(undefined);
+            });
+
+            // Extra check only if it is a .js file
+            if (isJs) {
+                it('should be valid js', function () {
+                    expect(isValidJs(files[filePath])).to.equal(null);
                 });
-
-                // Extra check only if it is a .js file
-                if (isJs) {
-                    it('should be valid js', function () {
-                        expect(isValidJs(files[filePath])).to.equal(null);
-                    });
-                }
-            };
+            }
+        };
 
         for (var i = types.length; i--;) {
             describe(types[i], testFile.bind(null, types[i], filePaths[types[i]]));

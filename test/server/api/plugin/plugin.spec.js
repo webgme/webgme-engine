@@ -506,57 +506,57 @@ describe('PLUGIN REST API', function () {
 
             it('should 404 when ExportImport [pluginId, projectId, branchName] /api/plugin/ExportImport/execute ' +
                 'and timeout passed /api/v1/plugin/ExportImport/results/%RESULT_ID%',
-                function (done) {
-                    var requestBody = {
-                        pluginId: 'ExportImport',
-                        projectId: importResult.project.projectId,
-                        pluginConfig: {
-                            type: 'Import'
-                        }
-                    };
-                    this.timeout(5000);
-                    agent.post(server.getUrl() + '/api/v1/plugin/ExportImport/execute')
-                        .send(requestBody)
-                        .end(function (err, res) {
-                            var resultId = res.body.resultId,
-                                cnt = 0,
-                                intervalId;
+            function (done) {
+                var requestBody = {
+                    pluginId: 'ExportImport',
+                    projectId: importResult.project.projectId,
+                    pluginConfig: {
+                        type: 'Import'
+                    }
+                };
+                this.timeout(5000);
+                agent.post(server.getUrl() + '/api/v1/plugin/ExportImport/execute')
+                    .send(requestBody)
+                    .end(function (err, res) {
+                        var resultId = res.body.resultId,
+                            cnt = 0,
+                            intervalId;
 
-                            expect(res.status).equal(200, err);
-                            expect(typeof resultId).to.equal('string');
+                        expect(res.status).equal(200, err);
+                        expect(typeof resultId).to.equal('string');
 
-                            intervalId = setInterval(function () {
-                                agent.get(server.getUrl() + '/api/v1/plugin/ExportImport/results/' + resultId)
-                                    .end(function (err, res) {
-                                        expect(res.status).equal(200, err);
+                        intervalId = setInterval(function () {
+                            agent.get(server.getUrl() + '/api/v1/plugin/ExportImport/results/' + resultId)
+                                .end(function (err, res) {
+                                    expect(res.status).equal(200, err);
 
-                                        if (res.status === 200) {
-                                            if (res.body.status === 'RUNNING') {
-                                                cnt += 1;
-                                                if (cnt === 30) {
-                                                    clearInterval(intervalId);
-                                                    done(new Error('Plugin did not finish in time, ' +
-                                                        'increase limit'));
-                                                }
-                                            } else {
+                                    if (res.status === 200) {
+                                        if (res.body.status === 'RUNNING') {
+                                            cnt += 1;
+                                            if (cnt === 30) {
                                                 clearInterval(intervalId);
-                                                setTimeout(function () {
-                                                    agent.get(server.getUrl() + '/api/v1/plugin/ExportImport/results/' +
-                                                        resultId)
-                                                        .end(function (err, res) {
-                                                            expect(res.status).equal(404, err);
-                                                            done();
-                                                        });
-                                                }, 1000);
+                                                done(new Error('Plugin did not finish in time, ' +
+                                                        'increase limit'));
                                             }
                                         } else {
                                             clearInterval(intervalId);
-                                            done(new Error('404 before finished'));
+                                            setTimeout(function () {
+                                                agent.get(server.getUrl() + '/api/v1/plugin/ExportImport/results/' +
+                                                        resultId)
+                                                    .end(function (err, res) {
+                                                        expect(res.status).equal(404, err);
+                                                        done();
+                                                    });
+                                            }, 1000);
                                         }
-                                    });
-                            }, 100);
-                        });
-                }
+                                    } else {
+                                        clearInterval(intervalId);
+                                        done(new Error('404 before finished'));
+                                    }
+                                });
+                        }, 100);
+                    });
+            }
             );
         });
     });
