@@ -3,8 +3,9 @@
 echo "BROWSER = $TEST_BROWSER"
 echo "TEST_FOLDER = $TEST_FOLDER"
 echo "RECURSIVE = $RECURSIVE"
+echo "TRAVIS_LINT_TEST = $TRAVIS_LINT_TEST"
 
-if [ "TRAVIS_LINT_TEST" == "true" ]
+if [ "$TRAVIS_LINT_TEST" == "true" ]
 then
   export COMMAND="npm run lint"
 elif [ "$TEST_BROWSER" == "true" ]

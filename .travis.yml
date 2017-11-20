@@ -16,7 +16,6 @@ addons:
 cache:
   directories:
     - node_modules
-    - src/client/bower_components
 
 # git:
 #   depth: 5
