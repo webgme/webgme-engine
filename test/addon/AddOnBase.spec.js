@@ -21,7 +21,7 @@ describe('AddOnBase', function () {
     it('should throw not implemented errors for update', function (done) {
         var addOnBase = new AddOnBase(logger, gmeConfig);
 
-        addOnBase.update(null, null, function (err, data) {
+        addOnBase.update(null, null, function (err/*, data*/) {
             expect(err).to.match(/must be overwritten/);
             done();
         });

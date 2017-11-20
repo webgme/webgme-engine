@@ -465,30 +465,26 @@ describe('corerel', function () {
         });
 
         it('should persist the sharded overlay', function () {
-            var childArray = [],
-                persisted;
+            var persisted;
 
-            childArray = fillUpWithChildren(4);
+            fillUpWithChildren(4);
 
             persisted = shardCore.persist(shardRoot);
             expect(Object.keys(persisted.objects)).to.have.length(3);
         });
 
         it('should persist the sharded overlay with proper amount of shards', function () {
-            var childArray = [],
-                persisted;
+            var persisted;
 
-            childArray = fillUpWithChildren(18);
+            fillUpWithChildren(18);
 
             persisted = shardCore.persist(shardRoot);
             expect(Object.keys(persisted.objects)).to.have.length(5);
         });
 
         it('should not reserve new shard for already used source', function () {
-            var childArray = [],
+            var childArray = fillUpWithChildren(4),
                 i;
-
-            childArray = fillUpWithChildren(4);
 
             for (i = 1; i < childArray.length; i += 1) {
                 shardCore.setPointer(childArray[0], 'sibling' + i, childArray[i]);

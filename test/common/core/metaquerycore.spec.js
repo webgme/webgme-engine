@@ -15,10 +15,8 @@ describe('meta query core', function () {
         logger = testFixture.logger.fork('metaquerycore.spec'),
         storage,
         projectName = 'metaQueryTesting',
-        project,
         core,
         rootNode,
-        commit,
         baseRootHash,
         gmeAuth,
         baseNodes = {
@@ -47,10 +45,8 @@ describe('meta query core', function () {
                 });
             })
             .then(function (result) {
-                project = result.project;
                 core = result.core;
                 rootNode = result.rootNode;
-                commit = result.commitHash;
                 baseRootHash = result.rootHash;
             })
             .nodeify(done);
@@ -221,12 +217,7 @@ describe('meta query core', function () {
     it('should return every valid meta child and ignore elements of rule outside of the meta', function () {
         //model /367050797/1626677559
         //actual port    /1924875415/1359805212
-        var validPaths = [
-                '/367050797/355480347',
-                '/367050797/625420143',
-                '/367050797/1626677559'
-            ],
-            parameters = {
+        var parameters = {
                 node: baseNodes['/1924875415'],
                 children: [
                     baseNodes['/1924875415/1059131120'],
@@ -237,9 +228,7 @@ describe('meta query core', function () {
                 multiplicity: true,
                 aspect: 'oneAsp'
             },
-            paths = [],
             metaNodes = core.getAllMetaNodes(baseNodes['/1924875415/1359805212']),
-            i,
             validNodes;
 
         core.setChildMeta(metaNodes['/367050797/1626677559'], baseNodes['/1924875415/1359805212']);

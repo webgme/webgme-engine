@@ -418,7 +418,6 @@ describe('CoreTree', function () {
         it('should throw special error if commitHash is passed to loadRoot', function (done) {
             var core = coreTree,
                 root,
-                rootHash,
                 persisted,
                 threw = false;
 

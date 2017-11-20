@@ -104,7 +104,7 @@ describe('storage storageclasses editorstorage', function () {
                         importResult.project.createBranch('b3', importResult.commitHash),
                         importResult.project.createBranch('b4', importResult.commitHash),
                         importResult.project.createBranch('b5', importResult.commitHash)
-                        ]);
+                    ]);
                 })
                 .then(function () {
                     return Q.allDone([
@@ -113,7 +113,7 @@ describe('storage storageclasses editorstorage', function () {
                         importResult.project.setBranchHash('b3', commitHash1, importResult.commitHash),
                         importResult.project.setBranchHash('b4', commitHash1, importResult.commitHash),
                         importResult.project.setBranchHash('b5', commitHash1, importResult.commitHash)
-                        ]);
+                    ]);
                 })
                 .nodeify(done);
         });
@@ -127,9 +127,9 @@ describe('storage storageclasses editorstorage', function () {
             }
 
             Q.allDone([
-                    gmeAuth.unload(),
-                    safeStorage.closeDatabase()
-                ])
+                gmeAuth.unload(),
+                safeStorage.closeDatabase()
+            ])
                 .nodeify(done);
         });
     });
@@ -163,10 +163,9 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     function makeCommitPromise(storage, projectId, branchName, parents, rootHash, coreObjects, msg) {
-        var deferred = Q.defer(),
-            synchronousData; // This is not returned here...
+        var deferred = Q.defer();
 
-        synchronousData = storage.makeCommit(projectId, branchName, parents, rootHash, coreObjects, msg,
+        storage.makeCommit(projectId, branchName, parents, rootHash, coreObjects, msg,
             function (err, result) {
                 if (err) {
                     deferred.reject(err);
@@ -180,16 +179,8 @@ describe('storage storageclasses editorstorage', function () {
     }
 
     it('should closeBranch if it is not open', function (done) {
-        var project,
-            branches,
-            access;
-
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
-
+            .then(function () {
                 return Q.nfcall(storage.closeBranch, projectName2Id(projectName), 'not_open');
             })
             .nodeify(done);
@@ -238,15 +229,8 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should return error if opening branch twice', function (done) {
-        var project,
-            branches,
-            access;
-
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
+            .then(function () {
 
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
@@ -267,6 +251,7 @@ describe('storage storageclasses editorstorage', function () {
                 function branchStatusHandler(/*branchStatus, commitQueue, updateQueue*/) {
 
                 }
+
                 return Q.nfcall(storage.openBranch, projectName2Id(projectName), 'master',
                     hashUpdateHandler, branchStatusHandler);
             })
@@ -280,15 +265,8 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should forkBranch', function (done) {
-        var project,
-            branches,
-            access;
-
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
+            .then(function () {
 
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
@@ -365,16 +343,8 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should makeCommit and fork', function (done) {
-        var project,
-            branches,
-            access;
-
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
-
+            .then(function () {
                 return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), null, [importResult.commitHash],
                     importResult.rootHash, {}, 'new commit');
             })
@@ -400,16 +370,8 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should makeCommit', function (done) {
-        var project,
-            branches,
-            access;
-
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
-
+            .then(function () {
                 return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), null, [importResult.commitHash],
                     importResult.rootHash, {}, 'new commit');
             })
@@ -420,16 +382,8 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should setBranchHash w/o open branch', function (done) {
-        var project,
-            branches,
-            access;
-
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
-
+            .then(function () {
                 return Q.ninvoke(storage, 'setBranchHash', projectName2Id(projectName), 'b1', commitHash2, commitHash1);
             })
             .then(function (result) {
@@ -439,15 +393,8 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should setBranchHash with open branch', function (done) {
-        var project,
-            branches,
-            access;
-
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
+            .then(function () {
 
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
@@ -481,121 +428,121 @@ describe('storage storageclasses editorstorage', function () {
     it('should persist commits with no open project', function (done) {
         var projectId = projectName2Id(projectName),
             commitQueueDump = {
-                "webgmeVersion": "2.10.0-beta3",
-                "projectId": projectId,
-                "branchName": "master",
-                "branchStatus": "AHEAD_SYNC",
-                "commitQueue": [
+                webgmeVersion: '2.10.0-beta3',
+                projectId: projectId,
+                branchName: 'master',
+                branchStatus: 'AHEAD_SYNC',
+                commitQueue: [
                     {
-                        "rootHash": "#62d07a02c278b90e8ae7ed23ceb188405211c9e5",
-                        "projectId": projectId,
-                        "commitObject": {
-                            "root": "#62d07a02c278b90e8ae7ed23ceb188405211c9e5",
-                            "parents": [
-                                "#653d24e79d36d5988d62722def123c0d8e67558c"
+                        rootHash: '#62d07a02c278b90e8ae7ed23ceb188405211c9e5',
+                        projectId: projectId,
+                        commitObject: {
+                            root: '#62d07a02c278b90e8ae7ed23ceb188405211c9e5',
+                            parents: [
+                                '#653d24e79d36d5988d62722def123c0d8e67558c'
                             ],
-                            "updater": [
-                                "guest"
+                            updater: [
+                                'guest'
                             ],
-                            "time": 1487021619137,
-                            "message": "[\nsetAttribute(/1,name,\"FCO1\")\n]",
-                            "type": "commit",
-                            "__v": "1.1.0",
-                            "_id": "#133dd1308018f8365cb398b5e574e9aced9aaa7d"
+                            time: 1487021619137,
+                            message: '[\nsetAttribute(/1,name,"FCO1")\n]',
+                            type: 'commit',
+                            __v: '1.1.0',
+                            _id: '#133dd1308018f8365cb398b5e574e9aced9aaa7d'
                         },
-                        "coreObjects": {
-                            "#fecc6542f9dba6a548a4e3f5f6c8ce85994b9332": {
-                                "type": "patch",
-                                "base": "#d51484d046f593d83a9e9663346a3c93f80d9018",
-                                "patch": [
+                        coreObjects: {
+                            '#fecc6542f9dba6a548a4e3f5f6c8ce85994b9332': {
+                                type: 'patch',
+                                base: '#d51484d046f593d83a9e9663346a3c93f80d9018',
+                                patch: [
                                     {
-                                        "op": "replace",
-                                        "path": "/atr/name",
-                                        "value": "FCO1"
+                                        op: 'replace',
+                                        path: '/atr/name',
+                                        value: 'FCO1'
                                     }
                                 ],
-                                "_id": "#fecc6542f9dba6a548a4e3f5f6c8ce85994b9332"
+                                _id: '#fecc6542f9dba6a548a4e3f5f6c8ce85994b9332'
                             },
-                            "#62d07a02c278b90e8ae7ed23ceb188405211c9e5": {
-                                "type": "patch",
-                                "base": "#4649fd96b7356499351a6e37abbc6321b95ebc5e",
-                                "patch": [
+                            '#62d07a02c278b90e8ae7ed23ceb188405211c9e5': {
+                                type: 'patch',
+                                base: '#4649fd96b7356499351a6e37abbc6321b95ebc5e',
+                                patch: [
                                     {
-                                        "op": "replace",
-                                        "path": "/1",
-                                        "value": "#fecc6542f9dba6a548a4e3f5f6c8ce85994b9332"
+                                        op: 'replace',
+                                        path: '/1',
+                                        value: '#fecc6542f9dba6a548a4e3f5f6c8ce85994b9332'
                                     }
                                 ],
-                                "_id": "#62d07a02c278b90e8ae7ed23ceb188405211c9e5"
+                                _id: '#62d07a02c278b90e8ae7ed23ceb188405211c9e5'
                             }
                         },
-                        "changedNodes": {
-                            "load": {},
-                            "unload": {},
-                            "update": {
-                                "/1": true,
-                                "": true
+                        changedNodes: {
+                            load: {},
+                            unload: {},
+                            update: {
+                                '/1': true,
+                                '': true
                             },
-                            "partialUpdate": {}
+                            partialUpdate: {}
                         },
-                        "branchName": "master"
+                        branchName: 'master'
                     },
                     {
-                        "rootHash": "#641facf9a9745dc25181bda68eed73e4b023964a",
-                        "projectId": projectId,
-                        "commitObject": {
-                            "root": "#641facf9a9745dc25181bda68eed73e4b023964a",
-                            "parents": [
-                                "#133dd1308018f8365cb398b5e574e9aced9aaa7d"
+                        rootHash: '#641facf9a9745dc25181bda68eed73e4b023964a',
+                        projectId: projectId,
+                        commitObject: {
+                            root: '#641facf9a9745dc25181bda68eed73e4b023964a',
+                            parents: [
+                                '#133dd1308018f8365cb398b5e574e9aced9aaa7d'
                             ],
-                            "updater": [
-                                "guest"
+                            updater: [
+                                'guest'
                             ],
-                            "time": 1487021622093,
-                            "message": "[\nsetRegistry(/1,position,{\"x\":79,\"y\":149})\n]",
-                            "type": "commit",
-                            "__v": "1.1.0",
-                            "_id": "#3fde1479876c769c39c4d545c64e797a5f9f84a5"
+                            time: 1487021622093,
+                            message: '[\nsetRegistry(/1,position,{"x":79,"y":149})\n]',
+                            type: 'commit',
+                            __v: '1.1.0',
+                            _id: '#3fde1479876c769c39c4d545c64e797a5f9f84a5'
                         },
-                        "coreObjects": {
-                            "#7ac30b6b189e6396445324d4172fbed5674ecc30": {
-                                "type": "patch",
-                                "base": "#fecc6542f9dba6a548a4e3f5f6c8ce85994b9332",
-                                "patch": [
+                        coreObjects: {
+                            '#7ac30b6b189e6396445324d4172fbed5674ecc30': {
+                                type: 'patch',
+                                base: '#fecc6542f9dba6a548a4e3f5f6c8ce85994b9332',
+                                patch: [
                                     {
-                                        "op": "replace",
-                                        "path": "/reg/position",
-                                        "value": {
-                                            "x": 79,
-                                            "y": 149
+                                        op: 'replace',
+                                        path: '/reg/position',
+                                        value: {
+                                            x: 79,
+                                            y: 149
                                         }
                                     }
                                 ],
-                                "_id": "#7ac30b6b189e6396445324d4172fbed5674ecc30"
+                                _id: '#7ac30b6b189e6396445324d4172fbed5674ecc30'
                             },
-                            "#641facf9a9745dc25181bda68eed73e4b023964a": {
-                                "type": "patch",
-                                "base": "#62d07a02c278b90e8ae7ed23ceb188405211c9e5",
-                                "patch": [
+                            '#641facf9a9745dc25181bda68eed73e4b023964a': {
+                                type: 'patch',
+                                base: '#62d07a02c278b90e8ae7ed23ceb188405211c9e5',
+                                patch: [
                                     {
-                                        "op": "replace",
-                                        "path": "/1",
-                                        "value": "#7ac30b6b189e6396445324d4172fbed5674ecc30"
+                                        op: 'replace',
+                                        path: '/1',
+                                        value: '#7ac30b6b189e6396445324d4172fbed5674ecc30'
                                     }
                                 ],
-                                "_id": "#641facf9a9745dc25181bda68eed73e4b023964a"
+                                _id: '#641facf9a9745dc25181bda68eed73e4b023964a'
                             }
                         },
-                        "changedNodes": {
-                            "load": {},
-                            "unload": {},
-                            "update": {
-                                "/1": true,
-                                "": true
+                        changedNodes: {
+                            load: {},
+                            unload: {},
+                            update: {
+                                '/1': true,
+                                '': true
                             },
-                            "partialUpdate": {}
+                            partialUpdate: {}
                         },
-                        "branchName": "master"
+                        branchName: 'master'
                     }
                 ]
             };
@@ -603,7 +550,8 @@ describe('storage storageclasses editorstorage', function () {
         Q.ninvoke(storage, 'persistCommits', commitQueueDump.commitQueue)
             .then(function (commitHash) {
                 expect(commitHash).to.equal(commitQueueDump.commitQueue[1].commitObject._id);
-                return Q.ninvoke(storage,'createBranch', projectName2Id(projectName), 'fromPersistCommits', commitHash);
+                return Q.ninvoke(storage, 'createBranch', projectName2Id(projectName),
+                    'fromPersistCommits', commitHash);
             })
             .then(function (result) {
                 expect(result.status).to.equal(STORAGE_CONSTANTS.SYNCED);
@@ -613,15 +561,9 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should makeCommit with open branch and get canceled', function (done) {
-        var project,
-            branches,
-            access;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
+            .then(function () {
 
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
@@ -647,49 +589,39 @@ describe('storage storageclasses editorstorage', function () {
             .nodeify(done);
     });
 
-    it('should makeCommit with open branch and get canceled if not passing same commitHash as own branch', function (done) {
-        var project,
-            branches,
-            access;
+    it('should makeCommit with open branch and get canceled if not passing same commitHash as own branch',
+        function (done) {
 
-        Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
+            Q.nfcall(storage.openProject, projectName2Id(projectName))
+                .then(function () {
 
-                function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
-                    callback(null, true);
-                }
+                    function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
+                        callback(null, true);
+                    }
 
-                function branchStatusHandler(/*branchStatus, commitQueue, updateQueue*/) {
+                    function branchStatusHandler(/*branchStatus, commitQueue, updateQueue*/) {
 
-                }
+                    }
 
-                return Q.nfcall(storage.openBranch, projectName2Id(projectName), 'b4',
-                    hashUpdateHandler, branchStatusHandler);
-            })
-            .then(function () {
-                return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b4', [commitHash2],
-                    importResult.rootHash, {}, 'forked commit');
-            })
-            .then(function (result) {
-                expect(result.status).to.equal(STORAGE_CONSTANTS.CANCELED);
-            })
-            .nodeify(done);
-    });
+                    return Q.nfcall(storage.openBranch, projectName2Id(projectName), 'b4',
+                        hashUpdateHandler, branchStatusHandler);
+                })
+                .then(function () {
+                    return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b4', [commitHash2],
+                        importResult.rootHash, {}, 'forked commit');
+                })
+                .then(function (result) {
+                    expect(result.status).to.equal(STORAGE_CONSTANTS.CANCELED);
+                })
+                .nodeify(done);
+        }
+    );
 
     it('should makeCommit in a branch passing a new rootObject', function (done) {
-        var project,
-            branches,
-            access,
-            forkName = 'makeCommit_fork_new_root';
+        var forkName = 'makeCommit_fork_new_root';
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
+            .then(function () {
 
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
@@ -718,9 +650,8 @@ describe('storage storageclasses editorstorage', function () {
                     hashUpdateHandler, branchStatusHandler);
             })
             .then(function () {
-                var persisted;
                 importResult.core.setAttribute(importResult.rootNode, 'name', 'New name');
-                persisted = importResult.core.persist(importResult.rootNode);
+                importResult.core.persist(importResult.rootNode);
                 return makeCommitPromise(storage, projectName2Id(projectName), forkName,
                     [importResult.commitHash], importResult.rootHash, {}, 'new commit');
             })
@@ -732,17 +663,10 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should makeCommit in a branch referring to an existing rootObject', function (done) {
-        var project,
-            branches,
-            access,
-            forkName = 'makeCommit_fork_same_root';
+        var forkName = 'makeCommit_fork_same_root';
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
-
+            .then(function () {
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
                 }
@@ -782,17 +706,10 @@ describe('storage storageclasses editorstorage', function () {
 
     it.skip('makeCommit should failed in a branch referring to a non-existing rootObject', function (done) {
         // We no longer load the root node in these cases.
-        var project,
-            branches,
-            access,
-            forkName = 'makeCommit_fork_fail';
+        var forkName = 'makeCommit_fork_fail';
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
-
+            .then(function () {
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
                 }
@@ -834,10 +751,7 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should pull changes if another client changes the branch', function (done) {
-        var project,
-            branches,
-            access,
-            storageOther,
+        var storageOther,
             projectOther,
             newCommitHash,
             openingBranch = true,
@@ -847,10 +761,7 @@ describe('storage storageclasses editorstorage', function () {
             gmeConfigOther = testFixture.getGmeConfig();
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
+            .then(function () {
 
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
@@ -912,6 +823,7 @@ describe('storage storageclasses editorstorage', function () {
                     globConf: gmeConfigOther,
                     logger: logger
                 });
+
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
                 }
@@ -950,20 +862,14 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should pull changes if another client changes the branch with patchRoot', function (done) {
-        var project,
-            branches,
-            access,
-            storageOther,
+        var storageOther,
             newCommitHash,
             openingBranch = true,
             updateReceivedDeferred = Q.defer(),
             forkName = 'pullChanges_fork_patchRoot';
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
-            .then(function (result) {
-                project = result[0];
-                branches = result[1];
-                access = result[2];
+            .then(function () {
 
                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                     callback(null, true);
@@ -1033,11 +939,13 @@ describe('storage storageclasses editorstorage', function () {
             })
             .then(function (root) {
                 var persisted;
-                importResult.core.setAttribute(root, 'name', 'New name'); // FIXME: Bogus modification to get makeCommit working.
+                // FIXME: Bogus modification to get makeCommit working.
+                importResult.core.setAttribute(root, 'name', 'New name');
                 persisted = importResult.core.persist(root);
 
                 expect(persisted.rootHash).not.to.equal(undefined);
-                expect(persisted.objects[persisted.rootHash]).to.have.keys(['newHash', 'oldHash', 'newData', 'oldData']);
+                expect(persisted.objects[persisted.rootHash])
+                    .to.have.keys(['newHash', 'oldHash', 'newData', 'oldData']);
 
                 return Q.ninvoke(storageOther, 'makeCommit',
                     projectName2Id(projectName),

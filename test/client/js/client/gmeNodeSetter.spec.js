@@ -1,4 +1,5 @@
 /*eslint-env node, mocha*/
+/*eslint no-console: 0*/
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -19,7 +20,8 @@ describe('gmeNodeSetter', function () {
         basicState,
         oldWarn = console.warn,
         lastWarning,
-        lastCoreError,
+        // FIXME: What is the purpose of this? Should it be checked?
+        lastCoreError, //eslint-disable-line
         saveCalled = false,
         gmeAuth;
 
@@ -211,9 +213,9 @@ describe('gmeNodeSetter', function () {
 
     it('should move a node', function () {
         var newId = setNode.createNode({
-            parentId: '',
-            baseId: '/1'
-        }), newPath;
+                parentId: '',
+                baseId: '/1'
+            }), newPath;
         expect(basicState.nodes['/1303043463' + newId]).to.eql(undefined);
         newPath = setNode.moveNode(newId, '/1303043463');
         expect(newPath).to.eql('/1303043463' + newId);
@@ -517,22 +519,22 @@ describe('gmeNodeSetter', function () {
 
         expect(context.core.getOwnJsonMeta(basicState.nodes[nodeId].node))
             .to.deep.equal({
-            pointers: {
-                setPtr: {
-                    items: [
-                        '/175547009/871430202'
-                    ],
-                    max: undefined,
-                    maxItems: [
-                        -1
-                    ],
-                    min: undefined,
-                    minItems: [
-                        -1
-                    ]
+                pointers: {
+                    setPtr: {
+                        items: [
+                            '/175547009/871430202'
+                        ],
+                        max: undefined,
+                        maxItems: [
+                            -1
+                        ],
+                        min: undefined,
+                        minItems: [
+                            -1
+                        ]
+                    }
                 }
-            }
-        });
+            });
 
         setNode.clearMetaRules(nodeId);
 

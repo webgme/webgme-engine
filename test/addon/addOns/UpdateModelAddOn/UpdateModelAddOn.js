@@ -5,7 +5,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 if (typeof define === 'undefined') {
-
+    return;
 } else {
     define(['addon/AddOnBase'], function (AddOnBase) {
 

@@ -1,4 +1,5 @@
 /*eslint-env node, mocha*/
+/*eslint no-console: 0*/
 /**
  * @author ksmyth / https://github.com/ksmyth
  * @author lattmann / https://github.com/lattmann
@@ -40,7 +41,7 @@ describe('User manager command line interface (CLI)', function () {
                 var dataStr = data.toString();
 
                 if (dataStr.indexOf('js-bson: Failed to load c++ bson extension, using pure JS version') > -1) {
-                  // ignore this error
+                    // ignore this error
                 } else {
                     err = err || '';
                     err += dataStr;
@@ -277,12 +278,12 @@ describe('User manager command line interface (CLI)', function () {
             suppressLogAndExit();
 
             userManager.main(['node',
-                    filename,
-                    'useradd',
-                    'user_site_admin',
-                    'user@example.com',
-                    'plaintext',
-                    '--siteAdmin']
+                filename,
+                'useradd',
+                'user_site_admin',
+                'user@example.com',
+                'plaintext',
+                '--siteAdmin']
             )
                 .then(function () {
                     auth.getUser('user_site_admin', function (err, data) {
@@ -305,12 +306,12 @@ describe('User manager command line interface (CLI)', function () {
             suppressLogAndExit();
 
             userManager.main(['node',
-                    filename,
-                    'useradd',
-                    'user_can_create',
-                    'user@example.com',
-                    'plaintext',
-                    '--canCreate']
+                filename,
+                'useradd',
+                'user_can_create',
+                'user@example.com',
+                'plaintext',
+                '--canCreate']
             )
                 .then(function () {
                     auth.getUser('user_can_create', function (err, data) {
@@ -333,13 +334,13 @@ describe('User manager command line interface (CLI)', function () {
             suppressLogAndExit();
 
             userManager.main(['node',
-                    filename,
-                    '--db',
-                    'mongodb://' + uri.hosts[0]+ ':' + uri.ports[0],
-                    'useradd',
-                    'user',
-                    'user@example.com',
-                    'plaintext']
+                filename,
+                '--db',
+                'mongodb://' + uri.hosts[0] + ':' + uri.ports[0],
+                'useradd',
+                'user',
+                'user@example.com',
+                'plaintext']
             )
                 .then(function () {
                     restoreLogAndExit();
@@ -375,7 +376,12 @@ describe('User manager command line interface (CLI)', function () {
 
             auth.addUser('passwd_user', 'em@il', 'wordpass', true, {})
                 .then(function () {
-                    return auth.authorizeByUserId('passwd_user', 'dummyProject', null, {read:true, write: true, delete:true});
+                    return auth.authorizeByUserId('passwd_user', 'dummyProject', null,
+                        {
+                            read: true,
+                            write: true,
+                            delete: true
+                        });
                 })
                 .then(function () {
                     return auth.getUser('passwd_user');
@@ -403,13 +409,13 @@ describe('User manager command line interface (CLI)', function () {
             suppressLogAndExit();
 
             userManager.main(['node',
-                    filename,
-                    '--db',
-                    mongoUri,
-                    'useradd',
-                    'user_to_delete',
-                    'user@example.com',
-                    'plaintext']
+                filename,
+                '--db',
+                mongoUri,
+                'useradd',
+                'user_to_delete',
+                'user@example.com',
+                'plaintext']
             )
                 .then(function () {
                     return userManager.main(['node', filename, '--db', mongoUri, 'userdel', 'user_to_delete']);

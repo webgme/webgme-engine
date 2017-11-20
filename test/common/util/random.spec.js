@@ -75,8 +75,7 @@ describe('random generation', function () {
         var pool = '0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM',
             data = {},
             i,
-            relids = [],
-            relid;
+            relids = [];
 
         //fill data
         for (i = 0; i < pool.length; i += 1) {

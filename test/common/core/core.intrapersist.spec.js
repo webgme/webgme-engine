@@ -11,7 +11,13 @@ describe('core.intrapersist', function () {
         Q = testFixture.Q,
         expect = testFixture.expect,
         storage,
-        CANON = testFixture.requirejs('../src/common/util/canon');
+        CANON = testFixture.requirejs('../src/common/util/canon'),
+        root = null,
+        rootHash = '',
+        core = null,
+        projectName = 'coreIntrapersistTest',
+        projectId = testFixture.projectName2Id(projectName),
+        gmeAuth;
 
     function loadNodes(paths, next) {
         var needed = paths.length,
@@ -32,18 +38,6 @@ describe('core.intrapersist', function () {
         }
     }
 
-    //global variables of the test
-    var commit = '',
-        baseCommit = '',
-        root = null,
-        rootHash = '',
-        core = null,
-        projectName = 'coreIntrapersistTest',
-        projectId = testFixture.projectName2Id(projectName),
-        project = null,
-
-        gmeAuth;
-
     before(function (done) {
         testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
             .then(function (gmeAuth_) {
@@ -63,11 +57,8 @@ describe('core.intrapersist', function () {
                 });
             })
             .then(function (result) {
-                project = result.project;
                 core = result.core;
                 root = result.rootNode;
-                commit = result.commitHash;
-                baseCommit = result.commitHash;
                 rootHash = result.rootHash;
             })
             .nodeify(done);
@@ -236,7 +227,7 @@ describe('core.intrapersist', function () {
             expect(core.getMemberPaths(nodes[e1NodePath], 'mySpecials'))
                 .to.have.members(['/1736622193/1579656591']);
             expect(core.getMemberPaths(nodes[e1NodePrimePath], 'mySpecials'))
-                .to.have.members(['/1710723537/1579656591','/1710723537/274170516']);
+                .to.have.members(['/1710723537/1579656591', '/1710723537/274170516']);
 
             core.addMember(nodes[e1NodePrimePath], 'mySpecials', nodes[s1NodePrimePath]);
             core.setMemberRegistry(nodes[e1NodePrimePath], 'mySpecials', s1NodePrimePath, 'position', {x: 100, y: 200});
@@ -406,7 +397,7 @@ describe('core.intrapersist', function () {
             e1NodePath = '/1736622193/1271963336',
             nodes = null;
 
-        before(function(done){
+        before(function (done) {
             core.loadRoot(rootHash, function (err, r) {
                 if (err) {
                     return done(err);

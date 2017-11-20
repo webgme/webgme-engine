@@ -28,7 +28,6 @@ describe('storage storageclasses objectloaders', function () {
         gmeAuth,
         safeStorage,
         storage,
-        webgmeToken,
 
         projectName = 'SimpleAPIProject',
         projectNameCreate = 'SimpleAPICreateProject',
@@ -52,7 +51,8 @@ describe('storage storageclasses objectloaders', function () {
                 return;
             }
 
-            testFixture.clearDBAndGetGMEAuth(gmeConfig, [projectName, projectNameCreate, projectNameCreate2, projectNameDelete])
+            testFixture.clearDBAndGetGMEAuth(gmeConfig,
+                [projectName, projectNameCreate, projectNameCreate2, projectNameDelete])
                 .then(function (gmeAuth_) {
                     gmeAuth = gmeAuth_;
                     safeStorage = testFixture.getMongoStorage(logger, gmeConfig, gmeAuth);
@@ -126,7 +126,6 @@ describe('storage storageclasses objectloaders', function () {
         openSocketIo(server, agent, guestAccount, guestAccount)
             .then(function (result) {
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
                 storage = NodeStorage.createStorage(null,
                     result.webgmeToken,
                     logger,

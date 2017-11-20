@@ -83,7 +83,7 @@ describe('constraint.core', function () {
     });
 
     it('gives back proper names for own and all constraints', function (done) {
-        Q.nfcall(core.loadChildren,rootNode)
+        Q.nfcall(core.loadChildren, rootNode)
             .then(function (children) {
                 var base, instance, i;
 
@@ -114,7 +114,7 @@ describe('constraint.core', function () {
     });
 
     it('removing constraints', function (done) {
-        Q.nfcall(core.loadChildren,rootNode)
+        Q.nfcall(core.loadChildren, rootNode)
             .then(function (children) {
                 var base, instance, i;
 

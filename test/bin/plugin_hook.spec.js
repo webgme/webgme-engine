@@ -247,16 +247,14 @@ describe('plugin_hook', function () {
     describe('with connected storage', function () {
         var agent,
             socket,
-            webgmeToken,
             ph,
             storage;
 
-            beforeEach(function (done) {
+        beforeEach(function (done) {
             agent = superagent.agent();
             openSocketIo(server, agent)
                 .then(function (result) {
                     socket = result.socket;
-                    webgmeToken = result.webgmeToken;
                     storage = NodeStorage.createStorage(null,
                         result.webgmeToken,
                         logger,

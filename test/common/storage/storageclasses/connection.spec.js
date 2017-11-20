@@ -113,11 +113,9 @@ describe('storage-connection', function () {
     it('should disconnect when server stops', function (done) {
         var agent = superagent.agent(),
             connected = false,
-            serverStopped = false,
             res,
             storage,
-            socket,
-            webgmeToken;
+            socket;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
@@ -127,7 +125,6 @@ describe('storage-connection', function () {
             .then(function (result) {
                 var deferred = Q.defer();
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
                 res = createStorage(null,
                     result.webgmeToken,
                     logger,
@@ -139,7 +136,7 @@ describe('storage-connection', function () {
                     if (networkState === STORAGE_CONSTANTS.CONNECTED) {
                         connected = true;
                         server.stop(function () {
-                            serverStopped = true;
+
                         });
 
                     } else if (networkState === STORAGE_CONSTANTS.DISCONNECTED) {
@@ -174,8 +171,7 @@ describe('storage-connection', function () {
             disconnected = false,
             res,
             storage,
-            socket,
-            webgmeToken;
+            socket;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
@@ -185,7 +181,7 @@ describe('storage-connection', function () {
             .then(function (result) {
                 var deferred = Q.defer();
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
+
                 res = createStorage(null,
                     result.webgmeToken,
                     logger,
@@ -236,9 +232,7 @@ describe('storage-connection', function () {
             disconnected = false,
             res,
             storage,
-            socket,
-            project,
-            webgmeToken;
+            socket;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
@@ -248,7 +242,6 @@ describe('storage-connection', function () {
             .then(function (result) {
                 var deferred = Q.defer();
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
                 res = createStorage(null,
                     result.webgmeToken,
                     logger,
@@ -260,8 +253,7 @@ describe('storage-connection', function () {
                     if (networkState === STORAGE_CONSTANTS.CONNECTED) {
                         connected = true;
                         Q.nfcall(storage.openProject, projectName2Id(projectName))
-                            .then(function (result) {
-                                project = result[0];
+                            .then(function () {
 
                                 function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
                                     callback(null, true);
@@ -315,8 +307,7 @@ describe('storage-connection', function () {
             res,
             storage,
             socket,
-            project,
-            webgmeToken;
+            project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
@@ -326,7 +317,7 @@ describe('storage-connection', function () {
             .then(function (result) {
                 var deferred = Q.defer();
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
+
                 res = createStorage(null,
                     result.webgmeToken,
                     logger,
@@ -410,8 +401,7 @@ describe('storage-connection', function () {
             res,
             storage,
             socket,
-            project,
-            webgmeToken;
+            project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
@@ -421,7 +411,6 @@ describe('storage-connection', function () {
             .then(function (result) {
                 var deferred = Q.defer();
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
                 res = createStorage(null,
                     result.webgmeToken,
                     logger,
@@ -510,8 +499,7 @@ describe('storage-connection', function () {
             res,
             storage,
             socket,
-            project,
-            webgmeToken;
+            project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
@@ -521,7 +509,6 @@ describe('storage-connection', function () {
             .then(function (result) {
                 var deferred = Q.defer();
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
                 res = createStorage(null,
                     result.webgmeToken,
                     logger,
@@ -617,8 +604,7 @@ describe('storage-connection', function () {
             res,
             storage,
             socket,
-            project,
-            webgmeToken;
+            project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
@@ -628,7 +614,7 @@ describe('storage-connection', function () {
             .then(function (result) {
                 var deferred = Q.defer();
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
+
                 res = createStorage(null,
                     result.webgmeToken,
                     logger,
@@ -731,8 +717,7 @@ describe('storage-connection', function () {
             res,
             storage,
             socket,
-            project,
-            webgmeToken;
+            project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
@@ -742,7 +727,6 @@ describe('storage-connection', function () {
             .then(function (result) {
                 var deferred = Q.defer();
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
                 res = createStorage(null,
                     result.webgmeToken,
                     logger,

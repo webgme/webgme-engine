@@ -27,16 +27,13 @@ describe('storage storageclasses watchers', function () {
         gmeAuth,
         safeStorage,
         storage,
-        webgmeToken,
 
         projectName = 'SimpleAPIProject',
         projectNameCreate = 'SimpleAPICreateProject',
         projectNameCreate2 = 'SimpleAPICreateProject2',
         projectNameDelete = 'SimpleAPIDeleteProject',
         importResult,
-        originalHash,
-        commitHash1,
-        commitHash2;
+        originalHash;
 
     before(function (done) {
         var commitObject,
@@ -49,7 +46,8 @@ describe('storage storageclasses watchers', function () {
                 return;
             }
 
-            testFixture.clearDBAndGetGMEAuth(gmeConfig, [projectName, projectNameCreate, projectNameCreate2, projectNameDelete])
+            testFixture.clearDBAndGetGMEAuth(gmeConfig,
+                [projectName, projectNameCreate, projectNameCreate2, projectNameDelete])
                 .then(function (gmeAuth_) {
                     gmeAuth = gmeAuth_;
                     safeStorage = testFixture.getMongoStorage(logger, gmeConfig, gmeAuth);
@@ -81,9 +79,7 @@ describe('storage storageclasses watchers', function () {
 
                     return safeStorage.makeCommit(commitData);
                 })
-                .then(function (result) {
-                    commitHash1 = result.hash;
-
+                .then(function () {
                     commitObject = importResult.project.createCommitObject([originalHash],
                         importResult.rootHash,
                         'tester2',
@@ -95,9 +91,6 @@ describe('storage storageclasses watchers', function () {
                     };
 
                     return safeStorage.makeCommit(commitData);
-                })
-                .then(function (result) {
-                    commitHash2 = result.hash;
                 })
                 .nodeify(done);
         });
@@ -123,7 +116,6 @@ describe('storage storageclasses watchers', function () {
         openSocketIo(server, agent, guestAccount, guestAccount)
             .then(function (result) {
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
                 storage = NodeStorage.createStorage(null,
                     result.webgmeToken,
                     logger,
@@ -247,7 +239,6 @@ describe('storage storageclasses watchers', function () {
             })
             .nodeify(done);
     });
-    
-    
-    
+
+
 });

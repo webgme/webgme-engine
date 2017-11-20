@@ -1514,7 +1514,7 @@ describe('coretype', function () {
         }, core.loadChildren(instanceOne));
     });
 
-    it('should copyNodes make sure that simple relations kept well and not duplicated', function(){
+    it('should copyNodes make sure that simple relations kept well and not duplicated', function () {
         var root = core.createNode({}),
             sourceParent = core.createNode({parent: root, relid: 'SP'}),
             targetParent = core.createNode({parent: root, relid: 'TP'}),
@@ -1522,10 +1522,10 @@ describe('coretype', function () {
             child2 = core.createNode({parent: sourceParent, base: null, relid: 'C2'}),
             copiedNodes;
 
-        core.setPointer(child1,'ref',child2);
-        copiedNodes = core.copyNodes([child1,child2],targetParent);
+        core.setPointer(child1, 'ref', child2);
+        copiedNodes = core.copyNodes([child1, child2], targetParent);
         expect(copiedNodes).to.have.length(2);
-        expect(core.getPointerNames(copiedNodes[0])).to.have.members(['base','ref']);
-        expect(core.getPointerPath(copiedNodes[0],'ref')).to.eql(core.getPath(copiedNodes[1]));
+        expect(core.getPointerNames(copiedNodes[0])).to.have.members(['base', 'ref']);
+        expect(core.getPointerPath(copiedNodes[0], 'ref')).to.eql(core.getPath(copiedNodes[1]));
     });
 });

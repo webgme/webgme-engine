@@ -1,4 +1,5 @@
 /*eslint-env node, mocha*/
+/*eslint no-console: 0*/
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -112,7 +113,7 @@ describe('BLOB cleanup script tests', function () {
         console.log = function (data) {
             logOut += data;
         };
-        Q.ninvoke(bc, 'putFile', 'test.txt', "just some single file")
+        Q.ninvoke(bc, 'putFile', 'test.txt', 'just some single file')
             .then(function (fileMetaHash) {
                 metaHash = fileMetaHash;
                 return cleanup();
@@ -126,7 +127,7 @@ describe('BLOB cleanup script tests', function () {
     it('should remove unused hash', function (done) {
         var metaHash;
 
-        Q.ninvoke(bc, 'putFile', 'test.txt', "just some single file")
+        Q.ninvoke(bc, 'putFile', 'test.txt', 'just some single file')
             .then(function (fileMetaHash) {
                 metaHash = fileMetaHash;
                 return bc.listObjects(bc.metadataBucket);
@@ -147,10 +148,10 @@ describe('BLOB cleanup script tests', function () {
     it('should remove multiple unused hashes', function (done) {
         var metaHashes = [];
 
-        Q.ninvoke(bc, 'putFile', 'test.txt', "just some single file")
+        Q.ninvoke(bc, 'putFile', 'test.txt', 'just some single file')
             .then(function (fileMetaHash) {
                 metaHashes.push(fileMetaHash);
-                return Q.ninvoke(bc, 'putFile', 'test.txt', "just some other single file");
+                return Q.ninvoke(bc, 'putFile', 'test.txt', 'just some other single file');
             })
             .then(function (fileMetaHash) {
                 metaHashes.push(fileMetaHash);
@@ -172,7 +173,7 @@ describe('BLOB cleanup script tests', function () {
     it('should remove selected hash', function (done) {
         var metaHash;
 
-        Q.ninvoke(bc, 'putFile', 'test.txt', "just some single file")
+        Q.ninvoke(bc, 'putFile', 'test.txt', 'just some single file')
             .then(function (fileMetaHash) {
                 metaHash = fileMetaHash;
                 FS.writeFileSync('test-tmp/goodHash.json', JSON.stringify([metaHash]), 'utf8');

@@ -122,7 +122,7 @@ describe('ProjectCache', function () {
                 });
 
                 branchStatusHandler = branchStatusHandler || function () {
-                    };
+                };
                 return Q.nfcall(storage.openBranch, projectName2Id(projectName), branchName,
                     hashUpdateHandler, branchStatusHandler);
             })
@@ -170,7 +170,7 @@ describe('ProjectCache', function () {
                     var i,
                         cnt = paths.length;
 
-                    function nodeLoaded(err, node) {
+                    function nodeLoaded(err) {
                         if (err) {
                             nodesLoaded = false;
                         } else {

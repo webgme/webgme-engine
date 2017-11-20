@@ -15,10 +15,8 @@ describe('tree loading functions', function () {
         logger = testFixture.logger.fork('coretreeloader.spec'),
         storage,
         projectName = 'treeLoaderProj',
-        project,
         core,
         rootNode,
-        commit,
         baseRootHash,
         gmeAuth,
         irNull;
@@ -40,10 +38,8 @@ describe('tree loading functions', function () {
                 });
             })
             .then(function (result) {
-                project = result.project;
                 core = result.core;
                 rootNode = result.rootNode;
-                commit = result.commitHash;
                 baseRootHash = result.rootHash;
                 return testFixture.importProject(storage, {
                     projectSeed: 'seeds/EmptyProject.webgmex',

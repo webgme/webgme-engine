@@ -21,7 +21,6 @@ describe('addon_handler bin', function () {
         server,
         core,
         socket,
-        webgmeToken,
         connStorage,
         project,
         addOnHandler,
@@ -106,8 +105,8 @@ describe('addon_handler bin', function () {
 
         statusHandler = statusHandler || function () {};
         hashHandler = hashHandler || function (data, commitQueue, updateQueue, callback) {
-                callback(null, true);
-            };
+            callback(null, true);
+        };
 
         connStorage.openProject(project.projectId, function (err, connProject) {
             if (err) {
@@ -173,7 +172,6 @@ describe('addon_handler bin', function () {
             testFixture.openSocketIo(server, agent, 'guest', 'guest')
                 .then(function (result) {
                     socket = result.socket;
-                    webgmeToken = result.webgmeToken;
                     connStorage = NodeStorage.createStorage(null,
                         result.webgmeToken,
                         logger,
@@ -204,13 +202,11 @@ describe('addon_handler bin', function () {
 
         it('opening branch should start addon', function (done) {
             var branchName = 'b1',
-                rootHash,
-                commitHash;
+                rootHash;
 
             prepBranch(branchName, 'NotificationAddOn')
                 .then(function (res) {
                     rootHash = res.rootHash;
-                    commitHash = res.commitHash;
                     addOnHandler = new AddOnHandler({});
 
                     return addOnHandler.start();
@@ -236,7 +232,6 @@ describe('addon_handler bin', function () {
                                 } else if (delay > 250) {
                                     throw new Error('AddOn did not get started in time ' + JSON.stringify(status));
                                 } else {
-                                    console.log('No status, new delay', delay + 50);
                                     checkStatus(delay + 50);
                                 }
                             })
@@ -297,7 +292,6 @@ describe('addon_handler bin', function () {
                                 } else if (delay > 250) {
                                     throw new Error('AddOn did not get started in time ' + JSON.stringify(status));
                                 } else {
-                                    console.log('No status, new delay', delay + 50);
                                     checkStatus(delay + 50);
                                 }
                             })
@@ -349,7 +343,6 @@ describe('addon_handler bin', function () {
                                 } else if (delay > 250) {
                                     throw new Error('AddOn did not get started in time ' + JSON.stringify(status));
                                 } else {
-                                    console.log('No status, new delay', delay + 50);
                                     checkStatus(delay + 50);
                                 }
                             })
@@ -420,7 +413,6 @@ describe('addon_handler bin', function () {
                                 } else if (delay > 250) {
                                     throw new Error('AddOn did not get started in time ' + JSON.stringify(status));
                                 } else {
-                                    console.log('No status, new delay', delay + 50);
                                     checkStatus(delay + 50);
                                 }
                             })
@@ -467,7 +459,6 @@ describe('addon_handler bin', function () {
             testFixture.openSocketIo(server, agent, 'guest', 'guest')
                 .then(function (result) {
                     socket = result.socket;
-                    webgmeToken = result.webgmeToken;
                     connStorage = NodeStorage.createStorage(null,
                         result.webgmeToken,
                         logger,
@@ -498,13 +489,11 @@ describe('addon_handler bin', function () {
 
         it('opening branch should start addon when no auth info passed in handler', function (done) {
             var branchName = 'bb1',
-                rootHash,
-                commitHash;
+                rootHash;
 
             prepBranch(branchName, 'NotificationAddOn')
                 .then(function (res) {
                     rootHash = res.rootHash;
-                    commitHash = res.commitHash;
                     addOnHandler = new AddOnHandler({});
 
                     return addOnHandler.start();
@@ -530,7 +519,6 @@ describe('addon_handler bin', function () {
                                 } else if (delay > 250) {
                                     throw new Error('AddOn did not get started in time ' + JSON.stringify(status));
                                 } else {
-                                    console.log('No status, new delay', delay + 50);
                                     checkStatus(delay + 50);
                                 }
                             })
@@ -546,13 +534,11 @@ describe('addon_handler bin', function () {
 
         it('opening branch should start addon add use passed credentials', function (done) {
             var branchName = 'bb2',
-                rootHash,
-                commitHash;
+                rootHash;
 
             prepBranch(branchName, 'NotificationAddOn')
                 .then(function (res) {
                     rootHash = res.rootHash;
-                    commitHash = res.commitHash;
                     addOnHandler = new AddOnHandler({
                         credentials: 'admin:admin'
                     });
@@ -580,7 +566,6 @@ describe('addon_handler bin', function () {
                                 } else if (delay > 250) {
                                     throw new Error('AddOn did not get started in time ' + JSON.stringify(status));
                                 } else {
-                                    console.log('No status, new delay', delay + 50);
                                     checkStatus(delay + 50);
                                 }
                             })
@@ -594,13 +579,11 @@ describe('addon_handler bin', function () {
 
         it('opening branch should start addon add renew token for user', function (done) {
             var branchName = 'bb3',
-                rootHash,
-                commitHash;
+                rootHash;
 
             prepBranch(branchName, 'NotificationAddOn')
                 .then(function (res) {
                     rootHash = res.rootHash;
-                    commitHash = res.commitHash;
                     addOnHandler = new AddOnHandler({
                         credentials: 'admin:admin',
                         tokenRefreshInterval: 50
@@ -629,7 +612,6 @@ describe('addon_handler bin', function () {
                                 } else if (delay > 250) {
                                     throw new Error('AddOn did not get started in time ' + JSON.stringify(status));
                                 } else {
-                                    console.log('No status, new delay', delay + 50);
                                     checkStatus(delay + 50);
                                 }
                             })
@@ -660,7 +642,6 @@ describe('addon_handler bin', function () {
                 testFixture.openSocketIo(server, agent, 'guest', 'guest')
                     .then(function (result) {
                         socket = result.socket;
-                        webgmeToken = result.webgmeToken;
                         connStorage = NodeStorage.createStorage(null,
                             result.webgmeToken,
                             logger,
@@ -687,15 +668,13 @@ describe('addon_handler bin', function () {
 
         it('opening branch should start addon', function (done) {
             var branchName = 'bbb1',
-                rootHash,
-                commitHash;
+                rootHash;
 
             addOnHandler = null;
 
             prepBranch(branchName, 'NotificationAddOn')
                 .then(function (res) {
                     rootHash = res.rootHash;
-                    commitHash = res.commitHash;
 
                     return getAddOnStatus(0, true);
                 })
@@ -717,7 +696,6 @@ describe('addon_handler bin', function () {
                                 } else if (delay > 250) {
                                     throw new Error('AddOn did not get started in time ' + JSON.stringify(status));
                                 } else {
-                                    console.log('No status, new delay', delay + 50);
                                     checkStatus(delay + 50);
                                 }
                             })
@@ -772,7 +750,6 @@ describe('addon_handler bin', function () {
                                 } else if (delay > 250) {
                                     throw new Error('AddOn did not get started in time ' + JSON.stringify(status));
                                 } else {
-                                    console.log('No status, new delay', delay + 50);
                                     checkStatus(delay + 50);
                                 }
                             })

@@ -1,4 +1,5 @@
 /*eslint-env node, mocha*/
+/*eslint no-console: 0*/
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -15,7 +16,7 @@ describe('merge CLI test', function () {
         Q = testFixture.Q,
         expect = testFixture.expect,
         rimraf = testFixture.rimraf,
-        __should = testFixture.should,
+        __should = testFixture.should, //eslint-disable-line
         database,
         gmeAuth,
         projectName = 'mergeCliTest',

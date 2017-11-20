@@ -1,4 +1,6 @@
+/*globals ArrayBuffer, Uint8Array*/
 /*eslint-env node, mocha*/
+/*eslint no-bitwise: 0, max-len: 0*/
 /**
  * @author ksmyth / https://github.com/ksmyth
  * @author pmeijer / https://github.com/pmeijer
@@ -15,7 +17,6 @@ describe('BlobClient', function () {
         BlobClient = testFixture.BlobClient,
         Artifact = testFixture.requirejs('blob/Artifact'),
         server,
-        serverBaseUrl,
         nodeTLSRejectUnauthorized,
         bcParam = {};
 
@@ -23,7 +24,6 @@ describe('BlobClient', function () {
         before(function (done) {
             // we have to set the config here
             var gmeConfig = testFixture.getGmeConfig();
-            serverBaseUrl = 'http://127.0.0.1:' + gmeConfig.server.port;
             bcParam.serverPort = gmeConfig.server.port;
             bcParam.server = '127.0.0.1';
             bcParam.httpsecure = false;
@@ -326,7 +326,7 @@ describe('BlobClient', function () {
 
         it('should create metadata', function (done) {
             var artifact = new Artifact('testartifact', new BlobClient(bcParam));
-            artifact.addFiles({'file1': 'content1', 'file2': 'content2'}, function (err, hashes) {
+            artifact.addFiles({file1: 'content1', file2: 'content2'}, function (err, hashes) {
                 if (err) {
                     done(err);
                     return;
@@ -543,7 +543,6 @@ describe('BlobClient', function () {
             nodeTLSRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
             var gmeConfig = testFixture.getGmeConfig();
             var proxyServerPort = gmeConfig.server.port - 1;
-            serverBaseUrl = 'https://127.0.0.1:' + proxyServerPort;
             bcParam.serverPort = proxyServerPort; // use https reverse proxy port
             bcParam.server = '127.0.0.1';
             bcParam.httpsecure = true;
@@ -557,7 +556,7 @@ describe('BlobClient', function () {
             //
             // Create the HTTPS proxy server in front of a HTTP server
             //
-            proxy = new httpProxy.createServer({
+            proxy = httpProxy.createServer({
                 target: {
                     host: 'localhost',
                     port: gmeConfig.server.port
@@ -688,7 +687,7 @@ describe('BlobClient', function () {
 
         it('should create metadata', function (done) {
             var artifact = new Artifact('testartifact', new BlobClient(bcParam));
-            artifact.addFiles({'file1': 'content1', 'file2': 'content2'}, function (err, hashes) {
+            artifact.addFiles({file1: 'content1', file2: 'content2'}, function (err, hashes) {
                 if (err) {
                     done(err);
                     return;
@@ -855,22 +854,22 @@ describe('BlobClient', function () {
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
     function b64ToUint6(nChr) {
         return nChr > 64 && nChr < 91 ?
-        nChr - 65
+            nChr - 65
             : nChr > 96 && nChr < 123 ?
-        nChr - 71
-            : nChr > 47 && nChr < 58 ?
-        nChr + 4
-            : nChr === 43 ?
-            62
-            : nChr === 47 ?
-            63
-            :
-            0;
+                nChr - 71
+                : nChr > 47 && nChr < 58 ?
+                    nChr + 4
+                    : nChr === 43 ?
+                        62
+                        : nChr === 47 ?
+                            63
+                            :
+                            0;
     }
 
     function base64DecToArr(sBase64, nBlocksSize) {
         /*jslint bitwise: true */
-        var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ''),
+        var sB64Enc = sBase64.replace(/[^A-Za-z0-9+/]/g, ''),
             nInLen = sB64Enc.length,
             nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2,
             taBytes = new Uint8Array(nOutLen),

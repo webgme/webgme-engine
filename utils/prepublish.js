@@ -16,6 +16,7 @@ function prepublish(jsdocConfigPath) {
 
     if (process.env.TRAVIS_LINT_TEST) {
         console.warn('LINT_TEST defined - skipping build completely');
+        return;
     }
 
     console.log('Generating REST API docs ...');

@@ -89,7 +89,7 @@ describe('gmeNodeGetter', function () {
     });
 
     it('should provide all public functions', function () {
-        var node = getNode('one', logger, {nodes: {'one': true}}, null);
+        var node = getNode('one', logger, {nodes: {one: true}}, null);
 
         expect(typeof node.getParentId).to.equal('function');
         expect(typeof node.getId).to.equal('function');

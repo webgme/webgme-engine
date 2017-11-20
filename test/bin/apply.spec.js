@@ -1,4 +1,5 @@
 /*eslint-env node, mocha*/
+/*eslint no-console: 0*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -14,7 +15,7 @@ describe('apply CLI tests', function () {
         logger = testFixture.logger.fork('apply.spec'),
         expect = testFixture.expect,
         storage,
-        __should = testFixture.should,
+        __should = testFixture.should, //eslint-disable-line
         gmeAuth,
         applyCLI = require('../../src/bin/apply'),
         Q = testFixture.Q,

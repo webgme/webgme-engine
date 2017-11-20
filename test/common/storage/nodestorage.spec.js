@@ -15,8 +15,7 @@ describe('storage nodestorage', function () {
 
         logger = testFixture.logger.fork('nodestorage'),
 
-        server,
-        host;
+        server;
 
     before(function (done) {
         server = WebGME.standaloneServer(gmeConfig);
