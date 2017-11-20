@@ -14,6 +14,10 @@ function prepublish(jsdocConfigPath) {
         childProcess = require('child_process'),
         configWithDefaultTemplates = raml2html.getDefaultConfig();
 
+    if (process.env.TRAVIS_LINT_TEST) {
+        console.warn('LINT_TEST defined - skipping build completely');
+    }
+
     console.log('Generating REST API docs ...');
 
     raml2html.render(path.join(__dirname, '..', 'src', 'server', 'api', 'webgme-api.raml'), configWithDefaultTemplates)
