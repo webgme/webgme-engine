@@ -12,7 +12,6 @@
       "src/addon/AddOnUpdateResult.js",
       "src/plugin/PluginBase.js",
       "src/plugin/PluginConfig.js",
-      "src/plugin/PluginContext.js",
       "src/plugin/PluginManagerConfiguration.js",
       "src/plugin/PluginMessage.js",
       "src/plugin/PluginNodeDescription.js",
