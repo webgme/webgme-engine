@@ -1,5 +1,7 @@
 /*globals define, console*/
 /*eslint-env browser*/
+/*eslint no-console: 0*/
+
 /**
  * @author kecso / https://github.com/kecso
  * @author pmeijer / https://github.com/pmeijer

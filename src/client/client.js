@@ -1,5 +1,6 @@
 /*globals define, console*/
 /*eslint-env browser*/
+/*eslint new-cap: 0*/
 /**
  * @author kecso / https://github.com/kecso
  * @author pmeijer / https://github.com/pmeijer
@@ -13,13 +14,11 @@ define([
     'common/util/assert',
     'common/core/tasync',
     'common/util/guid',
-    'common/util/url',
     'common/core/users/metarules',
     './gmeNodeGetter',
     './gmeNodeSetter',
     './libraries',
     './gmeServerRequests',
-    'blob/BlobClient',
     './stateloghelpers',
     './pluginmanager',
     'superagent'
@@ -31,16 +30,15 @@ define([
              ASSERT,
              TASYNC,
              GUID,
-             URL,
              metaRules,
              getNode,
              getNodeSetters,
              getLibraryFunctions,
              getServerRequests,
-             BlobClient,
              stateLogHelpers,
              PluginManager,
              superagent) {
+
     'use strict';
 
     function Client(gmeConfig) {
@@ -91,7 +89,6 @@ define([
                 }
 
             },
-            blobClient,
             monkeyPatchKey,
             pluginManager,
             nodeSetterFunctions,
@@ -101,7 +98,6 @@ define([
             //addOnFunctions = new AddOn(state, storage, logger, gmeConfig),
             loadPatternThrottled;
 
-        blobClient = new BlobClient({logger: logger.fork('BlobClient')});
         EventDispatcher.call(this);
 
         this.CONSTANTS = CONSTANTS;
@@ -181,8 +177,7 @@ define([
                         if (metaNodes.hasOwnProperty(metaPath)) {
                             for (i = 0; i < updatedMetaPaths.length; i += 1) {
                                 // check if it is a typeOf (includes mixins) any of the updated meta-nodes
-                                if (state.core.isTypeOf(metaNodes[metaPath],
-                                        metaNodes[updatedMetaPaths[i]]) === true) {
+                                if (state.core.isTypeOf(metaNodes[metaPath], metaNodes[updatedMetaPaths[i]]) === true) {
                                     // if so add its path to the update nodes.
                                     state.loading.changedNodes.update[metaPath] = true;
                                 }
@@ -595,8 +590,10 @@ define([
             var indent = gmeConfig.debug ? 2 : 0;
 
             if (level === 'console') {
+                /*eslint-disable no-console*/
                 console.log('state at ' + msg,
                     stateLogHelpers.getStateLogString(self, state, gmeConfig.debug, indent));
+                /*eslint-enable no-console*/
             } else {
                 logger[level]('state at ' + msg,
                     stateLogHelpers.getStateLogString(self, state, gmeConfig.debug, indent));
@@ -620,10 +617,7 @@ define([
         function saveRoot(msg, callback) {
             var persisted,
                 numberOfPersistedObjects,
-                wrappedCallback,
-                callbacks,
-                newCommitObject;
-
+                callbacks;
             logger.debug('saveRoot msg', msg);
 
             if (!state.viewer && !state.readOnlyProject && state.nodes[ROOT_PATH]) {
@@ -667,7 +661,7 @@ define([
                     }
 
                     // Make the commit on the storage (will emit hashUpdated)
-                    newCommitObject = storage.makeCommit(
+                    storage.makeCommit(
                         state.project.projectId,
                         state.branchName,
                         [state.commitHash],
@@ -1082,7 +1076,8 @@ define([
                 logger.debug('branchStatus changed', branchStatus, commitQueue, updateQueue);
                 logState('debug', 'branchStatus');
                 state.branchStatus = branchStatus;
-                self.dispatchEvent(CONSTANTS.BRANCH_STATUS_CHANGED, {
+                self.dispatchEvent(CONSTANTS.BRANCH_STATUS_CHANGED,
+                    {
                         status: branchStatus,
                         commitQueue: commitQueue,
                         updateQueue: updateQueue
@@ -1491,7 +1486,8 @@ define([
          *
          * @param {commitQueue} commitQueue -
          * @param {object} [options] - optional parameters
-         * @param {object} [options.fastForward] - If truthy will attempt to setBranchHash from current branch to last in queue.
+         * @param {object} [options.fastForward] - If true will attempt to setBranchHash from current
+         * branch to last in queue.
          * @param {object} [options.newBranchName=%currentBranch_time-now%] - Name of new branch if needed.
          */
         this.applyCommitQueue = function (commitQueue, options, callback) {
