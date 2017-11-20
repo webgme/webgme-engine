@@ -15,7 +15,7 @@ var fs = require('fs'),
     requireUncached = require('require-uncached'),
     SVGMapDeffered;
 
-function walkDir (dir, done) {
+function walkDir(dir, done) {
     var deferred = Q.defer(),
         results = [];
 
@@ -341,14 +341,16 @@ function getComponentsJson(logger, callback) {
         result,
         filePath;
 
+    /*eslint-disable no-console*/
     logger = logger ? logger : {
         debug: function () {
             console.log.apply(console, arguments);
         },
-        warn : function () {
+        warn: function () {
             console.warn.apply(console, arguments);
         }
     };
+    /*eslint-enable no-console*/
 
     try {
         filePath = path.join(configDir, 'components.' + env + '.js');

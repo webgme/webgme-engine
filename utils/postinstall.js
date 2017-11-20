@@ -1,4 +1,5 @@
 /*eslint-env node*/
+/*eslint no-console: 0*/
 /**
  * Runs the prepublish script if distribution files does not exist.
  * @author pmeijer / https://github.com/pmeijer

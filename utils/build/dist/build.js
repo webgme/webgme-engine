@@ -1,5 +1,6 @@
-/*globals*/
 /*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  *
  *
@@ -13,7 +14,6 @@
 
 var requirejs = require('requirejs'),
     path = require('path'),
-    fs = require('fs'),
     Q = require('q'),
     config = {
         baseUrl: path.join(__dirname, '../../../src'),

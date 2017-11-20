@@ -1,4 +1,5 @@
 /*eslint-env node*/
+/*eslint no-console: 0*/
 /**
  * @author lattmann / https://github.com/lattmann
  * @author pmeijer / https://github.com/pmeijer
@@ -148,7 +149,7 @@ function validateConfig(configOrFileName) {
     expectedKeys.push('core');
     assertBoolean('config.core.enableCustomConstraints', config.core.enableCustomConstraints);
     assertNumber('config.core.overlayShardSize', config.core.overlayShardSize);
-    if(config.core.overlayShardSize < 1000){
+    if (config.core.overlayShardSize < 1000) {
         throw new Error('Overlay shard size must be at least 1000.');
     }
 
@@ -204,7 +205,8 @@ function validateConfig(configOrFileName) {
         }
 
         if (mountPoints[mountPoint] === true) {
-            throw new Error('Same mount point [' + mountPoint + '] specified more than once in config.rest.components.');
+            throw new Error('Same mount point [' + mountPoint + '] specified more than once ' +
+                'in config.rest.components.');
         } else {
             mountPoints[mountPoint] = true;
         }
@@ -262,7 +264,8 @@ function validateConfig(configOrFileName) {
     assertBoolean('config.storage.disableHashChecks', config.storage.disableHashChecks);
     assertBoolean('config.storage.requireHashesToMatch', config.storage.requireHashesToMatch);
     if (config.storage.disableHashChecks && config.storage.requireHashesToMatch) {
-        throw new Error('Cannot set config.storage.disableHashChecks and requireHashesToMatch to true at the same time!');
+        throw new Error('Cannot set config.storage.disableHashChecks and requireHashesToMatch ' +
+            'to true at the same time!');
     }
 
     //visualization

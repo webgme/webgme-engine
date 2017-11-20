@@ -1,4 +1,5 @@
 /*eslint-env node*/
+/*eslint no-console: 0*/
 /**
  * @author lattmann / https://github.com/lattmann
  * @author pmeijer / https://github.com/pmeijer

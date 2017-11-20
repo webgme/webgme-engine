@@ -1,4 +1,5 @@
 /*eslint-env node*/
+/*eslint no-console: 0*/
 /**
  * Arguments passed to this script are propagated to jsdoc.
  * @author pmeijer / https://github.com/pmeijer
@@ -25,28 +26,26 @@ function prepublish(jsdocConfigPath) {
         });
 
 
-        if (process.env.TEST_FOLDER) {
-            console.warn('TEST_FOLDER environment variable is set, skipping distribution scripts.');
-        } else {
-            var webgmeBuild = require('./build/webgme.classes/build_classes.js');
-                //webgmeDist = require('./build/dist/build.js');
+    if (process.env.TEST_FOLDER) {
+        console.warn('TEST_FOLDER environment variable is set, skipping distribution scripts.');
+    } else {
+        var webgmeBuild = require('./build/webgme.classes/build_classes.js');
 
-            console.log('Generating webgme.classes.build.js ...');
-            webgmeBuild(function (err/*, data*/) {
-                if (err) {
-                    console.error('Failed generating webgme.classes.build.js!', err);
-                    process.exit(1);
-                } else {
-                    console.log('Done with webgme.classes.build.js!');
-                }
-            });
-        }
+        console.log('Generating webgme.classes.build.js ...');
+        webgmeBuild(function (err/*, data*/) {
+            if (err) {
+                console.error('Failed generating webgme.classes.build.js!', err);
+                process.exit(1);
+            } else {
+                console.log('Done with webgme.classes.build.js!');
+            }
+        });
+    }
 
     if (jsdocConfigPath !== false) {
         console.log('Generating webgme source code documentation ...');
-        childProcess.execFile(process.execPath, [
-            path.join(__dirname, './jsdoc_build.js'),
-            '-c', jsdocConfigPath || './jsdoc_conf.json'],
+        childProcess.execFile(process.execPath,
+            [path.join(__dirname, './jsdoc_build.js'), '-c', jsdocConfigPath || './jsdoc_conf.json'],
             null,
             function (err) {
                 if (err) {

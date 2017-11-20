@@ -156,13 +156,15 @@ var path = require('path'),
                 //patterns: ['gme:server:*', '-gme:server:standalone*'],
                 transports: [{
                     transportType: 'Console',
-                    //patterns: ['gme:server:*', '-gme:server:worker*'], // ['gme:server:worker:*'], ['gme:server:*', '-gme:server:worker*']
+                    //patterns: ['gme:server:*', '-gme:server:worker*'],
+                    // ['gme:server:worker:*'], ['gme:server:*', '-gme:server:worker*']
                     options: {
                         level: 'info', // Set this back to info when merged
                         colorize: true,
                         timestamp: true,
                         prettyPrint: true,
-                        handleExceptions: true, // ignored by default when you create the logger, see the logger.create function
+                        handleExceptions: true, // ignored by default when you create the logger,
+                        // see the logger.create function
                         depth: 2
                     }
                 }, {
@@ -179,12 +181,13 @@ var path = require('path'),
                         name: 'error-file',
                         filename: './server-error.log',
                         level: 'error',
-                        handleExceptions: true, // ignored by default when you create the logger, see the logger.create function
+                        handleExceptions: true, // ignored by default when you create the logger,
+                        // see the logger.create function
                         json: false
                     }
                 }]
             },
-            extlibExcludes: ['config\/config\..*\.js$'],
+            extlibExcludes: ['config/config..*.js$'],
             behindSecureProxy: false
         },
 

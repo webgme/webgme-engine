@@ -1,5 +1,6 @@
-/*globals require*/
-/*jshint browser: true*/
+/*globals requirejs*/
+/*eslint-env browser*/
+/*eslint no-console: 0*/
 
 'use strict';
 
@@ -52,37 +53,37 @@ requirejs.config({
 });
 
 function done(err) {
-  if (err) {
-    console.error(err);
-  }
-  window.__karma__.start();
+    if (err) {
+        console.error(err);
+    }
+    window.__karma__.start();
 }
 
-function testServerConnection () {
-  requirejs(['superagent'], function (superagent) {
+function testServerConnection() {
+    requirejs(['superagent'], function (superagent) {
 
-      var maxTries = 20,
-          i = 0,
-          timeout = 300;
+        var maxTries = 20,
+            i = 0,
+            timeout = 300;
 
-      function tryToGetGmeConfig() {
-        console.log('Trying to get gmeConfig.json ... ', i, i * timeout / 1000);
-        superagent.get('/base/gmeConfig.json')
-            .end(function (err, res) {
-                if (res && res.status === 200) {
-                  console.log('Got gmeConfig.json');
-                  done();
-                } else {
-                  i += 1;
-                  if (i < maxTries) {
-                    setTimeout(tryToGetGmeConfig, timeout);
-                  } else {
-                    done(err, res);
-                  }
-                }
-            });
-      }
+        function tryToGetGmeConfig() {
+            console.log('Trying to get gmeConfig.json ... ', i, i * timeout / 1000);
+            superagent.get('/base/gmeConfig.json')
+                .end(function (err, res) {
+                    if (res && res.status === 200) {
+                        console.log('Got gmeConfig.json');
+                        done();
+                    } else {
+                        i += 1;
+                        if (i < maxTries) {
+                            setTimeout(tryToGetGmeConfig, timeout);
+                        } else {
+                            done(err, res);
+                        }
+                    }
+                });
+        }
 
-      tryToGetGmeConfig();
-  });
+        tryToGetGmeConfig();
+    });
 }
