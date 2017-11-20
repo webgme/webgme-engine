@@ -1,4 +1,6 @@
 /*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * This tool can re-assign relids of an exported project. It keeps every other information intact.
  * This tool is advised to be used if someone has an old large project, as the reassigned relids
@@ -31,7 +33,6 @@ main = function (argv) {
         Command = require('commander').Command,
         program = new Command(),
         outputPath,
-        params,
         finishUp = function (error) {
             var ended = function () {
                 if (error) {
@@ -40,20 +41,7 @@ main = function (argv) {
                 }
                 mainDeferred.resolve();
             };
-
-            if (gmeAuth) {
-                gmeAuth.unload();
-            }
-            if (cliStorage) {
-                cliStorage.closeDatabase()
-                    .then(ended)
-                    .catch(function (err) {
-                        logger.error(err);
-                        ended();
-                    });
-            } else {
-                ended();
-            }
+            ended();
         };
 
     program
@@ -65,94 +53,93 @@ main = function (argv) {
     outputPath = program.output || program.args[0];
 
     Q.nfcall(function () {
-            logger.info('loading input');
-            var jsonProject = JSON.parse(FS.readFileSync(program.args[0], 'utf-8')),
-                deferred = Q.defer(),
-                oldToNewRelid = {'1': '1'},
-                i,
-                keys,
-                containmentBasedRelidGeneration = function (containmentObject) {
-                    var relidObject = {},
-                        keys = Object.keys(containmentObject),
-                        needNew = [],
-                        relid,
-                        i;
+        logger.info('loading input');
+        var jsonProject = JSON.parse(FS.readFileSync(program.args[0], 'utf-8')),
+            oldToNewRelid = {1: '1'},
+            i,
+            keys,
+            containmentBasedRelidGeneration = function (containmentObject) {
+                var relidObject = {},
+                    keys = Object.keys(containmentObject),
+                    needNew = [],
+                    relid,
+                    i;
 
-                    //first assign those that have already a new value
-                    for (i = 0; i < keys.length; i += 1) {
-                        if (jsonProject.relids[keys[i]] && oldToNewRelid[jsonProject.relids[keys[i]]]) {
-                            relidObject[jsonProject.relids[keys[i]]] = true;
-                        } else {
-                            needNew.push(keys[i]);
-                        }
+                //first assign those that have already a new value
+                for (i = 0; i < keys.length; i += 1) {
+                    if (jsonProject.relids[keys[i]] && oldToNewRelid[jsonProject.relids[keys[i]]]) {
+                        relidObject[jsonProject.relids[keys[i]]] = true;
+                    } else {
+                        needNew.push(keys[i]);
                     }
+                }
 
-                    //now generate relids for those that do not already have and register them
-                    for (i = 0; i < needNew.length; i += 1) {
-                        relid = random.generateRelid(relidObject);
-                        relidObject[relid] = true;
-                        oldToNewRelid[jsonProject.relids[needNew[i]]] = relid;
+                //now generate relids for those that do not already have and register them
+                for (i = 0; i < needNew.length; i += 1) {
+                    relid = random.generateRelid(relidObject);
+                    relidObject[relid] = true;
+                    oldToNewRelid[jsonProject.relids[needNew[i]]] = relid;
+                }
+
+                //and we should recursively visit all children
+                for (i = 0; i < keys.length; i += 1) {
+                    containmentBasedRelidGeneration(containmentObject[keys[i]]);
+                }
+            },
+            getConvertedStringField = function (stringField) {
+                var fieldArray = stringField.split('@'),
+                    resultField = stringField,
+                    i;
+
+                if (fieldArray.length === 2 && REGEXP.GUID.test(fieldArray[0]) === true) {
+                    resultField = fieldArray[0] + '@';
+                    fieldArray = fieldArray[1].split('/');
+
+                    fieldArray.shift();
+                    for (i = 0; i < fieldArray.length; i += 1) {
+                        resultField += '/' + oldToNewRelid[fieldArray[i]];
                     }
+                }
 
-                    //and we should recursively visit all children
-                    for (i = 0; i < keys.length; i += 1) {
-                        containmentBasedRelidGeneration(containmentObject[keys[i]]);
+                return resultField;
+            },
+            nodeCompositeIdUpdate = function (jsonNode) {
+                var keys = Object.keys(jsonNode || {}),
+                    i;
+
+                for (i = 0; i < keys.length; i += 1) {
+                    if (typeof jsonNode[keys[i]] === 'string') {
+                        jsonNode[keys[i]] = getConvertedStringField(jsonNode[keys[i]]);
+                    } else if (typeof jsonNode[keys[i]] === 'object' && jsonNode[keys[i]] !== null) {
+                        nodeCompositeIdUpdate(jsonNode[keys[i]]);
                     }
-                },
-                getConvertedStringField = function (stringField) {
-                    var fieldArray = stringField.split('@'),
-                        resultField = stringField,
-                        i;
+                }
+            };
 
-                    if (fieldArray.length === 2 && REGEXP.GUID.test(fieldArray[0]) === true) {
-                        resultField = fieldArray[0] + '@';
-                        fieldArray = fieldArray[1].split('/');
+        logger.info('converting input');
+        containmentBasedRelidGeneration(jsonProject.containment);
 
-                        fieldArray.shift();
-                        for (i = 0; i < fieldArray.length; i += 1) {
-                            resultField += '/' + oldToNewRelid[fieldArray[i]];
-                        }
-                    }
+        //now we filled up the conversion lookup table, we just have to make the conversion
+        //first we convert the relids
+        keys = Object.keys(jsonProject.relids);
+        for (i = 0; i < keys.length; i += 1) {
+            jsonProject.relids[keys[i]] = oldToNewRelid[jsonProject.relids[keys[i]]];
+        }
 
-                    return resultField;
-                },
-                nodeCompositeIdUpdate = function (jsonNode) {
-                    var keys = Object.keys(jsonNode || {}),
-                        i;
+        //then we look for compositeIds and convert the relative path portion
+        keys = Object.keys(jsonProject.nodes);
+        for (i = 0; i < keys.length; i += 1) {
+            nodeCompositeIdUpdate(jsonProject.nodes[keys[i]]);
+        }
 
-                    for (i = 0; i < keys.length; i += 1) {
-                        if (typeof jsonNode[keys[i]] === 'string') {
-                            jsonNode[keys[i]] = getConvertedStringField(jsonNode[keys[i]]);
-                        } else if (typeof jsonNode[keys[i]] === 'object' && jsonNode[keys[i]] !== null) {
-                            nodeCompositeIdUpdate(jsonNode[keys[i]]);
-                        }
-                    }
-                };
+        logger.info('saving output');
+        //save the result
+        FS.writeFileSync(outputPath, JSON.stringify(jsonProject, null, 2));
 
-            logger.info('converting input');
-            containmentBasedRelidGeneration(jsonProject.containment);
+        logger.debug('relid conversion table', oldToNewRelid);
 
-            //now we filled up the conversion lookup table, we just have to make the conversion
-            //first we convert the relids
-            keys = Object.keys(jsonProject.relids);
-            for (i = 0; i < keys.length; i += 1) {
-                jsonProject.relids[keys[i]] = oldToNewRelid[jsonProject.relids[keys[i]]];
-            }
-
-            //then we look for compositeIds and convert the relative path portion
-            keys = Object.keys(jsonProject.nodes);
-            for (i = 0; i < keys.length; i += 1) {
-                nodeCompositeIdUpdate(jsonProject.nodes[keys[i]]);
-            }
-
-            logger.info('saving output');
-            //save the result
-            FS.writeFileSync(outputPath, JSON.stringify(jsonProject, null, 2));
-
-            logger.debug('relid conversion table', oldToNewRelid);
-
-            finishUp(null);
-        })
+        finishUp(null);
+    })
         .catch(finishUp);
 
     return mainDeferred.promise;

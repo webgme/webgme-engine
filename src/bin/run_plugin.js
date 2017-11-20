@@ -1,4 +1,6 @@
 /*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * @module Bin:RunPlugin
  * @author lattmann / https://github.com/lattmann
@@ -50,7 +52,8 @@ main = function (argv, callback) {
         .option('-u, --user [string]', 'the user of the command [if not given we use the default user]',
             gmeConfig.authentication.guestAccount)
         .option('-o, --owner [string]', 'the owner of the project [by default, the user is the owner]')
-        .option('-w, --writeBlobFilesDir [string]', 'If defined will also write blob-files to %cwd%/%writeBlobFilesDir%')
+        .option('-w, --writeBlobFilesDir [string]',
+            'If defined will also write blob-files to %cwd%/%writeBlobFilesDir%')
         .option('-j, --pluginConfigPath [string]',
             'Path to json file with plugin options that should be overwritten.', '')
 
@@ -145,7 +148,7 @@ main = function (argv, callback) {
         .then(function (commitHash) {
             var pluginManager = new PluginCliManager(project, logger, gmeConfig, {
                     writeBlobFilesDir: program.writeBlobFilesDir
-            }),
+                }),
                 context = {
                     activeNode: program.activeNode,
                     activeSelection: program.activeSelection || [],

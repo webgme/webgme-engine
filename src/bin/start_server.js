@@ -1,4 +1,6 @@
 /*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * @module Bin:StartServer
  * @author kecso / https://github.com/kecso
@@ -13,7 +15,7 @@ var path = require('path'),
 
 webgme.addToRequireJsPaths(gmeConfig);
 
-myServer = new webgme.standaloneServer(gmeConfig);
+myServer = webgme.standaloneServer(gmeConfig);
 myServer.start(function (err) {
     if (err) {
         console.error(err);

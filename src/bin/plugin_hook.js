@@ -1,4 +1,6 @@
 /*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * 
  * @author pmeijer / https://github.com/pmeijer
@@ -128,7 +130,7 @@ function PluginHandler(options) {
                         superagent
                             .patch(hookUrl)
                             .send(webHook)
-                            .end(function(err) {
+                            .end(function (err) {
                                 if (err) {
                                     hookDeferred.reject(err);
                                 } else {
@@ -140,7 +142,7 @@ function PluginHandler(options) {
                         superagent
                             .put(hookUrl)
                             .send(webHook)
-                            .end(function(err) {
+                            .end(function (err) {
                                 if (err) {
                                     hookDeferred.reject(err);
                                 } else {
@@ -187,7 +189,7 @@ function PluginHandler(options) {
             logger.info('Cleaning up created hook in project');
             superagent
                 .del(hookUrl)
-                .end(function(err) {
+                .end(function (err) {
                     if (err) {
                         deferred.reject(err);
                     } else {
@@ -255,7 +257,7 @@ if (require.main === module) {
         program.pluginId = program.args[0];
         handler = new PluginHandler(program);
 
-        handler.start(function(err) {
+        handler.start(function (err) {
             if (err) {
                 logger.error(err);
             } else {

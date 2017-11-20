@@ -1,5 +1,6 @@
 /*globals requireJS*/
 /*eslint-env node*/
+/*eslint no-console: 0*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -283,7 +284,7 @@ function cleanUp(options) {
     }
     gmeConfig = require(path.join(process.cwd(), 'config'));
     webgme.addToRequireJsPaths(gmeConfig);
-    logger = new webgme.Logger.create('clean_up', gmeConfig.bin.log, false);
+    logger = webgme.Logger.create('clean_up', gmeConfig.bin.log, false);
     blobClient = new BlobClient(gmeConfig, logger);
 
     options = options || {};

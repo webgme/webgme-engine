@@ -1,4 +1,5 @@
 /*eslint-env node*/
+/*eslint no-console: 0*/
 
 /**
  * Script for gathering data about the project collections.
@@ -29,7 +30,7 @@ function getStats(options) {
         storage;
 
     webgme.addToRequireJsPaths(gmeConfig);
-    logger = new webgme.Logger.create('stats', gmeConfig.bin.log, false);
+    logger = webgme.Logger.create('stats', gmeConfig.bin.log, false);
 
     options = options || {};
     params.username = options.username || gmeConfig.authentication.guestAccount;
@@ -224,8 +225,8 @@ function getStats(options) {
         })
         .then(function () {
             var ms = Date.now() - startTime,
-                min = Math.floor(ms/1000/60),
-                sec = (ms/1000) % 60;
+                min = Math.floor(ms / 1000 / 60),
+                sec = (ms / 1000) % 60;
 
             logger.info('Script finished' + (params.outputFile ? ', wrote to "' + params.outputFile + '".' : '.'));
             logger.info('Exec-time:', min, 'min', sec, 'sec');
