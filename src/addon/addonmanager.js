@@ -287,7 +287,7 @@ function AddOnManager(projectId, mainLogger, gmeConfig, options) {
         });
     };
 
-    this.getStatus = function (opts) {
+    this.getStatus = function (/*opts*/) {
         var status = {
             initRequested: self.initRequested,
             closeRequested: self.closeRequested,

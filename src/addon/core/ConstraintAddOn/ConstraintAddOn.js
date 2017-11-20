@@ -80,7 +80,7 @@ define(['addon/AddOnBase', 'common/core/users/constraintchecker'], function (Add
         self.update(rootNode, commitObj, callback);
     };
 
-    ConstraintAddOn.prototype.query = function (commitHash, queryParams, callback) {
+    ConstraintAddOn.prototype.query = function (/*commitHash, queryParams, callback*/) {
         //var self = this;
         //
         //switch (queryParams.querytype) {

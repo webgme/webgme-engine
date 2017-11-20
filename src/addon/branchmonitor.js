@@ -130,7 +130,7 @@ function BranchMonitor(webgmeToken, storage, project, branchName, mainLogger, gm
     }
 
     function updateRunningAddOns(commitObj, callback) {
-        var deferred = new Q.defer(),
+        var deferred = Q.defer(),
             counter = 0,
             limit = self.runningAddOns.length;
 

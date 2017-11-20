@@ -399,10 +399,10 @@ define([
             };
 
         callback = callback || function (err) {
-                if (err) {
-                    self.logger.error(err);
-                }
-            };
+            if (err) {
+                self.logger.error(err);
+            }
+        };
 
         function emitToHandlers() {
             if (cnt === 0) {
@@ -665,8 +665,10 @@ define([
      * @param {object} [context] - Optional context for the invoked plugin
      * @param {object} [context.namespace=this.namespace] - Namespace (relative this.namespace)
      * @param {module:Core~Node} [context.activeNode=this.activeNode] - Active node of invoked plugin
-     * @param {Array<module:Core~Node>} [context.activeSelection=this.activeSelection] - Active selection of invoked plugin
-     * @param {object} [context.pluginConfig] - Specific configuration parameters that should be used for the invocation.
+     * @param {Array<module:Core~Node>} [context.activeSelection=this.activeSelection] - Active selection
+     * of invoked plugin
+     * @param {object} [context.pluginConfig] - Specific configuration parameters that should be used for the
+     * invocation.
      * If not provided will first check if the currentConfig of this plugin contains this plugin as dependency within
      * the array this._currentConfig._dependencies. Finally it will fall back to the default config of the plugin.
      * @param {function} [callback] - the result callback
