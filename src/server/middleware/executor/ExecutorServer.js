@@ -1,5 +1,6 @@
 /*globals requireJS*/
 /*eslint-env node*/
+/*eslint new-cap: 0*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -18,7 +19,7 @@
 var express = require('express'),
     Q = require('q'),
     Chance = require('chance'),
-// Mongo collections
+    // Mongo collections
     JOB_LIST = '_executorJobList',
     WORKER_LIST = '_executorWorkerList',
     OUTPUT_LIST = '_executorOutput';

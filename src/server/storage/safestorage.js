@@ -600,7 +600,7 @@ SafeStorage.prototype.getCommits = function (data, callback) {
 
     if (typeof data.before === 'string') {
         rejected = rejected || check(REGEXP.HASH.test(data.before), deferred,
-                'data.before is not a number nor a valid hash.');
+            'data.before is not a number nor a valid hash.');
     }
 
     if (data.hasOwnProperty('username')) {
@@ -658,7 +658,7 @@ SafeStorage.prototype.getHistory = function (data, callback) {
         check(REGEXP.PROJECT.test(data.projectId), deferred, 'data.projectId failed regexp: ' + data.projectId) ||
         check(typeof data.start === 'string' ||
             (typeof data.start === 'object' && data.start instanceof Array),
-            deferred, 'data.start is not a string or array') ||
+        deferred, 'data.start is not a string or array') ||
         check(typeof data.number === 'number', deferred, 'data.number is not a number');
 
     if (data.hasOwnProperty('username')) {

@@ -13,7 +13,7 @@ var Q = require('q'),
     storageHelpers = require('./storagehelpers'),
     EventDispatcher = requireJS('common/EventDispatcher'),
     CONSTANTS = requireJS('common/storage/constants'),
-    GENKEY = requireJS('common/util/key'),
+    generateKey = requireJS('common/util/key'),
     UTIL = requireJS('common/storage/util');
 
 function Storage(database, logger, gmeConfig) {
@@ -278,7 +278,7 @@ Storage.prototype.makeCommit = function (data, callback) {
                                                 branchName: data.branchName,
                                                 commitObject: data.commitObject,
                                                 coreObjects: emitObjects,
-                                                changedNodes: data.changedNodes, // TODO: This doesn't need to passed
+                                                changedNodes: data.changedNodes,
                                                 userId: data.username
                                             },
                                             eventData = {
@@ -441,7 +441,7 @@ Storage.prototype.squashCommits = function (data, callback) {
                     type: CONSTANTS.COMMIT_TYPE,
                     __v: CONSTANTS.VERSION
                 },
-                commitHash = '#' + GENKEY(commitObj, self.gmeConfig);
+                commitHash = '#' + generateKey(commitObj, self.gmeConfig);
 
             commitObj[CONSTANTS.MONGO_ID] = commitHash;
 

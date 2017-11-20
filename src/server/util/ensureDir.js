@@ -1,5 +1,5 @@
 /*eslint-env node*/
-
+/*eslint no-bitwise: 0*/
 /**
  * @module EnsureDir
  * @author lattmann / https://github.com/lattmann

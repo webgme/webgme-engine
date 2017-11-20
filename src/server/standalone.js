@@ -28,7 +28,7 @@ var path = require('path'),
     WebSocket = require('./storage/websocket'),
     WebhookManager = require('./util/WebhookManager'),
 
-// Middleware
+    // Middleware
     BlobServer = require('./middleware/blob/BlobServer'),
     ExecutorServer = require('./middleware/executor/ExecutorServer'),
     api = require('./api'),
@@ -96,13 +96,28 @@ function StandAloneServer(gmeConfig) {
         routeComponents = [],
         sockets = [],
         nmpPackageJson = webgmeUtils.getPackageJsonSync(),
-        cacheManifest;
+        logger = null,
+        __storage = null,
+        __database = null,
+        __webSocket = null,
+        __gmeAuth = null,
+        apiReady,
+        __app = null,
+        WorkerManager = require(gmeConfig.server.workerManager.path),
+        __workerManager,
+        __httpServer = null,
+        __addOnEventPropagator = null,
+        __baseDir = requireJS.s.contexts._.config.baseUrl, // TODO: this is ugly
+        __clientBaseDir = path.resolve(gmeConfig.client.appDir),
+        // __requestCounter = 0,
+        // __reportedRequestCounter = 0,
+        // __requestCheckInterval = 2500,
+        __executorServer,
+        middlewareOpts;
 
     self.id = Math.random().toString(36).slice(2, 11);
 
-    if (mainLogger) {
-
-    } else {
+    if (!mainLogger) {
         mainLogger = Logger.createWithGmeConfig('gme', gmeConfig, true);
     }
 
@@ -558,24 +573,6 @@ function StandAloneServer(gmeConfig) {
 
     //here starts the main part
     //variables
-    var logger = null,
-        __storage = null,
-        __database = null,
-        __webSocket = null,
-        __gmeAuth = null,
-        apiReady,
-        __app = null,
-        WorkerManager = require(gmeConfig.server.workerManager.path),
-        __workerManager,
-        __httpServer = null,
-        __addOnEventPropagator = null,
-        __baseDir = requireJS.s.contexts._.config.baseUrl,// TODO: this is ugly
-        __clientBaseDir = path.resolve(gmeConfig.client.appDir),
-        __requestCounter = 0,
-        __reportedRequestCounter = 0,
-        __requestCheckInterval = 2500,
-        __executorServer,
-        middlewareOpts;
 
     //creating the logger
     logger = mainLogger.fork('server:standalone');
@@ -903,6 +900,7 @@ function StandAloneServer(gmeConfig) {
     });
 
     // catches all next(new Error()) from previous rules, you can set res.status() before you call next(new Error())
+    // eslint-disable-next-line
     __app.use(function (err, req, res, next) {
         if (res.statusCode === 200) {
             res.status(err.status || 500);

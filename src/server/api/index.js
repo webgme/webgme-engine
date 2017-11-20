@@ -1,5 +1,6 @@
 /*globals requireJS*/
 /*eslint-env node*/
+/*eslint new-cap: 0 camelcase: 0*/
 
 /**
  * @module Server:API
@@ -225,7 +226,8 @@ function createAPI(app, mountPath, middlewareOpts) {
             .catch(function (err) {
                 if (err.message.indexOf('no such user') === 0) {
                     logger.info('Authenticated user did not exist in db, adding:', userId);
-                    gmeAuth.addUser(userId, 'em@il', GUID(), gmeConfig.authentication.inferredUsersCanCreate, {overwrite: false})
+                    gmeAuth.addUser(userId, 'em@il', GUID(),
+                        gmeConfig.authentication.inferredUsersCanCreate, {overwrite: false})
                         .then(function (/*userData*/) {
                             return gmeAuth.getUser(userId);
                         })
@@ -885,7 +887,7 @@ function createAPI(app, mountPath, middlewareOpts) {
 
         gmeAuth.getUser(userId)
             .then(function (userData_) {
-                userData= userData_;
+                userData = userData_;
                 if (req.query.includeDisabled && userData.siteAdmin) {
                     query = {disabled: undefined};
                 }
@@ -1454,36 +1456,36 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.get(['/projects/:ownerId/:projectName/commits/:commitHash/export',
-            '/projects/:ownerId/:projectName/commits/:commitHash/export/*'], ensureAuthenticated,
-        function (req, res, next) {
-            if (req.params[0] === undefined || req.params[0] === '') {
-                exportProject(req, res, next);
-            } else {
-                exportModel(req, res, next);
-            }
+        '/projects/:ownerId/:projectName/commits/:commitHash/export/*'], ensureAuthenticated,
+    function (req, res, next) {
+        if (req.params[0] === undefined || req.params[0] === '') {
+            exportProject(req, res, next);
+        } else {
+            exportModel(req, res, next);
         }
+    }
     );
 
     router.get(['/projects/:ownerId/:projectName/commits/:commitHash/tree',
-            '/projects/:ownerId/:projectName/commits/:commitHash/tree/*'], ensureAuthenticated,
-        function (req, res, next) {
-            var userId = getUserId(req),
-                projectId = StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
-                    req.params.projectName),
-                commitHash = StorageUtil.getHashTaggedHash(req.params.commitHash);
+        '/projects/:ownerId/:projectName/commits/:commitHash/tree/*'], ensureAuthenticated,
+    function (req, res, next) {
+        var userId = getUserId(req),
+            projectId = StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
+                req.params.projectName),
+            commitHash = StorageUtil.getHashTaggedHash(req.params.commitHash);
 
-            loadNodePathByCommitHash(userId, projectId, commitHash,
-                '/' + (req.params[0] === undefined ? '' : req.params[0]))
-                .then(function (nodeObj) {
-                    res.json(nodeObj);
-                })
-                .catch(function (err) {
-                    if (err.message.indexOf('not exist') > -1 || err.message.indexOf('Not authorized to read') > -1) {
-                        err.status = 404;
-                    }
-                    next(err);
-                });
-        }
+        loadNodePathByCommitHash(userId, projectId, commitHash,
+            '/' + (req.params[0] === undefined ? '' : req.params[0]))
+            .then(function (nodeObj) {
+                res.json(nodeObj);
+            })
+            .catch(function (err) {
+                if (err.message.indexOf('not exist') > -1 || err.message.indexOf('Not authorized to read') > -1) {
+                    err.status = 404;
+                }
+                next(err);
+            });
+    }
     );
 
     router.get('/projects/:ownerId/:projectName/compare/:branchOrCommitA...:branchOrCommitB',
@@ -1550,14 +1552,14 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.get(['/projects/:ownerId/:projectName/branches/:branchId/export',
-            '/projects/:ownerId/:projectName/branches/:branchId/export/*'], ensureAuthenticated,
-        function (req, res, next) {
-            if (req.params[0] === undefined || req.params[0] === '') {
-                exportProject(req, res, next);
-            } else {
-                exportModel(req, res, next);
-            }
+        '/projects/:ownerId/:projectName/branches/:branchId/export/*'], ensureAuthenticated,
+    function (req, res, next) {
+        if (req.params[0] === undefined || req.params[0] === '') {
+            exportProject(req, res, next);
+        } else {
+            exportModel(req, res, next);
         }
+    }
     );
 
     router.patch('/projects/:ownerId/:projectName/branches/:branchId', function (req, res, next) {
@@ -1642,35 +1644,35 @@ function createAPI(app, mountPath, middlewareOpts) {
     );
 
     router.get(['/projects/:ownerId/:projectName/branches/:branchId/tree',
-            '/projects/:ownerId/:projectName/branches/:branchId/tree/*'], ensureAuthenticated,
-        function (req, res, next) {
-            var userId = getUserId(req),
-                projectId = StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
-                    req.params.projectName),
-                data = {
-                    username: userId,
-                    projectId: projectId,
-                    branchName: req.params.branchId
-                };
+        '/projects/:ownerId/:projectName/branches/:branchId/tree/*'], ensureAuthenticated,
+    function (req, res, next) {
+        var userId = getUserId(req),
+            projectId = StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
+                req.params.projectName),
+            data = {
+                username: userId,
+                projectId: projectId,
+                branchName: req.params.branchId
+            };
 
-            safeStorage.getBranchHash(data)
-                .then(function (branchHash) {
-                    if (!branchHash) {
-                        throw new Error('Branch does not exist ' + req.params.branchId);
-                    }
-                    return loadNodePathByCommitHash(userId, projectId, branchHash,
-                        '/' + (req.params[0] === undefined ? '' : req.params[0]));
-                })
-                .then(function (dataObj) {
-                    res.json(dataObj);
-                })
-                .catch(function (err) {
-                    if (err.message.indexOf('not exist') > -1 || err.message.indexOf('Not authorized to read') > -1) {
-                        err.status = 404;
-                    }
-                    next(err);
-                });
-        }
+        safeStorage.getBranchHash(data)
+            .then(function (branchHash) {
+                if (!branchHash) {
+                    throw new Error('Branch does not exist ' + req.params.branchId);
+                }
+                return loadNodePathByCommitHash(userId, projectId, branchHash,
+                    '/' + (req.params[0] === undefined ? '' : req.params[0]));
+            })
+            .then(function (dataObj) {
+                res.json(dataObj);
+            })
+            .catch(function (err) {
+                if (err.message.indexOf('not exist') > -1 || err.message.indexOf('Not authorized to read') > -1) {
+                    err.status = 404;
+                }
+                next(err);
+            });
+    }
     );
 
     router.get('/projects/:ownerId/:projectName/tags', ensureAuthenticated, function (req, res, next) {
@@ -1711,45 +1713,45 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.get(['/projects/:ownerId/:projectName/tags/:tagId/export',
-            '/projects/:ownerId/:projectName/tags/:tagId/export/*'], ensureAuthenticated,
-        function (req, res, next) {
-            if (req.params[0] === undefined || req.params[0] === '') {
-                exportProject(req, res, next);
-            } else {
-                exportModel(req, res, next);
-            }
+        '/projects/:ownerId/:projectName/tags/:tagId/export/*'], ensureAuthenticated,
+    function (req, res, next) {
+        if (req.params[0] === undefined || req.params[0] === '') {
+            exportProject(req, res, next);
+        } else {
+            exportModel(req, res, next);
         }
+    }
     );
 
     router.get(['/projects/:ownerId/:projectName/tags/:tagId/tree',
-            '/projects/:ownerId/:projectName/tags/:tagId/tree/*'], ensureAuthenticated,
-        function (req, res, next) {
-            var userId = getUserId(req),
-                projectId = StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
-                    req.params.projectName),
-                data = {
-                    username: userId,
-                    projectId: projectId
-                };
+        '/projects/:ownerId/:projectName/tags/:tagId/tree/*'], ensureAuthenticated,
+    function (req, res, next) {
+        var userId = getUserId(req),
+            projectId = StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
+                req.params.projectName),
+            data = {
+                username: userId,
+                projectId: projectId
+            };
 
-            safeStorage.getTags(data)
-                .then(function (tags) {
-                    if (tags.hasOwnProperty(req.params.tagId) !== true) {
-                        throw new Error('Tag does not exist ' + req.params.tagId);
-                    }
-                    return loadNodePathByCommitHash(userId, projectId, tags[req.params.tagId],
-                        '/' + (req.params[0] === undefined ? '' : req.params[0]));
-                })
-                .then(function (dataObj) {
-                    res.json(dataObj);
-                })
-                .catch(function (err) {
-                    if (err.message.indexOf('not exist') > -1 || err.message.indexOf('Not authorized to read') > -1) {
-                        err.status = 404;
-                    }
-                    next(err);
-                });
-        }
+        safeStorage.getTags(data)
+            .then(function (tags) {
+                if (tags.hasOwnProperty(req.params.tagId) !== true) {
+                    throw new Error('Tag does not exist ' + req.params.tagId);
+                }
+                return loadNodePathByCommitHash(userId, projectId, tags[req.params.tagId],
+                    '/' + (req.params[0] === undefined ? '' : req.params[0]));
+            })
+            .then(function (dataObj) {
+                res.json(dataObj);
+            })
+            .catch(function (err) {
+                if (err.message.indexOf('not exist') > -1 || err.message.indexOf('Not authorized to read') > -1) {
+                    err.status = 404;
+                }
+                next(err);
+            });
+    }
     );
 
     router.put('/projects/:ownerId/:projectName/tags/:tagId', function (req, res, next) {
@@ -2282,6 +2284,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     // error handling (NOTE: it is important to have this function signature with 4 arguments!)
+    // eslint-disable-next-line
     router.use(function (err, req, res, next) {
         var errorMessage = {
                 401: 'Authentication required',

@@ -146,20 +146,21 @@ function Memory(mainLogger, gmeConfig) {
             var deferred = Q.defer(),
                 branchNames = {},
                 pending = 0,
+                i,
+                done = function () {
+                    if (i === storage.length && pending === 0) {
+                        deferred.resolve(branchNames);
+                    }
+                },
                 updateBranchEntry = function (branchName) {
                     self.getBranchHash(branchName, function (err, hash) {
                         pending -= 1;
                         branchNames[branchName] = hash;
                         done();
                     });
-                },
-                done = function () {
-                    if (i === storage.length && pending === 0) {
-                        deferred.resolve(branchNames);
-                    }
                 };
 
-            for (var i = 0; i < storage.length; i += 1) {
+            for (i = 0; i < storage.length; i += 1) {
                 var keyArray = storage.key(i).split(SEPARATOR);
                 if (REGEXP.RAW_BRANCH.test(keyArray[2])) {
                     if (keyArray[0] === database && keyArray[1] === projectId) {

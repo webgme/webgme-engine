@@ -1,5 +1,6 @@
 /*globals requireJS*/
-/*eslint-env node, new-cap: 0*/
+/*eslint-env node*/
+/*eslint new-cap: 0*/
 
 /**
  * @module Server:Storage:Mongo
