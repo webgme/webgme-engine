@@ -7,7 +7,7 @@
 define(['common/util/url'], function (URL) {
     'use strict';
 
-    function IoClient (mainLogger, gmeConfig) {
+    function IoClient(mainLogger, gmeConfig) {
         var logger = mainLogger.fork('socketio-browserclient');
 
         this.connect = function (callback) {

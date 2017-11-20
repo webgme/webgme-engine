@@ -107,7 +107,8 @@ define(['common/storage/constants'], function (CONSTANTS) {
             }
 
             if (!mergeCommit) {
-                logger.error('mergeCommit not available in updateQueue', mergeHash, JSON.stringify(updateQueue, null, 2));
+                logger.error('mergeCommit not available in updateQueue', mergeHash,
+                    JSON.stringify(updateQueue, null, 2));
             }
 
             updateQueue = [];

@@ -88,7 +88,7 @@ define(['common/storage/constants', 'q'], function (CONSTANTS, Q) {
         this.webSocket.addEventListener(CONSTANTS.BRANCH_HASH_UPDATED + projectId, eventHandler);
 
         this.watchers.projects[projectId] = this.watchers.projects.hasOwnProperty(projectId) ?
-        this.watchers.projects[projectId] + 1 : 1;
+            this.watchers.projects[projectId] + 1 : 1;
         this.logger.debug('Nbr of watchers for project:', projectId, this.watchers.projects[projectId]);
         if (this.watchers.projects[projectId] === 1) {
             this.logger.debug('First watcher will enter project room:', projectId);
@@ -117,7 +117,7 @@ define(['common/storage/constants', 'q'], function (CONSTANTS, Q) {
         this.webSocket.removeEventListener(CONSTANTS.BRANCH_HASH_UPDATED + projectId, eventHandler);
 
         this.watchers.projects[projectId] = this.watchers.projects.hasOwnProperty(projectId) ?
-        this.watchers.projects[projectId] - 1 : -1;
+            this.watchers.projects[projectId] - 1 : -1;
         if (this.watchers.projects[projectId] === 0) {
             this.logger.debug('No more watchers will exit project room:', projectId);
             delete this.watchers.projects[projectId];
