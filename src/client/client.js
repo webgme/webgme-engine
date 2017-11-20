@@ -777,7 +777,7 @@ define([
                 state.rootHash = null;
                 //state.rootObject = null;
                 state.transactions.opened = 0;
-                state.transactions.callbackes = [];
+                state.transactions.callbacks = [];
                 state.msg = '';
 
                 cleanUsersTerritories();
