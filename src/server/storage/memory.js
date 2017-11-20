@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*eslint-env node, new-cap: 0*/
+/*eslint-env node*/
 /**
  * @module Server:Storage:Memory
  * @author lattmann / https://github.com/lattmann

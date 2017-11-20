@@ -1,5 +1,6 @@
-/*globals define*/
+/*globals define, ArrayBuffer, Uint8Array*/
 /*eslint-env node, browser*/
+/*eslint new-cap: 0*/
 
 /**
  * @author pmeijer / https://github.com/pmeijer
@@ -183,9 +184,9 @@ define(['q', './BlobMetadata'], function (Q, BlobMetadata) {
 
         function getMetadataSafely(assetHash) {
             return blobClient.getMetadata(assetHash)
-                .catch(function(err) {
+                .catch(function (err) {
                     logger.warn('When building project package could not retrieve metadata for attribute with value',
-                    assetHash, '. Will continue assuming it is not an asset attribute...');
+                        assetHash, '. Will continue assuming it is not an asset attribute...');
                     logger.debug('Returned error when getMetadata', err);
                     return null;
                 });

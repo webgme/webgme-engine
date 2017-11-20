@@ -29,12 +29,12 @@ define([
         this.blobClientGetMetadata = tasync.unwrap(tasync.throttle(tasync.wrap(blobClient.getMetadata), 5));
         // TODO: use BlobMetadata class here
         this.descriptor = descriptor || {
-                name: name + '.zip',
-                size: 0,
-                mime: 'application/zip',
-                content: {},
-                contentType: 'complex'
-            }; // name and hash pairs
+            name: name + '.zip',
+            size: 0,
+            mime: 'application/zip',
+            content: {},
+            contentType: 'complex'
+        }; // name and hash pairs
     };
 
     /**

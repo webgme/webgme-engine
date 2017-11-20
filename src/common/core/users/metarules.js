@@ -1,5 +1,5 @@
 /*globals define*/
-/*eslint-env node, browser, new-cap: 0*/
+/*eslint-env node, browser*/
 /**
  * @author kecso / https://github.com/kecso
  * @author pmeijer / https://github.com/pmeijer

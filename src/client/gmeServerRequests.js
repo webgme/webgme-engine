@@ -1,4 +1,4 @@
-/*globals define*/
+/*global define*/
 /*eslint-env browser*/
 /**
  * @author kecso / https://github.com/kecso
