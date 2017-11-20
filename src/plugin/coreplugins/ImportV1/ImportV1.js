@@ -1,5 +1,6 @@
-/*globals define*/
+/*globals define, Uint8Array*/
 /*eslint-env node, browser*/
+/*eslint new-cap: 0*/
 
 /**
  * This plugin can be used for importing projects from webgme v1.x.

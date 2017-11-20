@@ -89,7 +89,8 @@ define([
                 if (resultBranch) {
                     self.createMessage(null, 'Successfully updated branch.', 'info');
                 } else {
-                    self.createMessage(null, 'Failed to update branch, but merge commit got created ' + resultHash, 'warn');
+                    self.createMessage(null, 'Failed to update branch, but merge commit got created ' +
+                        resultHash, 'warn');
                 }
 
                 self.logger.info(result);

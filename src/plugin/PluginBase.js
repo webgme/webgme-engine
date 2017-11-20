@@ -808,7 +808,7 @@ define([
      * the PluginManager.
      * Initializes the result with a new object.
      *
-     * @param {PluginContext} config - specific context: project, branch, core, active object and active selection.
+     * @param {object} config - specific context: project, branch, core, active object and active selection.
      */
     PluginBase.prototype.configure = function (config) {
         this.core = config.core;

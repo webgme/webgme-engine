@@ -80,7 +80,7 @@ define([
                             'entry to "js/Panels/' + content.visualizerID + '/' + 
                             content.visualizerID + 'Panel"');
                         self.createMessage(self.rootNode, 'Select the root-node and add ' +
-                            content.visualizerID + ' to the validVisualizers attribute '+
+                            content.visualizerID + ' to the validVisualizers attribute ' +
                             '(separate with spaces) to enable the visualizer for the current ' +
                             'project');
                         self.createMessage(null, 'Refresh the browser to update the ' +
@@ -130,32 +130,32 @@ define([
 
         // Get the base name and capitalize it
         baseName = fileName.match(/^[\w\d_]*/)[0];
-        baseName = baseName.substring(0,1).toUpperCase()+baseName.substring(1);
+        baseName = baseName.substring(0, 1).toUpperCase() + baseName.substring(1);
 
         // Put it in a visName directory then in Panels or Widgets
         if (baseName === 'Styles') {
-            fileName = visName+'Widget'+ext;
+            fileName = visName + 'Widget' + ext;
             path = [baseUrl, 'Widgets', visName, 'styles', fileName].join('/');
         } else {
-            fileName = visName+baseName+ext;
+            fileName = visName + baseName + ext;
             path = [baseUrl, fileToDir[baseName], visName, fileName].join('/');
         }
 
         return path;
     };
 
-    VisualizerGenerator.toDashed = function(camelCase) {
+    VisualizerGenerator.toDashed = function (camelCase) {
         var index;
 
         // Convert first character to lowercase
-        camelCase = camelCase.substring(0,1).toLowerCase()+camelCase.substring(1);
+        camelCase = camelCase.substring(0, 1).toLowerCase() + camelCase.substring(1);
 
         // Convert each capital letter to '-'+\L
         index = camelCase.search(/[A-Z]+/);
         while (index > -1) {
             camelCase = camelCase.substring(0, index) + '-' + 
-                camelCase.substring(index, index+1).toLowerCase() + 
-                camelCase.substring(index+1);
+                camelCase.substring(index, index + 1).toLowerCase() + 
+                camelCase.substring(index + 1);
 
             index = camelCase.search(/[A-Z]+/);
         }

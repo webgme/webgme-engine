@@ -101,7 +101,8 @@
  */
 
 /**
- * @description Removes the [user]{@link Client.addUI} at guid and no more events will be triggered at its event-handler.
+ * @description Removes the [user]{@link Client.addUI} at guid and no more events will be triggered at
+ * its event-handler.
  * @function removeUI
  * @memberOf Client
  * @instance
@@ -125,7 +126,8 @@
  * @instance
  * @param {string} pluginId - Id of plugin.
  * @param {string} [activeNodeId=WebGMEGlobal.State.getActiveObject() || ''] - Specific id for active node.
- * @param {string[]} [activeSelectionIds=WebGMEGlobal.State.getActiveSelection() || []] - Specific ids for active-selection.
+ * @param {string[]} [activeSelectionIds=WebGMEGlobal.State.getActiveSelection() || []] - Specific ids for
+ * active-selection.
  * @return {object} The context needed for runBrowserPlugin/runServerPlugin.
  */
 
@@ -152,14 +154,14 @@
  * @param {string} [context.managerConfig.activeSelection=[]] - Paths to selected nodes.
  * @param {string} context.managerConfig.commitHash - Commit hash to start the plugin from.
  * @param {string} [context.managerConfig.branchName] - Branch which to save to.
- * @param {string} [context.managerConfig.namespace=''] - Used namespace during execution ('' represents all namespaces).
+ * @param {string} [context.managerConfig.namespace=''] - Used namespace ('' represents root namespace).
  * @param {object} [context.pluginConfig=%defaultForPlugin%] - Specific configuration for the plugin.
  * @param {function(err, PluginResult)} callback
  */
 
 /**
- * @description Execute the specified plugin on the server at the provided context. Before invoking a plugin on the server
- * you need to make sure that the given commitHash has been persisted in the database.
+ * @description Execute the specified plugin on the server at the provided context. Before invoking a plugin on
+ * the server you need to make sure that the given commitHash has been persisted in the database.
  * @function runServerPlugin
  * @memberOf Client
  * @instance
@@ -171,7 +173,7 @@
  * @param {string} [context.managerConfig.activeSelection=[]] - Paths to selected nodes.
  * @param {string} context.managerConfig.commitHash - Commit hash to start the plugin from.
  * @param {string} [context.managerConfig.branchName] - Branch which to save to.
- * @param {string} [context.managerConfig.namespace=''] - Used namespace during execution ('' represents all namespaces).
+ * @param {string} [context.managerConfig.namespace=''] - Used namespace ('' represents root namespace).
  * @param {object} [context.pluginConfig=%defaultForPlugin%] - Specific configuration for the plugin.
  * @param {function} callback
  */
@@ -238,7 +240,8 @@
  */
 
 /**
- * @description Trigger the client to dispatch a NOTIFICATION (in the generic UI the notification widget listens to these).
+ * @description Trigger the client to dispatch a NOTIFICATION (in the generic UI the notification widget listens
+ * to these).
  * @function notifyUser
  * @memberOf Client
  * @instance
@@ -271,7 +274,8 @@
  * @function addLibrary
  * @memberOf Client
  * @param {string} name - Name of new library (cannot contain dots or exist already)
- * @param {string|object} blobHashOrLibraryInfo - If string given will import library from blob otherwise project at info (will also be added to info at library).
+ * @param {string|object} blobHashOrLibraryInfo - If string given will import library from blob otherwise project
+ * at info (will also be added to info at library).
  * @param {string} blobHashOrLibraryInfo.projectId - The projectId of your library.
  * @param {string} [blobHashOrLibraryInfo.branchName] - The branch that your library follows in the origin project.
  * @param {string} [blobHashOrLibraryInfo.commitHash] - The commit-hash of your library.
@@ -286,7 +290,8 @@
  * @function updateLibrary
  * @memberOf Client
  * @param {string} name - Name of library to update.
- * @param {string|object} blobHashOrLibraryInfo - If string given will import library from blob otherwise project at info (will also be added to info at library).
+ * @param {string|object} blobHashOrLibraryInfo - If string given will import library from blob otherwise project
+ * at info (will also be added to info at library).
  * @param {string} blobHashOrLibraryInfo.projectId - The projectId of your library.
  * @param {string} [blobHashOrLibraryInfo.branchName] - The branch that your library follows in the origin project.
  * @param {string} [blobHashOrLibraryInfo.commitHash] - The commit-hash of your library.

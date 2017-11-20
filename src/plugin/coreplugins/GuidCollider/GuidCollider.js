@@ -1,5 +1,6 @@
 /*globals define*/
 /*eslint-env node, browser*/
+/*eslint new-cap: 0*/
 
 /**
  * Plugin mainly used for testing.
@@ -85,7 +86,7 @@ define([
                     return {};
                 }
             })
-            .then(function (status) {
+            .then(function (/*status*/) {
                 self.result.setSuccess(true);
             })
             .catch(function (err) {

@@ -1,5 +1,6 @@
 /*globals define*/
 /*eslint-env node, browser*/
+/*eslint new-cap: 0*/
 
 /**
  *
@@ -177,7 +178,7 @@ define([
             return new Error('Invalid xmpData.paradigm.folder: does not have a valid first element in the array.');
         }
 
-        if (typeof rootFolder.hasOwnProperty('attrdef') === false) {
+        if (rootFolder.hasOwnProperty('attrdef') === false) {
             return new Error('Invalid xmpData.paradigm.folder[0]: attrdef key does not exist.');
         }
 
@@ -470,7 +471,8 @@ define([
             }
 
             x = 100 + (i % numElementsInARow) * 150;
-            y = 100 + maxAttr * 16 /* attr height */ + Math.floor(i / numElementsInARow) * (60 /* box height */ + 20 /* gap */);
+            y = 100 + maxAttr * 16 /* attr height */ +
+                Math.floor(i / numElementsInARow) * (60 /* box height */ + 20 /* gap */);
 
             if (i % numElementsInARow === numElementsInARow - 1) {
                 // last element

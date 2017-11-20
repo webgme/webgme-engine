@@ -167,17 +167,17 @@ define(['plugin/PluginMessage', 'plugin/PluginResultBase'], function (PluginMess
      */
     PluginResult.prototype.serialize = function () {
         var result = {
-            success: this.success,
-            projectId: this.projectId,
-            messages: [],
-            commits: this.commits,
-            artifacts: this.artifacts,
-            pluginName: this.pluginName,
-            pluginId: this.pluginId,
-            startTime: this.startTime,
-            finishTime: this.finishTime,
-            error: this.error
-        },
+                success: this.success,
+                projectId: this.projectId,
+                messages: [],
+                commits: this.commits,
+                artifacts: this.artifacts,
+                pluginName: this.pluginName,
+                pluginId: this.pluginId,
+                startTime: this.startTime,
+                finishTime: this.finishTime,
+                error: this.error
+            },
             i;
 
         for (i = 0; i < this.messages.length; i += 1) {

@@ -1,3 +1,4 @@
+/*eslint-disable*/
 /* Generated file based on ejs templates */
 define([], function() {
     return {

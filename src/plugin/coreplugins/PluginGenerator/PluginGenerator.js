@@ -104,13 +104,17 @@ define([
                         self.result.addArtifact(hashes[0]);
                         self.createMessage(null, 'Extract the pluginFiles.zip in your repository.');
                         self.createMessage(null, 'Append "' + './src/plugins/' + self.projectName +
-                        '" to "pluginBasePaths" in config.js.');
+                            '" to "pluginBasePaths" in config.js.');
+
                         self.createMessage(self.rootNode, 'Select the root-node and add ' +
-                        self.currentConfig.pluginID + ' to the validPlugins under the META tab (separate with spaces).');
+                            self.currentConfig.pluginID + ' to the validPlugins under the META tab ' +
+                            '(separate with spaces).');
+
                         if (self.currentConfig.test) {
                             self.createMessage(null, 'For the necessary test setup and more examples of how ' +
-                            'to write tests see https://github.com/webgme/webgme-boilerplate.');
+                                'to write tests see https://github.com/webgme/webgme-boilerplate.');
                         }
+
                         self.logger.info('Artifacts are saved here: ' + hashes.toString());
 
                         self.result.setSuccess(true);
@@ -167,7 +171,7 @@ define([
             self.currentConfig.templateExt = 'cs';
             fileName = self.pluginDir + 'Templates/CSharp.cs.ejs';
             fileContent = 'using System;\nnamespace Hey {\n\tclass Hi {\n\t\tstatic void Main()' +
-            ' {\n\t\t\tConsole.WriteLine("<%=a%> and <%=b%> provided.");\n\t\t}\n\t}\n}';
+                ' {\n\t\t\tConsole.WriteLine("<%=a%> and <%=b%> provided.");\n\t\t}\n\t}\n}';
         } else if (self.currentConfig.templateType === 'JavaScript') {
             self.currentConfig.templateExt = 'js';
             fileName = self.pluginDir + 'Templates/JavaScript.js.ejs';
