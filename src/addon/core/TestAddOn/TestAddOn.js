@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true*/
+/*eslint-env node*/
 
 /**
  * Add-on that alters the name of newly created nodes and persists back to model.

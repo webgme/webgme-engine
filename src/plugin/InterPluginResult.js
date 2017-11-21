@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 
 /**
  * A module representing the result from an invoked plugin.

@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  *
  * @module Server:UserProject
@@ -8,7 +8,7 @@
 'use strict';
 
 var CONSTANTS = requireJS('common/storage/constants'),
-    GENKEY = requireJS('common/util/key'),
+    generateKey = requireJS('common/util/key'),
     UTIL = requireJS('common/storage/util'),
     HELPER = require('./storagehelpers'),
     ProjectInterface = requireJS('common/storage/project/interface');
@@ -74,7 +74,7 @@ function UserProject(dbProject, storage, mainLogger, gmeConfig) {
                 type: CONSTANTS.COMMIT_TYPE,
                 __v: CONSTANTS.VERSION
             },
-            commitHash = '#' + GENKEY(commitObj, gmeConfig);
+            commitHash = '#' + generateKey(commitObj, gmeConfig);
 
         commitObj[CONSTANTS.MONGO_ID] = commitHash;
 

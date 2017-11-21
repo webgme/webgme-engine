@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser:true*/
+/*eslint-env node, browser*/
 /**
  * Plugin for generating AddOns.
  *
@@ -11,8 +11,8 @@ define([
     'plugin/PluginBase',
     'text!./metadata.json',
     'common/util/ejs',
-    'plugin/AddOnGenerator/AddOnGenerator/Templates/Templates'
-], function (PluginBase, pluginMetadata, ejs, TEMPLATES) {
+    'text!./Templates/addOn.ejs'
+], function (PluginBase, pluginMetadata, ejs, TEMPLATE) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -55,7 +55,7 @@ define([
 
         // Add the addOn file.
         addOnFileName = self.addOnDir + self.currentConfig.addOnId + '.js';
-        self.filesToAdd[addOnFileName] = ejs.render(TEMPLATES['addOn.js.ejs'], self.currentConfig);
+        self.filesToAdd[addOnFileName] = ejs.render(TEMPLATE, self.currentConfig);
 
         self.logger.debug(JSON.stringify(self.filesToAdd, null, 4));
         artifact = self.blobClient.createArtifact('addOnFiles');

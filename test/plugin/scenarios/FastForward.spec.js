@@ -1,5 +1,5 @@
 /*globals*/
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -46,7 +46,7 @@ describe('FastForward test', function () {
                     testFixture.loadRootNodeFromCommit(project, core, commitHash),
                     project.createBranch('b1', commitHash),
                     project.createBranch('b2', commitHash)
-                    ]);
+                ]);
             })
             .then(function (res) {
                 var persisted;

@@ -1,5 +1,5 @@
 /*globals require*/
-/*jshint node:true, mocha:true, expr:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  */
@@ -418,7 +418,6 @@ describe('CoreTree', function () {
         it('should throw special error if commitHash is passed to loadRoot', function (done) {
             var core = coreTree,
                 root,
-                rootHash,
                 persisted,
                 threw = false;
 

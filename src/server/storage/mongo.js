@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true, newcap:false*/
+/*eslint-env node*/
 
 /**
  * @module Server:Storage:Mongo

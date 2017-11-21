@@ -1,4 +1,6 @@
-/*jshint node: true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * @module Bin:Diff
  * @author kecso / https://github.com/kecso
@@ -52,7 +54,7 @@ main = function (argv) {
     program
         .version('0.2.0')
         .option('-m, --mongo-database-uri [url]',
-        'URI of the MongoDB [by default we use the one from the configuration file]')
+            'URI of the MongoDB [by default we use the one from the configuration file]')
         .option('-u, --user [string]', 'the user of the command [if not given we use the default user]')
         .option('-p, --project-name [string]', 'project name [mandatory]')
         .option('-o, --owner [string]', 'the owner of the project [by default, the user is the owner]')

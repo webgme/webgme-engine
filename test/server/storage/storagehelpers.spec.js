@@ -1,5 +1,5 @@
 /*globals*/
-/*jshint node:true, newcap:false, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -9,14 +9,13 @@ var testFixture = require('../../_globals.js');
 describe('StorageHelpers', function () {
     'use strict';
     var expect,
-        logger,
         Q,
         storageHelpers,
         ProjectMock;
 
     before(function () {
         expect = testFixture.expect;
-        logger = testFixture.logger.fork('StorageHelpers');
+        //logger = testFixture.logger.fork('StorageHelpers');
         Q = testFixture.Q;
         storageHelpers = require('../../../src/server/storage/storagehelpers');
         ProjectMock = function (commits) {
@@ -338,7 +337,7 @@ describe('StorageHelpers', function () {
         });
 
         it('should start from 3 and 2 and stop at target', function (done) {
-            var heads = [chain[0],chain[1]];
+            var heads = [chain[0], chain[1]];
 
             storageHelpers.loadHistory(project, -1, '#1', heads)
                 .then(function (result) {

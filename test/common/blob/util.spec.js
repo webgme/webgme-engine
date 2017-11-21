@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true, expr:true*/
+/*eslint-env node, mocha*/
 
 /**
  * @author pmeijer / https://github.com/pmeijer
@@ -10,7 +10,7 @@ describe('Blob/Storage-util', function () {
     'use strict';
 
     var gmeConfig = testFixture.getGmeConfig(),
-        Q = testFixture.Q,
+        //Q = testFixture.Q,
         expect = testFixture.expect,
         logger = testFixture.logger.fork('ImportModels'),
         projectName = 'blobUtilTest',
@@ -63,12 +63,8 @@ describe('Blob/Storage-util', function () {
     });
 
     it('should export only project.json with no given hash-like assets', function (done) {
-        var root;
-
         core.loadRoot(rootHash)
-            .then(function (root_) {
-                root = root_;
-
+            .then(function () {
                 return storageUtil.getProjectJson(project, {commitHash: commitHash});
             })
             .then(function (projectJson) {
@@ -84,12 +80,8 @@ describe('Blob/Storage-util', function () {
     });
 
     it('should return original kind in getProjectJson', function (done) {
-        var root;
-
         core.loadRoot(rootHash)
-            .then(function (root_) {
-                root = root_;
-
+            .then(function () {
                 return storageUtil.getProjectJson(project, {commitHash: commitHash});
             })
             .then(function (projectJson) {
@@ -99,12 +91,8 @@ describe('Blob/Storage-util', function () {
     });
 
     it('should return given kind in getProjectJson', function (done) {
-        var root;
-
         core.loadRoot(rootHash)
-            .then(function (root_) {
-                root = root_;
-
+            .then(function () {
                 return storageUtil.getProjectJson(project, {commitHash: commitHash, kind: 'myKind'});
             })
             .then(function (projectJson) {
@@ -183,7 +171,7 @@ describe('Blob/Storage-util', function () {
         var root,
             loggedWarn = false,
             dummyLogger = {
-                debug: function() {},
+                debug: function () {},
                 info: function () {},
                 warn: function (a) {
                     if (a.indexOf('When building project package could not retrieve metadata') > -1) {

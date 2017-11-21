@@ -1,4 +1,6 @@
-/*jshint node: true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * NOTE: Expected to be run only under nodejs.
  *
@@ -17,8 +19,7 @@ var webgme = require('../../index'),
     main,
 
     path = require('path'),
-    gmeConfig = require(path.join(process.cwd(), 'config')),
-    webgme = require('../../index');
+    gmeConfig = require(path.join(process.cwd(), 'config'));
 
 webgme.addToRequireJsPaths(gmeConfig);
 
@@ -64,9 +65,9 @@ main = function (argv) {
                 if (username && email && password) {
                     auth.addUser(username, email, password, options.canCreate || false,
                         {overwrite: true, siteAdmin: options.siteAdmin || false})
-                            .then(mainDeferred.resolve)
-                            .catch(mainDeferred.reject)
-                            .finally(auth.unload);
+                        .then(mainDeferred.resolve)
+                        .catch(mainDeferred.reject)
+                        .finally(auth.unload);
                 } else {
                     mainDeferred.reject(new SyntaxError('username, email, and password parameters are required'));
                 }
@@ -227,8 +228,8 @@ main = function (argv) {
 
         setupGMEAuth(options.parent.db, function (/*err*/) {
             var projectAuthParams = {
-                    entityType: auth.authorizer.ENTITY_TYPES.PROJECT,
-                };
+                entityType: auth.authorizer.ENTITY_TYPES.PROJECT,
+            };
 
             if (options.deauthorize) {
                 // deauthorize

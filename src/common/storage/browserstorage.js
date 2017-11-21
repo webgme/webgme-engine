@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser:true*/
+/*eslint-env browser*/
 /**
  *
  * @author pmeijer / https://github.com/pmeijer
@@ -22,7 +22,7 @@ define([
         return storage;
     }
 
-    function getStorage (logger, gmeConfig, forceNew) {
+    function getStorage(logger, gmeConfig, forceNew) {
         logger.debug('getStorage');
 
         if (!_storage) {

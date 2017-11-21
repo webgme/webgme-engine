@@ -1,4 +1,5 @@
-/*jshint node:true*/
+/*eslint-env node*/
+
 /**
  * This serves the login.html in src/client/app without authentication at profile/login
  *
@@ -17,7 +18,7 @@ function initialize(middlewareOpts) {
 
     logger.info('initializing login router login-html:', LOGIN_HTML);
 
-    router.get('/login', function(req, res) {
+    router.get('/login', function (req, res) {
         res.contentType('text/html');
         res.sendFile(LOGIN_HTML);
     });

@@ -1,6 +1,5 @@
 /*globals require*/
-/*jshint node:true, mocha:true, expr:true*/
-/*jscs:disable maximumLineLength*/
+/*eslint-env node, mocha*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -211,98 +210,98 @@ describe('PLUGIN REST API', function () {
                 }
             );
 
-            it('should execute ConfigurationArtifact [pluginId, projectId, branchName] /api/plugin/ConfigurationArtifact/execute',
-                function (done) {
-                    var requestBody = {
-                        pluginId: 'ConfigurationArtifact',
-                        projectId: importResult.project.projectId,
-                        branchName: 'master'
-                    };
-                    this.timeout(4000);
-                    agent.post(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/execute')
-                        .send(requestBody)
-                        .end(function (err, res) {
-                            var resultId = res.body.resultId;
-                            expect(res.status).equal(200, err);
-                            expect(typeof resultId).to.equal('string');
+            it('should execute ConfigurationArtifact [pluginId, projectId, branchName]' +
+                ' /api/plugin/ConfigurationArtifact/execute', function (done) {
+                var requestBody = {
+                    pluginId: 'ConfigurationArtifact',
+                    projectId: importResult.project.projectId,
+                    branchName: 'master'
+                };
+                this.timeout(4000);
+                agent.post(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/execute')
+                    .send(requestBody)
+                    .end(function (err, res) {
+                        var resultId = res.body.resultId;
+                        expect(res.status).equal(200, err);
+                        expect(typeof resultId).to.equal('string');
 
-                            agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
-                                .end(function (err, res) {
-                                    var cnt = 0,
-                                        intervalId;
-                                    expect(res.status).equal(200, err);
-                                    expect(res.body).to.deep.equal({status: 'RUNNING'});
+                        agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                            .end(function (err, res) {
+                                var cnt = 0,
+                                    intervalId;
+                                expect(res.status).equal(200, err);
+                                expect(res.body).to.deep.equal({status: 'RUNNING'});
 
-                                    intervalId = setInterval(function () {
-                                        agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
-                                            .end(function (err, res) {
-                                                expect(res.status).equal(200, err);
-                                                if (res.body.status === 'FINISHED') {
-                                                    clearInterval(intervalId);
-                                                    expect(res.body.result).to.include.keys('commits', 'messages',
-                                                        'success'); //etc.
-                                                    expect(res.body.result.success).to.equal(true);
-                                                    agent.get(server.getUrl() +
-                                                        '/api/v1/plugin/ExportImport/results/' + resultId)
-                                                        .end(function (err, res) {
-                                                            expect(res.status).equal(404, err);
-                                                            done();
-                                                        });
-                                                } else if (res.body.status === 'RUNNING') {
-                                                    cnt += 1;
-                                                    if (cnt === 30) {
-                                                        clearInterval(intervalId);
-                                                        done(new Error('Plugin did not finish in time, ' +
-                                                            'increase limit'));
-                                                    }
-                                                } else {
-                                                    clearInterval(intervalId);
-                                                    done(new Error('Unexpected status', res.body.status));
-                                                }
-                                            });
-                                    }, 200);
-                                });
-                        });
-                }
-            );
-
-            it('should execute with ERROR status ConfigurationArtifact [pluginId] /api/plugin/ConfigurationArtifact/execute',
-                function (done) {
-                    var requestBody = {
-                        pluginId: 'ConfigurationArtifact'
-                    };
-                    agent.post(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/execute')
-                        .send(requestBody)
-                        .end(function (err, res) {
-                            var resultId = res.body.resultId;
-                            expect(res.status).equal(200, err);
-                            expect(typeof resultId).to.equal('string');
-
-                            agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
-                                .end(function (err, res) {
-                                    expect(res.status).equal(200, err);
-                                    expect(res.body).to.deep.equal({status: 'RUNNING'});
-                                    setTimeout(function () {
-                                        agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
-                                            .end(function (err, res) {
-                                                expect(res.status).equal(200, err);
-                                                expect(res.body.status).to.equal('ERROR');
+                                intervalId = setInterval(function () {
+                                    agent.get(server.getUrl() +
+                                        '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                                        .end(function (err, res) {
+                                            expect(res.status).equal(200, err);
+                                            if (res.body.status === 'FINISHED') {
+                                                clearInterval(intervalId);
                                                 expect(res.body.result).to.include.keys('commits', 'messages',
                                                     'success'); //etc.
-                                                expect(res.body.err).to.equal('Invalid argument, data.projectId is ' +
-                                                    'not a string.');
-                                                expect(res.body.result.success).to.equal(false);
-                                                agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                                                expect(res.body.result.success).to.equal(true);
+                                                agent.get(server.getUrl() +
+                                                    '/api/v1/plugin/ExportImport/results/' + resultId)
                                                     .end(function (err, res) {
                                                         expect(res.status).equal(404, err);
                                                         done();
                                                     });
-                                            });
-                                    }, 1000); // Wait 1 second.
-                                });
-                        });
-                }
-            );
+                                            } else if (res.body.status === 'RUNNING') {
+                                                cnt += 1;
+                                                if (cnt === 30) {
+                                                    clearInterval(intervalId);
+                                                    done(new Error('Plugin did not finish in time, ' +
+                                                        'increase limit'));
+                                                }
+                                            } else {
+                                                clearInterval(intervalId);
+                                                done(new Error('Unexpected status', res.body.status));
+                                            }
+                                        });
+                                }, 200);
+                            });
+                    });
+            });
+
+            it('should execute with ERROR status ConfigurationArtifact [pluginId] ' +
+                '/api/plugin/ConfigurationArtifact/execute', function (done) {
+                var requestBody = {
+                    pluginId: 'ConfigurationArtifact'
+                };
+                agent.post(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/execute')
+                    .send(requestBody)
+                    .end(function (err, res) {
+                        var resultId = res.body.resultId;
+                        expect(res.status).equal(200, err);
+                        expect(typeof resultId).to.equal('string');
+
+                        agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                            .end(function (err, res) {
+                                expect(res.status).equal(200, err);
+                                expect(res.body).to.deep.equal({status: 'RUNNING'});
+                                setTimeout(function () {
+                                    agent.get(server.getUrl() +
+                                        '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                                        .end(function (err, res) {
+                                            expect(res.status).equal(200, err);
+                                            expect(res.body.status).to.equal('ERROR');
+                                            expect(res.body.result).to.include.keys('commits', 'messages', 'success');
+                                            expect(res.body.err).to.equal('Invalid argument, data.projectId is ' +
+                                                'not a string.');
+                                            expect(res.body.result.success).to.equal(false);
+                                            agent.get(server.getUrl() +
+                                                '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                                                .end(function (err, res) {
+                                                    expect(res.status).equal(404, err);
+                                                    done();
+                                                });
+                                        });
+                                }, 1000); // Wait 1 second.
+                            });
+                    });
+            });
         });
 
         describe('allowServerExecution=true, serverResultTimeout=10000, auth enabled', function () {
@@ -389,60 +388,60 @@ describe('PLUGIN REST API', function () {
                 }
             );
 
-            it('should execute ExportImport [pluginId, projectId, branchName] /api/plugin/ConfigurationArtifact/execute',
-                function (done) {
-                    var requestBody = {
-                        pluginId: 'ConfigurationArtifact',
-                        projectId: importResult.project.projectId,
-                        branchName: 'master'
-                    };
-                    this.timeout(4000);
-                    agent.post(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/execute')
-                        .send(requestBody)
-                        .end(function (err, res) {
-                            var resultId = res.body.resultId;
-                            expect(res.status).equal(200, err);
-                            expect(typeof resultId).to.equal('string');
+            it('should execute ExportImport [pluginId, projectId, branchName]' +
+                ' /api/plugin/ConfigurationArtifact/execute', function (done) {
+                var requestBody = {
+                    pluginId: 'ConfigurationArtifact',
+                    projectId: importResult.project.projectId,
+                    branchName: 'master'
+                };
+                this.timeout(4000);
+                agent.post(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/execute')
+                    .send(requestBody)
+                    .end(function (err, res) {
+                        var resultId = res.body.resultId;
+                        expect(res.status).equal(200, err);
+                        expect(typeof resultId).to.equal('string');
 
-                            agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
-                                .end(function (err, res) {
-                                    var cnt = 0,
-                                        intervalId;
-                                    expect(res.status).equal(200, err);
-                                    expect(res.body).to.deep.equal({status: 'RUNNING'});
+                        agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                            .end(function (err, res) {
+                                var cnt = 0,
+                                    intervalId;
+                                expect(res.status).equal(200, err);
+                                expect(res.body).to.deep.equal({status: 'RUNNING'});
 
-                                    intervalId = setInterval(function () {
-                                        agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
-                                            .end(function (err, res) {
-                                                expect(res.status).equal(200, err);
-                                                if (res.body.status === 'FINISHED') {
+                                intervalId = setInterval(function () {
+                                    agent.get(server.getUrl() +
+                                        '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                                        .end(function (err, res) {
+                                            expect(res.status).equal(200, err);
+                                            if (res.body.status === 'FINISHED') {
+                                                clearInterval(intervalId);
+                                                expect(res.body.result).to.include.keys('commits', 'messages',
+                                                    'success'); //etc.
+                                                expect(res.body.result.success).to.equal(true);
+                                                agent.get(server.getUrl() +
+                                                    '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                                                    .end(function (err, res) {
+                                                        expect(res.status).equal(404, err);
+                                                        done();
+                                                    });
+                                            } else if (res.body.status === 'RUNNING') {
+                                                cnt += 1;
+                                                if (cnt === 30) {
                                                     clearInterval(intervalId);
-                                                    expect(res.body.result).to.include.keys('commits', 'messages',
-                                                        'success'); //etc.
-                                                    expect(res.body.result.success).to.equal(true);
-                                                    agent.get(server.getUrl() +
-                                                        '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
-                                                        .end(function (err, res) {
-                                                            expect(res.status).equal(404, err);
-                                                            done();
-                                                        });
-                                                } else if (res.body.status === 'RUNNING') {
-                                                    cnt += 1;
-                                                    if (cnt === 30) {
-                                                        clearInterval(intervalId);
-                                                        done(new Error('Plugin did not finish in time, ' +
-                                                            'increase limit'));
-                                                    }
-                                                } else {
-                                                    clearInterval(intervalId);
-                                                    done(new Error('Unexpected status', res.body.status));
+                                                    done(new Error('Plugin did not finish in time, ' +
+                                                        'increase limit'));
                                                 }
-                                            });
-                                    }, 200);
-                                });
-                        });
-                }
-            );
+                                            } else {
+                                                clearInterval(intervalId);
+                                                done(new Error('Unexpected status', res.body.status));
+                                            }
+                                        });
+                                }, 200);
+                            });
+                    });
+            });
 
             it('should execute with ERROR status ExportImport [pluginId] /api/plugin/ExportImport/execute',
                 function (done) {
@@ -470,7 +469,8 @@ describe('PLUGIN REST API', function () {
                                                 expect(res.body.err).to.equal('Invalid argument, data.projectId is ' +
                                                     'not a string.');
                                                 expect(res.body.result.success).to.equal(false);
-                                                agent.get(server.getUrl() + '/api/v1/plugin/ExportImport/results/' + resultId)
+                                                agent.get(server.getUrl() +
+                                                    '/api/v1/plugin/ExportImport/results/' + resultId)
                                                     .end(function (err, res) {
                                                         expect(res.status).equal(404, err);
                                                         done();
@@ -505,59 +505,57 @@ describe('PLUGIN REST API', function () {
             });
 
             it('should 404 when ExportImport [pluginId, projectId, branchName] /api/plugin/ExportImport/execute ' +
-                'and timeout passed /api/v1/plugin/ExportImport/results/%RESULT_ID%',
-                function (done) {
-                    var requestBody = {
-                        pluginId: 'ExportImport',
-                        projectId: importResult.project.projectId,
-                        pluginConfig: {
-                            type: 'Import'
-                        }
-                    };
-                    this.timeout(5000);
-                    agent.post(server.getUrl() + '/api/v1/plugin/ExportImport/execute')
-                        .send(requestBody)
-                        .end(function (err, res) {
-                            var resultId = res.body.resultId,
-                                cnt = 0,
-                                intervalId;
+                'and timeout passed /api/v1/plugin/ExportImport/results/%RESULT_ID%', function (done) {
+                var requestBody = {
+                    pluginId: 'ExportImport',
+                    projectId: importResult.project.projectId,
+                    pluginConfig: {
+                        type: 'Import'
+                    }
+                };
+                this.timeout(5000);
+                agent.post(server.getUrl() + '/api/v1/plugin/ExportImport/execute')
+                    .send(requestBody)
+                    .end(function (err, res) {
+                        var resultId = res.body.resultId,
+                            cnt = 0,
+                            intervalId;
 
-                            expect(res.status).equal(200, err);
-                            expect(typeof resultId).to.equal('string');
+                        expect(res.status).equal(200, err);
+                        expect(typeof resultId).to.equal('string');
 
-                            intervalId = setInterval(function () {
-                                agent.get(server.getUrl() + '/api/v1/plugin/ExportImport/results/' + resultId)
-                                    .end(function (err, res) {
-                                        expect(res.status).equal(200, err);
+                        intervalId = setInterval(function () {
+                            agent.get(server.getUrl() + '/api/v1/plugin/ExportImport/results/' + resultId)
+                                .end(function (err, res) {
+                                    expect(res.status).equal(200, err);
 
-                                        if (res.status === 200) {
-                                            if (res.body.status === 'RUNNING') {
-                                                cnt += 1;
-                                                if (cnt === 30) {
-                                                    clearInterval(intervalId);
-                                                    done(new Error('Plugin did not finish in time, ' +
-                                                        'increase limit'));
-                                                }
-                                            } else {
+                                    if (res.status === 200) {
+                                        if (res.body.status === 'RUNNING') {
+                                            cnt += 1;
+                                            if (cnt === 30) {
                                                 clearInterval(intervalId);
-                                                setTimeout(function () {
-                                                    agent.get(server.getUrl() + '/api/v1/plugin/ExportImport/results/' +
-                                                        resultId)
-                                                        .end(function (err, res) {
-                                                            expect(res.status).equal(404, err);
-                                                            done();
-                                                        });
-                                                }, 1000);
+                                                done(new Error('Plugin did not finish in time, ' +
+                                                    'increase limit'));
                                             }
                                         } else {
                                             clearInterval(intervalId);
-                                            done(new Error('404 before finished'));
+                                            setTimeout(function () {
+                                                agent.get(server.getUrl() + '/api/v1/plugin/ExportImport/results/' +
+                                                    resultId)
+                                                    .end(function (err, res) {
+                                                        expect(res.status).equal(404, err);
+                                                        done();
+                                                    });
+                                            }, 1000);
                                         }
-                                    });
-                            }, 100);
-                        });
-                }
-            );
+                                    } else {
+                                        clearInterval(intervalId);
+                                        done(new Error('404 before finished'));
+                                    }
+                                });
+                        }, 100);
+                    });
+            });
         });
     });
 });

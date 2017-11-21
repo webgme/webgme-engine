@@ -1,4 +1,6 @@
 /*globals define*/
+/*eslint-env node, browser*/
+
 /**
  * @author pmeijer / https://github.com/pmeijer
  */

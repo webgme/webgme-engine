@@ -1,6 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser:true, camelcase: false*/
-/*jscs:disable validateIndentation*/
+/*eslint-disable*/
 /**
  * Overwrite this file with a generated one or add your own constraints manually.
  *

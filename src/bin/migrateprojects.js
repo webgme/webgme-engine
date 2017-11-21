@@ -1,4 +1,5 @@
-/*jshint node: true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -27,7 +28,7 @@ main = function (argv, callback) {
         db;
 
     callback = callback || function () {
-        };
+    };
 
     webgme.addToRequireJsPaths(gmeConfig);
     StorageUtil = webgme.requirejs('common/storage/util');
@@ -138,8 +139,8 @@ main = function (argv, callback) {
                         if (projectDetail.owner === null) {
                             projectDetail.owner = gmeConfig.authentication.guestAccount;
                             logger.warn(projectDetail.collectionName +
-                                        ' Project was owned nobody, assigning it to guest account: ' +
-                                        projectDetail.owner);
+                                ' Project was owned nobody, assigning it to guest account: ' +
+                                projectDetail.owner);
                         }
 
                         upgradeInfo.push(projectDetail);
@@ -173,7 +174,8 @@ main = function (argv, callback) {
                         if (user.projects.hasOwnProperty(info.collectionName)) {
                             logger.info('Authorizing ' + user._id + ' for ' + newProjectId);
 
-                            authorizePromise = gmeAuth.authorizeByUserId(user._id, newProjectId, 'create', user.projects[info.collectionName])
+                            authorizePromise = gmeAuth.authorizeByUserId(user._id, newProjectId, 'create',
+                                user.projects[info.collectionName])
                                 .then(function () {
                                     return gmeAuth.authorizeByUserId(user._id, info.collectionName, 'delete');
                                 });

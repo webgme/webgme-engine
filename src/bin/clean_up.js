@@ -1,4 +1,5 @@
-/*jshint node: true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
 
 /**
  * @author pmeijer / https://github.com/pmeijer
@@ -30,7 +31,7 @@ function cleanUp(options) {
         storage;
 
     webgme.addToRequireJsPaths(gmeConfig);
-    logger = new webgme.Logger.create('clean_up', gmeConfig.bin.log, false);
+    logger = webgme.Logger.create('clean_up', gmeConfig.bin.log, false);
 
     options = options || {};
     params.username = options.username || gmeConfig.authentication.guestAccount;

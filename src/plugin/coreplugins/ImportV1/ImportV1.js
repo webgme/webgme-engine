@@ -1,5 +1,5 @@
-/*globals define*/
-/*jshint node:true, browser:true*/
+/*globals define, Uint8Array*/
+/*eslint-env node, browser*/
 
 /**
  * This plugin can be used for importing projects from webgme v1.x.
@@ -151,7 +151,7 @@ define([
     };
 
     ImportV1.prototype.getLibObjectAndUploadAssets = function (currentConfig, callback) {
-        var deferred = new Q.defer(),
+        var deferred = Q.defer(),
             self = this;
         if (!currentConfig.file) {
             self.result.setError('Add at least the project json file when importing or updating.');

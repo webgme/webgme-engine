@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true, expr:true*/
+/*eslint-env node, mocha*/
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -10,7 +10,7 @@ describe('issue110 testing', function () {
     var gmeConfig = testFixture.getGmeConfig(),
         Q = testFixture.Q,
         expect = testFixture.expect,
-        should = testFixture.should,
+        __should = testFixture.should, //eslint-disable-line
         logger = testFixture.logger.fork('issue110.spec'),
         storage = null,
 

@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * This class defines the public API of the WebGME-Core
@@ -13,7 +13,8 @@
  */
 
 /**
- * @typedef {object} DataObject - Inner data of {@link module:Core~Node} that can be serialized and saved in the storage.
+ * @typedef {object} DataObject - Inner data of {@link module:Core~Node} that can be serialized
+ * and saved in the storage.
  */
 
 /**
@@ -1166,8 +1167,9 @@ define([
          * Collects the data hash values of the children of the node.
          * @param {module:Core~Node} node - the node in question.
          *
-         * @return {Object<string, module:Core~ObjectHash>} The function returns a dictionary of {@link module:Core~ObjectHash} that stored in pair
-         * with the relative id of the corresponding child of the node.
+         * @return {Object<string, module:Core~ObjectHash>} The function returns a dictionary of
+         * {@link module:Core~ObjectHash} that stored in pair with the relative id of the corresponding
+         * child of the node.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -2359,7 +2361,8 @@ define([
          * Returns the list of the META defined pointer names of the node.
          * @param {module:Core~Node} node - the node in question.
          *
-         * @return {string[]} The function returns all the pointer names that are defined among the META rules of the node.
+         * @return {string[]} The function returns all the pointer names that are defined among the META rules
+         * of the node.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -2374,7 +2377,8 @@ define([
          * Returns the list of the META defined pointer names of the node that were specifically defined for the node.
          * @param {module:Core~Node} node - the node in question.
          *
-         * @return {string[]} The function returns all the pointer names that are defined among the META rules of the node.
+         * @return {string[]} The function returns all the pointer names that are defined among the META
+         * rules of the node.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -3198,8 +3202,8 @@ define([
          * @param {bool} - [parameters.multiplicity] - if true, the query tries to filter out even more nodes according
          * to the multiplicity rules (the default value is false, the check is only meaningful if all the children were
          * passed)
-         * @param {string|null} - [parameters.aspect] - if given, the query filters to contain only types that are visible
-         * in the given aspect.
+         * @param {string|null} - [parameters.aspect] - if given, the query filters to contain only types that are
+         * visible in the given aspect.
          * @return {module:Core~Node[]} The function returns a list of valid nodes that can be instantiated as a
          * child of the node.
          *
@@ -3269,8 +3273,9 @@ define([
          * Returns all META nodes.
          * @param {module:Core~Node} node - any node of the containment hierarchy.
          *
-         * @return {Object<string, module:Core~Node>} The function returns a dictionary. The keys of the dictionary are the absolute paths of
-         * the META nodes of the project. Every value of the dictionary is a {@link module:Core~Node}.
+         * @return {Object<string, module:Core~Node>} The function returns a dictionary. The keys of the dictionary
+         * are the absolute paths of the META nodes of the project. Every value of the dictionary
+         * is a {@link module:Core~Node}.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -3680,8 +3685,8 @@ define([
          * Returns the origin GUID of any library node. (If name is not provided the returned GUID will be the same
          * across all projects where the library node is contained - regardless of library hierarchy.)
          * @param {module:Core~Node} node - the node in question.
-         * @param {undefined | string} [name] - name of the library where we want to compute the GUID from. If not given,
-         * then the GUID is computed from the direct library root of the node.
+         * @param {undefined | string} [name] - name of the library where we want to compute the GUID from.
+         * If not given, then the GUID is computed from the direct library root of the node.
          *
          * @return {module:Core~GUID | Error} - Returns the origin GUID of the node or
          * error if the query cannot be fulfilled.

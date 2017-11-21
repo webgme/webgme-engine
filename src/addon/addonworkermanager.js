@@ -1,5 +1,6 @@
 /*globals requireJS*/
-/*jshint node: true*/
+/*eslint-env node*/
+
 /**
  * TODO: This is more or less copied from serverworkermanager...
  * TODO: It can be simplified and merged with AddOnEventPropagator..
@@ -12,7 +13,7 @@ var Child = require('child_process'),
     Q = require('q'),
     path = require('path'),
     CONSTANTS = require('../server/worker/constants'),
-    GUID = requireJS('common/util/guid'),
+    genGuid = requireJS('common/util/guid'),
     CONNECTED_WORKER_JS = path.join(__dirname, 'connectedworker.js');
 
 
@@ -236,7 +237,7 @@ function AddOnWorkerManager(_parameters) {
         if (self.connectedWorkerRequests.length > 0 && self.connectedWorkerId !== null &&
             _workers[self.connectedWorkerId].state === CONSTANTS.workerStates.waiting) {
 
-            guid = GUID();
+            guid = genGuid();
             connectedRequest = self.connectedWorkerRequests.shift();
             _workers[self.connectedWorkerId].state = CONSTANTS.workerStates.waiting;
             self.connectedWorkerCallbacks[guid] = connectedRequest.cb;

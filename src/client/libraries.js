@@ -1,5 +1,6 @@
 /*globals define, console*/
-/*jshint browser: true*/
+/*eslint-env browser*/
+
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -37,6 +38,7 @@ define(['common/Constants'], function (CONSTANTS) {
 
         function openLibraryOriginInNewWindow(libraryRootId, followBranch) {
             // FIXME: This does not belong here (the client knows nothing about the URL serialization..
+            //eslint-disable-next-line no-console
             console.warn('client.openLibraryOriginInNewWindow is deprecated use ' +
                 'src/client/Utils/LibraryManager.js instead.');
             var address,

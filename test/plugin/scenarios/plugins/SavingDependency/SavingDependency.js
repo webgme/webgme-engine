@@ -1,9 +1,7 @@
 /*globals define*/
-/*jshint node:true, browser:true*/
+/*eslint-env node, browser*/
 
-if (typeof define === 'undefined') {
-
-} else {
+if (typeof define !== 'undefined') {
     define([
         'plugin/PluginConfig',
         'plugin/PluginBase',

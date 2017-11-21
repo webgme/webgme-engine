@@ -1,9 +1,12 @@
-/*jshint node: true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * @module Bin:Export
  * @author kecso / https://github.com/kecso
  * @author brollb / https://github.com/brollb
  */
+
 'use strict';
 var webgme = require('../../index'),
     FS = require('fs'),

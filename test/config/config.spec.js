@@ -1,4 +1,4 @@
-/*jshint node: true, mocha: true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  * @author pmeijer / https://github.com/pmeijer
@@ -77,11 +77,10 @@ describe('configuration and components', function () {
     });
 
     it('should throw if configuration is malformed', function () {
-        var config;
         process.env.NODE_ENV = 'malformed';
 
         (function () {
-            config = require('../../config');
+            require('../../config');
         }).should.throw(Error);
     });
 
@@ -122,7 +121,7 @@ describe('configuration and components', function () {
             config.storage.disableHashChecks = true;
             config.storage.requireHashesToMatch = true;
             validateConfig(config);
-           throw new Error('Did not throw');
+            throw new Error('Did not throw');
         } catch (err) {
             expect(err.message).to.equal('Cannot set config.storage.disableHashChecks and requireHashesToMatch ' +
                 'to true at the same time!');

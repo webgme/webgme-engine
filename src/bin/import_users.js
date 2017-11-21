@@ -1,17 +1,19 @@
-/*jshint node: true */
+/*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * @author lattmann / https://github.com/lattmann
  */
 'use strict';
 
-var MongoURI = require('mongo-uri'),
+var //MongoURI = require('mongo-uri'),
     main;
 
 main = function (argv) {
     var program = require('commander'),
         //userManager = require('./usermanager'),
         args = Array.prototype.slice.call(argv),
-        uri,
+        //uri,
         users,
         user,
         projectName,
@@ -36,7 +38,7 @@ main = function (argv) {
         console.error('db is mandatory');
         program.help();
     }
-    uri = MongoURI.parse(program.db);
+    //uri = MongoURI.parse(program.db);
 
     if (!program.input) {
         console.error('input filename is mandatory');

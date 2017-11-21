@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true, expr:true*/
+/*eslint-env node, mocha*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -45,7 +45,7 @@ describe('set core', function () {
             })
             .then(function (dbProject) {
                 var project = new testFixture.Project(dbProject, storage, logger, gmeConfig);
-                core = new testFixture.WebGME.core(project, {
+                core = new testFixture.WebGME.Core(project, {
                     globConf: gmeConfig,
                     logger: testFixture.logger.fork('meta-core:core')
                 });

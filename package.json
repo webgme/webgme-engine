@@ -24,7 +24,8 @@
     "pluginHook": "node ./src/bin/plugin_hook.js",
     "users": "node ./src/bin/usermanager.js",
     "clean_up": "node ./src/bin/clean_up.js",
-    "stats": "node ./src/bin/storage_stats.js"
+    "stats": "node ./src/bin/storage_stats.js",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -84,14 +85,11 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "dynalite": "^1.2.0",
+    "eslint": "^4.11.0",
     "esprima": "^4.0.0",
     "http-proxy": "^1.16.2",
     "istanbul": "^0.4.5",
     "jscoverage": "^0.6.0",
-    "jscs": "^3.0.7",
-    "jshint": "^2.9.5",
-    "jshint-stylish": "^2.2.1",
     "karma": "^1.7.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
@@ -104,7 +102,6 @@
     "karma-safari-launcher": "^1.0.0",
     "mocha": "^3.4.1",
     "msgpack-js": "^0.3.0",
-    "node-neo4j": "^2.0.3",
     "pkginfo": "^0.4.1",
     "rimraf": "^2.6.2",
     "ssl-root-cas": "^1.2.4",

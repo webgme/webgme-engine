@@ -1,5 +1,5 @@
 /*globals requirejs, define*/
-/*jshint node:true, newcap:false, browser: true*/
+/*eslint-env node, browser*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -126,8 +126,11 @@ define([
                     self.runPluginMain(plugin, callback);
                 })
                 .catch(function (err) {
-                    var pluginResult = self.getPluginErrorResult(pluginId, pluginId, 'Exception was raised, err: ' + err.stack,
+                    var pluginResult = self.getPluginErrorResult(pluginId,
+                        pluginId,
+                        'Exception was raised, err: ' + err.stack,
                         plugin && plugin.projectId);
+
                     self.logger.error(err.stack);
                     callback(err.message, pluginResult);
                 });

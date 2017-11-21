@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * STRING CONSTANT DEFINITIONS USED IN BOTH CLIENT AND SERVER JAVASCRIPT

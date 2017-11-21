@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser: true*/
+/*eslint-env node, browser*/
 /**
  * @author lattmann / https://github.com/lattmann
  */
@@ -10,7 +10,7 @@ define([
     'q',
     'common/regexp',
     'common/util/key'
-], function (CONSTANTS, jsonPatcher, Q, REGEXP, GENKEY) {
+], function (CONSTANTS, jsonPatcher, Q, REGEXP, generateKey) {
     'use strict';
 
     function _getRootHash(project, parameters) {
@@ -140,7 +140,7 @@ define([
                                 }
 
                                 //checking if the node has a sharded overlay, we do not load the shards, yet
-                                if(object.ovr && object.ovr.sharded === true){
+                                if (object.ovr && object.ovr.sharded === true) {
                                     for (key in object.ovr) {
                                         if (typeof object.ovr[key] === 'string' &&
                                             REGEXP.HASH.test(object.ovr[key])) {
@@ -222,7 +222,7 @@ define([
                 result = true;
             } else {
                 dataObj[CONSTANTS.MONGO_ID] = '';
-                result = hash === '#' + GENKEY(dataObj, gmeConfig);
+                result = hash === '#' + generateKey(dataObj, gmeConfig);
             }
 
             return result;

@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -63,7 +63,7 @@ describe('Saving dependency plugin', function () {
                     project.createBranch('b4', commitHash),
                     project.createBranch('b5', commitHash),
                     project.createBranch('b6', commitHash)
-                    ]);
+                ]);
             })
             .nodeify(done);
     });

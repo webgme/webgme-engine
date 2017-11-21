@@ -1,4 +1,5 @@
-/*jshint node:true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
 
 /**
  * @module Server.SimpleWorker
@@ -135,13 +136,13 @@ process.on('message', function (parameters) {
         });
     } else if (parameters.command === CONSTANTS.workerCommands.exportProjectToFile) {
         wr.exportProjectToFile(parameters.webgmeToken, parameters, function (err, result) {
-                safeSend({
-                    pid: process.pid,
-                    type: CONSTANTS.msgTypes.result,
-                    error: err ? err.message : null,
-                    result: result
-                });
-            }
+            safeSend({
+                pid: process.pid,
+                type: CONSTANTS.msgTypes.result,
+                error: err ? err.message : null,
+                result: result
+            });
+        }
         );
     } else if (parameters.command === CONSTANTS.workerCommands.importProjectFromFile) {
         wr.importProjectFromFile(parameters.webgmeToken, parameters,
@@ -185,73 +186,73 @@ process.on('message', function (parameters) {
             });
     } else if (parameters.command === CONSTANTS.workerCommands.exportSelectionToFile) {
         wr.exportSelectionToFile(parameters.webgmeToken, parameters, function (err, result) {
-                safeSend({
-                    pid: process.pid,
-                    type: CONSTANTS.msgTypes.result,
-                    error: err ? err.message : null,
-                    result: result
-                });
-            }
+            safeSend({
+                pid: process.pid,
+                type: CONSTANTS.msgTypes.result,
+                error: err ? err.message : null,
+                result: result
+            });
+        }
         );
     } else if (parameters.command === CONSTANTS.workerCommands.importSelectionFromFile) {
         wr.importSelectionFromFile(parameters.webgmeToken, parameters, function (err, result) {
-                safeSend({
-                    pid: process.pid,
-                    type: CONSTANTS.msgTypes.result,
-                    error: err ? err.message : null,
-                    result: result
-                });
-            }
+            safeSend({
+                pid: process.pid,
+                type: CONSTANTS.msgTypes.result,
+                error: err ? err.message : null,
+                result: result
+            });
+        }
         );
     } else if (parameters.command === CONSTANTS.workerCommands.renameConcept) {
         wr.renameConcept(parameters.webgmeToken, parameters, function (err, result) {
-                safeSend({
-                    pid: process.pid,
-                    type: CONSTANTS.msgTypes.result,
-                    error: err ? err.message : null,
-                    result: result
-                });
-            }
+            safeSend({
+                pid: process.pid,
+                type: CONSTANTS.msgTypes.result,
+                error: err ? err.message : null,
+                result: result
+            });
+        }
         );
     } else if (parameters.command === CONSTANTS.workerCommands.changeAttributeMeta) {
         wr.changeAttributeMeta(parameters.webgmeToken, parameters, function (err, result) {
-                safeSend({
-                    pid: process.pid,
-                    type: CONSTANTS.msgTypes.result,
-                    error: err ? err.message : null,
-                    result: result
-                });
-            }
+            safeSend({
+                pid: process.pid,
+                type: CONSTANTS.msgTypes.result,
+                error: err ? err.message : null,
+                result: result
+            });
+        }
         );
     } else if (parameters.command === CONSTANTS.workerCommands.renameMetaPointerTarget) {
         wr.renameMetaPointerTarget(parameters.webgmeToken, parameters, function (err, result) {
-                safeSend({
-                    pid: process.pid,
-                    type: CONSTANTS.msgTypes.result,
-                    error: err ? err.message : null,
-                    result: result
-                });
-            }
+            safeSend({
+                pid: process.pid,
+                type: CONSTANTS.msgTypes.result,
+                error: err ? err.message : null,
+                result: result
+            });
+        }
         );
     } else if (parameters.command === CONSTANTS.workerCommands.changeAspectMeta) {
         wr.changeAspectMeta(parameters.webgmeToken, parameters, function (err, result) {
-                safeSend({
-                    pid: process.pid,
-                    type: CONSTANTS.msgTypes.result,
-                    error: err ? err.message : null,
-                    result: result
-                });
-            }
+            safeSend({
+                pid: process.pid,
+                type: CONSTANTS.msgTypes.result,
+                error: err ? err.message : null,
+                result: result
+            });
+        }
         );
     } else if (parameters.command === CONSTANTS.workerCommands.removeMetaRule) {
         wr.removeMetaRule(parameters.webgmeToken, parameters, function (err, result) {
-                safeSend({
-                    pid: process.pid,
-                    type: CONSTANTS.msgTypes.result,
-                    error: err ? err.message : null,
-                    result: result
-                });
-            }
+            safeSend({
+                pid: process.pid,
+                type: CONSTANTS.msgTypes.result,
+                error: err ? err.message : null,
+                result: result
+            });
+        }
         );
     } else {
         safeSend({

@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -62,8 +62,8 @@ define([
                 keys = self.getRawKeys(setInfo, self.isValidRelid);
                 for (i = 0; i < keys.length; i += 1) {
                     if (innerCore.getPointerPathFrom(node,
-                            '/' + CONSTANTS.ALL_SETS_PROPERTY + '/' + setName + '/' + keys[i],
-                            CONSTANTS.MEMBER_RELATION) === memberPath) {
+                        '/' + CONSTANTS.ALL_SETS_PROPERTY + '/' + setName + '/' + keys[i],
+                        CONSTANTS.MEMBER_RELATION) === memberPath) {
 
                         return keys[i];
                     }

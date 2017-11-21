@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true, newcap:false*/
+/*eslint-env node*/
 
 /**
  * @module Server:GMEAuth
@@ -12,7 +12,7 @@
 var Mongodb = require('mongodb'),
     Q = require('q'),
     fs = require('fs'),
-//bcrypt = require('bcrypt'), include bcrypt and uncomment this line for faster encryption/decryption.
+    //bcrypt = require('bcrypt'), include bcrypt and uncomment this line for faster encryption/decryption.
     bcrypt = require('bcryptjs'),
     jwt = require('jsonwebtoken'),
     MetadataStorage = require('../../storage/metadatastorage'),
@@ -26,7 +26,18 @@ var Mongodb = require('mongodb'),
  *
  * @param session
  * @param gmeConfig
- * @returns {{unload: unload, connect: connect, addUser: addUser, updateUser: updateUser, updateUserDataField: updateUserDataField, updateUserSettings: updateUserSettings, updateUserComponentSettings: updateUserComponentSettings, deleteUser: deleteUser, getUser: getUser, listUsers: listUsers, addOrganization: addOrganization, getOrganization: getOrganization, listOrganizations: listOrganizations, removeOrganizationByOrgId: removeOrganizationByOrgId, addUserToOrganization: addUserToOrganization, removeUserFromOrganization: removeUserFromOrganization, setAdminForUserInOrganization: setAdminForUserInOrganization, getAdminsInOrganization: getAdminsInOrganization, authenticateUser: authenticateUser, generateJWToken: generateJWToken, generateJWTokenForAuthenticatedUser: generateJWTokenForAuthenticatedUser, regenerateJWToken: regenerateJWToken, verifyJWToken: verifyJWToken, metadataStorage: MetadataStorage, authorizer: *, CONSTANTS: {USER: string, ORGANIZATION: string}}}
+ * @returns {{unload: unload, connect: connect, addUser: addUser, updateUser: updateUser,
+ * updateUserDataField: updateUserDataField, updateUserSettings: updateUserSettings,
+ * updateUserComponentSettings: updateUserComponentSettings, deleteUser: deleteUser,
+ * getUser: getUser, listUsers: listUsers, addOrganization: addOrganization,
+ * getOrganization: getOrganization, listOrganizations: listOrganizations,
+ * removeOrganizationByOrgId: removeOrganizationByOrgId, addUserToOrganization: addUserToOrganization,
+ * removeUserFromOrganization: removeUserFromOrganization,
+ * setAdminForUserInOrganization: setAdminForUserInOrganization,
+ * getAdminsInOrganization: getAdminsInOrganization, authenticateUser: authenticateUser,
+ * generateJWToken: generateJWToken, generateJWTokenForAuthenticatedUser: generateJWTokenForAuthenticatedUser,
+ * regenerateJWToken: regenerateJWToken, verifyJWToken: verifyJWToken, metadataStorage: MetadataStorage, authorizer: *,
+ * CONSTANTS: {USER: string, ORGANIZATION: string}}}
  * @constructor
  */
 function GMEAuth(session, gmeConfig) {
@@ -43,7 +54,7 @@ function GMEAuth(session, gmeConfig) {
         tokenGenerator = new TokenGenerator(logger, gmeConfig, jwt),
         Authorizer = require(gmeConfig.authentication.authorizer.path),
         authorizer = new Authorizer(logger, gmeConfig),
-    // JWT Keys
+        // JWT Keys
         PUBLIC_KEY;
 
     EventDispatcher.call(this);

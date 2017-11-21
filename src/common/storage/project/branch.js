@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -107,7 +107,8 @@ define(['common/storage/constants'], function (CONSTANTS) {
             }
 
             if (!mergeCommit) {
-                logger.error('mergeCommit not available in updateQueue', mergeHash, JSON.stringify(updateQueue, null, 2));
+                logger.error('mergeCommit not available in updateQueue', mergeHash,
+                    JSON.stringify(updateQueue, null, 2));
             }
 
             updateQueue = [];

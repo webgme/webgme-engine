@@ -1,5 +1,6 @@
-/*globals define, document, console, window, GME, docReady, setTimeout*/
-/*jshint browser:true, evil:true*/
+/*globals define, GME*/
+/*eslint-env browser*/
+/*eslint no-console: 0*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -18,8 +19,7 @@ define('webgme.classes', [
     'client/logger',
     'superagent',
     'q',
-    'chance',
-    'teststorage/teststorage'
+    'chance'
 ], function (Client,
              BlobClient,
              ExecutorClient,
@@ -28,8 +28,7 @@ define('webgme.classes', [
              logger,
              superagent,
              Q,
-             chance,
-             TestStorage) {
+             chance) {
 
     'use strict';
     // Setting global classes
@@ -44,9 +43,6 @@ define('webgme.classes', [
     GME.utils.superagent = superagent;
     GME.utils.Q = Q;
     GME.utils.chance = chance;
-
-    // TODO: Can this be removed?
-    GME.classes.TestStorage = TestStorage;
 
     // Pure JavaScript equivalent to jQuery's $.ready() from https://github.com/jfriend00/docReady
 
@@ -142,6 +138,7 @@ define('webgme.classes', [
     };
 
     if (document.readyState === 'loading') {
+        // eslint-disable-next-line
         docReady(function () {
             somethingFinishedLoading();
         });

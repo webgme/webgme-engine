@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser: true*/
+/*eslint-env node, browser*/
 /**
  * Helper functions used by plugins and plugin-managers.
  * @author pmeijer / https://github.com/pmeijer

@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  */
@@ -513,60 +513,6 @@ describe('storage socketio websocket', function () {
     });
 
     // Branch events
-    // These tests use an additional client that makes the changes.
-    it.skip('should trigger BRANCH_UPDATED when watching branch', function (done) {
-        var branchName = 'branchUpdateBranch',
-            projectId = projectName2Id(projectName),
-        // Variables for 2nd connected client.
-            connected2 = false,
-            agent2 = superagent.agent(),
-            storage2,
-            webSocket2;
-
-        function whenConnected() {
-            var eventName = webSocket.getBranchUpdateEventName(projectId, branchName);
-
-            webSocket.addEventListener(eventName, function (ws, eData) {
-                expect(eData).to.include.keys('etype', 'projectId', 'branchName', 'oldHash', 'newHash');
-                expect(eData.etype).to.equal(STORAGE_CONSTANTS.BRANCH_HASH_UPDATED);
-                expect(eData.projectId).to.equal(createData.projectId);
-                expect(eData.branchName).to.equal(branchName);
-                expect(eData.oldHash).to.equal(originalHash);
-                expect(eData.newHash).to.equal(commitHash1);
-
-                webSocket.removeEventListener(eventName, this);
-                Q.nfcall(webSocket.watchProject, {projectId: createData.projectId, join: false})
-                    .then(function () {
-                        return Q.nfcall(webSocket.setBranchHash, deleteData);
-                    })
-                    .then(function (result) {
-                        expect(result.status).to.equal('SYNCED');
-                    })
-                    .nodeify(done);
-            });
-        }
-
-        openSocketIo(server, agent2, guestAccount, guestAccount)
-            .then(function (result) {
-                storage2 = NodeStorage.createStorage(null,
-                    result.webgmeToken,
-                    logger,
-                    gmeConfig);
-                storage2.open(function (networkState) {
-                    if (connected2) {
-                        return;
-                    }
-                    if (networkState === STORAGE_CONSTANTS.CONNECTED) {
-                        webSocket2 = storage.webSocket;
-                        connected2 = true;
-                        whenConnected();
-                    } else {
-                        throw new Error('Unexpected network state: ' + networkState);
-                    }
-                });
-            })
-            .catch(done);
-    });
 
     // TODO: EVENTS
     // TODO: BRANCH_UPDATED

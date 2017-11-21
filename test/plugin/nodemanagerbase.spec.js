@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -18,7 +18,6 @@ describe('climanager', function () {
         project,
         projectName = 'cliManagerProject',
         branchName = 'master',
-        projectId = testFixture.projectName2Id(projectName),
         commitHash,
 
         libContext = {
@@ -101,7 +100,8 @@ describe('climanager', function () {
                 throw new Error('Should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.include('Tried loading "plugin/PluginDoesNotExist/PluginDoesNotExist/PluginDoesNotExist"');
+                expect(err.message)
+                    .to.include('Tried loading "plugin/PluginDoesNotExist/PluginDoesNotExist/PluginDoesNotExist"');
             })
             .nodeify(done);
     });

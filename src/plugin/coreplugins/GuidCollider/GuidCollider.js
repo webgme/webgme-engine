@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser:true*/
+/*eslint-env node, browser*/
 
 /**
  * Plugin mainly used for testing.
@@ -85,7 +85,7 @@ define([
                     return {};
                 }
             })
-            .then(function (status) {
+            .then(function (/*status*/) {
                 self.result.setSuccess(true);
             })
             .catch(function (err) {

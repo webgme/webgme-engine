@@ -1,5 +1,6 @@
 /*globals define, console*/
-/*jshint browser: true*/
+/*eslint-env browser*/
+
 /**
  * @author kecso / https://github.com/kecso
  * @author pmeijer / https://github.com/pmeijer
@@ -13,6 +14,7 @@ define([], function () {
             var typeToUse = isGetter ? 'gmeNode.' : 'gmeClient.',
                 commentStr = comment ? comment : '';
 
+            //eslint-disable-next-line no-console
             console.warn('"gmeClient.' + oldFn + '" is deprecated and will eventually be removed, use "' +
                 typeToUse + newFn + '" instead.' + commentStr);
         }
@@ -361,7 +363,8 @@ define([], function () {
 
                 storeNode(newNode);
                 newID = state.core.getPath(newNode);
-                saveRoot(typeof msg === 'string' ? msg : 'createNode(' + parameters.parentId + ',' + parameters.baseId + ',' + newID + ')');
+                saveRoot(typeof msg === 'string' ? msg :
+                    'createNode(' + parameters.parentId + ',' + parameters.baseId + ',' + newID + ')');
             }
 
             return newID;
@@ -421,7 +424,7 @@ define([], function () {
             if (node) {
                 state.core.setMemberAttribute(node, setId, memberPath, name, value);
                 saveRoot(typeof msg === 'string' ?
-                    msg : 'setMemberAttribute(' + path + ',' + memberPath + ',' + setId + ',' + name + ',' + value + ')');
+                    msg : 'setMemberAttribute(' + [path, memberPath, setId, name, value].join(',') + ')');
             }
         }
 
@@ -432,7 +435,7 @@ define([], function () {
             if (node) {
                 state.core.delMemberAttribute(node, setId, memberPath, name);
                 saveRoot(typeof msg === 'string' ?
-                    msg : 'delMemberAttribute(' + path + ',' + memberPath + ',' + setId + ',' + name + ')');
+                    msg : 'delMemberAttribute(' + [path, memberPath, setId, name].join(',') + ')');
             }
         }
 
@@ -488,7 +491,7 @@ define([], function () {
             if (node) {
                 state.core.setSetRegistry(node, setName, regName, regValue);
                 saveRoot(typeof msg === 'string' ?
-                    msg : 'setSetRegistry(' + path + ',' + setName + ',' + regName + ',' + JSON.stringify(regValue) + ')');
+                    msg : 'setSetRegistry(' + [path, setName, regName, JSON.stringify(regValue)].join(',') + ')');
             }
         }
 
@@ -845,8 +848,8 @@ define([], function () {
                     return;
                 }
 
-                saveRoot(typeof msg === 'string' ? msg : 'setPointerMetaTarget(' + path + ', ' + name + ', ' + targetPath + ',' +
-                    min || -1 + ',' + max || -1 + ')');
+                saveRoot(typeof msg === 'string' ? msg : 'setPointerMetaTarget(' +
+                    [path, name, targetPath, min || -1, max || -1].join(',') + ')');
             }
         }
 
@@ -878,7 +881,8 @@ define([], function () {
                     return;
                 }
 
-                saveRoot(typeof msg === 'string' ? msg : 'delPointerMetaTarget(' + path + ', ' + name + ', ' + targetPath + ')');
+                saveRoot(typeof msg === 'string' ? msg :
+                    'delPointerMetaTarget(' + path + ', ' + name + ', ' + targetPath + ')');
             }
         }
 
@@ -943,7 +947,8 @@ define([], function () {
                     return;
                 }
 
-                saveRoot(typeof msg === 'string' ? msg : 'setAspectMetaTarget(' + path + ', ' + name + ',' + targetPath + ')');
+                saveRoot(typeof msg === 'string' ?
+                    msg : 'setAspectMetaTarget(' + path + ', ' + name + ',' + targetPath + ')');
             }
         }
 
@@ -986,8 +991,8 @@ define([], function () {
                     }
                 }
 
-                saveRoot(typeof msg === 'string' ?
-                    msg : 'setAspectMetaTargets(' + path + ', ' + name + ',' + JSON.stringify(targetPaths) + ')');
+                saveRoot(typeof msg === 'string' ? msg :
+                    'setAspectMetaTargets(' + path + ', ' + name + ',' + JSON.stringify(targetPaths) + ')');
             }
         }
 

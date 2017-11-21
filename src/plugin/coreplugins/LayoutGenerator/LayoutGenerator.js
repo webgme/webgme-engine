@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true, browser:true*/
+/*eslint-env node, browser*/
 
 /**
  * Plugin for generating layouts.
@@ -12,11 +12,10 @@ define([
     'text!./metadata.json',
     'common/util/ejs',
     'plugin/LayoutGenerator/LayoutGenerator/Templates/Templates'
-], function (
-    PluginBase,
-    pluginMetadata,
-    ejs,
-    TEMPLATES) {
+], function (PluginBase,
+             pluginMetadata,
+             ejs,
+             TEMPLATES) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -72,7 +71,8 @@ define([
                         // Layout instructions
                         self.createMessage(null, 'Extract the layoutFiles.zip' +
                             ' in your repository root.');
-                        self.createMessage(null, 'Set "config.visualization.layout.default" to "'+content.layoutID+'"');
+                        self.createMessage(null, 'Set "config.visualization.layout.default" to "' +
+                            content.layoutID + '"');
                         self.createMessage(null, 'Reload the browser and server to use the new layout');
 
                         self.result.addArtifact(hashes[0]);
@@ -102,7 +102,7 @@ define([
     };
 
     LayoutGenerator.getFilePath = function (layoutName, fileName) {
-        var baseUrl = 'src/client/js/Layouts/'+layoutName;
+        var baseUrl = 'src/client/js/Layouts/' + layoutName;
 
         // Create the appropriate file name
         fileName = fileName.replace(/\.ejs$/, '');

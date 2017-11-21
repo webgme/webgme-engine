@@ -1,5 +1,6 @@
 /*globals define*/
-/*jshint node:true, browser:true, newcap:false*/
+/*eslint-env node, browser*/
+
 /**
  * @author kecso / https://github.com/kecso
  * @author pmeijer / https://github.com/pmeijer

@@ -1,5 +1,5 @@
-/*globals console*/
-/*jshint node: true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
 
 /**
  * Script for listing, adding and removing webhooks in projects.
@@ -149,11 +149,11 @@ function main(argv) {
                 .finally(gmeAuth.unload);
         })
         .on('--help', function () {
-            console.log('  Examples:');
+            console.log('Examples:');
             console.log();
-            console.log('    $ node manage_webhooks.js');
-            console.log('    $ node manage_webhooks.js add MyProject MyHook http://localhost:8080 -e all');
-            console.log('    $ node manage_webhooks.js add MyProject MyHook2 http://localhost:8081 -e COMMIT,TAG_CREATED');
+            console.log(' $ node manage_webhooks.js');
+            console.log(' $ node manage_webhooks.js add MyProject MyHook http://localhost:8080 -e all');
+            console.log(' $ node manage_webhooks.js add MyProject MyHook2 http://localhost:8081 -e COMMIT,TAG_CREATED');
 
             deferred.resolve();
         });

@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true*/
+/*eslint-env browser*/
 /**
  * Contains helper functions for logging/downloading the state of the client.
  *
@@ -98,34 +98,34 @@ define([
 
     function downloadStateDump(client, state) {
         var errData = {
-                timestamp: (new Date()).toISOString(),
-                webgme: {
-                    NpmVersion: 'n/a',
-                    version: 'n/a',
-                    GitHubVersion: 'n/a'
-                },
-                gmeConfig: client.gmeConfig,
-                uiState: null,
-                branchErrors: [],
-                browserInfo: {
-                    appCodeName: window.navigator.appCodeName,
-                    appName: window.navigator.appName,
-                    appVersion: window.navigator.appVersion,
-                    onLine: window.navigator.onLine,
-                    cookieEnabled: window.navigator.cookieEnabled,
-                    platform: window.navigator.platform,
-                    product: window.navigator.product,
-                    userAgent: window.navigator.userAgent
-                },
-                clientState: JSON.parse(getStateLogString(client, state, true))
-            };
+            timestamp: (new Date()).toISOString(),
+            webgme: {
+                NpmVersion: 'n/a',
+                version: 'n/a',
+                GitHubVersion: 'n/a'
+            },
+            gmeConfig: client.gmeConfig,
+            uiState: null,
+            branchErrors: [],
+            browserInfo: {
+                appCodeName: window.navigator.appCodeName,
+                appName: window.navigator.appName,
+                appVersion: window.navigator.appVersion,
+                onLine: window.navigator.onLine,
+                cookieEnabled: window.navigator.cookieEnabled,
+                platform: window.navigator.platform,
+                product: window.navigator.product,
+                userAgent: window.navigator.userAgent
+            },
+            clientState: JSON.parse(getStateLogString(client, state, true))
+        };
 
         if (typeof WebGMEGlobal !== 'undefined') {
-            /* jshint -W117 */
+            /* eslint-disable no-undef*/
             errData.webgme.NpmVersion = WebGMEGlobal.NpmVersion;
             errData.webgme.GitHubVersion = WebGMEGlobal.GitHubVersion;
             errData.webgme.version = WebGMEGlobal.version;
-            /* jshint +W117 */
+            /* eslint-enable no-undef*/
         }
 
         if (typeof client.uiStateGetter === 'function') {
@@ -147,12 +147,12 @@ define([
 
     function downloadCommitQueue(client, commitQueue) {
         var backupData = {
-                webgmeVersion: client.getConnectedStorageVersion(),
-                projectId: client.getActiveProjectId(),
-                branchName: client.getActiveBranchName(),
-                branchStatus: client.getBranchStatus(),
-                commitQueue: commitQueue
-            };
+            webgmeVersion: client.getConnectedStorageVersion(),
+            projectId: client.getActiveProjectId(),
+            branchName: client.getActiveBranchName(),
+            branchStatus: client.getBranchStatus(),
+            commitQueue: commitQueue
+        };
 
         saveToDisk.downloadTextAsFile('commit-queue-dump.json', JSON.stringify(backupData, null, 2));
     }

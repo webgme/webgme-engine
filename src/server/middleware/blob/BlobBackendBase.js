@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -8,7 +8,7 @@
 'use strict';
 
 var fs = require('fs'),
-    jszip = require('jszip'),
+    JSZip = require('jszip'),
     mime = require('mime'),
 
     GUID = requireJS('common/util/guid'),
@@ -169,7 +169,7 @@ BlobBackendBase.prototype.getFile = function (metadataHash, subpath, writeStream
                 // return with the full content as a zip package
                 // FIXME: can we use zlib???
                 // TODO: this code MUST be reimplemented!!!
-                var zip = new jszip();
+                var zip = new JSZip();
 
                 var keys = Object.keys(metadata.content);
                 var remaining = keys.length,

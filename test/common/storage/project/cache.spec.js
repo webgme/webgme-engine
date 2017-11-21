@@ -1,18 +1,16 @@
 /**
  * @author kecso / https://github.com/kecso
  */
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 
 var testFixture = require('../../../_globals.js');
 
 describe('storage cache', function () {
     'use strict';
-    var gmeAuth,
-        logger = testFixture.logger.fork('storageCache'),
+    var logger = testFixture.logger.fork('storageCache'),
         gmeConfig = testFixture.getGmeConfig(),
         Q = testFixture.Q,
         expect = testFixture.expect,
-        CONSTANTS = testFixture.requirejs('common/storage/constants'),
         Cache = testFixture.requirejs('common/storage/project/cache'),
         MockStorage = function (options) {
             var waitForIt = {};
@@ -28,7 +26,7 @@ describe('storage cache', function () {
             this.sendThisBack = function (projectId, key, err, object) {
                 setTimeout(function () {
                     var callback = waitForIt[projectId + key] || function () {
-                        };
+                    };
 
                     delete waitForIt[projectId + key];
                     callback(err, object);
@@ -42,7 +40,7 @@ describe('storage cache', function () {
                         callback(new Error('ouchPaths'));
                     }, options.timeout || 10);
                 }
-            }
+            };
         };
 
     it('should have all the goo functions', function () {
@@ -102,7 +100,7 @@ describe('storage cache', function () {
         cache.insertObject({_id: 'one', value: 'two'});
         cache.insertPatchObject({_id: 'two', patch: [{op: 'bad', path: '/other', value: 'three'}], base: 'one'});
         Q.nfcall(cache.loadObject, 'two')
-            .then(function (result) {
+            .then(function () {
                 done(new Error('object should not be in cache!'));
             })
             .catch(function (err) {
@@ -119,7 +117,7 @@ describe('storage cache', function () {
         cache.insertObject({_id: 'one', value: 'two'});
         cache.insertPatchObject({_id: 'two', patch: [{op: 'add', path: '/other', value: 'three'}], base: 'nobase'});
         Q.nfcall(cache.loadObject, 'two')
-            .then(function (result) {
+            .then(function () {
                 done(new Error('object should not be in cache!'));
             })
             .catch(function (err) {
@@ -136,7 +134,7 @@ describe('storage cache', function () {
         cache.insertObject({_id: 'one', value: 'two'});
         cache.insertPatchObject({_id: 'two', patch: [{op: 'add', path: '/other', value: 'three'}]});
         Q.nfcall(cache.loadObject, 'two')
-            .then(function (result) {
+            .then(function () {
                 done(new Error('object should not be in cache!(1)'));
             })
             .catch(function (err) {
@@ -146,7 +144,7 @@ describe('storage cache', function () {
                 cache.insertPatchObject({patch: [{op: 'add', path: '/other', value: 'three'}], base: 'one'});
                 return Q.nfcall(cache.loadObject, 'two');
             })
-            .then(function (result) {
+            .then(function () {
                 done(new Error('object should not be in cache!(2)'));
             })
             .catch(function (err) {
@@ -156,7 +154,7 @@ describe('storage cache', function () {
                 cache.insertPatchObject({_id: 'two', base: 'one'});
                 return Q.nfcall(cache.loadObject, 'two');
             })
-            .then(function (result) {
+            .then(function () {
                 done(new Error('object should not be in cache!(3)'));
             })
             .catch(function (err) {

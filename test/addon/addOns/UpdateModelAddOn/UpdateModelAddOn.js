@@ -1,11 +1,11 @@
 /*globals define*/
-/*jshint node:true*/
+/*eslint-env node*/
 
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
 if (typeof define === 'undefined') {
-
+    return;
 } else {
     define(['addon/AddOnBase'], function (AddOnBase) {
 

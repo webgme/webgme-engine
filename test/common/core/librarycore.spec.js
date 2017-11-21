@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true*/
+/*eslint-env node, mocha*/
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -16,9 +16,7 @@ describe('Library core ', function () {
         project,
         root,
         core,
-        commitHash,
         rootHash,
-        REGEXP = testFixture.requirejs('common/regexp'),
         CONSTANTS = testFixture.requirejs('common/core/constants'),
         shareContext,
         shareProjectName = 'libCoreShareTests',
@@ -39,13 +37,11 @@ describe('Library core ', function () {
         persisted = core.persist(root);
 
         rootHash = persisted.rootHash;
-        project.makeCommit(null, [], persisted.rootHash, persisted.objects, 'basicLibrary', function (err, result) {
+        project.makeCommit(null, [], persisted.rootHash, persisted.objects, 'basicLibrary', function (err) {
             if (err) {
                 deferred.reject(err);
                 return;
             }
-
-            commitHash = result.hash;
 
             core.loadRoot(rootHash)
                 .then(function (root_) {
@@ -598,7 +594,7 @@ describe('Library core ', function () {
         expect(metaNodes['/L/I']).not.to.equal(null);
 
         try {
-            core.setConstraint(metaNodes['/L/I'], 'any', {'any': 'any'});
+            core.setConstraint(metaNodes['/L/I'], 'any', {any: 'any'});
         } catch (e) {
             error = e;
         } finally {
@@ -922,7 +918,8 @@ describe('Library core ', function () {
                 return core.loadRoot(core.getHash(asyncRoot));
             })
             .then(function (newRoot) {
-                expect(core.getLibraryNames(newRoot)).to.have.members(['basicLibrary', 'myself', 'myself.basicLibrary']);
+                expect(core.getLibraryNames(newRoot))
+                    .to.have.members(['basicLibrary', 'myself', 'myself.basicLibrary']);
             })
             .nodeify(done);
     });
@@ -934,8 +931,7 @@ describe('Library core ', function () {
             asyncFco,
             libPath,
             buildLibrary = function () {
-                var deferred = Q.defer(),
-                    lRoot = core.createNode(),
+                var lRoot = core.createNode(),
                     lFco = core.createNode({parent: lRoot, base: null, relid: 'FCO'}),
                     lCont = core.createNode({parent: lRoot, base: lFco, relid: 'Cont'}),
                     lRem = core.createNode({parent: lCont, base: lFco, relid: 'toRemove'}),
@@ -986,13 +982,12 @@ describe('Library core ', function () {
                 return core.loadRoot(core.getHash(asyncRoot));
             })
             .then(function (root_) {
-                var node;
                 asyncRoot = root_;
                 asyncFco = core.getFCO(asyncRoot);
 
                 expect(core.getCollectionPaths(asyncFco, 'base')).to.eql([libPath + '/FCO']);
 
-                node = core.createNode({
+                core.createNode({
                     parent: asyncRoot,
                     base: core.getAllMetaNodes(asyncRoot)[libPath + '/toMove'],
                     relid: 'node'
@@ -1031,13 +1026,11 @@ describe('Library core ', function () {
             asyncFco,
             libPath,
             buildLibrary = function () {
-                var deferred = Q.defer(),
-                    lRoot = core.createNode(),
+                var lRoot = core.createNode(),
                     lFco = core.createNode({parent: lRoot, base: null, relid: 'FCO'}),
                     lCont = core.createNode({parent: lRoot, base: lFco, relid: 'Cont'}),
                     lRem = core.createNode({parent: lCont, base: lFco, relid: 'toRemove'}),
-                    lMov = core.createNode({parent: lRoot, base: lFco, relid: 'toMove'}),
-                    lNew;
+                    lMov = core.createNode({parent: lRoot, base: lFco, relid: 'toMove'});
 
                 core.setAttribute(lRoot, 'name', 'ROOT');
                 core.setAttribute(lFco, 'name', 'FCO');
@@ -1080,17 +1073,17 @@ describe('Library core ', function () {
                 return core.loadRoot(core.getHash(asyncRoot));
             })
             .then(function (root_) {
-                var node;
                 asyncRoot = root_;
                 asyncFco = core.getFCO(asyncRoot);
 
                 expect(core.getCollectionPaths(asyncFco, 'base')).to.eql([libPath + '/FCO']);
 
-                node = core.createNode({
+                core.createNode({
                     parent: asyncRoot,
                     base: core.getAllMetaNodes(asyncRoot)[libPath + '/toMove'],
                     relid: 'node'
                 });
+
                 return core.updateLibrary(asyncRoot, 'library', secondHash, {}, {});
             })
             .then(function () {
@@ -1117,15 +1110,13 @@ describe('Library core ', function () {
     });
 
     it('should update a library of an imported project', function (done) {
-        var core, rootHash, root, project,
+        var core, root,
             buildLibrary = function () {
-                var deferred = Q.defer(),
-                    lRoot = core.createNode(),
+                var lRoot = core.createNode(),
                     lFco = core.createNode({parent: lRoot, base: null, relid: 'FCO'}),
                     lCont = core.createNode({parent: lRoot, base: lFco, relid: 'Cont'}),
                     lRem = core.createNode({parent: lCont, base: lFco, relid: 'toRemove'}),
-                    lMov = core.createNode({parent: lRoot, base: lFco, relid: 'toMove'}),
-                    lNew;
+                    lMov = core.createNode({parent: lRoot, base: lFco, relid: 'toMove'});
 
                 core.setAttribute(lRoot, 'name', 'ROOT');
                 core.setAttribute(lFco, 'name', 'FCO');
@@ -1413,7 +1404,6 @@ describe('Library core ', function () {
     it('should import if closure base matches only by originGuid', function (done) {
         var closure,
             paths = [],
-            names,
             i;
 
         Q.all([

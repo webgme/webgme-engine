@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * @author mmaroti / https://github.com/mmaroti
@@ -51,7 +51,7 @@ define([
         }
 
         function loadBase2(node, target) {
-            if (typeof node.base !== null && typeof node.base === 'object' &&
+            if (node.base !== null && typeof node.base === 'object' &&
                 (innerCore.getPath(node.base) === innerCore.getPath(target))) {
                 //TODO somehow the object already loaded properly and we do no know about it!!!
                 return node;
@@ -529,7 +529,7 @@ define([
             }
 
             return path;
-        };
+        }
 
         //</editor-fold>
 

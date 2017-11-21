@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  * @author pmeijer / https://github.com/pmeijer
@@ -106,7 +106,7 @@ describe('standalone server', function () {
             //
             // Create the HTTPS proxy server in front of a HTTP server
             //
-            proxy = new httpProxy.createServer({
+            proxy = httpProxy.createServer({
                 target: {
                     host: 'localhost',
                     port: gmeConfig.server.port
@@ -168,25 +168,6 @@ describe('standalone server', function () {
             {code: 200, url: '/plugin/PluginGenerator/PluginGenerator/PluginGenerator.js'},
             {code: 200, url: '/plugin/PluginGenerator/PluginGenerator/Templates/plugin.js.ejs'},
             {code: 200, url: '/assets/decoratorSVGList.json'},
-            //{code: 200, url: '/decorators/DefaultDecorator/DefaultDecorator.js'},
-            //{code: 200, url: '/decorators/DefaultDecorator/DiagramDesigner/DefaultDecorator.DiagramDesignerWidget.css'},
-            // {
-            //     code: 200,
-            //     url: '/decorators/DefaultDecorator/DiagramDesigner/DefaultDecorator.DiagramDesignerWidget.html'
-            // },
-            // {
-            //     code: 200,
-            //     url: '/decorators/DefaultDecorator/DiagramDesigner/DefaultDecorator.DiagramDesignerWidget.js'
-            // },
-            // {code: 200, url: '/panel/ModelEditor/ModelEditorControl.js'},
-            // {code: 200, url: '/panel/ModelEditor/ModelEditorControl'},
-            // {code: 200, url: '/panel/ModelEditor/ModelEditorControl'},
-            // {code: 404, url: '/panel/ModelEditor/ModelEditorControlDoesNotExist'},
-            // {code: 200, url: '/panel/SplitPanel/SplitPanel.js'},
-            // {code: 404, url: '/panel/DoesNotExist/ModelEditorControl'},
-            //{code: 200, url: '/rest/unknown'},
-            //{code: 200, url: '/rest/does_not_exist'},
-            //{code: 200, url: '/rest/help'},
             {code: 200, url: '/api/decorators'},
             {code: 200, url: '/api/plugins'},
             {code: 200, url: '/api/visualizers'},
@@ -319,7 +300,7 @@ describe('standalone server', function () {
                     // TODO: add POST/DELETE etc support
                     agent.get(serverBaseUrl + url).end(function (err, res) {
                         if (err && err.message.indexOf('connect ECONNREFUSED') > -1) {
-                            console.log('Is server running?', server.isRunning());
+                            //console.log('Is server running?', server.isRunning());
                             done(err);
                             return;
                         }
@@ -522,16 +503,16 @@ describe('standalone server', function () {
                         redirectUrl: '/gmeConfig.json'
                     })
                     .end(function (err, res) {
-                    try {
-                        expect(err).to.equal(null);
-                        expect(res.status).to.equal(200);
-                        expect(res.redirects.length).to.equal(1);
-                        expect(res.redirects[0]).to.equal(serverBaseUrl + '/profile/login');
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
-                });
+                        try {
+                            expect(err).to.equal(null);
+                            expect(res.status).to.equal(200);
+                            expect(res.redirects.length).to.equal(1);
+                            expect(res.redirects[0]).to.equal(serverBaseUrl + '/profile/login');
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
             });
         });
 

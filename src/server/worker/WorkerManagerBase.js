@@ -1,13 +1,10 @@
-/*globals requireJS*/
-/*jshint node: true*/
+/*eslint-env node*/
 /**
  * API for server worker manager. See/edit gmeConfig.server.workerManger.path to switch worker manager.
  * @author pmeijer / https://github.com/pmeijer
  */
 
 'use strict';
-
-var CONSTANTS = requireJS('common/Constants');
 
 /**
  * Base class for server worker manager

@@ -1,5 +1,7 @@
-/*globals requirejs, expect, Buffer, File*/
-/*jshint node: true, mocha: true, bitwise: false, expr: true*/
+/*globals requirejs, expect, Buffer, File, Uint8Array, ArrayBuffer*/
+/*eslint-env browser, mocha*/
+/*eslint no-bitwise: 0*/
+
 /**
  * @author ksmyth / https://github.com/ksmyth
  */
@@ -277,7 +279,7 @@ describe('Browser BlobClient', function () {
 
     it('should create metadata', function (done) {
         var artifact = new Artifact('testartifact', new BlobClient({logger: logger}));
-        artifact.addFiles({'file1': 'content1', 'file2': 'content2'}, function (err, hashes) {
+        artifact.addFiles({file1: 'content1', file2: 'content2'}, function (err, hashes) {
             if (err) {
                 return done(err);
             }
@@ -321,22 +323,22 @@ describe('Browser BlobClient', function () {
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
     function b64ToUint6(nChr) {
         return nChr > 64 && nChr < 91 ?
-        nChr - 65
+            nChr - 65
             : nChr > 96 && nChr < 123 ?
-        nChr - 71
-            : nChr > 47 && nChr < 58 ?
-        nChr + 4
-            : nChr === 43 ?
-            62
-            : nChr === 47 ?
-            63
-            :
-            0;
+                nChr - 71
+                : nChr > 47 && nChr < 58 ?
+                    nChr + 4
+                    : nChr === 43 ?
+                        62
+                        : nChr === 47 ?
+                            63
+                            :
+                            0;
     }
 
     function base64DecToArr(sBase64, nBlocksSize) {
         var
-            sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ''),
+            sB64Enc = sBase64.replace(/[^A-Za-z0-9+/]/g, ''),
             nInLen = sB64Enc.length,
             nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2,
             taBytes = new Uint8Array(nOutLen),

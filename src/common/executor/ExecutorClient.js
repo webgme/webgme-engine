@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 
 /**
  * Client module for creating, monitoring executor jobs.
@@ -28,6 +28,7 @@ define(['superagent', 'q'], function (superagent, Q) {
         if (parameters.logger) {
             this.logger = parameters.logger;
         } else {
+            /*eslint-disable no-console*/
             var doLog = function () {
                 console.log.apply(console, arguments);
             };
@@ -39,6 +40,7 @@ define(['superagent', 'q'], function (superagent, Q) {
                 error: doLog
             };
             console.warn('Since v1.3.0 ExecutorClient requires a logger, falling back on console.log.');
+            /*eslint-enable no-console*/
         }
 
         this.logger.debug('ctor', {metadata: parameters});
@@ -81,8 +83,9 @@ define(['superagent', 'q'], function (superagent, Q) {
      *
      * To make the worker post output either the outputInterval and/or outputSegmentSize must be specified.
      * <br> - If both are negative (or falsy) no output will be given.
-     * <br> - When both are specified a timeout will be set at start (and after each posted output). If the number of lines
-     *  exceeds outputSegmentSize during that timeout, the output will be posted and a new timeout will be triggered.
+     * <br> - When both are specified a timeout will be set at start (and after each posted output).
+     * If the number of lines exceeds outputSegmentSize during that timeout, the output will be posted and a
+     * new timeout will be triggered.
      * <br>
      * N.B. even though a short outputInterval is set, the worker won't post new output until the responses from
      * previous posts have returned. Before the job returns with a "completed" status code, all queued outputs will be
@@ -126,7 +129,8 @@ define(['superagent', 'q'], function (superagent, Q) {
      * Creates a new job.
      *
      * @param {object} jobInfo - initial information about the job must contain the hash.
-     * @param {object} jobInfo.hash - a unique id for the job (e.g. the hash of the artifact containing the executor_config.json).
+     * @param {object} jobInfo.hash - a unique id for the job (e.g. the hash of the artifact
+     * containing the executor_config.json).
      * @param {function} [callback] - if provided no promise will be returned.
      *
      * @return {external:Promise}  On success the promise will be resolved with {@link JobInfo} <b>result</b>.<br>
@@ -384,13 +388,13 @@ define(['superagent', 'q'], function (superagent, Q) {
     ExecutorClient.prototype._ensureAuthenticated = function (options, callback) {
         //this function enables the session of the client to be authenticated
         //TODO currently this user does not have a session, so it has to upgrade the options always!!!
-//        if (options.headers) {
-//            options.headers.webgmeclientsession = this._clientSession;
-//        } else {
-//            options.headers = {
-//                'webgmeclientsession': this._clientSession
-//            }
-//        }
+        //        if (options.headers) {
+        //            options.headers.webgmeclientsession = this._clientSession;
+        //        } else {
+        //            options.headers = {
+        //                'webgmeclientsession': this._clientSession
+        //            }
+        //        }
         callback(null, options);
     };
     //</editor-fold>

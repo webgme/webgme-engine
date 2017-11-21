@@ -1,4 +1,4 @@
-//jshint ignore: start
+/*eslint-disable*/
 //Copyright (c) Isaac Z. Schlueter ("Author")
 //All rights reserved.
 //

@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -42,7 +42,7 @@ describe('BlobFSBackend.spec', function () {
 
     it('should return abort error when putFile when passing in fs.createReadStream and destroy', function (done) {
         var bb = new BlobFSBackend(gmeConfig, logger),
-            readStream = new fs.createReadStream('./test/server/middleware/blob/BlobFsBackend/content.txt');
+            readStream = fs.createReadStream('./test/server/middleware/blob/BlobFsBackend/content.txt');
 
         readStream.on('data', function () {
             readStream.destroy();

@@ -1,9 +1,9 @@
 /*globals requirejs, expect*/
-/*jshint node: true, mocha: true*/
+/*eslint-env node, mocha*/
 /**
  * @author kecso / https://github.com/kecso
  */
-var WebGMEGlobal = {}; //jshint ignore: line
+var WebGMEGlobal = {}; //eslint-disable-line
 
 describe.skip('issue 350 client crashes when manipulating a node that has a model child which is an instance of' +
     'another model having children', function () {
@@ -11,8 +11,7 @@ describe.skip('issue 350 client crashes when manipulating a node that has a mode
         gmeConfig,
         projectImport,
         projectName = 'issue350',
-        client,
-        options = {};
+        client;
 
     function buildUpForTest(testId, next) {
         client.selectProject(projectName, null, function (err) {

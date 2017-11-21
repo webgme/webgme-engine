@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true, bitwise: false*/
+/*eslint-env browser*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -10,8 +10,8 @@ define(['blob/BlobClient'], function (BlobClient) {
     function saveUrlToDisk(fileURL, fileName) {
         // for non-IE
         if (!window.ActiveXObject) {
-            var save = document.createElement('a'),
-                event = document.createEvent('Event');
+            var save = document.createElement('a');
+            //event = document.createEvent('Event');
 
             save.href = fileURL;
             save.target = '_self';
@@ -24,10 +24,8 @@ define(['blob/BlobClient'], function (BlobClient) {
             // save.dispatchEvent(event);
             // (window.URL || window.webkitURL).revokeObjectURL(save.href);
             save.click();
-        }
-
-        // for IE
-        else if (!!window.ActiveXObject && document.execCommand) {
+        } else if (!!window.ActiveXObject && document.execCommand) {
+            // for IE
             var _window = window.open(fileURL, '_self');
             _window.document.close();
             _window.document.execCommand('SaveAs', true, fileName || fileURL);

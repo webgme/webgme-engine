@@ -1,4 +1,6 @@
 /*globals define*/
+/*eslint-env node, browser*/
+/*eslint no-bitwise: 0*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -80,7 +82,6 @@ define([
 
             var arrayOut = [];
             for (var i = 0; i < arrayA.length; i++) {
-                /*jshint bitwise: false*/
                 arrayOut.push(arrayA[i] ^ arrayB[i]);
             }
             for (i = 0; i < arrayOut.length; i++) {

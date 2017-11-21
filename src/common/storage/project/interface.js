@@ -1,5 +1,7 @@
 /*globals define*/
-/*jshint node:true, browser: true*/
+/*eslint-env node, browser*/
+/*eslint no-unused-vars: 0*/
+
 /**
  * This class defines the common interface for a storage-project.
  *
@@ -47,7 +49,8 @@ define([
          * Inserts the given object to project-cache.
          *
          * @param {module:Storage~CommitObject|module:Core~ObjectData} obj - Object to be inserted in database.
-         * @param {Object.<module:Core~ObjectHash, module:Core~ObjectData>} [stackedObjects] - When used by the core, inserts between persists are stored here.
+         * @param {Object.<module:Core~ObjectHash, module:Core~ObjectData>} [stackedObjects] - When used by the core,
+         * inserts between persists are stored here.
          * @func
          * @private
          */
@@ -69,7 +72,8 @@ define([
          *
          * @callback ProjectInterface~loadObjectCallback
          * @param {Error} err - If error occurred.
-         * @param {module:Storage~CommitObject|module:Core~ObjectData} object - Object loaded from database, e.g. a commit object.
+         * @param {module:Storage~CommitObject|module:Core~ObjectData} object - Object loaded from database,
+         * commit-object or model data-blob.
          */
 
         /**
@@ -127,7 +131,7 @@ define([
          *     // }
          *   })...
          * @example
-         * project.makeCommit('master', ['#aPreviousCommitHash'], previousRootHash, {}, 'just adding a commit to master')
+         * project.makeCommit('master', ['#aPreviousCommitHash'], previousRootHash, {}, 'adding a commit to master')
          *   .then(function (result) {
          *     // result = {
          *     //   status: 'SYNCED',

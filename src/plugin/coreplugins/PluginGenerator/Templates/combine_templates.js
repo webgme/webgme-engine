@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/*eslint-disable*/
 /**
  *
  * This script will combine all ejs files in the current directory (recursively)
@@ -68,7 +68,7 @@ var main = function () {
         }
 
         console.info(content);
-        templateContent = '//jshint ignore: start\r\n';
+        templateContent = '/*eslint-disable*/\r\n';
         templateContent += '/* Generated file based on ejs templates */\r\n';
         templateContent += 'define([], function() {\r\n';
         templateContent += '    return ' + JSON.stringify(content, null, 4);

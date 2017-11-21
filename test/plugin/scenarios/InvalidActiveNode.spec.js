@@ -1,5 +1,5 @@
 /*globals*/
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -47,7 +47,7 @@ describe('InvalidActiveNode test', function () {
                 return Q.allDone([
                     testFixture.loadRootNodeFromCommit(project, core, commitHash),
                     project.createBranch('b1', commitHash)
-                    ]);
+                ]);
             })
             .then(function (res) {
                 var persisted;

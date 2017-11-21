@@ -1,5 +1,5 @@
-/*jshint node:true, mocha:true, expr:true */
-
+/*eslint-env node, mocha*/
+/*eslint no-console: 0*/
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -12,7 +12,7 @@ describe('diff CLI tests', function () {
         storage,
         gmeAuth,
         expect = testFixture.expect,
-        __should = testFixture.should,
+        __should = testFixture.should, //eslint-disable-line
         logger = testFixture.logger.fork('diff.spec'),
         diffCLI = require('../../src/bin/diff'),
         filename = require('path').normalize('src/bin/diff.js'),

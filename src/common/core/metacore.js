@@ -1,5 +1,6 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
+/*eslint  no-console: 0*/
 
 /**
  * @author mmaroti / https://github.com/mmaroti

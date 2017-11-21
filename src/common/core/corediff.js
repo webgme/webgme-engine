@@ -1,11 +1,12 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * @author kecso / https://github.com/kecso
  */
 
-define(['common/util/canon',
+define([
+    'common/util/canon',
     'common/core/tasync',
     'common/core/CoreAssert',
     'common/regexp',
@@ -23,7 +24,6 @@ define(['common/util/canon',
         var logger = options.logger,
             self = this,
             key,
-            _conflictItems = [],
             _conflictMine,
             _conflictTheirs,
             _concatBase,
@@ -2062,14 +2062,12 @@ define(['common/util/canon',
                         } else {
                             //now check the set attribute and registry differences
                             if (base[names[i]].attr && extension[names[i]].attr) {
-                                concatSingleKeyValuePairs(path + '/' +
-                                    names[i] + '/attr',
+                                concatSingleKeyValuePairs(path + '/' + names[i] + '/attr',
                                     base[names[i]].attr,
                                     extension[names[i]].attr);
                             }
                             if (base[names[i]].reg && extension[names[i]].reg) {
-                                concatSingleKeyValuePairs(path + '/' +
-                                    names[i] + '/reg',
+                                concatSingleKeyValuePairs(path + '/' + names[i] + '/reg',
                                     base[names[i]].reg,
                                     extension[names[i]].reg);
                             }
@@ -2104,8 +2102,8 @@ define(['common/util/canon',
                                         } else {
                                             if (extension[names[i]][members[j]].attr) {
                                                 if (base[names[i]][memberPath].attr) {
-                                                    concatSingleKeyValuePairs(path + '/' +
-                                                        names[i] + '/' + memberPath + '/' + '/attr',
+                                                    concatSingleKeyValuePairs(
+                                                        path + '/' + names[i] + '/' + memberPath + '/' + '/attr',
                                                         base[names[i]][memberPath].attr,
                                                         extension[names[i]][members[j]].attr);
                                                 } else {
@@ -2115,8 +2113,8 @@ define(['common/util/canon',
                                             }
                                             if (extension[names[i]][members[j]].reg) {
                                                 if (base[names[i]][memberPath].reg) {
-                                                    concatSingleKeyValuePairs(path + '/' +
-                                                        names[i] + '/' + memberPath + '/' + '/reg',
+                                                    concatSingleKeyValuePairs(
+                                                        path + '/' + names[i] + '/' + memberPath + '/' + '/reg',
                                                         base[names[i]][memberPath].reg,
                                                         extension[names[i]][members[j]].reg);
                                                 } else {
@@ -2713,7 +2711,6 @@ define(['common/util/canon',
          */
         this.tryToConcatChanges = function (base, extension) {
             var result = {};
-            _conflictItems = [];
             _conflictMine = {};
             _conflictTheirs = {};
             _concatBase = JSON.parse(JSON.stringify(base));

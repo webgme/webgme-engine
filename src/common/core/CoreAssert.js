@@ -1,6 +1,6 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
-
+/*eslint-env node, browser*/
+/*eslint no-console: 0*/
 /**
  * @author kecso / https://github.com/kecso
  */

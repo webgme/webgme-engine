@@ -1,4 +1,5 @@
-/*jshint node:true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */

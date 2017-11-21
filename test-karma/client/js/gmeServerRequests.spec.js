@@ -1,10 +1,10 @@
 /*globals requirejs, expect, console, before*/
-/* jshint browser: true, mocha: true, expr: true */
+/*eslint-env browser, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
 
-var WebGMEGlobal = {}; // jshint ignore:line
+var WebGMEGlobal = {}; // eslint-disable-line
 
 describe('Server worker requests', function () {
     'use strict';
@@ -29,15 +29,14 @@ describe('Server worker requests', function () {
                     return Q.ninvoke(client, 'selectProject',
                         projectName2Id('ServerWorkerRequests', gmeConfig, client));
                 })
-                .nodeify(done)
+                .nodeify(done);
         });
     });
 
     it('should checkMetaRules starting from the rootNode', function (done) {
         Q.ninvoke(client.workerRequests, 'checkMetaRules', [''], true)
-            .then(function(result) {
+            .then(function (result) {
                 expect(result.length).to.equal(1);
-                console.log(result);
                 expect(result[0].hasViolation).to.equal(false);
             })
             .nodeify(done);
@@ -45,7 +44,7 @@ describe('Server worker requests', function () {
 
     it('should not checkCustomConstraints when it is disabled', function (done) {
         Q.ninvoke(client.workerRequests, 'checkCustomConstraints', [''], true)
-            .then(function() {
+            .then(function () {
                 done(new Error('Should have failed!'));
             })
             .catch(function (err) {

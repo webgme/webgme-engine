@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -23,7 +23,6 @@ describe('Plugin ImportV1', function () {
         projectName = 'Plugin_ImportV1',
         commitHash,
         emptyProjectBlobHash,
-        activePanelsBlobHash,
         libBlobHash,
         gmeAuth,
         blobClient,
@@ -72,7 +71,7 @@ describe('Plugin ImportV1', function () {
             })
             .then(function (blobHashes) {
                 emptyProjectBlobHash = blobHashes[0];
-                activePanelsBlobHash = blobHashes[1];
+                //activePanelsBlobHash = blobHashes[1];
                 libBlobHash = blobHashes[2];
             })
             .nodeify(done);

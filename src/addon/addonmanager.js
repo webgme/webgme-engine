@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * 
  * @author pmeijer / https://github.com/pmeijer
@@ -287,7 +287,7 @@ function AddOnManager(projectId, mainLogger, gmeConfig, options) {
         });
     };
 
-    this.getStatus = function (opts) {
+    this.getStatus = function (/*opts*/) {
         var status = {
             initRequested: self.initRequested,
             closeRequested: self.closeRequested,

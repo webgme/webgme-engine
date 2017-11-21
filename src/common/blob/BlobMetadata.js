@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 
 /**
  * Client module for accessing the blob.
@@ -37,7 +37,8 @@ define(['blob/BlobConfig'], function (BlobConfig) {
                 for (key in this.content) {
                     if (this.content.hasOwnProperty(key)) {
                         if (BlobConfig.hashRegex.test(this.content[key].content) === false) {
-                            throw new Error('BlobMetadata is malformed: hash \'' + this.content[key].content + '\'is invalid');
+                            throw new Error('BlobMetadata is malformed: hash \'' + this.content[key].content +
+                                '\'is invalid');
                         }
                     }
                 }

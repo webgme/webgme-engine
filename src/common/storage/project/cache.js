@@ -1,10 +1,11 @@
 /*globals define*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 /**
  * This class (extracted functionality from cache implemented by mmaroti) caches objects associated
  * with a project.
  *
  * @author pmeijer / https://github.com/pmeijer
+ * @author kecso / https://github.com/kecso
  * @author mmaroti / https://github.com/mmaroti
  */
 

@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -146,7 +146,7 @@ describe('ExecutorClient', function () {
 
     it('getAllInfo should return and object with jobs', function (done) {
         executorClient.getAllInfo()
-            .then(function(jobs) {
+            .then(function (jobs) {
                 expect(typeof jobs).to.equal('object');
                 expect(jobs).to.not.equal(null);
                 expect(jobs instanceof Array).to.equal(false);
@@ -278,7 +278,7 @@ describe('ExecutorClient', function () {
                     executorClient.getOutput(jobHash, null, 2),
                     executorClient.getOutput(jobHash, 0, 5),
                     executorClient.getOutput(jobHash, 2, 3),
-                    ]);
+                ]);
             })
             .then(function (res) {
                 expect(res[0].length).to.equal(2);

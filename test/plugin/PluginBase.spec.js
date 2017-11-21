@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true, expr:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  */
@@ -156,33 +156,33 @@ describe('Plugin Base', function () {
     it('should update META', function () {
         var pluginBase = new PluginBase(),
             generatedMETA = {
-                'FCO': '/1',
-                'element1': '/2'
+                FCO: '/1',
+                element1: '/2'
             };
 
         pluginBase.META = {
-            'FCO': '/1/2/3',
-            'element2': '/444'
+            FCO: '/1/2/3',
+            element2: '/444'
         };
 
         pluginBase.updateMETA(generatedMETA);
 
         pluginBase.META.should.deep.equal({
-            'FCO': '/1/2/3',
-            'element2': '/444'
+            FCO: '/1/2/3',
+            element2: '/444'
         });
 
         generatedMETA.should.deep.equal({
-            'FCO': '/1/2/3',
-            'element1': '/2',
-            'element2': '/444'
+            FCO: '/1/2/3',
+            element1: '/2',
+            element2: '/444'
         });
 
     });
 
     it('should get set current config', function () {
         var pluginBase = new PluginBase(),
-            config = {'key1': 42};
+            config = {key1: 42};
 
         pluginBase.setCurrentConfig(config);
         pluginBase.getCurrentConfig().should.equal(config);
@@ -196,33 +196,33 @@ describe('Plugin Base', function () {
         // emulate plugin override
         pluginBase.getConfigStructure = function () {
             return [{
-                'name': 'logChildrenNames',
-                'displayName': 'Log Children Names',
-                'description': '',
-                'value': true, // this is the 'default config'
-                'valueType': 'boolean',
-                'readOnly': false
+                name: 'logChildrenNames',
+                displayName: 'Log Children Names',
+                description: '',
+                value: true, // this is the 'default config'
+                valueType: 'boolean',
+                readOnly: false
             }, {
-                'name': 'logLevel',
-                'displayName': 'Logger level',
-                'description': '',
-                'value': 'info',
-                'valueType': 'string',
-                'valueItems': [
+                name: 'logLevel',
+                displayName: 'Logger level',
+                description: '',
+                value: 'info',
+                valueType: 'string',
+                valueItems: [
                     'debug',
                     'info',
                     'warn',
                     'error'
                 ],
-                'readOnly': false
+                readOnly: false
             }, {
-                'name': 'maxChildrenToLog',
-                'displayName': 'Maximum children to log',
-                'description': 'Set this parameter to blabla',
-                'value': 4,
-                'minValue': 1,
-                'valueType': 'number',
-                'readOnly': false
+                name: 'maxChildrenToLog',
+                displayName: 'Maximum children to log',
+                description: 'Set this parameter to blabla',
+                value: 4,
+                minValue: 1,
+                valueType: 'number',
+                readOnly: false
             }];
         };
 
@@ -232,9 +232,9 @@ describe('Plugin Base', function () {
 
         // getDefaultConfig returns with a PluginConfig object we should serialize it.
         defaultConfig.serialize().should.deep.equal({
-            'logChildrenNames': true,
-            'logLevel': 'info',
-            'maxChildrenToLog': 4
+            logChildrenNames: true,
+            logLevel: 'info',
+            maxChildrenToLog: 4
         });
     });
 

@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * This propagates the events from the storage to the addon-handler process.
  *
@@ -22,7 +22,7 @@ function AddOnEventPropagator(storage, mainLogger, gmeConfig) {
     var logger = mainLogger.fork('AddOnEventPropagator'),
         statusUrl,
         addOnWorkerManager,
-        COPY = function (obj) {
+        copy = function (obj) {
             return JSON.parse(JSON.stringify(obj));
         };
 
@@ -49,13 +49,13 @@ function AddOnEventPropagator(storage, mainLogger, gmeConfig) {
     }
 
     function branchJoined(_s, data) {
-        data = COPY(data);
+        data = copy(data);
         data.event = CONSTANTS.STORAGE.BRANCH_JOINED;
         _sendStartCommand(data);
     }
 
     function branchUpdated(_s, data) {
-        data = COPY(data);
+        data = copy(data);
         data.event = CONSTANTS.STORAGE.BRANCH_HASH_UPDATED;
         _sendStartCommand(data);
     }

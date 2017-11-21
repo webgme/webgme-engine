@@ -3,8 +3,12 @@
 echo "BROWSER = $TEST_BROWSER"
 echo "TEST_FOLDER = $TEST_FOLDER"
 echo "RECURSIVE = $RECURSIVE"
+echo "TRAVIS_LINT_TEST = $TRAVIS_LINT_TEST"
 
-if [ "$TEST_BROWSER" == "true" ]
+if [ "$TRAVIS_LINT_TEST" == "true" ]
+then
+  export COMMAND="npm run lint"
+elif [ "$TEST_BROWSER" == "true" ]
 then
   export COMMAND="node ./node_modules/karma/bin/karma start karma.conf.js --browsers Firefox --single-run"
 else

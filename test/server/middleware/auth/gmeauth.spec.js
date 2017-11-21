@@ -1,5 +1,5 @@
 /*globals require*/
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author ksmyth / https://github.com/ksmyth
  * @author lattmann / https://github.com/lattmann
@@ -14,7 +14,7 @@ describe('GME authentication', function () {
 
     var gmeConfig = testFixture.getGmeConfig(),
         GMEAuth = testFixture.GMEAuth,
-        __should = testFixture.should,
+        __should = testFixture.should, //eslint-disable-line
         expect = testFixture.expect,
         Q = testFixture.Q,
 
@@ -1021,7 +1021,7 @@ describe('GME authentication', function () {
             .then(function () {
                 return auth.listOrganizations({});
             }).then(function (organizations) {
-            expect(organizations).to.deep.include({
+                expect(organizations).to.deep.include({
                     _id: orgName,
                     info: {},
                     projects: {},
@@ -1037,7 +1037,7 @@ describe('GME authentication', function () {
                     admins: [],
                     users: []
                 });
-        }).nodeify(done);
+            }).nodeify(done);
     });
 
     it('should fail to add dup organization', function (done) {

@@ -1,5 +1,5 @@
-/*globals define, console*/
-/*jshint browser: true, node:true*/
+/*globals define, Uint8Array, ArrayBuffer*/
+/*eslint-env node, browser*/
 
 /**
  * Client module for accessing the blob.
@@ -35,6 +35,7 @@ define([
         if (parameters && parameters.logger) {
             this.logger = parameters.logger;
         } else {
+            /*eslint-disable no-console*/
             var doLog = function () {
                 console.log.apply(console, arguments);
             };
@@ -46,6 +47,7 @@ define([
                 error: doLog
             };
             console.warn('Since v1.3.0 BlobClient requires a logger, falling back on console.log.');
+            /*eslint-enable no-console*/
         }
 
         if (parameters && parameters.uploadProgressHandler) {
@@ -175,11 +177,13 @@ define([
         this.logger.debug('putFile', name);
 
         function toArrayBuffer(buffer) {
-            var ab = new ArrayBuffer(buffer.length);
-            var view = new Uint8Array(ab);
+            var ab = new ArrayBuffer(buffer.length),
+                view = new Uint8Array(ab);
+
             for (var i = 0; i < buffer.length; ++i) {
                 view[i] = buffer[i];
             }
+
             return ab;
         }
 
@@ -279,7 +283,8 @@ define([
      * @param {object.<string, string|Buffer|ArrayBuffer>} o - Keys are file names and values the content.
      * @param {function} [callback] - if provided no promise will be returned.
      *
-     * @return {external:Promise} On success the promise will be resolved with {object} <b>fileNamesToMetadataHashes</b>.<br>
+     * @return {external:Promise} On success the promise will be resolved with {object}
+     * <b>fileNamesToMetadataHashes</b>.<br>
      * On error the promise will be rejected with {@link Error} <b>error</b>.
      */
     BlobClient.prototype.putFiles = function (o, callback) {

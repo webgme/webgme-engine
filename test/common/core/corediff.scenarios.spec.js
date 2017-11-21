@@ -1,4 +1,4 @@
-/*jshint node: true, mocha: true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -88,11 +88,11 @@ describe('corediff scenarios', function () {
             });
     }
 
-    function logNodes(nodes) {
-        nodes.forEach(function (node) {
-            console.log(core.getPath(node), 'base', core.getBase(node) ? core.getPath(core.getBase(node)) : null);
-        });
-    }
+    // function logNodes(nodes) {
+    //     nodes.forEach(function (node) {
+    //         console.log(core.getPath(node), 'base', core.getBase(node) ? core.getPath(core.getBase(node)) : null);
+    //     });
+    // }
 
     // Children creation
     it('should assign a new relid when child created in both trees', function (done) {
@@ -508,12 +508,13 @@ describe('corediff scenarios', function () {
                         parent: r.root,
                         base: r.fco,
                         relid: 'instance'
-                    }),
-                    conflictChild = core.createNode({
-                        parent: base,
-                        base: r.fco,
-                        relid: 'conflictRelid'
                     });
+
+                core.createNode({
+                    parent: base,
+                    base: r.fco,
+                    relid: 'conflictRelid'
+                });
 
                 basePath = core.getPath(base);
                 toBecomeInstancePath = core.getPath(instance);

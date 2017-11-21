@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 /**
  * TODO: Come up with an appropriate name for this.
  * TODO: Proper implementation needed, e.g. error handling.

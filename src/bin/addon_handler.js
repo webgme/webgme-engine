@@ -1,5 +1,7 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -193,8 +195,8 @@ if (require.main === module) {
     program
         .version('2.13.0')
         .description('Starts an add-on machine that handles addOns based on clients connecting to branches. ' +
-            'This script can be used for two purposes: 1) if multiple webgme back-ends are used they should not spawn ' +
-            'their own add-on workers, instead they should all be configured to post to this server ' +
+            'This script can be used for two purposes: 1) if multiple webgme back-ends are used they should not ' +
+            'spawn their own add-on workers, instead they should all be configured to post to this server ' +
             '(config.addOn.workerUrl) 2) it enables all running add-ons to be authenticated as one predefined user.')
         .option('-u, --webgmeUrl [string]', 'Url to the webgme server. If not given it will assume http://127.0.0.1' +
             ':%gmeConfig.server.port%')

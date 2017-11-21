@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true, expr:true*/
+/*eslint-env node, mocha*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -13,7 +13,7 @@ describe('meta core', function () {
         logger = testFixture.logger.fork('metacore.spec'),
         storage,
         projectName = 'coreMetaTesting',
-        __should = testFixture.should,
+        __should = testFixture.should, //eslint-disable-line
         expect = testFixture.expect,
         projectId = testFixture.projectName2Id(projectName),
         core,
@@ -58,7 +58,7 @@ describe('meta core', function () {
             })
             .then(function (dbProject) {
                 var project = new testFixture.Project(dbProject, storage, logger, gmeConfig);
-                core = new testFixture.WebGME.core(project, {
+                core = new testFixture.WebGME.Core(project, {
                     globConf: gmeConfig,
                     logger: testFixture.logger.fork('meta-core:core')
                 });
@@ -400,11 +400,11 @@ describe('meta core', function () {
             defTarget2 = core.createNode({base: defFCO, parent: defRoot, relid: 'T2'}),
             defOwner1 = core.createNode({base: defFCO, parent: defRoot, relid: 'O1'}),
             defOwner2 = core.createNode({base: defOwner1, parent: defRoot, relid: 'O2'}),
-            defInst1 = core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'}),
             defInst2 = core.createNode({base: defOwner2, parent: defRoot, relid: 'I2'}),
             defInstT1 = core.createNode({base: defTarget1, parent: defRoot, relid: 'IT1'}),
             defInstT2 = core.createNode({base: defTarget2, parent: defRoot, relid: 'IT2'});
 
+        core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'});
         core.setAttributeMeta(defFCO, 'name', {type: 'string'});
         core.setPointerMetaTarget(defOwner1, 'ptr', defFCO);
         core.setPointerMetaLimits(defOwner1, 'ptr', 0, 1);
@@ -443,10 +443,11 @@ describe('meta core', function () {
             defTarget2 = core.createNode({base: defFCO, parent: defRoot, relid: 'T2'}),
             defOwner1 = core.createNode({base: defFCO, parent: defRoot, relid: 'O1'}),
             defOwner2 = core.createNode({base: defOwner1, parent: defRoot, relid: 'O2'}),
-            defInst1 = core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'}),
             defInst2 = core.createNode({base: defOwner2, parent: defRoot, relid: 'I2'}),
             defInstT1 = core.createNode({base: defTarget1, parent: defRoot, relid: 'IT1'}),
             defInstT2 = core.createNode({base: defTarget2, parent: defRoot, relid: 'IT2'});
+
+        core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'});
 
         core.setAttributeMeta(defFCO, 'name', {type: 'string'});
         core.setPointerMetaTarget(defOwner1, 'ptr', defFCO);
@@ -482,8 +483,9 @@ describe('meta core', function () {
             defTarget2 = core.createNode({base: defFCO, parent: defRoot, relid: 'T2'}),
             defOwner1 = core.createNode({base: defFCO, parent: defRoot, relid: 'O1'}),
             defOwner2 = core.createNode({base: defOwner1, parent: defRoot, relid: 'O2'}),
-            defInst1 = core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'}),
             defInst2 = core.createNode({base: defOwner2, parent: defRoot, relid: 'I2'});
+
+        core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'});
 
         core.setChildMeta(defOwner1, defTarget1);
         core.setChildMeta(defOwner2, defTarget2);
@@ -506,11 +508,11 @@ describe('meta core', function () {
             defTarget2 = core.createNode({base: defFCO, parent: defRoot, relid: 'T2'}),
             defOwner1 = core.createNode({base: defFCO, parent: defRoot, relid: 'O1'}),
             defOwner2 = core.createNode({base: defOwner1, parent: defRoot, relid: 'O2'}),
-            defInst1 = core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'}),
             defInst2 = core.createNode({base: defOwner2, parent: defRoot, relid: 'I2'}),
             defInstT1 = core.createNode({base: defTarget1, parent: defRoot, relid: 'IT1'}),
             defInstT2 = core.createNode({base: defTarget2, parent: defRoot, relid: 'IT2'});
 
+        core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'});
         core.setAttributeMeta(defFCO, 'name', {type: 'string'});
         core.setAspectMetaTarget(defOwner1, 'ptr', defFCO);
         core.setAspectMetaTarget(defOwner2, 'ptr', defTarget2);

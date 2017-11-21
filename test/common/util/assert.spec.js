@@ -1,5 +1,5 @@
-/* globals TESTING */
-/*jshint node:true, mocha:true, expr:true*/
+/* globals TESTING: true */
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  */

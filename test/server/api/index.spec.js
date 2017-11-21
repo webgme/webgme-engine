@@ -1,6 +1,5 @@
 /*globals require*/
-/*jshint node:true, mocha:true, expr:true*/
-/*jscs:disable maximumLineLength*/
+/*eslint-env node, mocha*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -37,7 +36,9 @@ describe('ORGANIZATION REST API', function () {
                         gmeAuth.addUser('userAdminOrg', 'user@example.com', 'plaintext', false, {overwrite: true}),
                         gmeAuth.addUser('userAdminOrg2', 'user@example.com', 'plaintext', false, {overwrite: true}),
                         gmeAuth.addUser('userAddedToOrg', 'user@example.com', 'plaintext', false, {overwrite: true}),
-                        gmeAuth.addUser('userRemovedFromOrg', 'user@example.com', 'plaintext', false, {overwrite: true}),
+                        gmeAuth.addUser('userRemovedFromOrg', 'user@example.com', 'plaintext', false, {
+                            overwrite: true
+                        }),
                         gmeAuth.addOrganization('orgInit', {someInfo: true}),
                         gmeAuth.addOrganization('orgToAddAdmin', null),
                         gmeAuth.addOrganization('orgToRemoveAdmin', null),
@@ -208,7 +209,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(200, err);
@@ -239,7 +240,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(400);
@@ -268,7 +269,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
@@ -504,25 +505,25 @@ describe('ORGANIZATION REST API', function () {
             it('should force delete org site-admin DELETE /api/v1/orgs/orgToDelete2?force=true', function (done) {
                 var orgName = 'orgDisabledForceDelete';
 
-                    agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
-                        .query({force: true})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
-                        .end(function (err, res2) {
-                            try {
-                                expect(res2.status).equal(204, err);
-                            } catch (e) {
-                                done(e);
-                                return;
-                            }
-                            gmeAuth.getOrganization(orgName, {disabled: undefined})
-                                .then(function() {
-                                    throw new Error('Should have failed!');
-                                })
-                                .catch(function (err) {
-                                    expect(err.message).to.include('no such organization');
-                                })
-                                .nodeify(done);
-                        });
+                agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
+                    .query({force: true})
+                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .end(function (err, res2) {
+                        try {
+                            expect(res2.status).equal(204, err);
+                        } catch (e) {
+                            done(e);
+                            return;
+                        }
+                        gmeAuth.getOrganization(orgName, {disabled: undefined})
+                            .then(function () {
+                                throw new Error('Should have failed!');
+                            })
+                            .catch(function (err) {
+                                expect(err.message).to.include('no such organization');
+                            })
+                            .nodeify(done);
+                    });
             });
 
             it('should 204 force delete non existing org site-admin DELETE /api/v1/orgs/orgToDelete2?force=true',
@@ -573,7 +574,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
 
@@ -695,7 +696,7 @@ describe('ORGANIZATION REST API', function () {
 
                             agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
                                 .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext')
-                                        .toString('base64'))
+                                    .toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
 
@@ -718,7 +719,7 @@ describe('ORGANIZATION REST API', function () {
 
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
                         .set('Authorization', 'Basic ' + new Buffer('admin:admin')
-                                .toString('base64'))
+                            .toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(404, err);
                             done();
@@ -733,7 +734,7 @@ describe('ORGANIZATION REST API', function () {
 
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
                         .set('Authorization', 'Basic ' + new Buffer('admin:admin')
-                                .toString('base64'))
+                            .toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(204, err);
                             done();
@@ -841,18 +842,17 @@ describe('ORGANIZATION REST API', function () {
                 }
             );
 
-            it('should 404 when removing user admin in non-existing org DELETE /api/v1/orgs/noExist/admins/userAddedToOrg',
-                function (done) {
-                    var orgId = 'noExist',
-                        userId = 'userAddedToOrg';
-                    agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
-                        .end(function (err, res2) {
-                            expect(res2.status).equal(404, err);
-                            done();
-                        });
-                }
-            );
+            it('should 404 when removing user admin in non-existing org DELETE ' +
+                '/api/v1/orgs/noExist/admins/userAddedToOrg', function (done) {
+                var orgId = 'noExist',
+                    userId = 'userAddedToOrg';
+                agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
+                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .end(function (err, res2) {
+                        expect(res2.status).equal(404, err);
+                        done();
+                    });
+            });
 
             it('should 204 when removing non-existing user admin in org DELETE /api/v1/orgs/orgInit/admins/noExist',
                 function (done) {

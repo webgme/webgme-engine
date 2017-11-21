@@ -1,10 +1,11 @@
 /*globals define*/
-/*jshint node:true, browser:true, newcap:false*/
+/*eslint-env node, browser*/
+
 /**
  * @author kecso / https://github.com/kecso
  */
 
-define(['q', 'common/core/constants'], function (Q, CONSTANTS) {
+define(['q'], function (Q) {
     'use strict';
 
     /**
@@ -96,7 +97,8 @@ define(['q', 'common/core/constants'], function (Q, CONSTANTS) {
                             definitionInfo = core.getSetDefinitionInfo(visited, parameters.newName, members[i]);
                             if (definitionInfo.ownerPath === nodePath &&
                                 definitionInfo.targetPath === parameters.targetPath) {
-                                core.moveMember(visited, core.getPath(members[i]), parameters.oldName, parameters.newName);
+                                core.moveMember(visited, core.getPath(members[i]),
+                                    parameters.oldName, parameters.newName);
                             }
                         }
                     }

@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -9,7 +9,7 @@ define([
     'common/util/sha1',
     'common/util/assert',
     'common/util/canon'
-], function (SHA1, ASSERT, CANON) {
+], function (generateSHA1, ASSERT, CANON) {
     'use strict';
 
     var keyType = null;
@@ -33,7 +33,7 @@ define([
             case 'rand160Bits':
                 return rand160Bits();
             default: //plainSHA1
-                return SHA1(CANON.stringify(object));
+                return generateSHA1(CANON.stringify(object));
         }
     };
 });

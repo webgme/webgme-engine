@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * This file tests the ServerWorkerManager w.r.t. simple-workers.
  * @author kecso / https://github.com/kecso

@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true*/
+/*eslint-env node, mocha*/
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -97,7 +97,7 @@ describe('Core GUID handling', function () {
                 return Q.allDone([
                     core.loadByPath(rootNode, '/682825457'),
                     core.loadByPath(rootNode, '/1036661779')
-                ])
+                ]);
             })
             .then(function (nodes) {
                 expect(nodes).to.have.length(2);

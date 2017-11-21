@@ -1,5 +1,5 @@
 /*globals define, require, document*/
-/*jshint browser:true, camelcase:false*/
+/*eslint-env browser*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -7,7 +7,7 @@
 define(['common/util/url'], function (URL) {
     'use strict';
 
-    function IoClient (mainLogger, gmeConfig) {
+    function IoClient(mainLogger, gmeConfig) {
         var logger = mainLogger.fork('socketio-browserclient');
 
         this.connect = function (callback) {

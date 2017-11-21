@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  */
@@ -28,7 +28,6 @@ describe('storage storageclasses simpleapi', function () {
         gmeAuth,
         safeStorage,
         storage,
-        webgmeToken,
 
         projectName = 'SimpleAPIProject',
         shardedProjectName = 'ShardedSimpleAPIProject',
@@ -143,7 +142,6 @@ describe('storage storageclasses simpleapi', function () {
         openSocketIo(server, agent, guestAccount, guestAccount)
             .then(function (result) {
                 socket = result.socket;
-                webgmeToken = result.webgmeToken;
                 storage = NodeStorage.createStorage(null,
                     result.webgmeToken,
                     logger,
@@ -400,10 +398,12 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should setBranchHash and deleteBranch', function (done) {
-        Q.ninvoke(storage, 'setBranchHash', projectName2Id(projectName), 'newBranchToDelete', importResult.commitHash, '')
+        Q.ninvoke(storage, 'setBranchHash', projectName2Id(projectName), 'newBranchToDelete',
+            importResult.commitHash, '')
             .then(function (result) {
                 expect(result.status).to.equal('SYNCED');
-                return Q.ninvoke(storage, 'deleteBranch', projectName2Id(projectName), 'newBranchToDelete', importResult.commitHash);
+                return Q.ninvoke(storage, 'deleteBranch', projectName2Id(projectName),
+                    'newBranchToDelete', importResult.commitHash);
             })
             .then(function (result) {
                 expect(result.status).to.equal('SYNCED');

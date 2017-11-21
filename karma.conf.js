@@ -1,4 +1,6 @@
-/*jshint node: true */
+/*eslint-env node*/
+/*eslint no-console: 0*/
+
 // Karma configuration
 // Generated on Thu Mar 12 2015 16:54:00 GMT-0500 (Central Daylight Time)
 
@@ -83,7 +85,8 @@ var testFixture = require('./test/_globals.js'),
                         if (projectInfo.hasOwnProperty('branches') && projectInfo.branches.length > 1) {
                             // First one is already added thus i = 1.
                             for (i = 1; i < projectInfo.branches.length; i += 1) {
-                                createBranches.push(storage.createBranch({
+                                createBranches.push(storage.createBranch(
+                                    {
                                         projectId: testFixture.projectName2Id(projectInfo.name),
                                         branchName: projectInfo.branches[i],
                                         hash: importResult.commitHash
@@ -161,8 +164,7 @@ module.exports = function (config) {
 
 
         // list of files to exclude
-        exclude: [
-        ],
+        exclude: [],
 
 
         // preprocess matching files before serving them to the browser

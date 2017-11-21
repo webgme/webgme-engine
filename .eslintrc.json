@@ -1,0 +1,95 @@
+{
+  "env": {},
+  "globals": {},
+  "extends": "eslint:recommended",
+  "rules": {
+    "no-bitwise": 2,
+    "camelcase": 2,
+    "curly": [
+      2,
+      "all"
+    ],
+    "eqeqeq": 2,
+    "wrap-iife": [
+      2,
+      "any"
+    ],
+    "indent": [
+      2,
+      4,
+      {
+        "FunctionExpression": {
+          "parameters": "first"
+        },
+        "SwitchCase": 1
+      }
+    ],
+    "no-use-before-define": [
+      2,
+      {
+        "functions": false
+      }
+    ],
+    "new-cap": [2, {
+      "newIsCap": true,
+      "capIsNew": true,
+      "capIsNewExceptions": ["Q", "ASSERT", "GUID", "Router"],
+      "newIsCapExceptions": []
+    }],
+    "no-caller": 2,
+    "quotes": [
+      2,
+      "single"
+    ],
+    "no-undef": 2,
+    "no-unused-vars": 2,
+    "strict": [
+      0,
+      "safe"
+    ],
+    "no-mixed-spaces-and-tabs": 2,
+    "key-spacing": [
+      2,
+      {
+        "beforeColon": false,
+        "afterColon": true
+      }
+    ],
+    "brace-style": [
+      2,
+      "1tbs",
+      {
+        "allowSingleLine": true
+      }
+    ],
+    "space-infix-ops": 2,
+    "keyword-spacing": 2,
+    "space-before-blocks": [
+      2,
+      "always"
+    ],
+    "space-before-function-paren": [
+      2,
+      {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "always"
+      }
+    ],
+    "comma-spacing": 2,
+    "space-in-parens": 2,
+    "comma-style": [
+      2,
+      "last"
+    ],
+    "quote-props": [
+      2,
+      "as-needed"
+    ],
+    "max-len": [
+      2,
+      120
+    ],
+    "semi": 2
+  }
+}

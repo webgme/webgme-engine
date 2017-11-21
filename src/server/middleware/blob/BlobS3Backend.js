@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -59,13 +59,13 @@ BlobS3Backend.prototype.constructor = BlobS3Backend;
 BlobS3Backend.prototype.putObject = function (readStream, bucket, callback) {
     // TODO generate a GUID or something for the temporary filename to allow parallel functioning
     var self = this,
-        tempName = GUID() + '.tbf',// TODO: create this in the system temp folder
+        tempName = GUID() + '.tbf', // TODO: create this in the system temp folder
         shasum = crypto.createHash(this.shaMethod),
         size = 0;
 
     // body must be a string or a readable file stream.
     var ready = function (body) {
-        self.s3.putObject({Bucket: self.tempBucket, Key: tempName, Body: body}, function (err, data) {
+        self.s3.putObject({Bucket: self.tempBucket, Key: tempName, Body: body}, function (err/*, data*/) {
             // TODO: error handling here
             if (err) {
                 callback(err);
@@ -78,13 +78,13 @@ BlobS3Backend.prototype.putObject = function (readStream, bucket, callback) {
                 CopySource: self.tempBucket + '/' + tempName,
                 Bucket: bucket,
                 Key: hash
-            }, function (err, data) {
+            }, function (err/*, data*/) {
                 if (err) {
                     callback(err);
                     return;
                 }
 
-                self.s3.deleteObject({Bucket: self.tempBucket, Key: tempName}, function (err, data) {
+                self.s3.deleteObject({Bucket: self.tempBucket, Key: tempName}, function (err/*, data*/) {
                     if (err) {
                         callback(err);
                         return;

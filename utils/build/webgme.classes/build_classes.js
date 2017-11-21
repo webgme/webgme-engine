@@ -1,4 +1,5 @@
-/*jshint node:true*/
+/*eslint-env node*/
+/*eslint no-console: 0*/
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -20,8 +21,7 @@ var requirejs = require('requirejs'),
             superagent: './common/lib/superagent/superagent',
             debug: './common/lib/debug/debug',
             q: './common/lib/q/q',
-            chance: './common/lib/chance/chance',
-            teststorage: '../teststorage'
+            chance: './common/lib/chance/chance'
         },
         optimize: 'none',
         generateSourceMaps: true,

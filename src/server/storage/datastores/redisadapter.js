@@ -1,5 +1,4 @@
-/*jshint node:true, newcap:false*/
-
+/*eslint-env node*/
 /**
  * @module Server:Storage:Redis
  * @author pmeijer / https://github.com/pmeijer
@@ -217,14 +216,12 @@ function RedisAdapter(mainLogger, gmeConfig) {
     }
 
     function duplicateProject(projectId, newProjectId, callback) {
-        var project,
-            newProject;
+        var newProject;
 
         logger.warn('duplicateProject can use a lot of memory for redis', projectId);
 
         return self.openProject(projectId)
-            .then(function (project_) {
-                project = project_;
+            .then(function () {
                 return self.createProject(newProjectId);
             })
             .then(function (newProject_) {

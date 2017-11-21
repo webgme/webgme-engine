@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true, bitwise: false*/
+/*eslint-env node, browser*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -9,6 +9,25 @@
 
 define(['chance', 'common/Constants'], function (ChanceJs, CONSTANTS) {
     'use strict';
+
+    var guidPool = '0123456789abcdef',
+        relidPool = '0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM',
+        excludeList = ['atr', 'reg', 'ovr'],
+        maxTry = 2,
+        chance = new ChanceJs(),
+        randFunction = function (max) {
+            //return Math.floor(Math.random() * max);
+            return chance.natural({max: max - 1});
+        },
+        relidRegexp = _generateRelidRegexp(),
+        random = {
+            generateGuid: generateGuid,
+            generateRelid: generateRelid,
+            isValidRelid: isValidRelid,
+            isValidPath: isValidPath,
+            relidToInteger: relidToInteger,
+            generateRandomString: generateRandomString
+        };
 
     function _generateRelidRegexp() {
         var regexp = '',
@@ -31,14 +50,14 @@ define(['chance', 'common/Constants'], function (ChanceJs, CONSTANTS) {
     }
 
     function generateGuid() {
-        var S4 = function () {
+        var s4 = function () {
             return getRandomCharacter(guidPool) +
                 getRandomCharacter(guidPool) +
                 getRandomCharacter(guidPool) +
                 getRandomCharacter(guidPool);
         };
 
-        return (S4() + S4() + '-' + S4() + '-' + S4() + '-' + S4() + '-' + S4() + S4() + S4());
+        return (s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4());
     }
 
     function generateRelid(object, minimalLength) {
@@ -104,14 +123,14 @@ define(['chance', 'common/Constants'], function (ChanceJs, CONSTANTS) {
 
     function relidToInteger(relid) {
         var num = 'NaN',
-            negative = false,
+            //negative = false,
             i;
 
         if (isValidRelid(relid)) {
             num = 0;
             for (i = 0; i < relid.length; i += 1) {
                 if (relid.charAt(i) === '-') {
-                    negative = true;
+                    //negative = true;
                 } else {
                     num = num * relidPool.length;
                     num += relidPool.indexOf(relid.charAt(i));
@@ -121,25 +140,6 @@ define(['chance', 'common/Constants'], function (ChanceJs, CONSTANTS) {
 
         return num;
     }
-
-    var guidPool = '0123456789abcdef',
-        relidPool = '0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM',
-        excludeList = ['atr', 'reg', 'ovr'],
-        maxTry = 2,
-        chance = new ChanceJs(),
-        randFunction = function (max) {
-            //return Math.floor(Math.random() * max);
-            return chance.natural({max: max - 1});
-        },
-        relidRegexp = _generateRelidRegexp(),
-        random = {
-            generateGuid: generateGuid,
-            generateRelid: generateRelid,
-            isValidRelid: isValidRelid,
-            isValidPath: isValidPath,
-            relidToInteger: relidToInteger,
-            generateRandomString: generateRandomString
-        };
 
     return random;
 });

@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -16,7 +16,6 @@ describe('standalone multiple back-ends', function () {
         superagent = testFixture.superagent,
         Q = testFixture.Q,
         logger = testFixture.logger.fork('standalone multiple back-ends'),
-        agent,
         server1,
         server2,
         cfg1,
@@ -88,7 +87,6 @@ describe('standalone multiple back-ends', function () {
 
     beforeEach(function () {
         connStorages = [];
-        agent = superagent.agent();
     });
 
     afterEach(function (done) {

@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  */
@@ -51,21 +51,21 @@ describe('storage util', function () {
     });
 
     it('checkHashConsistency should return false if hash does not match object', function () {
-        expect(StorageUtil.checkHashConsistency(gmeConfig, {_id: '#somehash', 'atr': {'name': 'FCO'}}), '#hash')
+        expect(StorageUtil.checkHashConsistency(gmeConfig, {_id: '#somehash', atr: {name: 'FCO'}}), '#hash')
             .to.equal(false);
     });
 
     it('checkHashConsistency should return true if config.storage.disableHashChecks = true', function () {
         var gmeConfigCopy = JSON.parse(JSON.stringify(gmeConfig));
         gmeConfigCopy.storage.disableHashChecks = true;
-        expect(StorageUtil.checkHashConsistency(gmeConfigCopy, {_id: '#somehash', 'atr': {'name': 'FCO'}}), '#hash')
+        expect(StorageUtil.checkHashConsistency(gmeConfigCopy, {_id: '#somehash', atr: {name: 'FCO'}}), '#hash')
             .to.equal(true);
     });
 
     it('checkHashConsistency should return true if config.storage.keyType = "rand160Bits"', function () {
         var gmeConfigCopy = JSON.parse(JSON.stringify(gmeConfig));
         gmeConfigCopy.storage.keyType = 'rand160Bits';
-        expect(StorageUtil.checkHashConsistency(gmeConfigCopy, {_id: '#somehash', 'atr': {'name': 'FCO'}}), '#hash')
+        expect(StorageUtil.checkHashConsistency(gmeConfigCopy, {_id: '#somehash', atr: {name: 'FCO'}}), '#hash')
             .to.equal(true);
     });
 });

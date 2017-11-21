@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -14,7 +14,8 @@ var PluginManagerBase = requireJS('plugin/managerbase'),
  * @param {object} - mainLogger - logger for manager, plugin-logger will fork from this logger.
  * @param {object} gmeConfig - global configuration
  * @param {object} [opts] - Optional options
- * @param {object} [opts.writeBlobFilesDir] - If defined will put blob files with their name inside %cwd%/%writeBlobFilesDir%
+ * @param {object} [opts.writeBlobFilesDir] - If defined will put blob files with their
+ * name inside %cwd%/%writeBlobFilesDir%
  * @constructor
  * @ignore
  */

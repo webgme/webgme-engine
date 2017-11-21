@@ -1,4 +1,4 @@
-/*jshint node: true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -297,12 +297,12 @@ describe('ExecutorServer', function () {
                 agent.post(serverBaseUrl + '/rest/executor/cancel/existingHash')
                     .send({secret: 'bla_bla'})
                     .end(function (err, res) {
-                    should.equal(res.status, 403, err);
-                    server.stop(function (err) {
-                        server = null;
-                        done(err);
+                        should.equal(res.status, 403, err);
+                        server.stop(function (err) {
+                            server = null;
+                            done(err);
+                        });
                     });
-                });
             });
         });
     });

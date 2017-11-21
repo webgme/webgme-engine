@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  * @author pmeijer / https://github.com/pmeijer
@@ -118,9 +118,9 @@ describe('common storage project', function () {
 
     afterEach(function (done) {
         storage.close(function (err) {
-                socket.disconnect();
-                done(err);
-            });
+            socket.disconnect();
+            done(err);
+        });
     });
 
     it('should openProject', function (done) {
@@ -142,15 +142,10 @@ describe('common storage project', function () {
     });
 
     it('should getProjectInfo', function (done) {
-        var project,
-            branches,
-            access;
-
+        var project;
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.getProjectInfo();
             })
@@ -163,15 +158,11 @@ describe('common storage project', function () {
     });
 
     it('should getBranches', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.getBranches();
             })
@@ -182,15 +173,11 @@ describe('common storage project', function () {
     });
 
     it('should getTags', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.getTags();
             })
@@ -201,15 +188,11 @@ describe('common storage project', function () {
     });
 
     it('should getCommits', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.getCommits((new Date()).getTime(), 100);
             })
@@ -221,15 +204,11 @@ describe('common storage project', function () {
     });
 
     it('should getHistory from branch', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.getHistory('master', 100);
             })
@@ -242,14 +221,12 @@ describe('common storage project', function () {
 
     it('should getHistory from array of branches', function (done) {
         var project,
-            branches,
-            access;
+            branches;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
                 branches = result[1];
-                access = result[2];
 
                 return project.getHistory(Object.keys(branches), 100);
             })
@@ -262,16 +239,11 @@ describe('common storage project', function () {
 
     it('should makeCommit to branch without branch open', function (done) {
         var project,
-            branches,
-            access,
-
             numCommitsBefore;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.getCommits((new Date()).getTime(), 100);
             })
@@ -287,21 +259,17 @@ describe('common storage project', function () {
                 return project.getCommits((new Date()).getTime(), 100);
             })
             .then(function (commits) {
-                numCommitsBefore = commits.length - 1;
+                expect(commits.length - 1).to.equal(numCommitsBefore);
             })
             .nodeify(done);
     });
 
     it('should getCommonAncestorCommit', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.getCommonAncestorCommit(commitHash1, commitHash2);
             })
@@ -312,15 +280,11 @@ describe('common storage project', function () {
     });
 
     it('should fail getCommonAncestorCommit when hash does not exist', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.getCommonAncestorCommit(commitHash1, '#doesNotExist');
             })
@@ -335,15 +299,11 @@ describe('common storage project', function () {
     });
 
     it('should setBranchHash without branch open', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.setBranchHash('setBranchHash_name', originalHash, '');
             })
@@ -355,15 +315,11 @@ describe('common storage project', function () {
     });
 
     it('should getBranchHash', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.setBranchHash('getBranchHash_name', originalHash, '');
             })
@@ -378,15 +334,11 @@ describe('common storage project', function () {
     });
 
     it('should createBranch', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.createBranch('createBranch_name', originalHash);
             })
@@ -398,15 +350,11 @@ describe('common storage project', function () {
     });
 
     it('should deleteBranch', function (done) {
-        var project,
-            branches,
-            access;
+        var project;
 
         Q.nfcall(storage.openProject, projectName2Id(projectName))
             .then(function (result) {
                 project = result[0];
-                branches = result[1];
-                access = result[2];
 
                 return project.createBranch('removeBranch_name', originalHash);
             })
@@ -453,9 +401,7 @@ describe('common storage project', function () {
 
         it('should cleanUp', function (done) {
             var project,
-                branches,
                 branchName = 'cleanUpName',
-                access,
                 hashUpdateHandler = function (data, commitQueue, updateQueue, callback) {
                     callback(null, true);
                 },
@@ -467,8 +413,6 @@ describe('common storage project', function () {
             Q.nfcall(storage.openProject, projectName2Id(projectName))
                 .then(function (result) {
                     project = result[0];
-                    branches = result[1];
-                    access = result[2];
 
                     return project.createBranch(branchName, originalHash);
                 })
@@ -498,9 +442,7 @@ describe('common storage project', function () {
 
         it('should getLocalHash and getOriginHash', function (done) {
             var project,
-                branches,
                 branchName = 'getLocalHash_name',
-                access,
                 hashUpdateHandler = function (data, commitQueue, updateQueue, callback) {
                     callback(null, true);
                 },
@@ -512,8 +454,6 @@ describe('common storage project', function () {
             Q.nfcall(storage.openProject, projectName2Id(projectName))
                 .then(function (result) {
                     project = result[0];
-                    branches = result[1];
-                    access = result[2];
 
                     return project.createBranch(branchName, originalHash);
                 })
@@ -534,8 +474,6 @@ describe('common storage project', function () {
 
         it('should updateHashes', function (done) {
             var project,
-                branches,
-                access,
                 hashUpdateHandler = function (data, commitQueue, updateQueue, callback) {
                     callback(null, true);
                 },
@@ -547,8 +485,6 @@ describe('common storage project', function () {
             Q.nfcall(storage.openProject, projectName2Id(projectName))
                 .then(function (result) {
                     project = result[0];
-                    branches = result[1];
-                    access = result[2];
 
                     return project.createBranch('updateHashesName', originalHash);
                 })
@@ -578,8 +514,6 @@ describe('common storage project', function () {
 
         it('should queueCommit, getCommitQueue, and getFirstCommit', function (done) {
             var project,
-                branches,
-                access,
                 hashUpdateHandler = function (data, commitQueue, updateQueue, callback) {
                     callback(null, true);
                 },
@@ -595,8 +529,6 @@ describe('common storage project', function () {
             Q.nfcall(storage.openProject, projectName2Id(projectName))
                 .then(function (result) {
                     project = result[0];
-                    branches = result[1];
-                    access = result[2];
 
                     return project.createBranch('queueCommitName', originalHash);
                 })
@@ -622,8 +554,6 @@ describe('common storage project', function () {
 
         it('should getCommitsForNewFork', function (done) {
             var project,
-                branches,
-                access,
                 hashUpdateHandler = function (data, commitQueue, updateQueue, callback) {
                     callback(null, true);
                 },
@@ -645,8 +575,6 @@ describe('common storage project', function () {
             Q.nfcall(storage.openProject, projectName2Id(projectName))
                 .then(function (result) {
                     project = result[0];
-                    branches = result[1];
-                    access = result[2];
 
                     return project.createBranch('getCommitsForNewForkName', originalHash);
                 })
@@ -675,8 +603,6 @@ describe('common storage project', function () {
 
         it('should queueUpdate, getUpdateQueue, and getFirstUpdate', function (done) {
             var project,
-                branches,
-                access,
                 hashUpdateHandler = function (data, commitQueue, updateQueue, callback) {
                     callback(null, true);
                 },
@@ -698,8 +624,6 @@ describe('common storage project', function () {
             Q.nfcall(storage.openProject, projectName2Id(projectName))
                 .then(function (result) {
                     project = result[0];
-                    branches = result[1];
-                    access = result[2];
 
                     return project.createBranch('queueUpdateName', originalHash);
                 })

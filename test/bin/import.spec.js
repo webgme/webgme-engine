@@ -1,4 +1,5 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
+/*eslint no-console: 0*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -329,7 +330,7 @@ describe('import CLI tests', function () {
                 throw new Error('project was not found after importing new version');
 
             })
-            .then(function (project) {
+            .then(function () {
                 return storage.getCommits({
                     projectId: existingProjectId,
                     before: Date.now(),

@@ -1,4 +1,5 @@
-/*jshint node: true, browser: true, bitwise: false*/
+/*globals define*/
+/*eslint-env node, browser*/
 
 /**
  * @author kecso / https://github.com/kecso

@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -22,9 +22,7 @@ describe('Plugin ImportV1 - assets', function () {
         projectName = 'Plugin_ImportV1_Assets',
         commitHash,
         aTxtHash,
-        aaTxtHash,
         bTxtHash,
-        assZipHash,
         gmeAuth,
         blobClient,
         importResult,
@@ -78,7 +76,6 @@ describe('Plugin ImportV1 - assets', function () {
                 artifact = blobClient.createArtifact('ass');
                 aTxtHash = blobHashes[0];
                 bTxtHash = blobHashes[1];
-                aaTxtHash = blobHashes[2];
                 return Q.allDone([
                     Q.ninvoke(artifact, 'addMetadataHash', 'a.txt', aTxtHash),
                     Q.ninvoke(artifact, 'addMetadataHash', 'b.txt', bTxtHash)
@@ -86,9 +83,6 @@ describe('Plugin ImportV1 - assets', function () {
             })
             .then(function () {
                 return Q.ninvoke(artifact, 'save');
-            })
-            .then(function (assHash) {
-                assZipHash = assHash;
             })
             .nodeify(done);
     });
@@ -120,12 +114,12 @@ describe('Plugin ImportV1 - assets', function () {
             .then(function () {
                 // Add the exported assets
                 return Q.allDone(files.map(function (fName) {
-                        if (fName === '7c2be6ee36611cb8a7e27a0a91b34a1066b3c756.metadata') {
-                            return Q.ninvoke(artifact, 'addFileAsSoftLink',
-                                fName, testFixture.fs.readFileSync(dir + fName));
-                        }
-                        return Q();
-                    })
+                    if (fName === '7c2be6ee36611cb8a7e27a0a91b34a1066b3c756.metadata') {
+                        return Q.ninvoke(artifact, 'addFileAsSoftLink',
+                            fName, testFixture.fs.readFileSync(dir + fName));
+                    }
+                    return Q();
+                })
                 );
             })
             .then(function () {

@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true */
+/*eslint-env node, mocha*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -402,7 +402,7 @@ describe('merge - library', function () {
                         'other setting core registry')
                 ]);
             })
-            .then(function (commitResults) {
+            .then(function () {
                 //expect(commitResults).not.to.equal(null);
                 //expect(commitResults).to.have.length(2);
 

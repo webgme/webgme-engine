@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  * @author pmeijer / https://github.com/pmeijer
@@ -24,14 +24,14 @@ describe('Seeds', function () {
             'EmptyProject',
             'SignalFlowSystem'
         ],
-        projects = [],// N.B.: this is getting populated by the createTests function
+        projects = [], // N.B.: this is getting populated by the createTests function
 
         gmeAuth,
         safeStorage,
         CC = testFixture.requirejs('common/core/users/constraintchecker'),
         metaRules = testFixture.requirejs('common/core/users/metarules'),
 
-    //guestAccount = testFixture.getGmeConfig().authentication.guestAccount,
+        //guestAccount = testFixture.getGmeConfig().authentication.guestAccount,
         serverBaseUrl,
         server;
 

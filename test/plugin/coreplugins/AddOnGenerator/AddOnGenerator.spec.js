@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author brollb / https://github.com/brollb
  */
@@ -11,7 +11,6 @@ describe('AddOnGenerator', function () {
     var logger = testFixture.logger.fork('AddOnGeneratorTest'),
         requirejs = testFixture.requirejs,
         expect = testFixture.expect,
-        path = testFixture.path,
         esprima = require('esprima'),
         pluginConfig = {
             addOnId: 'NewAddOn',
@@ -20,13 +19,12 @@ describe('AddOnGenerator', function () {
             queryParamsStructure: false
         };
 
-    var isValidJs = function(testString, logError) {
+    var isValidJs = function (testString, logError) {
         var err = null;
 
         try {
             esprima.parse(testString);
-        }
-        catch (e) {
+        } catch (e) {
             err = e;
             if (logError) {
                 logger.error(err.toString());
@@ -46,7 +44,7 @@ describe('AddOnGenerator', function () {
                     this.addedFiles[fname] = fstr;
                     callback(null, 'hash');
                 },
-                addFiles: function(files, cb) {
+                addFiles: function (files, cb) {
                     for (var name in files) {
                         this.addedFiles[name] = files[name];
                     }
@@ -110,8 +108,8 @@ describe('AddOnGenerator', function () {
         plugin.main(callback);
     };
 
-    describe('AddOnID', function() {
-        it('should not allow spaces', function() {
+    describe('AddOnID', function () {
+        it('should not allow spaces', function () {
             var Plugin = requirejs('plugin/coreplugins/AddOnGenerator/AddOnGenerator'),
                 plugin = new Plugin(),
                 pluginStructure = plugin.getConfigStructure(),
@@ -122,13 +120,13 @@ describe('AddOnGenerator', function () {
         });
     });
 
-    it('should have a string for getName', function() {
+    it('should have a string for getName', function () {
         var Plugin = requirejs('plugin/coreplugins/AddOnGenerator/AddOnGenerator'),
             plugin = new Plugin();
         expect(plugin.getName()).to.equal('AddOn Generator');
     });
 
-    it('should have a string for getVersion', function() {
+    it('should have a string for getVersion', function () {
         var Plugin = requirejs('plugin/coreplugins/AddOnGenerator/AddOnGenerator'),
             plugin = new Plugin();
         expect(typeof plugin.getVersion()).to.equal('string');
@@ -153,9 +151,9 @@ describe('AddOnGenerator', function () {
         });
     });
 
-    describe('Generated File(s)', function() {
+    describe('Generated File(s)', function () {
         var files;
-        before(function(done) {
+        before(function (done) {
             var config = Object.create(pluginConfig);
             config.addOnId += '2';
             runPlugin('AddOnGenerator', config, function (err, result) {

@@ -1,4 +1,4 @@
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * Strips away sensitive data from gmeConfig, use before sending it to the client.
  * @author pmeijer / https://github.com/pmeijer

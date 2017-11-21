@@ -252,7 +252,8 @@
  */
 
 /**
- * @description Returns the id of meta-node of the node in question, that is the first base node that is part of the meta.
+ * @description Returns the id of meta-node of the node in question, that is the first base node that is part
+ * of the meta.
  * (Aliased getBaseTypeId).
  * @function getMetaTypeId
  * @memberOf GMENode
@@ -264,7 +265,8 @@
  */
 
 /**
- * @description Returns the id of the meta-node of the node in question, that is the first base node that is part of the meta.
+ * @description Returns the id of the meta-node of the node in question, that is the first base node that is part
+ * of the meta.
  * (Aliased getMetaTypeId).
  * @function getBaseTypeId
  * @memberOf GMENode

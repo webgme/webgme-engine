@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * Monitors given branch and starts/stops/runs the registered add-ons.
  * @author pmeijer / https://github.com/pmeijer
@@ -130,7 +130,7 @@ function BranchMonitor(webgmeToken, storage, project, branchName, mainLogger, gm
     }
 
     function updateRunningAddOns(commitObj, callback) {
-        var deferred = new Q.defer(),
+        var deferred = Q.defer(),
             counter = 0,
             limit = self.runningAddOns.length;
 

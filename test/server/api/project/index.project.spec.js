@@ -1,6 +1,5 @@
 /*globals require*/
-/*jshint node:true, mocha:true, expr:true*/
-/*jscs:disable maximumLineLength*/
+/*eslint-env node, mocha*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -37,7 +36,7 @@ describe('PROJECT REST API', function () {
 
             function projectName2APIPath(projectName, user) {
                 user = user || guestAccount;
-                return guestAccount + '/' + projectName;
+                return user + '/' + projectName;
             }
 
             before(function (done) {
@@ -582,22 +581,24 @@ describe('PROJECT REST API', function () {
                     });
             });
 
-            it('should return commit for project /projects/:ownerId/:projectId/commits/:%23commitHash', function (done) {
-                var url = server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/commits/%23' +
-                    importResult.commitHash.substring(1);
-                agent.get(url)
-                    .end(function (err, res) {
-                        expect(res.status).equal(200, err);
-                        expect(res.body).to.have.property('message');
-                        expect(res.body).to.have.property('parents');
-                        expect(res.body).to.have.property('root');
-                        expect(res.body).to.have.property('time');
-                        expect(res.body).to.have.property('type');
-                        expect(res.body).to.have.property('updater');
-                        expect(res.body).to.have.property('_id');
-                        done();
-                    });
-            });
+            it('should return commit for project /projects/:ownerId/:projectId/commits/:%23commitHash',
+                function (done) {
+                    var url = server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/commits/%23' +
+                        importResult.commitHash.substring(1);
+                    agent.get(url)
+                        .end(function (err, res) {
+                            expect(res.status).equal(200, err);
+                            expect(res.body).to.have.property('message');
+                            expect(res.body).to.have.property('parents');
+                            expect(res.body).to.have.property('root');
+                            expect(res.body).to.have.property('time');
+                            expect(res.body).to.have.property('type');
+                            expect(res.body).to.have.property('updater');
+                            expect(res.body).to.have.property('_id');
+                            done();
+                        });
+                }
+            );
 
             it('should 404 commit for project /projects/:ownerId/:projectId/commits/:doesNotExist', function (done) {
                 agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/commits/' +
@@ -1032,10 +1033,10 @@ describe('PROJECT REST API', function () {
                                     agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) +
                                         '/branches')
                                         .end(function (err, res) {
-                                            var commitObject = importResult.project.createCommitObject([hash],
-                                                importResult.rootHash,
-                                                'tester',
-                                                '15'),
+                                            var commitObject = importResult.project
+                                                    .createCommitObject([hash], importResult.rootHash,
+                                                        'tester',
+                                                        '15'),
                                                 commitData = {
                                                     projectId: projectName2Id(projectName),
                                                     commitObject: commitObject,
@@ -1067,8 +1068,10 @@ describe('PROJECT REST API', function () {
                                                                 .end(function (err, res) {
                                                                     expect(res.status).equal(200, err);
                                                                     expect(res.body).to.have.property('master');
-                                                                    expect(res.body).to.have.property('newBranchToPatch');
-                                                                    expect(res.body.newBranchToPatch).to.equal(result.hash);
+                                                                    expect(res.body)
+                                                                        .to.have.property('newBranchToPatch');
+                                                                    expect(res.body.newBranchToPatch)
+                                                                        .to.equal(result.hash);
                                                                     done();
                                                                 });
                                                         });
@@ -1093,15 +1096,15 @@ describe('PROJECT REST API', function () {
                         });
                 });
 
-            it('should fail to compare non-existent branches for project /projects/:ownerId/:projectId/compare/doesnt_exist...master',
-                function (done) {
-                    agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) +
-                        '/compare/doesnt_exist...master')
-                        .end(function (err, res) {
-                            expect(res.status).equal(500, err);
-                            done();
-                        });
-                });
+            it('should fail to compare non-existent branches for project ' +
+                '/projects/:ownerId/:projectId/compare/doesnt_exist...master', function (done) {
+                agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) +
+                    '/compare/doesnt_exist...master')
+                    .end(function (err, res) {
+                        expect(res.status).equal(500, err);
+                        done();
+                    });
+            });
 
             it('should not get commits for non-existent project', function (done) {
                 agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath('does_not_exist') +
@@ -1128,7 +1131,8 @@ describe('PROJECT REST API', function () {
             });
 
             it('should fail to delete a branch if project does not exist', function (done) {
-                agent.del(server.getUrl() + '/api/projects/' + projectName2APIPath('does_not_exist') + '/branches/master')
+                agent.del(server.getUrl() + '/api/projects/' +
+                    projectName2APIPath('does_not_exist') + '/branches/master')
                     .end(function (err, res) {
                         expect(res.status).equal(403, err);
                         done();
@@ -1136,7 +1140,8 @@ describe('PROJECT REST API', function () {
             });
 
             it('should fail to create a branch if project does not exist', function (done) {
-                agent.put(server.getUrl() + '/api/projects/' + projectName2APIPath('does_not_exist') + '/branches/master')
+                agent.put(server.getUrl() + '/api/projects/' +
+                    projectName2APIPath('does_not_exist') + '/branches/master')
                     .send({hash: '#hash'})
                     .end(function (err, res) {
                         expect(res.status).equal(403, err);
@@ -1145,7 +1150,8 @@ describe('PROJECT REST API', function () {
             });
 
             it('should fail to update branch if old and new hashes are not provided', function (done) {
-                agent.patch(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/branches/master')
+                agent.patch(server.getUrl() + '/api/projects/' +
+                    projectName2APIPath(projectName) + '/branches/master')
                     .send({})
                     .end(function (err, res) {
                         expect(res.status).equal(500, err);
@@ -1310,11 +1316,12 @@ describe('PROJECT REST API', function () {
 
             //webhooks
             it('should list webhooks of project', function (done) {
-                agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/hooks').end(function (err, res) {
-                    expect(res.status).equal(200, err);
-                    expect(res.body).to.eql({});
-                    done();
-                });
+                agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/hooks')
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body).to.eql({});
+                        done();
+                    });
             });
 
             it('should 403 on list webhooks of unknown project', function (done) {
@@ -1401,7 +1408,8 @@ describe('PROJECT REST API', function () {
                             .end(function (err, res) {
                                 expect(res.status).equal(200, err);
 
-                                agent.put(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/hooks/one')
+                                agent.put(server.getUrl() + '/api/projects/' +
+                                    projectName2APIPath(projectName) + '/hooks/one')
                                     .send(hookData)
                                     .end(function (err, res) {
                                         expect(res.status).equal(403, err);
@@ -1424,7 +1432,8 @@ describe('PROJECT REST API', function () {
                     url: 'http://any.address.at.all'
                 };
 
-                agent.put(server.getUrl() + '/api/projects/' + projectName2APIPath(unauthorizedProjectName) + '/hooks/one')
+                agent.put(server.getUrl() + '/api/projects/' +
+                    projectName2APIPath(unauthorizedProjectName) + '/hooks/one')
                     .send(hookData)
                     .end(function (err, res) {
                         expect(res.status).equal(403, err);
@@ -1439,7 +1448,8 @@ describe('PROJECT REST API', function () {
                     url: 'http://any.address.at.all'
                 };
 
-                agent.patch(server.getUrl() + '/api/projects/' + projectName2APIPath(unauthorizedProjectName) + '/hooks/one')
+                agent.patch(server.getUrl() + '/api/projects/' +
+                    projectName2APIPath(unauthorizedProjectName) + '/hooks/one')
                     .send(hookData)
                     .end(function (err, res) {
                         expect(res.status).equal(403, err);
@@ -1460,7 +1470,8 @@ describe('PROJECT REST API', function () {
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
 
-                        agent.patch(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/hooks/one')
+                        agent.patch(server.getUrl() + '/api/projects/' +
+                            projectName2APIPath(projectName) + '/hooks/one')
                             .send({url: newUrl, active: false})
                             .end(function (err, res) {
                                 expect(res.status).equal(200, err);
@@ -1868,7 +1879,8 @@ describe('PROJECT REST API', function () {
                 .set('Authorization', 'Basic ' + new Buffer('user:p').toString('base64'))
                 .end(function (err, res) {
                     expect(res.status).equal(204, err);
-                    gmeAuth.authorizer.getAccessRights('userTest1', pr2Id(projectOwnedByUser, 'user'), projectAuthParams)
+                    gmeAuth.authorizer.getAccessRights('userTest1', pr2Id(projectOwnedByUser, 'user'),
+                        projectAuthParams)
                         .then(function (rights) {
                             expect(rights).to.deep.equal({
                                 read: true,
@@ -1885,7 +1897,8 @@ describe('PROJECT REST API', function () {
                 .set('Authorization', 'Basic ' + new Buffer('user:p').toString('base64'))
                 .end(function (err, res) {
                     expect(res.status).equal(204, err);
-                    gmeAuth.authorizer.getAccessRights('userTest2', pr2Id(projectOwnedByUser, 'user'), projectAuthParams)
+                    gmeAuth.authorizer.getAccessRights('userTest2', pr2Id(projectOwnedByUser, 'user'),
+                        projectAuthParams)
                         .then(function (auth) {
                             expect(auth).to.deep.equal({
                                 read: false,
@@ -1902,7 +1915,8 @@ describe('PROJECT REST API', function () {
                 .set('Authorization', 'Basic ' + new Buffer('user:p').toString('base64'))
                 .end(function (err, res) {
                     expect(res.status).equal(204, err);
-                    gmeAuth.authorizer.getAccessRights('userTest3', pr2Id(projectOwnedByUser, 'user'), projectAuthParams)
+                    gmeAuth.authorizer.getAccessRights('userTest3', pr2Id(projectOwnedByUser, 'user'),
+                        projectAuthParams)
                         .then(function (auth) {
                             expect(auth).to.deep.equal({
                                 read: true,
@@ -1914,14 +1928,16 @@ describe('PROJECT REST API', function () {
                 });
         });
 
-        it('404 as owner should not authorize /projects/user/projectOwnedByUser/authorize/notExists/r', function (done) {
-            agent.put(server.getUrl() + '/api/v1/projects/user/projectOwnedByUser/authorize/notExists/r')
-                .set('Authorization', 'Basic ' + new Buffer('user:p').toString('base64'))
-                .end(function (err, res) {
-                    expect(res.status).equal(404, err);
-                    done();
-                });
-        });
+        it('404 as owner should not authorize /projects/user/projectOwnedByUser/authorize/notExists/r',
+            function (done) {
+                agent.put(server.getUrl() + '/api/v1/projects/user/projectOwnedByUser/authorize/notExists/r')
+                    .set('Authorization', 'Basic ' + new Buffer('user:p').toString('base64'))
+                    .end(function (err, res) {
+                        expect(res.status).equal(404, err);
+                        done();
+                    });
+            }
+        );
 
         it('204 as owner should authorize /projects/user/projectOwnedByUser/authorize/orgTest1/r', function (done) {
             agent.put(server.getUrl() + '/api/v1/projects/user/projectOwnedByUser/authorize/orgTest1/r')
@@ -1946,7 +1962,8 @@ describe('PROJECT REST API', function () {
                     .set('Authorization', 'Basic ' + new Buffer('userOrgAdmin:p').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(204, err);
-                        gmeAuth.authorizer.getAccessRights('userTest4', pr2Id(projectOwnedByOrg, 'org'), projectAuthParams)
+                        gmeAuth.authorizer.getAccessRights('userTest4', pr2Id(projectOwnedByOrg, 'org'),
+                            projectAuthParams)
                             .then(function (auth) {
                                 expect(auth).to.deep.equal({
                                     read: true,
@@ -1965,7 +1982,8 @@ describe('PROJECT REST API', function () {
                     .set('Authorization', 'Basic ' + new Buffer('userSiteAdmin:p').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(204, err);
-                        gmeAuth.authorizer.getAccessRights('userTest5', pr2Id(projectOwnedByOrg, 'org'), projectAuthParams)
+                        gmeAuth.authorizer.getAccessRights('userTest5', pr2Id(projectOwnedByOrg, 'org'),
+                            projectAuthParams)
                             .then(function (auth) {
                                 expect(auth).to.deep.equal({
                                     read: true,
@@ -1980,7 +1998,8 @@ describe('PROJECT REST API', function () {
 
         it('403 should not authorize /projects/' + guestAccount + '/projectOwnedByOtherUser/authorize/userTest6/r',
             function (done) {
-                agent.put(server.getUrl() + '/api/v1/projects/' + guestAccount + '/projectOwnedByOtherUser/authorize/userTest6/r')
+                agent.put(server.getUrl() + '/api/v1/projects/' +
+                    guestAccount + '/projectOwnedByOtherUser/authorize/userTest6/r')
                     .set('Authorization', 'Basic ' + new Buffer('user:p').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(403, err);
@@ -1995,7 +2014,8 @@ describe('PROJECT REST API', function () {
                     .set('Authorization', 'Basic ' + new Buffer('userOrgAdmin:p').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(403, err);
-                        gmeAuth.authorizer.getAccessRights('userWithRights1', pr2Id(projectOwnedByUser, 'user'), projectAuthParams)
+                        gmeAuth.authorizer.getAccessRights('userWithRights1', pr2Id(projectOwnedByUser, 'user'),
+                            projectAuthParams)
                             .then(function (auth) {
                                 expect(auth).to.deep.equal({
                                     read: true,
@@ -2023,7 +2043,8 @@ describe('PROJECT REST API', function () {
                     .set('Authorization', 'Basic ' + new Buffer('user:p').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(204, err);
-                        gmeAuth.authorizer.getAccessRights('userWithRights1', pr2Id(projectOwnedByUser, 'user'), projectAuthParams)
+                        gmeAuth.authorizer.getAccessRights('userWithRights1', pr2Id(projectOwnedByUser, 'user'),
+                            projectAuthParams)
                             .then(function (auth) {
                                 expect(auth).to.deep.equal({
                                     read: false,
@@ -2042,7 +2063,8 @@ describe('PROJECT REST API', function () {
                     .set('Authorization', 'Basic ' + new Buffer('userSiteAdmin:p').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(204, err);
-                        gmeAuth.authorizer.getAccessRights('userWithRights2', pr2Id(projectOwnedByUser, 'user'), projectAuthParams)
+                        gmeAuth.authorizer.getAccessRights('userWithRights2', pr2Id(projectOwnedByUser, 'user'),
+                            projectAuthParams)
                             .then(function (auth) {
                                 expect(auth).to.deep.equal({
                                     read: false,
@@ -2061,7 +2083,8 @@ describe('PROJECT REST API', function () {
                     .set('Authorization', 'Basic ' + new Buffer('userOrgAdmin:p').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(204, err);
-                        gmeAuth.authorizer.getAccessRights('userWithRights3', pr2Id(projectOwnedByOrg, 'org'), projectAuthParams)
+                        gmeAuth.authorizer.getAccessRights('userWithRights3', pr2Id(projectOwnedByOrg, 'org'),
+                            projectAuthParams)
                             .then(function (auth) {
                                 expect(auth).to.deep.equal({
                                     read: false,
@@ -2126,7 +2149,6 @@ describe('PROJECT REST API', function () {
             projectOwnedByOrgOnlyWithAccess = 'projectOwnedByOrgOnlyWithAccess',
             safeStorage,
             gmeAuth,
-            projectAuthParams,
             pr2Id = testFixture.projectName2Id;
         //guestAccount = gmeConfig.authentication.guestAccount;
 
@@ -2139,9 +2161,6 @@ describe('PROJECT REST API', function () {
             testFixture.clearDBAndGetGMEAuth(gmeConfig)
                 .then(function (gmeAuth_) {
                     gmeAuth = gmeAuth_;
-                    projectAuthParams = {
-                        entityType: gmeAuth.authorizer.ENTITY_TYPES.PROJECT
-                    };
                     safeStorage = testFixture.getMongoStorage(logger, gmeConfig, gmeAuth);
                     return safeStorage.openDatabase();
                 })
@@ -2239,32 +2258,33 @@ describe('PROJECT REST API', function () {
             agent = superagent.agent();
         });
 
-        it('403 user not authorized (user to org) /projects/userOnlyWithAccess/projectOwnedByUserOnlyWithAccess/transfer/userWithoutRights',
-            function (done) {
-                agent.post(server.getUrl() + '/api/v1/projects/userOnlyWithAccess/projectOwnedByUserOnlyWithAccess/transfer/userWithoutRights')
-                    .set('Authorization', 'Basic ' + new Buffer('userWithoutRights:p').toString('base64'))
-                    .end(function (err, res) {
-                        expect(res.status).equal(403, err);
-                        done();
-                    });
-            }
-        );
+        it('403 user not authorized (user to org) /projects/userOnlyWithAccess/projectOwnedByUserOnlyWithAccess/' +
+            'transfer/userWithoutRights', function (done) {
+            agent.post(server.getUrl() + '/api/v1/projects/userOnlyWithAccess/projectOwnedByUserOnlyWithAccess/' +
+                'transfer/userWithoutRights')
+                .set('Authorization', 'Basic ' + new Buffer('userWithoutRights:p').toString('base64'))
+                .end(function (err, res) {
+                    expect(res.status).equal(403, err);
+                    done();
+                });
+        });
 
-        it('200 should transfer to org /projects/userOnlyWithAccess/projectOwnedByUserOnlyWithAccess/transfer/orgReceiveProjectTransfers',
-            function (done) {
-                agent.post(server.getUrl() + '/api/v1/projects/userOnlyWithAccess/projectOwnedByUserOnlyWithAccess/transfer/orgReceiveProjectTransfers')
-                    .set('Authorization', 'Basic ' + new Buffer('userOnlyWithAccess:p').toString('base64'))
-                    .end(function (err, res) {
-                        expect(res.status).equal(200, err);
-                        expect(res.body.owner).equal('orgReceiveProjectTransfers');
-                        done();
-                    });
-            }
-        );
+        it('200 should transfer to org /projects/userOnlyWithAccess/projectOwnedByUserOnlyWithAccess/' +
+            'transfer/orgReceiveProjectTransfers', function (done) {
+            agent.post(server.getUrl() + '/api/v1/projects/userOnlyWithAccess/projectOwnedByUserOnlyWithAccess/' +
+                'transfer/orgReceiveProjectTransfers')
+                .set('Authorization', 'Basic ' + new Buffer('userOnlyWithAccess:p').toString('base64'))
+                .end(function (err, res) {
+                    expect(res.status).equal(200, err);
+                    expect(res.body.owner).equal('orgReceiveProjectTransfers');
+                    done();
+                });
+        });
 
         it('404 nonexistent project /projects/fakeOwnerId/fakeProjectName/transfer/orgReceiveProjectTransfers',
             function (done) {
-                agent.post(server.getUrl() + '/api/v1/projects/fakeOwnerId/fakeProjectName/transfer/orgReceiveProjectTransfers')
+                agent.post(server.getUrl() + '/api/v1/projects/fakeOwnerId/fakeProjectName/transfer/' +
+                    'orgReceiveProjectTransfers')
                     .set('Authorization', 'Basic ' + new Buffer('userSiteAdmin:p').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
@@ -2273,15 +2293,15 @@ describe('PROJECT REST API', function () {
             }
         );
 
-        it('403 user not authorized (org to org) /projects/orgOnlyWithAccess/projectOwnedByOrgOnlyWithAccess/transfer/orgWithoutRights',
-            function (done) {
-                agent.post(server.getUrl() + '/api/v1/projects/orgOnlyWithAccess/projectOwnedByOrgOnlyWithAccess/transfer/orgWithoutRights')
-                    .set('Authorization', 'Basic ' + new Buffer('userWithoutRights:p').toString('base64'))
-                    .end(function (err, res) {
-                        expect(res.status).equal(403, err);
-                        done();
-                    });
-            }
-        );
+        it('403 user not authorized (org to org) /projects/orgOnlyWithAccess/projectOwnedByOrgOnlyWithAccess/' +
+            'transfer/orgWithoutRights', function (done) {
+            agent.post(server.getUrl() + '/api/v1/projects/orgOnlyWithAccess/projectOwnedByOrgOnlyWithAccess/' +
+                'transfer/orgWithoutRights')
+                .set('Authorization', 'Basic ' + new Buffer('userWithoutRights:p').toString('base64'))
+                .end(function (err, res) {
+                    expect(res.status).equal(403, err);
+                    done();
+                });
+        });
     });
 });

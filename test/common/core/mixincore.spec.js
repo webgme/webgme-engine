@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true, expr:true*/
+/*eslint-env node, mocha*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -23,10 +23,8 @@ describe('mixin core', function () {
         logger = testFixture.logger.fork('mixincore.spec'),
         storage,
         projectName = 'mixinTest',
-        project,
         core,
         rootNode,
-        commit,
         baseRootHash,
         gmeAuth;
 
@@ -47,10 +45,8 @@ describe('mixin core', function () {
                 });
             })
             .then(function (result) {
-                project = result.project;
                 core = result.core;
                 rootNode = result.rootNode;
-                commit = result.commitHash;
                 baseRootHash = result.rootHash;
             })
             .nodeify(done);

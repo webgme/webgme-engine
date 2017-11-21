@@ -1,6 +1,5 @@
 /*globals require*/
-/*jshint node:true, mocha:true, expr:true*/
-/*jscs:disable maximumLineLength*/
+/*eslint-env node, mocha*/
 
 /**
  * @author lattmann / https://github.com/lattmann

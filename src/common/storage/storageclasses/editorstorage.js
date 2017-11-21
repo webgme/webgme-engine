@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true*/
+/*eslint-env node*/
 /**
  * This class implements the functionality needed to edit a model in a specific project and branch in a
  * collaborative fashion.
@@ -24,7 +24,7 @@ define([
     'common/util/key',
     'common/storage/util',
     'q'
-], function (StorageObjectLoaders, CONSTANTS, Project, Branch, ASSERT, GENKEY, UTIL, Q) {
+], function (StorageObjectLoaders, CONSTANTS, Project, Branch, assert, generateKey, UTIL, Q) {
     'use strict';
 
     /**
@@ -488,12 +488,10 @@ define([
         };
 
         this.setBranchHash = function (projectId, branchName, newHash, oldHash, callback) {
-            var project = projects[projectId],
-                branch;
+            var project = projects[projectId];
 
             logger.debug('setBranchHash', projectId, branchName, newHash, oldHash);
             if (project && project.branches[branchName]) {
-                branch = project.branches[branchName];
                 logger.debug('setBranchHash, branch is open, will notify other local users about change');
                 project.loadObject(newHash, function (err, commitObject) {
                     var commitData;
@@ -653,7 +651,7 @@ define([
         };
 
         this._pullNextQueuedCommit = function (projectId, branchName, callback) {
-            ASSERT(projects.hasOwnProperty(projectId), 'Project not opened: ' + projectId);
+            assert(projects.hasOwnProperty(projectId), 'Project not opened: ' + projectId);
             var project = projects[projectId],
                 branch = project.branches[branchName],
                 error,
@@ -720,7 +718,7 @@ define([
                     type: CONSTANTS.COMMIT_TYPE,
                     __v: CONSTANTS.VERSION
                 },
-                commitHash = '#' + GENKEY(commitObj, gmeConfig);
+                commitHash = '#' + generateKey(commitObj, gmeConfig);
 
             commitObj[CONSTANTS.MONGO_ID] = commitHash;
 

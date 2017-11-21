@@ -1,4 +1,5 @@
-/* jshint node:true, mocha: true, expr:true*/
+/*eslint-env node, mocha*/
+/*eslint no-unused-vars: 0*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -15,7 +16,7 @@ describe('coretype', function () {
         // Has to be in sync with relidPool in util/random.js
         RELID_POOL = '0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM'.split(''),
         expect = testFixture.expect,
-        __should = testFixture.should,
+        __should = testFixture.should, //eslint-disable-line
         Type = testFixture.requirejs('common/core/coretype'),
         Rel = testFixture.requirejs('common/core/corerel'),
         Tree = testFixture.requirejs('common/core/coretree'),
@@ -134,14 +135,12 @@ describe('coretype', function () {
     });
     it('check own pointer path', function (done) {
         TASYNC.call(function (children) {
-            var base, instance, i;
+            var instance, i;
 
             children.should.have.length(2);
 
             for (i = 0; i < children.length; i++) {
-                if (core.getAttribute(children[i], 'name') === 'base') {
-                    base = children[i];
-                } else {
+                if (core.getAttribute(children[i], 'name') !== 'base') {
                     instance = children[i];
                 }
             }
@@ -214,14 +213,12 @@ describe('coretype', function () {
 
     it('check pointer', function (done) {
         TASYNC.call(function (children) {
-            var base, instance, i;
+            var instance, i;
 
             children.should.have.length(2);
 
             for (i = 0; i < children.length; i++) {
-                if (core.getAttribute(children[i], 'name') === 'base') {
-                    base = children[i];
-                } else {
+                if (core.getAttribute(children[i], 'name') !== 'base') {
                     instance = children[i];
                 }
             }
@@ -268,14 +265,12 @@ describe('coretype', function () {
 
     it('removing base', function (done) {
         TASYNC.call(function (children) {
-            var base, instance, i;
+            var instance, i;
 
             children.should.have.length(2);
 
             for (i = 0; i < children.length; i++) {
-                if (core.getAttribute(children[i], 'name') === 'base') {
-                    base = children[i];
-                } else {
+                if (core.getAttribute(children[i], 'name') !== 'base') {
                     instance = children[i];
                 }
             }
@@ -592,7 +587,7 @@ describe('coretype', function () {
             bP = bP_;
             cP = cP_;
             bPP = core.createNode({parent: aP, base: bP, relid: 'b'});
-            console.log(core.getPointerPath(bPP, 'ref'));
+            //console.log(core.getPointerPath(bPP, 'ref'));
             expect(core.getCollectionPaths(cP, 'ref')).to.have.length(2);
             done();
         }, core.loadByPath(aP, '/B'), core.loadByPath(aP, '/B'));
@@ -1020,42 +1015,48 @@ describe('coretype', function () {
         expect(core.getRelid(movedChild)).to.have.length(2);
     });
 
-    it('should update MINIMAL_RELID_LENGTH_PROPERTY recursively through the inheritance chain at createdNOde 1', function () {
-        var proto = core.createNode({parent: root, relid: 'theAncestor'}),
-            inst = core.createNode({parent: root, base: proto, relid: 'theInstance'}),
-            instInst = core.createNode({parent: root, base: inst, relid: 'theInstanceInstance'}),
-            child1 = core.createNode({parent: instInst, relid: '1'}),
-            child2 = core.createNode({parent: inst}),
-            child3 = core.createNode({parent: proto});
+    it('should update MINIMAL_RELID_LENGTH_PROPERTY recursively through the inheritance chain at createdNOde 1',
+        function () {
+            var proto = core.createNode({parent: root, relid: 'theAncestor'}),
+                inst = core.createNode({parent: root, base: proto, relid: 'theInstance'}),
+                instInst = core.createNode({parent: root, base: inst, relid: 'theInstanceInstance'}),
+                child1 = core.createNode({parent: instInst, relid: '1'}),
+                child2 = core.createNode({parent: inst}),
+                child3 = core.createNode({parent: proto});
 
-        expect(core.getRelid(child1)).to.have.length(1);
-        expect(core.getRelid(child2)).to.have.length(2);
-        expect(core.getRelid(child3)).to.have.length(3);
-    });
+            expect(core.getRelid(child1)).to.have.length(1);
+            expect(core.getRelid(child2)).to.have.length(2);
+            expect(core.getRelid(child3)).to.have.length(3);
+        }
+    );
 
-    it('should update MINIMAL_RELID_LENGTH_PROPERTY recursively through the inheritance chain at createdNode 2', function () {
-        var proto = core.createNode({parent: root, relid: 'theAncestor'}),
-            inst = core.createNode({parent: root, base: proto, relid: 'theInstance'}),
-            instInst = core.createNode({parent: root, base: inst, relid: 'theInstanceInstance'}),
-            child1 = core.createNode({parent: instInst, relid: '1'}),
-            child2 = core.createNode({parent: inst}),
-            child3 = core.createNode({parent: proto});
+    it('should update MINIMAL_RELID_LENGTH_PROPERTY recursively through the inheritance chain at createdNode 2',
+        function () {
+            var proto = core.createNode({parent: root, relid: 'theAncestor'}),
+                inst = core.createNode({parent: root, base: proto, relid: 'theInstance'}),
+                instInst = core.createNode({parent: root, base: inst, relid: 'theInstanceInstance'}),
+                child1 = core.createNode({parent: instInst, relid: '1'}),
+                child2 = core.createNode({parent: inst}),
+                child3 = core.createNode({parent: proto});
 
-        expect(core.getRelid(child1)).to.have.length(1);
-        expect(core.getRelid(child2)).to.have.length(2);
-        expect(core.getRelid(child3)).to.have.length(3);
-    });
+            expect(core.getRelid(child1)).to.have.length(1);
+            expect(core.getRelid(child2)).to.have.length(2);
+            expect(core.getRelid(child3)).to.have.length(3);
+        }
+    );
 
-    it('should update MINIMAL_RELID_LENGTH_PROPERTY recursively through the inheritance chain at createdNode 3', function () {
-        var proto = core.createNode({parent: root, relid: 'theAncestor'}),
-            inst = core.createNode({parent: root, base: proto, relid: 'theInstance'}),
-            instInst = core.createNode({parent: root, base: inst, relid: 'theInstanceInstance'}),
-            child1 = core.createNode({parent: instInst, relid: '1'}),
-            child3 = core.createNode({parent: proto});
+    it('should update MINIMAL_RELID_LENGTH_PROPERTY recursively through the inheritance chain at createdNode 3',
+        function () {
+            var proto = core.createNode({parent: root, relid: 'theAncestor'}),
+                inst = core.createNode({parent: root, base: proto, relid: 'theInstance'}),
+                instInst = core.createNode({parent: root, base: inst, relid: 'theInstanceInstance'}),
+                child1 = core.createNode({parent: instInst, relid: '1'}),
+                child3 = core.createNode({parent: proto});
 
-        expect(core.getRelid(child1)).to.have.length(1);
-        expect(core.getRelid(child3)).to.have.length(2);
-    });
+            expect(core.getRelid(child1)).to.have.length(1);
+            expect(core.getRelid(child3)).to.have.length(2);
+        }
+    );
 
     it('should update MINIMAL_RELID_LENGTH_PROPERTY at setBase', function () {
         var proto = core.createNode({parent: root, relid: 'theAncestor'}),
@@ -1255,20 +1256,24 @@ describe('coretype', function () {
     });
 
     // This case is for avoiding old relids increasing the size unnessesarily much.
-    it('should only update MINIMAL_RELID_LENGTH_PROPERTY to length of children not exceeding MAXIMUM_STARTING_RELID_LENGTH at setBase', function () {
-        var proto = core.createNode({parent: root, relid: 'theAncestor'}),
-            toBeInst = core.createNode({parent: root, relid: 'i'}),
-            child1 = core.createNode({parent: toBeInst, relid: '123'}),
-            child2 = core.createNode({parent: toBeInst, relid: '123456789'});
+    it(
+        'should only update MINIMAL_RELID_LENGTH_PROPERTY to length of children not exceeding' +
+        'MAXIMUM_STARTING_RELID_LENGTH at setBase',
+        function () {
+            var proto = core.createNode({parent: root, relid: 'theAncestor'}),
+                toBeInst = core.createNode({parent: root, relid: 'i'}),
+                child1 = core.createNode({parent: toBeInst, relid: '123'}),
+                child2 = core.createNode({parent: toBeInst, relid: '123456789'});
 
-        expect(core.getRelid(child1)).to.have.length(3);
-        expect(core.getRelid(child2)).to.have.length(9);
+            expect(core.getRelid(child1)).to.have.length(3);
+            expect(core.getRelid(child2)).to.have.length(9);
 
-        core.setBase(toBeInst, proto);
+            core.setBase(toBeInst, proto);
 
-        child1 = core.createNode({parent: proto});
-        expect(core.getRelid(child1)).to.have.length(4);
-    });
+            child1 = core.createNode({parent: proto});
+            expect(core.getRelid(child1)).to.have.length(4);
+        }
+    );
 
     it('should not copy over the MINIMAL_RELID_LENGTH_PROPERTY at copyNode', function () {
         var proto = core.createNode({parent: root, relid: 'theAncestor'}),
@@ -1373,9 +1378,9 @@ describe('coretype', function () {
 
 
         core.createNode({parent: container, base: base, relid: 'child'}); // child
-        core.createNode({parent: root, base: container, relid: 'instance'}), // instance
-
+        core.createNode({parent: root, base: container, relid: 'instance'}); // instance
         core.persist(root);
+
         TASYNC.call(function (newRoot) {
             TASYNC.call(function (newChild) {
                 TASYNC.call(function (instances) {
@@ -1514,7 +1519,7 @@ describe('coretype', function () {
         }, core.loadChildren(instanceOne));
     });
 
-    it('should copyNodes make sure that simple relations kept well and not duplicated', function(){
+    it('should copyNodes make sure that simple relations kept well and not duplicated', function () {
         var root = core.createNode({}),
             sourceParent = core.createNode({parent: root, relid: 'SP'}),
             targetParent = core.createNode({parent: root, relid: 'TP'}),
@@ -1522,10 +1527,10 @@ describe('coretype', function () {
             child2 = core.createNode({parent: sourceParent, base: null, relid: 'C2'}),
             copiedNodes;
 
-        core.setPointer(child1,'ref',child2);
-        copiedNodes = core.copyNodes([child1,child2],targetParent);
+        core.setPointer(child1, 'ref', child2);
+        copiedNodes = core.copyNodes([child1, child2], targetParent);
         expect(copiedNodes).to.have.length(2);
-        expect(core.getPointerNames(copiedNodes[0])).to.have.members(['base','ref']);
-        expect(core.getPointerPath(copiedNodes[0],'ref')).to.eql(core.getPath(copiedNodes[1]));
+        expect(core.getPointerNames(copiedNodes[0])).to.have.members(['base', 'ref']);
+        expect(core.getPointerPath(copiedNodes[0], 'ref')).to.eql(core.getPath(copiedNodes[1]));
     });
 });

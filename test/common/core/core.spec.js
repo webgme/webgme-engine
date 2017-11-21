@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true*/
+/*eslint-env node, mocha*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -12,7 +12,6 @@ describe('core', function () {
     var gmeConfig = testFixture.getGmeConfig(),
         projectName = 'core',
         Core = testFixture.requirejs('common/core/core'),
-        _ = require('underscore'),
         project,
         core,
         rootNode,
@@ -22,13 +21,13 @@ describe('core', function () {
         Q = testFixture.Q,
         expect = testFixture.expect,
         logger = {},
-        lastError = null,
+        //lastError = null,
         storage,
         gmeAuth;
 
     before(function (done) {
         logger.error = function () {
-            lastError = arguments[0];
+            //lastError = arguments[0];
         };
         logger.debug = function () {
         };
@@ -62,7 +61,7 @@ describe('core', function () {
                 originalRootHash = result.rootHash;
                 commit = result.commitHash;
 
-                return Q.ninvoke(core, 'loadByPath', rootNode, '/175547009/1104061497')
+                return Q.ninvoke(core, 'loadByPath', rootNode, '/175547009/1104061497');
             })
             .then(function (node) {
                 setNode = node;
@@ -129,9 +128,9 @@ describe('core', function () {
                 'getValidAspectTargetPaths', 'getOwnValidAspectTargetPaths'
             ];
 
-        console.log(_.difference(functions, Matches));
+        //console.log(_.difference(functions, Matches));
         expect(functions).to.have.members(Matches);
-        console.error(Matches.length);
+        //console.error(Matches.length);
 
         for (i = 0; i < functions.length; i += 1) {
             expect(typeof core[functions[i]]).to.eql('function');
@@ -4139,7 +4138,6 @@ describe('core', function () {
         ])
             .then(function (results) {
                 expect(results).to.have.length(7);
-                console.error(results);
                 for (var i = 0; i < results.length; i += 1) {
                     expect(results[i].state).to.eql('rejected');
                     expect(results[i].reason instanceof Error).to.eql(true);
@@ -4164,7 +4162,8 @@ describe('core', function () {
             Q.nfcall(core.updateLibrary, 'string', 'string', 'string', null, null),
             Q.nfcall(core.updateLibrary, rootNode, {}, 'string', null, null),
             Q.nfcall(core.updateLibrary, rootNode, 'libname', 'string', null, null),
-            Q.nfcall(core.updateLibrary, rootNode, 'libname', '#0123456789012345678901234567890123456789', 'nope', null),
+            Q.nfcall(core.updateLibrary, rootNode, 'libname', '#0123456789012345678901234567890123456789',
+                'nope', null),
             Q.nfcall(core.updateLibrary, rootNode, 'libname', '#0123456789012345678901234567890123456789', {
                 projectId: 0
             }, null),
@@ -4610,7 +4609,7 @@ describe('core', function () {
         var myError;
 
         try {
-            core.renamePointer(rootNode, {'not': 'string'}, 'newName');
+            core.renamePointer(rootNode, {not: 'string'}, 'newName');
         } catch (e) {
             myError = e;
         } finally {
@@ -4622,7 +4621,7 @@ describe('core', function () {
         var myError;
 
         try {
-            core.renamePointer(rootNode, 'OldName', {'not': 'string'});
+            core.renamePointer(rootNode, 'OldName', {not: 'string'});
         } catch (e) {
             myError = e;
         } finally {
@@ -4646,7 +4645,7 @@ describe('core', function () {
         var myError;
 
         try {
-            core.renameAttribute(rootNode, {'not': 'string'}, 'newName');
+            core.renameAttribute(rootNode, {not: 'string'}, 'newName');
         } catch (e) {
             myError = e;
         } finally {
@@ -4658,7 +4657,7 @@ describe('core', function () {
         var myError;
 
         try {
-            core.renameAttribute(rootNode, 'OldName', {'not': 'string'});
+            core.renameAttribute(rootNode, 'OldName', {not: 'string'});
         } catch (e) {
             myError = e;
         } finally {
@@ -4682,7 +4681,7 @@ describe('core', function () {
         var myError;
 
         try {
-            core.renameRegistry(rootNode, {'not': 'string'}, 'newName');
+            core.renameRegistry(rootNode, {not: 'string'}, 'newName');
         } catch (e) {
             myError = e;
         } finally {
@@ -4694,7 +4693,7 @@ describe('core', function () {
         var myError;
 
         try {
-            core.renameRegistry(rootNode, 'OldName', {'not': 'string'});
+            core.renameRegistry(rootNode, 'OldName', {not: 'string'});
         } catch (e) {
             myError = e;
         } finally {
@@ -4718,7 +4717,7 @@ describe('core', function () {
         var myError;
 
         try {
-            core.renameSet(rootNode, {'not': 'string'}, 'newName');
+            core.renameSet(rootNode, {not: 'string'}, 'newName');
         } catch (e) {
             myError = e;
         } finally {
@@ -4730,7 +4729,7 @@ describe('core', function () {
         var myError;
 
         try {
-            core.renameSet(rootNode, 'OldName', {'not': 'string'});
+            core.renameSet(rootNode, 'OldName', {not: 'string'});
         } catch (e) {
             myError = e;
         } finally {
@@ -4842,7 +4841,7 @@ describe('core', function () {
                 core.setAttributeMeta(rooti, 'complex', {type: 'string'});
                 core.setAspectMetaTarget(rooti, 'complex', rooti);
                 core.setPointerMetaTarget(rooti, 'complex', rooti, 1, 1);
-                core.setConstraint(rooti, 'complex',{script: 'function(){}', info: 'hello', priority: 1});
+                core.setConstraint(rooti, 'complex', {script: 'function(){}', info: 'hello', priority: 1});
 
                 return Q.nfcall(core.addLibrary, rooti, 'complex', originalRootHash,
                     {projectId: project.projectId, commitHash: originalRootHash});
@@ -4854,11 +4853,11 @@ describe('core', function () {
                     [commit],
                     persisted.rootHash,
                     persisted.objects,
-                    'some message')
+                    'some message');
             })
             .then(function () {
                 return Q.nfcall(core.loadRoot, newRootHash);
-            })
+            });
     }
 
     function genTests(methods) {
@@ -4870,7 +4869,8 @@ describe('core', function () {
                         if (method.name) {
                             obj = core[method.name](rootNode, 'complex', method.memberPath, 'complex');
                             obj.a = 2;
-                            expect(core[method.name](rootNode, 'complex', method.memberPath, 'complex').a).to.equal(undefined);
+                            expect(core[method.name](rootNode, 'complex', method.memberPath, 'complex').a)
+                                .to.equal(undefined);
                         } else {
                             obj = core[method](rootNode, 'complex', 'complex');
                             obj.a = 2;
@@ -4889,7 +4889,7 @@ describe('core', function () {
         {name: 'getMemberOwnAttribute', memberPath: '' },
         {name: 'getMemberRegistry', memberPath: '' },
         {name: 'getMemberOwnRegistry', memberPath: '' }
-        ]);
+    ]);
     genTests(['getAttributeMeta', 'getLibraryInfo']);
 
     function mutateComplex(obj) {

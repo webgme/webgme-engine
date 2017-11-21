@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node:true*/
+/*eslint-env node*/
 
 /**
  * Continuously validates the meta rules for the entire project. Will send notifications when violations
@@ -80,7 +80,7 @@ define(['addon/AddOnBase', 'common/core/users/constraintchecker'], function (Add
         self.update(rootNode, commitObj, callback);
     };
 
-    ConstraintAddOn.prototype.query = function (commitHash, queryParams, callback) {
+    ConstraintAddOn.prototype.query = function (/*commitHash, queryParams, callback*/) {
         //var self = this;
         //
         //switch (queryParams.querytype) {

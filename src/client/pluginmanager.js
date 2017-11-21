@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true*/
+/*eslint-env browser*/
 
 /**
  * @author pmeijer / https://github.com/pmeijer
@@ -33,24 +33,24 @@ define([
             var activeNode,
                 validPlugins,
                 context =  {
-                managerConfig: {
-                    project: client.getProjectObject(),
-                    branchName: client.getActiveBranchName(),
-                    commitHash: client.getActiveCommitHash(),
-                    activeNode: ROOT_PATH,
-                    activeSelection: [],
-                    namespace: ''
-                },
-                pluginConfig: null
-            };
+                    managerConfig: {
+                        project: client.getProjectObject(),
+                        branchName: client.getActiveBranchName(),
+                        commitHash: client.getActiveCommitHash(),
+                        activeNode: ROOT_PATH,
+                        activeSelection: [],
+                        namespace: ''
+                    },
+                    pluginConfig: null
+                };
 
             // If executed from the Generic UI we can access the active- and selected-nodes.
             if (typeof WebGMEGlobal !== 'undefined') {
-                /* jshint -W117 */
+                /* eslint-disable no-undef*/
                 activeNodeId = typeof activeNodeId === 'string' ? activeNodeId : WebGMEGlobal.State.getActiveObject();
                 context.managerConfig.activeSelection = WebGMEGlobal.State.getActiveSelection();
                 context.managerConfig.activeNode = activeNodeId;
-                /* jshint +W117 */
+                /* eslint-enable no-undef*/
             }
 
             if (activeSelectionIds) {
@@ -85,7 +85,7 @@ define([
          * @param {string} [context.managerConfig.activeSelection=[]] - paths to selected nodes.
          * @param {string} context.managerConfig.commitHash - commit hash to start the plugin from.
          * @param {string} [context.managerConfig.branchName] - branch which to save to.
-         * @param {string} [context.managerConfig.namespace=''] - used namespace during execution ('' represents all namespaces).
+         * @param {string} [context.managerConfig.namespace=''] - used namespace ('' represents root namespace).
          * @param {object} [context.pluginConfig=%defaultForPlugin%] - specific configuration for the plugin.
          * @param {function(err, PluginResult)} callback
          */
@@ -115,7 +115,7 @@ define([
          * @param {string} [context.managerConfig.activeSelection=[]] - paths to selected nodes.
          * @param {string} context.managerConfig.commitHash - commit hash to start the plugin from.
          * @param {string} [context.managerConfig.branchName] - branch which to save to.
-         * @param {string} [context.managerConfig.namespace=''] - used namespace during execution ('' represents all namespaces).
+         * @param {string} [context.managerConfig.namespace=''] - used namespace ('' represents root namespace).
          * @param {object} [context.pluginConfig=%defaultForPlugin%] - specific configuration for the plugin.
          * @param {function} callback
          */

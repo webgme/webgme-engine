@@ -1,5 +1,5 @@
 /*globals*/
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -12,11 +12,8 @@ describe('SafeStorage with Passing Authorizer', function () {
         expect = testFixture.expect,
         logger,
         Q = testFixture.Q,
-        __should = testFixture.should,
         gmeAuth,
-        safeStorage,
-        projectName = 'newProject',
-        projectId = gmeConfig.authentication.guestAccount + testFixture.STORAGE_CONSTANTS.PROJECT_ID_SEP + projectName;
+        safeStorage;
 
     function getProjectData(projects, projectId) {
         var res;
@@ -39,7 +36,7 @@ describe('SafeStorage with Passing Authorizer', function () {
                 return Q.allDone([
                     gmeAuth.addUser('user1', '@', 'pass', true, {overwrite: true}),
                     gmeAuth.addUser('user2', '@', 'pass', false, {overwrite: true}),
-                    ]);
+                ]);
             })
             .then(function () {
                 safeStorage = testFixture.getMemoryStorage(logger, gmeConfig, gmeAuth);

@@ -1,0 +1,7 @@
+coverage/*
+dist/*
+docs/*
+seeds/*
+src/common/lib/**/*.js
+
+test-tmp/*

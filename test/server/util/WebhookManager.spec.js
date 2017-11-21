@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true, expr:true*/
+/*eslint-env node, mocha*/
 /**
  * @author kecso / https://github.com/kecso
  */
@@ -7,63 +7,10 @@ var testFixture = require('../../_globals.js');
 
 describe('Webhook Manager', function () {
     'use strict';
-    var StorageMock = function () {
-            var listeners = {};
-
-            function add(event, eventFn) {
-                listeners[event] = listeners[event] || [];
-                listeners[event].push(eventFn);
-            }
-
-            function remove(event, eventFn) {
-                if (listeners[event] && listeners[event].indexOf(eventFn) !== -1) {
-                    listeners[event].splice(listeners[event].indexOf(eventFn), 1);
-                    if (listeners[event].length === 0) {
-                        delete listeners[event];
-                    }
-                }
-            }
-
-            function get() {
-                return Object.keys(listeners);
-            }
-
-            function send(event, eventData) {
-                var listenFunctions = listeners[event] || [],
-                    i;
-
-                for (i = 0; i < listenFunctions.length; i += 1) {
-                    listenFunctions[i]({}, eventData);
-                }
-            }
-
-            return {
-                addEventListener: add,
-                removeEventListener: remove,
-                getRegisteredEvents: get,
-                send: send
-            };
-        },
-        EventGenerator = function () {
-            var pub = redis.createClient('redis://127.0.0.1:6379');
-
-            function stop() {
-                pub.quit();
-            }
-
-            function send(eventType, eventData) {
-                var msg = MSG.encode(['uid', {data: [eventType, eventData]}, {}]),
-                    channel = 'socket.io#/#anything';
-                pub.publish(channel, msg);
-            }
-
-            return {
-                send: send,
-                stop: stop
-            };
-        },
-        redis = require('redis'),
+    var redis = require('redis'),
         MSG = require('msgpack-js'),
+        express = require('express'),
+        bodyParser = require('body-parser'),
         WebhookManager = require('../../../src/server/util/WebhookManager'),
         CONSTANTS = testFixture.requirejs('common/storage/constants'),
         logger = testFixture.logger.fork('WebhookManager.spec.js'),
@@ -73,17 +20,90 @@ describe('Webhook Manager', function () {
         projectName = 'hookProject',
         safeStorage,
         metadataStorage,
-        express = require('express'),
-        bodyParser = require('body-parser'),
         projectId,
         gmeAuth,
-        listenerPort = 9009;
+        listenerPort = 9009,
+        EVENTS = Object.keys(testFixture.requirejs('common/Constants').WEBHOOK_EVENTS);
+
+    function StorageMock() {
+        var listeners = {};
+
+        function add(event, eventFn) {
+            listeners[event] = listeners[event] || [];
+            listeners[event].push(eventFn);
+        }
+
+        function remove(event, eventFn) {
+            if (listeners[event] && listeners[event].indexOf(eventFn) !== -1) {
+                listeners[event].splice(listeners[event].indexOf(eventFn), 1);
+                if (listeners[event].length === 0) {
+                    delete listeners[event];
+                }
+            }
+        }
+
+        function get() {
+            return Object.keys(listeners);
+        }
+
+        function send(event, eventData) {
+            var listenFunctions = listeners[event] || [],
+                i;
+
+            for (i = 0; i < listenFunctions.length; i += 1) {
+                listenFunctions[i]({}, eventData);
+            }
+        }
+
+        return {
+            addEventListener: add,
+            removeEventListener: remove,
+            getRegisteredEvents: get,
+            send: send,
+            stop: function () {}
+        };
+    }
+
+    function EventGeneratorRedis() {
+        var pub = redis.createClient('redis://127.0.0.1:6379');
+
+        function stop() {
+            pub.quit();
+        }
+
+        function send(eventType, eventData) {
+            var msg = MSG.encode(['uid', {data: [eventType, eventData]}, {}]),
+                channel = 'socket.io#/#anything';
+            pub.publish(channel, msg);
+        }
+
+        return {
+            send: send,
+            stop: stop
+        };
+    }
 
     function getHookListener(hookFn) {
         var app = express();
         app.use(bodyParser.json());
         app.post('/', hookFn);
         return app.listen(listenerPort);
+    }
+
+    function genForwardTest(event, EventGenerator, type) {
+        it('should forward ' + event + ' event [' + type + ']', function (done) {
+            var eventGenerator = EventGenerator === EventGeneratorRedis ? (new EventGenerator()) : EventGenerator,
+                eventData = {projectId: projectId, anything: 'really'},
+                hookListener = getHookListener(function (req) {
+                    expect(req.body.event).to.equal(event);
+                    expect(req.body.data).to.eql(eventData);
+                    eventGenerator.stop();
+                    hookListener.close();
+                    done();
+                });
+
+            eventGenerator.send(event, eventData);
+        });
     }
 
     before(function (done) {
@@ -136,17 +156,7 @@ describe('Webhook Manager', function () {
 
         memory.start(function (err) {
             expect(err).to.equal(null);
-            expect(storage.getRegisteredEvents()).to.have.members([
-                CONSTANTS.BRANCH_HASH_UPDATED,
-                CONSTANTS.PROJECT_DELETED,
-                CONSTANTS.BRANCH_DELETED,
-                CONSTANTS.BRANCH_CREATED,
-                CONSTANTS.TAG_CREATED,
-                CONSTANTS.TAG_DELETED,
-                CONSTANTS.COMMIT,
-                CONSTANTS.BRANCH_JOINED,
-                CONSTANTS.BRANCH_LEFT,
-            ]);
+            expect(storage.getRegisteredEvents()).to.have.members(EVENTS);
 
             memory.stop();
             expect(storage.getRegisteredEvents()).to.have.length(0);
@@ -178,95 +188,15 @@ describe('Webhook Manager', function () {
             manager.stop(done);
         });
 
-        it('should forward TAG_CREATED event', function (done) {
-            var hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.TAG_CREATED);
-                    expect(req.body.data).to.eql(eventData);
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            storage.send(CONSTANTS.TAG_CREATED, eventData);
-        });
-
-        it('should forward TAG_DELETED event', function (done) {
-            var hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.TAG_DELETED);
-                    expect(req.body.data).to.eql(eventData);
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            storage.send(CONSTANTS.TAG_DELETED, eventData);
-        });
-
-        it('should forward BRANCH_CREATED event', function (done) {
-            var hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.BRANCH_CREATED);
-                    expect(req.body.data).to.eql(eventData);
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            storage.send(CONSTANTS.BRANCH_CREATED, eventData);
-        });
-
-        it('should forward BRANCH_HASH_UPDATED event', function (done) {
-            var hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.BRANCH_HASH_UPDATED);
-                    expect(req.body.data).to.eql(eventData);
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            storage.send(CONSTANTS.BRANCH_HASH_UPDATED, eventData);
-        });
-
-        it('should forward BRANCH_DELETED event', function (done) {
-            var hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.BRANCH_DELETED);
-                    expect(req.body.data).to.eql(eventData);
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            storage.send(CONSTANTS.BRANCH_DELETED, eventData);
-        });
-
-        it('should forward PROJECT_DELETED event', function (done) {
-            var hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.PROJECT_DELETED);
-                    expect(req.body.data).to.eql(eventData);
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            storage.send(CONSTANTS.PROJECT_DELETED, eventData);
-        });
-
-        it('should forward COMMIT event', function (done) {
-            var hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.COMMIT);
-                    expect(req.body.data).to.eql(eventData);
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            storage.send(CONSTANTS.COMMIT, eventData);
+        EVENTS.forEach(function (eventName) {
+            genForwardTest(eventName, storage, 'memory');
         });
 
         it('should not forward BRANCH_UPDATED event', function (done) {
-            var hookListener = getHookListener(function () {
-                    throw new Error('BRANCH_UPDATED event should be filtered out by default');
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
+            var eventData = {projectId: projectId, anything: 'really'},
+                hookListener = getHookListener(function () {
+                    done(new Error('BRANCH_UPDATED event should be filtered out by default'));
+                });
 
             setTimeout(function () {
                 hookListener.close();
@@ -278,7 +208,7 @@ describe('Webhook Manager', function () {
 
         it('should not forward arbitrary event', function (done) {
             var hookListener = getHookListener(function () {
-                    throw new Error('arbitrary event should be filtered out by default');
+                    done(new Error('arbitrary event should be filtered out by default'));
                 }),
                 eventData = {projectId: projectId, anything: 'really'};
 
@@ -291,7 +221,12 @@ describe('Webhook Manager', function () {
         });
 
         it('should not forward the socket', function (done) {
-            var hookListener = getHookListener(function (req) {
+            var eventData = {
+                    projectId: projectId,
+                    anything: 'notReallyCantHaveSocket',
+                    socket: 'something'
+                },
+                hookListener = getHookListener(function (req) {
                     expect(req.body.event).to.equal(CONSTANTS.PROJECT_DELETED);
                     expect(req.body.data.projectId).to.eql(eventData.projectId);
                     expect(req.body.data.anything).to.eql(eventData.anything);
@@ -299,18 +234,19 @@ describe('Webhook Manager', function () {
 
                     hookListener.close();
                     done();
-                }),
-                eventData = {
-                    projectId: projectId,
-                    anything: 'notReallyCantHaveSocket',
-                    socket: 'something'
-                };
+                });
 
             storage.send(CONSTANTS.PROJECT_DELETED, eventData);
         });
 
         it('should not forward webgmeToken', function (done) {
-            var hookListener = getHookListener(function (req) {
+            var eventData = {
+                    projectId: projectId,
+                    anything: 'notReallyCantHaveSocket',
+                    socket: 'something',
+                    webgmeToken: 'aToken'
+                },
+                hookListener = getHookListener(function (req) {
                     expect(req.body.event).to.equal(CONSTANTS.PROJECT_DELETED);
                     expect(req.body.data.projectId).to.eql(eventData.projectId);
                     expect(req.body.data.anything).to.eql(eventData.anything);
@@ -319,13 +255,7 @@ describe('Webhook Manager', function () {
 
                     hookListener.close();
                     done();
-                }),
-                eventData = {
-                    projectId: projectId,
-                    anything: 'notReallyCantHaveSocket',
-                    socket: 'something',
-                    webgmeToken: 'aToken'
-                };
+                });
 
             storage.send(CONSTANTS.PROJECT_DELETED, eventData);
         });
@@ -342,126 +272,21 @@ describe('Webhook Manager', function () {
             manager = new WebhookManager(storage, logger, gmeConfig);
             manager.start(done);
         });
+
         after(function (done) {
             manager.stop(done);
         });
 
-        it('should forward TAG_CREATED event', function (done) {
-            var eventGenerator = new EventGenerator(),
-                hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.TAG_CREATED);
-                    expect(req.body.data).to.eql(eventData);
-                    eventGenerator.stop();
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            eventGenerator.send(CONSTANTS.TAG_CREATED, eventData);
+        EVENTS.forEach(function (eventName) {
+            genForwardTest(eventName, EventGeneratorRedis, 'redis');
         });
 
-        it('should forward TAG_DELETED event', function (done) {
-            var eventGenerator = new EventGenerator(),
-                hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.TAG_DELETED);
-                    expect(req.body.data).to.eql(eventData);
-                    eventGenerator.stop();
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            eventGenerator.send(CONSTANTS.TAG_DELETED, eventData);
-        });
-
-        it('should forward BRANCH_CREATED event', function (done) {
-            var eventGenerator = new EventGenerator(),
-                hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.BRANCH_CREATED);
-                    expect(req.body.data).to.eql(eventData);
-                    eventGenerator.stop();
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            eventGenerator.send(CONSTANTS.BRANCH_CREATED, eventData);
-        });
-
-        it('should forward BRANCH_HASH_UPDATED event', function (done) {
-            var eventGenerator = new EventGenerator(),
-                hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.BRANCH_HASH_UPDATED);
-                    expect(req.body.data).to.eql(eventData);
-                    eventGenerator.stop();
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            eventGenerator.send(CONSTANTS.BRANCH_HASH_UPDATED, eventData);
-        });
-
-        it('should forward BRANCH_DELETED event', function (done) {
-            var eventGenerator = new EventGenerator(),
-                hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.BRANCH_DELETED);
-                    expect(req.body.data).to.eql(eventData);
-                    eventGenerator.stop();
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            eventGenerator.send(CONSTANTS.BRANCH_DELETED, eventData);
-        });
-
-        it('should forward PROJECT_DELETED event', function (done) {
-            var eventGenerator = new EventGenerator(),
-                hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.PROJECT_DELETED);
-                    expect(req.body.data).to.eql(eventData);
-                    eventGenerator.stop();
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            eventGenerator.send(CONSTANTS.PROJECT_DELETED, eventData);
-        });
-
-        it('should forward COMMIT event', function (done) {
-            var eventGenerator = new EventGenerator(),
-                hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal(CONSTANTS.COMMIT);
-                    expect(req.body.data).to.eql(eventData);
-                    eventGenerator.stop();
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            eventGenerator.send(CONSTANTS.COMMIT, eventData);
-        });
-
-        it('should forward arbitrary event', function (done) {
-            var eventGenerator = new EventGenerator(),
-                hookListener = getHookListener(function (req) {
-                    expect(req.body.event).to.equal('arbitrary');
-                    expect(req.body.data).to.eql(eventData);
-                    eventGenerator.stop();
-                    hookListener.close();
-                    done();
-                }),
-                eventData = {projectId: projectId, anything: 'really'};
-
-            eventGenerator.send('arbitrary', eventData);
-        });
+        genForwardTest('arbitrary', EventGeneratorRedis);
 
         it('should not forward BRANCH_UPDATED event', function (done) {
-            var eventGenerator = new EventGenerator(),
+            var eventGenerator = new EventGeneratorRedis(),
                 hookListener = getHookListener(function () {
-                    throw new Error('BRANCH_UPDATED event should be filtered out by default');
+                    done(new Error('BRANCH_UPDATED event should be filtered out by default'));
                 }),
                 eventData = {projectId: projectId, anything: 'really'};
 

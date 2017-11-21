@@ -1,4 +1,4 @@
-/*jshint node:true, newcap:false, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
  */

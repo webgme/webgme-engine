@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true, expr:true*/
+/*eslint-env node, mocha*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -15,10 +15,8 @@ describe('meta cache core', function () {
         logger = testFixture.logger.fork('metacachecore.spec'),
         storage,
         projectName = 'cachedMetaTesting',
-        project,
         core,
         rootNode,
-        commit,
         baseRootHash,
         gmeAuth,
         baseNodes = {
@@ -47,10 +45,8 @@ describe('meta cache core', function () {
                 });
             })
             .then(function (result) {
-                project = result.project;
                 core = result.core;
                 rootNode = result.rootNode;
-                commit = result.commitHash;
                 baseRootHash = result.rootHash;
             })
             .nodeify(done);
@@ -137,7 +133,7 @@ describe('meta cache core', function () {
         ];
 
         core.addMember(rootNode, 'MetaAspectSet', baseNodes['/1924875415']);
-        metaNodePaths = Object.keys(core.getAllMetaNodes(baseNodes['/1924875415']) || {});
+        //metaNodePaths = Object.keys(core.getAllMetaNodes(baseNodes['/1924875415']) || {});
 
         expect(Object.keys(core.getAllMetaNodes(baseNodes['/1924875415']) || {})).to.have.members(metaPaths);
     });
@@ -158,15 +154,14 @@ describe('meta cache core', function () {
 
     it('should follow if you move a META node', function () {
         var metaPaths = ['/1',
-                '/367050797',
-                '/367050797/1776478501',
-                '/367050797/625420143',
-                '/367050797/1626677559',
-                '/355480347'
-            ],
-            nodeToMove = core.getAllMetaNodes(rootNode)['/367050797/355480347'];
+            '/367050797',
+            '/367050797/1776478501',
+            '/367050797/625420143',
+            '/367050797/1626677559',
+            '/355480347'
+        ];
 
-        nodeToMove = core.moveNode(nodeToMove, rootNode);
+        core.moveNode(core.getAllMetaNodes(rootNode)['/367050797/355480347'], rootNode);
 
         expect(Object.keys(core.getAllMetaNodes(baseNodes['/1924875415']) || {})).to.have.members(metaPaths);
     });

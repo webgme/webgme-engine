@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser:true, node:true*/
+/*eslint-env node, browser*/
 
 /**
  * This is a partial implementation of RFC 6902
@@ -29,10 +29,10 @@ define([
         return str.replace(/%2f/g, '/');
     }
 
-    function _endsWith(str, pattern) {
-        var d = str.length - pattern.length;
-        return d >= 0 && str.lastIndexOf(pattern) === d;
-    }
+    // function _endsWith(str, pattern) {
+    //     var d = str.length - pattern.length;
+    //     return d >= 0 && str.lastIndexOf(pattern) === d;
+    // }
 
     function _startsWith(str, pattern) {
         return str.indexOf(pattern) === 0;

@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true*/
+/*eslint-env node, mocha*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -11,12 +11,10 @@ describe('core diff', function () {
     var gmeConfig = testFixture.getGmeConfig(),
         projectName = 'coreDiff',
         projectId = testFixture.projectName2Id(projectName),
-        project,
         core,
         rootNode,
         originalRootNode,
         originalRootHash,
-        commit,
         Q = testFixture.Q,
         expect = testFixture.expect,
         logger = testFixture.logger.fork('coreDiff.spec'),
@@ -56,11 +54,9 @@ describe('core diff', function () {
                     });
                 })
                 .then(function (result) {
-                    project = result.project;
                     core = result.core;
                     rootNode = result.rootNode;
                     originalRootHash = result.rootHash;
-                    commit = result.commitHash;
                     return Q.nfcall(core.loadRoot, originalRootHash);
                 })
                 .then(function (originalRootNode_) {
@@ -280,7 +276,7 @@ describe('core diff', function () {
                     return done(err);
                 }
 
-                var persisted = core.persist(rootNode);
+                core.persist(rootNode);
 
                 core.generateTreeDiff(originalRootNode, rootNode, function (err, diff) {
                     if (err) {
@@ -353,7 +349,7 @@ describe('core diff', function () {
                     return done(err);
                 }
 
-                var persisted = core.persist(rootNode);
+                core.persist(rootNode);
 
                 core.generateTreeDiff(originalRootNode, rootNode, function (err, diff) {
                     if (err) {
@@ -369,9 +365,7 @@ describe('core diff', function () {
 
     describe('diff with overlay shards present', function () {
         var shardCore,
-            shardProject,
             shardProjectName = 'shardCoreDiffTest',
-            shardProjectId = testFixture.projectName2Id(shardProjectName),
             shardRootHash,
             shardRoot,
             shardConfig;
@@ -390,7 +384,6 @@ describe('core diff', function () {
             })
                 .then(function (result) {
                     var child, i;
-                    shardProject = result.project;
                     shardCore = result.core;
                     shardRoot = result.rootNode;
 
@@ -492,11 +485,9 @@ describe('core diff', function () {
                     });
                 })
                 .then(function (result) {
-                    project = result.project;
                     core = result.core;
                     rootNode = result.rootNode;
                     originalRootHash = result.rootHash;
-                    commit = result.commitHash;
                     return Q.nfcall(core.loadRoot, originalRootHash);
                 })
                 .then(function (originalRootNode_) {
@@ -1724,11 +1715,9 @@ describe('core diff', function () {
                     });
                 })
                 .then(function (result) {
-                    project = result.project;
                     core = result.core;
                     rootNode = result.rootNode;
                     originalRootHash = result.rootHash;
-                    commit = result.commitHash;
                     return Q.nfcall(core.loadRoot, originalRootHash);
                 })
                 .then(function (originalRootNode_) {
@@ -2191,11 +2180,9 @@ describe('core diff', function () {
                     });
                 })
                 .then(function (result) {
-                    project = result.project;
                     core = result.core;
                     rootNode = result.rootNode;
                     originalRootHash = result.rootHash;
-                    commit = result.commitHash;
                     return Q.nfcall(core.loadRoot, originalRootHash);
                 })
                 .then(function (originalRootNode_) {

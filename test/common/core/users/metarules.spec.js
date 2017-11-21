@@ -1,5 +1,5 @@
 /*globals requireJS*/
-/* jshint node:true, mocha: true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -372,7 +372,9 @@ describe('Meta Rules', function () {
                 node = node_;
                 ir.core.setAttributeMeta(node, 'withInvalidRegEx', {
                     type: 'string',
-                    regexp: "/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/"
+                    regexp: '/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$' +
+                    '&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0' +
+                    '-9\\.\\-_~:/\\?#\\[\\]@!\\$&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/'
                 });
 
                 ir.core.setAttribute(node, 'withInvalidRegEx', 'hej');
@@ -652,7 +654,9 @@ describe('Meta Rules', function () {
                     var result;
                     c.core.setAttributeMeta(c.fco, 'InvalidRegexp', {
                         type: 'string',
-                        regexp: "/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$&'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/"
+                        regexp: '/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$' +
+                        '&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z' +
+                        '0-9\\.\\-_~:/\\?#\\[\\]@!\\$&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/'
                     });
 
                     result = checkMetaConsistency(c.core, c.root);

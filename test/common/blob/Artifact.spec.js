@@ -1,4 +1,4 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -15,7 +15,6 @@ describe('Blob Artifact', function () {
         agent = superagent.agent(),
         BlobClient = testFixture.BlobClient,
         server,
-        serverBaseUrl,
 
         bcParam = {};
 
@@ -23,7 +22,6 @@ describe('Blob Artifact', function () {
         before(function (done) {
             // we have to set the config here
             var gmeConfig = testFixture.getGmeConfig();
-            serverBaseUrl = 'http://127.0.0.1:' + gmeConfig.server.port;
             bcParam.serverPort = gmeConfig.server.port;
             bcParam.server = '127.0.0.1';
             bcParam.httpsecure = false;

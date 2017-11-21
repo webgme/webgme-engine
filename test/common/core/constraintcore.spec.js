@@ -1,4 +1,4 @@
-/* jshint node:true, mocha: true, expr:true*/
+/*eslint-env node, mocha*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -48,7 +48,7 @@ describe('constraint.core', function () {
                     instance;
 
                 project = new testFixture.Project(dbProject, storage, logger, gmeConfig);
-                core = new testFixture.WebGME.core(project, {
+                core = new testFixture.WebGME.Core(project, {
                     globConf: gmeConfig,
                     logger: logger
                 });
@@ -83,7 +83,7 @@ describe('constraint.core', function () {
     });
 
     it('gives back proper names for own and all constraints', function (done) {
-        Q.nfcall(core.loadChildren,rootNode)
+        Q.nfcall(core.loadChildren, rootNode)
             .then(function (children) {
                 var base, instance, i;
 
@@ -114,8 +114,8 @@ describe('constraint.core', function () {
     });
 
     it('removing constraints', function (done) {
-        Q.nfcall(core.loadChildren,rootNode)
-            .then(function(children){
+        Q.nfcall(core.loadChildren, rootNode)
+            .then(function (children) {
                 var base, instance, i;
 
                 children.should.have.length(2);

@@ -1,5 +1,4 @@
-// jscs:disable
-/*jshint node:true, mocha:true, expr:true*/
+/*eslint-env node, mocha*/
 /**
  * @author kecso / https://github.com/kecso
  * @author pmeijer / https://github.com/pmeijer
@@ -154,7 +153,7 @@ describe('jsonPatcher', function () {
                 })
                 .then(function (dbProject) {
                     var project = new testFixture.Project(dbProject, storage, logger, gmeConfig);
-                    core = new testFixture.WebGME.core(project, {
+                    core = new testFixture.WebGME.Core(project, {
                         globConf: gmeConfig,
                         logger: testFixture.logger.fork('meta-core:core')
                     });
@@ -443,22 +442,24 @@ describe('jsonPatcher', function () {
                 expect(changedNodes).to.deep.equal(getChangedNodesObj([], [path]));
             });
 
-            it('setting pointer to null should put node in update and previous target to partial' + suffix, function () {
-                var node = core.createNode({parent: isRoot ? root : parent}),
-                    target = core.createNode({parent: isRoot ? root : parent}),
-                    path = core.getPath(node),
-                    pathT = core.getPath(target),
-                    changedNodes;
+            it('setting pointer to null should put node in update and previous target to partial' + suffix,
+                function () {
+                    var node = core.createNode({parent: isRoot ? root : parent}),
+                        target = core.createNode({parent: isRoot ? root : parent}),
+                        path = core.getPath(node),
+                        pathT = core.getPath(target),
+                        changedNodes;
 
-                core.setPointer(node, 'ptt', target);
+                    core.setPointer(node, 'ptt', target);
 
-                core.persist(root);
+                    core.persist(root);
 
-                core.setPointer(node, 'ptt', null);
-                changedNodes = persistAndGetPatchData();
+                    core.setPointer(node, 'ptt', null);
+                    changedNodes = persistAndGetPatchData();
 
-                expect(changedNodes).to.deep.equal(getChangedNodesObj([pathT], [path]));
-            });
+                    expect(changedNodes).to.deep.equal(getChangedNodesObj([pathT], [path]));
+                }
+            );
 
             it('del pointer should put node in update and target in partial' + suffix, function () {
                 var node = core.createNode({parent: isRoot ? root : parent}),
@@ -828,7 +829,7 @@ describe('jsonPatcher', function () {
             var oldData = {
                     6: '#e1d65cdafc2aeef464efdf67895f6d9ec54f650a',
                     _id: '',
-                    ovr: {'/6': {parentA: '', 'parentB': ''}},
+                    ovr: {'/6': {parentA: '', parentB: ''}},
                     __v: '1.1.0'
                 },
                 newData = {
@@ -862,8 +863,8 @@ describe('jsonPatcher', function () {
         it('should work fine during shard addition', function () {
             var oldData = {
                     6: '#e1d65cdafc2aeef464efdf67895f6d9ec54f650a',
-                    '_id': '',
-                    '__v': '1.1.0',
+                    _id: '',
+                    __v: '1.1.0',
                     c: '#e1d65cdafc2aeef464efdf67895f6d9ec54f650a',
                     ovr: {
                         9: '#f53f3346eb25868aba13cbfed5abad3ccb7758fd',
@@ -875,8 +876,8 @@ describe('jsonPatcher', function () {
                 },
                 newData = {
                     6: '#e1d65cdafc2aeef464efdf67895f6d9ec54f650a',
-                    '_id': '',
-                    '__v': '1.1.0',
+                    _id: '',
+                    __v: '1.1.0',
                     c: '#e1d65cdafc2aeef464efdf67895f6d9ec54f650a',
                     ovr: {
                         9: '#f53f3346eb25868aba13cbfed5abad3ccb7758fd',
@@ -896,8 +897,8 @@ describe('jsonPatcher', function () {
         it('should work fine during shard removal', function () {
             var newData = {
                     6: '#e1d65cdafc2aeef464efdf67895f6d9ec54f650a',
-                    '_id': '',
-                    '__v': '1.1.0',
+                    _id: '',
+                    __v: '1.1.0',
                     c: '#e1d65cdafc2aeef464efdf67895f6d9ec54f650a',
                     ovr: {
                         9: '#f53f3346eb25868aba13cbfed5abad3ccb7758fd',
@@ -909,8 +910,8 @@ describe('jsonPatcher', function () {
                 },
                 oldData = {
                     6: '#e1d65cdafc2aeef464efdf67895f6d9ec54f650a',
-                    '_id': '',
-                    '__v': '1.1.0',
+                    _id: '',
+                    __v: '1.1.0',
                     c: '#e1d65cdafc2aeef464efdf67895f6d9ec54f650a',
                     ovr: {
                         9: '#f53f3346eb25868aba13cbfed5abad3ccb7758fd',
@@ -937,8 +938,8 @@ describe('jsonPatcher', function () {
                             parentB: ''
                         }
                     },
-                    '_id': '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
-                    '__v': '1.1.0'
+                    _id: '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
+                    __v: '1.1.0'
                 },
                 newData = {
                     type: 'shard',
@@ -949,8 +950,8 @@ describe('jsonPatcher', function () {
                             parentB: '/some/path'
                         }
                     },
-                    '_id': '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
-                    '__v': '1.1.0'
+                    _id: '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
+                    __v: '1.1.0'
                 },
                 patch = patcher.create(oldData, newData);
 
@@ -973,8 +974,8 @@ describe('jsonPatcher', function () {
                             parentB: ''
                         }
                     },
-                    '_id': '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
-                    '__v': '1.1.0'
+                    _id: '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
+                    __v: '1.1.0'
                 },
                 newData = {
                     type: 'shard',
@@ -986,8 +987,8 @@ describe('jsonPatcher', function () {
                             parentC: ''
                         }
                     },
-                    '_id': '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
-                    '__v': '1.1.0'
+                    _id: '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
+                    __v: '1.1.0'
                 },
                 patch = patcher.create(oldData, newData);
 
@@ -1010,8 +1011,8 @@ describe('jsonPatcher', function () {
                             parentB: ''
                         }
                     },
-                    '_id': '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
-                    '__v': '1.1.0'
+                    _id: '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
+                    __v: '1.1.0'
                 },
                 newData = {
                     type: 'shard',
@@ -1021,8 +1022,8 @@ describe('jsonPatcher', function () {
                             parentA: ''
                         }
                     },
-                    '_id': '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
-                    '__v': '1.1.0'
+                    _id: '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
+                    __v: '1.1.0'
                 },
                 patch = patcher.create(oldData, newData);
 
@@ -1044,15 +1045,15 @@ describe('jsonPatcher', function () {
                             parentB: ''
                         }
                     },
-                    '_id': '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
-                    '__v': '1.1.0'
+                    _id: '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
+                    __v: '1.1.0'
                 },
                 newData = {
                     type: 'shard',
                     itemCount: 2,
                     items: {},
-                    '_id': '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
-                    '__v': '1.1.0'
+                    _id: '#6ca0a1a3c52f381e69d7fa930468c7adce47646b',
+                    __v: '1.1.0'
                 },
                 patch = patcher.create(oldData, newData);
 
@@ -1121,7 +1122,7 @@ describe('jsonPatcher', function () {
                         child3,
                         child4;
 
-                    core = new testFixture.WebGME.core(project, {
+                    core = new testFixture.WebGME.Core(project, {
                         globConf: gmeConfig,
                         logger: logger.fork('core')
                     });
@@ -1544,7 +1545,7 @@ describe('jsonPatcher', function () {
         });
 
         it('should generate correct changes - copy more nodes', function (done) {
-            var temp,tempS, tempT;
+            var temp, tempS, tempT;
 
             Q.ninvoke(core, 'loadRoot', shardedRootHash)
                 .then(function (root_) {

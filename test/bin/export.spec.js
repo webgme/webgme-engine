@@ -1,4 +1,5 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
+/*eslint no-console: 0*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -14,7 +15,7 @@ describe('export CLI tests', function () {
         filename = require('path').normalize('src/bin/export.js'),
         fs = require('fs'),
         projectName = 'exportCliTest',
-        __should = testFixture.should,
+        __should = testFixture.should, //eslint-disable-line
         //projectId = testFixture.projectName2Id(projectName),
         outputPath = './test-tmp/exportCliTest.out',
         Q = testFixture.Q,
@@ -23,8 +24,7 @@ describe('export CLI tests', function () {
         gmeAuth,
         oldLogFunction = console.log,
         oldWarnFunction = console.warn,
-        oldStdOutFunction = process.stdout.write,
-        jsonProject;
+        oldStdOutFunction = process.stdout.write;
 
     before(function (done) {
         testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
@@ -43,9 +43,6 @@ describe('export CLI tests', function () {
                     // projectSeed: './seeds/ActivePanels.webgmex'
                     projectSeed: './test/bin/export/minimalShard.webgmex'
                 });
-            })
-            .then(function () {
-                //jsonProject = JSON.parse(testFixture.fs.readFileSync('./seeds/ActivePanels.json'));
             })
             .nodeify(done);
 

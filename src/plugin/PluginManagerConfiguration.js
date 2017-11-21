@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint browser: true, node:true*/
+/*eslint-env node, browser*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -26,17 +26,17 @@ define([], function () {
         }
     };
 
-//  TODO: something like this
-//        config = {
-//           "host": CONFIG.mongoip,
-//           "port": CONFIG.mongoport,
-//            "database": "multi",
-//            "project": "CyPhyLight",
-//            "token": "",
-//            "selected": selectedID,
-//            "commit": null, //"#668b3babcdf2ddcd7ba38b51acb62d63da859d90",
-//            "branchName": "master"
-//        }
+    //  TODO: something like this
+    //        config = {
+    //           "host": CONFIG.mongoip,
+    //           "port": CONFIG.mongoport,
+    //            "database": "multi",
+    //            "project": "CyPhyLight",
+    //            "token": "",
+    //            "selected": selectedID,
+    //            "commit": null, //"#668b3babcdf2ddcd7ba38b51acb62d63da859d90",
+    //            "branchName": "master"
+    //        }
 
     /**
      * Serializes this object to a JSON representation.

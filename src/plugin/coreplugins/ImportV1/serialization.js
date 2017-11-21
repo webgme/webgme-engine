@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -140,17 +140,6 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
                 }
             }
             return setsInfo;
-        }
-
-        // TODO: remove if not used..
-        function getConstraints(node) {
-            var names = core.getOwnConstraintNames(node).sort(),
-                i,
-                result = {};
-            for (i = 0; i < names.length; i++) {
-                result[names[i]] = core.getConstraint(node, names[i]);
-            }
-            return result;
         }
 
         function fillAncestorHashes(node) {
@@ -374,7 +363,8 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
         }
 
         function getMetaSheetsInformation() {
-            var getMemberRegistry = function (setname, memberpath) {
+            var registry = core.getRegistry(root, 'MetaSheets'),
+                getMemberRegistry = function (setname, memberpath) {
                     var names = core.getMemberRegistryNames(root, setname, memberpath),
                         i,
                         registry = {};
@@ -403,7 +393,6 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
                     return {};
                 },
                 sheets = {},
-                registry = core.getRegistry(root, 'MetaSheets'),
                 keys = core.getSetNames(root),
                 elements, guid,
                 i,
@@ -557,17 +546,6 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
                 return result;
             }
 
-            // TODO: remove if not used..
-            function getConstraintsOfNode() {
-                var names = core.getOwnConstraintNames(node).sort(),
-                    i,
-                    result = {};
-                for (i = 0; i < names.length; i++) {
-                    result[names[i]] = core.getConstraint(node, names[i]);
-                }
-                return result;
-            }
-
             function getPointersOfNode() {
                 var names = core.getOwnPointerNames(node).sort(),
                     i,
@@ -641,7 +619,8 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
         }
 
         function getMetaSheetInfo(root) {
-            var getMemberRegistry = function (setname, memberpath) {
+            var registry = core.getRegistry(root, 'MetaSheets'),
+                getMemberRegistry = function (setname, memberpath) {
                     var names = core.getMemberRegistryNames(root, setname, memberpath),
                         i,
                         registry = {};
@@ -670,7 +649,6 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
                     return {};
                 },
                 sheets = {},
-                registry = core.getRegistry(root, 'MetaSheets'),
                 keys = core.getSetNames(root),
                 elements, guid,
                 i,
@@ -1256,7 +1234,8 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
         }
 
         function importMetaSheetInfo(root) {
-            var setMemberAttributesAndRegistry = function (setname, memberguid) {
+            var oldSheets = updatedLibraryJson.metaSheets || {},
+                setMemberAttributesAndRegistry = function (setname, memberguid) {
                     var attributes = oldSheets[setname][memberguid].attributes || {},
                         registry = oldSheets[setname][memberguid].registry || {},
                         keys = Object.keys(attributes),
@@ -1293,6 +1272,7 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
 
                     return sheets;
                 },
+                newSheets = getCurrentShortSheetInfo(),
                 updateSheet = function (name) {
                     //if some element is extra in the place of import, then it stays untouched
                     var oldMemberGuids = Object.keys(oldSheets[name]),
@@ -1318,7 +1298,6 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
                 addSheet = function (name) {
                     var registry = JSON.parse(JSON.stringify(core.getRegistry(root, 'MetaSheets')) || {}),
                         i,
-                        memberpath,
                         memberguids = Object.keys(oldSheets[name]);
 
                     if (memberguids.indexOf('global') !== -1) {
@@ -1332,13 +1311,10 @@ define(['common/util/assert', 'common/core/constants', 'blob/BlobConfig'], funct
 
                     core.createSet(root, name);
                     for (i = 0; i < memberguids.length; i++) {
-                        memberpath = core.getPath(nodes[memberguids[i]]);
                         core.addMember(root, name, nodes[memberguids[i]]);
                         setMemberAttributesAndRegistry(name, memberguids[i]);
                     }
                 },
-                oldSheets = updatedLibraryJson.metaSheets || {},
-                newSheets = getCurrentShortSheetInfo(),
                 oldSheetNames = Object.keys(oldSheets),
                 newSheetNames = Object.keys(newSheets),
                 i;

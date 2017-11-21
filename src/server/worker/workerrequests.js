@@ -1,5 +1,6 @@
 /*globals requireJS*/
-/*jshint node:true*/
+/*eslint-env node*/
+
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -19,7 +20,7 @@ var Core = requireJS('common/core/coreQ'),
     metaRename = requireJS('common/core/users/metarename'),
     _ = require('underscore'),
 
-// JsZip can't for some reason extract the exported files..
+    // JsZip can't for some reason extract the exported files..
     AdmZip = require('adm-zip'),
     Q = require('q'),
 
@@ -260,7 +261,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             artifact = blobClient.createArtifact('files'),
             projectStr;
 
-        return Q.all(zip.getEntries().map(function (entry) {
+        return Q.all(zip.getEntries()
+            .map(function (entry) {
                 var entryName = entry.entryName;
                 if (entryName === 'project.json') {
                     projectStr = zip.readAsText(entry);
@@ -400,7 +402,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} parameters.seedName - Name of seed, file or projectId.
      * @param {string} parameters.type - 'db' or 'file'
      * @param {string} [parameters.seedBranch='master'] - If db - optional name of branch.
-     * @param {string} [parameters.seedCommit] - If db - optional commit-hash to seed from (if given branchName will not be used).
+     * @param {string} [parameters.seedCommit] - If db - optional commit-hash to seed from
+     * if given branchName will not be used.
      * @param {string} [parameters.kind]
      * @param [function} callback
      */
@@ -892,7 +895,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 }
 
                 zip = new AdmZip(buffer);
-                return Q.all(zip.getEntries().map(function (entry) {
+                return Q.all(zip.getEntries()
+                    .map(function (entry) {
                         var entryName = entry.entryName;
                         if (entryName === 'project.json') {
                             projectStr = zip.readAsText(entry);
@@ -1110,7 +1114,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                         .catch(deferred.reject);
                 } else if (parameters.libraryInfo) {
                     if (parameters.libraryInfo.projectId === parameters.projectId) {
-                        deferred.reject(new Error('Not allowed to add self as a library [' + parameters.projectId + ']'));
+                        deferred.reject(
+                            new Error('Not allowed to add self as a library [' + parameters.projectId + ']'));
                     } else {
                         storage.openProject(parameters.libraryInfo.projectId,
                             function (err, project/*,branches,access*/) {
@@ -1370,7 +1375,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
-                return _getCoreAndRootNode(storage, parameters.projectId, parameters.commitHash, parameters.branchName, parameters.tagName);
+                return _getCoreAndRootNode(storage, parameters.projectId,
+                    parameters.commitHash, parameters.branchName, parameters.tagName);
             })
             .then(function (context_) {
                 context = context_;

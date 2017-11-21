@@ -1,4 +1,6 @@
-/* jshint node:true */
+/*eslint-env node*/
+/*eslint no-console: 0*/
+
 /**
  * @module Bin:Import
  * @author kecso / https://github.com/kecso
@@ -34,7 +36,8 @@ function _addPackageArtifacts(blobClient, packageHash) {
             }
 
             zip = new AdmZip(buffer);
-            return Q.all(zip.getEntries().map(function (entry) {
+            return Q.all(zip.getEntries()
+                .map(function (entry) {
                     var entryName = entry.entryName;
                     if (entryName === 'project.json') {
                         projectStr = zip.readAsText(entry);
@@ -81,7 +84,6 @@ main = function (argv) {
         cliStorage,
         project,
         params,
-        commitHash,
         makeCommitParams = {commitMessage: 'loading project from package'},
         blobClient = new FSBlobClient(gmeConfig, logger.fork('BlobClient')),
         finishUp = function (error) {

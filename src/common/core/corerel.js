@@ -1,5 +1,5 @@
 /*globals define*/
-/*jshint node: true, browser: true*/
+/*eslint-env node, browser*/
 
 /**
  * @author mmaroti / https://github.com/mmaroti
@@ -13,7 +13,7 @@ define([
     'common/storage/constants',
     'common/util/key',
     'common/regexp'
-], function (ASSERT, TASYNC, RANDOM, CONSTANTS, STORAGE_CONSTANTS, GENKEY, REGEXP) {
+], function (ASSERT, TASYNC, RANDOM, CONSTANTS, STORAGE_CONSTANTS, generateKey, REGEXP) {
 
     'use strict';
 
@@ -363,7 +363,7 @@ define([
                         }
                     }
 
-                    hash = '#' + GENKEY(node.overlays[shardId], options.globConf);
+                    hash = '#' + generateKey(node.overlays[shardId], options.globConf);
                     node.overlays[shardId][self.ID_NAME] = hash;
                     innerCore.insertObject(node.overlays[shardId], stackedObjects);
                     stackedObjects[hash] = {
@@ -711,7 +711,7 @@ define([
                                 list.push({
                                     s: path,                // source
                                     n: name,                // name
-                                    t: overlays[path][name],// target
+                                    t: overlays[path][name], // target
                                     p: true                 // is forward relation
                                 });
                             }
@@ -1537,8 +1537,7 @@ define([
                             if (name.indexOf('_') === -1) {
                                 if (complexOverlayObject[shardId].items[source][name] === '/_nullptr') {
                                     completeOverlayInfo[source][name] = null;
-                                } else if (complexOverlayObject[shardId].items[source][name]
-                                        .indexOf('_') === -1) {
+                                } else if (complexOverlayObject[shardId].items[source][name].indexOf('_') === -1) {
                                     completeOverlayInfo[source][name] =
                                         complexOverlayObject[shardId].items[source][name];
                                 }
