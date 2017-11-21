@@ -1,6 +1,5 @@
 /*globals define, console*/
 /*eslint-env browser*/
-/*eslint no-console: 0*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -12,6 +11,7 @@ define([], function () {
 
     function _logDeprecated(oldFn, newFn, comment) {
         var commentStr = comment ? comment : '';
+        //eslint-disable-next-line no-console
         console.warn('"gmeNode.' + oldFn + '" is deprecated and will eventually be removed, use "gmeNode.' + newFn +
             '" instead.' + commentStr);
     }

@@ -1,6 +1,5 @@
 /*globals define, console*/
 /*eslint-env browser*/
-/*eslint no-console: 0*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -15,6 +14,7 @@ define([], function () {
             var typeToUse = isGetter ? 'gmeNode.' : 'gmeClient.',
                 commentStr = comment ? comment : '';
 
+            //eslint-disable-next-line no-console
             console.warn('"gmeClient.' + oldFn + '" is deprecated and will eventually be removed, use "' +
                 typeToUse + newFn + '" instead.' + commentStr);
         }

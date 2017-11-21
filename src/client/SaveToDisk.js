@@ -1,5 +1,5 @@
 /*globals define*/
-/*eslint-env browser, no-bitwise: 0*/
+/*eslint-env browser*/
 
 /**
  * @author kecso / https://github.com/kecso

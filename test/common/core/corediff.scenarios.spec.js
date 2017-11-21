@@ -509,11 +509,12 @@ describe('corediff scenarios', function () {
                         base: r.fco,
                         relid: 'instance'
                     });
-                    // conflictChild = core.createNode({
-                    //     parent: base,
-                    //     base: r.fco,
-                    //     relid: 'conflictRelid'
-                    // });
+
+                core.createNode({
+                    parent: base,
+                    base: r.fco,
+                    relid: 'conflictRelid'
+                });
 
                 basePath = core.getPath(base);
                 toBecomeInstancePath = core.getPath(instance);

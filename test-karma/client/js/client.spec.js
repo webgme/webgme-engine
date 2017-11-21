@@ -4511,7 +4511,7 @@ describe('GME client', function () {
 
                 expect(jsonMeta.pointers).to.deep.equal({});
                 expect(jsonMeta.aspects).to.deep.equal({});
-                expect(typeof jsonMeta.constraints.meta).to.equal('string');
+                expect(typeof jsonMeta.constraints.meta).to.equal('object');
                 done();
             });
 
