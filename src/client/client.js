@@ -617,7 +617,9 @@ define([
         function saveRoot(msg, callback) {
             var persisted,
                 numberOfPersistedObjects,
+                wrappedCallback,
                 callbacks;
+
             logger.debug('saveRoot msg', msg);
 
             if (!state.viewer && !state.readOnlyProject && state.nodes[ROOT_PATH]) {
