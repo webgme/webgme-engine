@@ -2629,6 +2629,7 @@ describe('GME client', function () {
 
             buildUpForTest(testId, {}, branchStatusHandler, function () {
                 client.removeUI(testId);//we do not need a UI and it would just make test code more complex
+                client.startTransaction('hello');
                 client.completeTransaction('should not persist anything', function (err) {
                     expect(err).to.equal(null);
                     expect(baseCommitHash).to.equal(client.getActiveCommitHash());
@@ -2637,55 +2638,168 @@ describe('GME client', function () {
             });
         });
 
-        // FIXME: This throw an error.
-        it.skip('should start a transaction', function (done) {
+        it('should start a transaction', function (done) {
             var testId = 'basicStartTransaction',
                 testState = 'init',
-                commitHandler = function (queue, result, callback) {
-                    callback(false);
-                    done();
-                },
                 node = null;
 
             currentTestId = testId;
 
-            buildUpForTest(testId, {'/1': {children: 0}}, commitHandler, function (events) {
-                if (testState === 'init') {
-                    testState = 'checking';
+            buildUpForTest(testId, {'/1': {children: 0}}, null, function (events) {
+                try {
+                    if (testState === 'init') {
+                        testState = 'checking';
 
-                    expect(events).to.have.length(2);
-                    expect(events).to.deep.include({eid: '/1', etype: 'load'});
+                        expect(events).to.have.length(2);
+                        expect(events).to.deep.include({eid: '/1', etype: 'load'});
 
-                    node = client.getNode('/1');
-                    expect(node).not.to.equal(null);
-                    expect(node.getAttributeNames()).to.deep.equal(['name']);
-                    expect(node.getAttribute('name')).to.equal('FCO');
+                        node = client.getNode('/1');
+                        expect(node).not.to.equal(null);
+                        expect(node.getAttributeNames()).to.deep.equal(['name']);
+                        expect(node.getAttribute('name')).to.equal('FCO');
 
-                    client.startTransaction('starting a transaction');
-                    client.setAttribute('/1', 'name', 'FCOmodified', 'change without commit');
-                    client.setAttribute('/1', 'newAttribute', 42, 'another change without commit');
-                    client.setRegistry('/1', 'position', {x: 50, y: 50});
-                    client.completeTransaction('now will the events get generated');
+                        client.startTransaction('starting a transaction');
+                        client.setAttribute('/1', 'name', 'FCOmodified', 'change without commit');
+                        client.setAttribute('/1', 'newAttribute', 42, 'another change without commit');
+                        client.setRegistry('/1', 'position', {x: 50, y: 50});
+                        client.completeTransaction('now the events will get generated');
+                    } else if (testState === 'checking') {
+                        testState = null;
+
+                        expect(events).to.have.length(2);
+                        expect(events).to.deep.include({eid: '/1', etype: 'update'}, JSON.stringify(events));
+
+                        node = client.getNode('/1');
+                        expect(node).not.to.equal(null);
+                        expect(node.getAttributeNames()).to.include('newAttribute');
+                        expect(node.getAttribute('name')).to.equal('FCOmodified');
+                        expect(node.getAttribute('newAttribute')).to.equal(42);
+                        expect(node.getRegistry('position')).to.deep.equal({x: 50, y: 50});
+
+                        done();
+                    } else {
+                        throw new Error('more than one set of events arrived during or after a transaction!');
+                    }
+                } catch (e) {
+                    done(e);
                 }
+            });
+        });
 
-                if (testState === 'checking') {
-                    testState = null;
+        it('should start multiple transactions and all should join into one', function (done) {
+            var testId = 'multiTrans',
+                testState = 'init',
+                attrs = ['name', 'newAttribute', 'someOtherNew'],
+                node = null,
+                cnt = 0,
+                error;
 
-                    expect(events).to.have.length(2);
-                    expect(events).to.deep.include({eid: '/1', etype: 'update'});
+            currentTestId = testId;
 
-                    node = client.getNode('/1');
-                    expect(node).not.to.equal(null);
-                    expect(node.getAttributeNames()).to.include('newAttribute');
-                    expect(node.getAttribute('name')).to.equal('FCOmodified');
-                    expect(node.getAttribute('newAttribute')).to.equal(42);
-                    expect(node.getRegistry('position')).to.deep.equal({x: 50, y: 50});
+            buildUpForTest(testId, {'/1': {children: 0}}, null, function (events) {
+                try {
+                    if (testState === 'init') {
+                        testState = 'checking';
 
-                    return;
+                        expect(events).to.have.length(2);
+                        expect(events).to.deep.include({eid: '/1', etype: 'load'});
+
+                        node = client.getNode('/1');
+                        expect(node).not.to.equal(null);
+                        expect(node.getAttributeNames()).to.deep.equal(['name']);
+                        expect(node.getAttribute('name')).to.equal('FCO');
+
+                        attrs.forEach(function (attr) {
+                            client.startTransaction('starting a transaction');
+                            client.setAttribute('/1', attr, attr + 'value', 'change without commit');
+                            setTimeout(function () {
+                                client.completeTransaction('complete ' + attr, function (err, status) {
+                                    error = error || err;
+                                    cnt += 1;
+                                    if (cnt === attrs.length) {
+                                        done(error);
+                                    }
+                                });
+                            });
+                        });
+                    } else if (testState === 'checking') {
+                        testState = null;
+                        expect(events).to.have.length(2);
+                        expect(events).to.deep.include({eid: '/1', etype: 'update'}, JSON.stringify(events));
+
+                        node = client.getNode('/1');
+                        expect(node).not.to.equal(null);
+                        attrs.forEach(function (attr) {
+                            expect(node.getAttribute(attr)).to.equal(attr + 'value');
+                        });
+
+                    } else {
+                        throw new Error('more than one set of events arrived during or after a transaction!');
+                    }
+                } catch (e) {
+                    done(e);
                 }
+            });
+        });
 
-                if (testState === null) {
-                    throw new Error('more than one set of events arrived during or after a transaction!');
+        it('should start three transactions and call callback when provided', function (done) {
+            var testId = 'multiTransCallbacks',
+                testState = 'init',
+                attrs = ['name', 'newAttribute', 'someOtherNew'],
+                node = null,
+                cnt = 0,
+                error;
+
+            currentTestId = testId;
+
+            buildUpForTest(testId, {'/1': {children: 0}}, null, function (events) {
+                try {
+                    if (testState === 'init') {
+                        testState = 'checking';
+
+                        expect(events).to.have.length(2);
+                        expect(events).to.deep.include({eid: '/1', etype: 'load'});
+
+                        node = client.getNode('/1');
+                        expect(node).not.to.equal(null);
+                        expect(node.getAttributeNames()).to.deep.equal(['name']);
+                        expect(node.getAttribute('name')).to.equal('FCO');
+
+                        attrs.forEach(function (attr, index) {
+                            client.startTransaction('starting a transaction');
+                            client.setAttribute('/1', attr, attr + 'value', 'change without commit');
+                            setTimeout(function () {
+                                var cb = function (err, status) {
+                                    error = error || err;
+                                    cnt += 1;
+                                    if (cnt === attrs.length - 1) {
+                                        done(error);
+                                    }
+                                };
+
+                                if (index === 0) {
+                                    client.completeTransaction('complete no cb');
+                                } else {
+                                    client.completeTransaction('complete ' + attr, cb);
+                                }
+                            });
+                        });
+                    } else if (testState === 'checking') {
+                        testState = null;
+                        expect(events).to.have.length(2);
+                        expect(events).to.deep.include({eid: '/1', etype: 'update'}, JSON.stringify(events));
+
+                        node = client.getNode('/1');
+                        expect(node).not.to.equal(null);
+                        attrs.forEach(function (attr) {
+                            expect(node.getAttribute(attr)).to.equal(attr + 'value');
+                        });
+
+                    } else {
+                        throw new Error('more than one set of events arrived during or after a transaction!');
+                    }
+                } catch (e) {
+                    done(e);
                 }
             });
         });

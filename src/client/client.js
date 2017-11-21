@@ -71,7 +71,10 @@ define([
 
                 undoRedoChain: null, //{commitHash: '#hash', rootHash: '#hash', previous: object, next: object}
 
-                inTransaction: false,
+                transactions: {
+                    opened: 0,
+                    callbacks: []
+                },
                 msg: '',
                 gHash: 0,
                 loadError: null,
@@ -618,39 +621,35 @@ define([
             var persisted,
                 numberOfPersistedObjects,
                 wrappedCallback,
+                callbacks,
                 newCommitObject;
 
             logger.debug('saveRoot msg', msg);
-            if (callback) {
-                wrappedCallback = function (err, result) {
-                    if (err) {
-                        logger.error('saveRoot failure', err);
-                    } else {
-                        logger.debug('saveRoot', result);
-                    }
-                    callback(err, result);
-                };
-            } else {
-                wrappedCallback = function (err, result) {
-                    if (err) {
-                        logger.error('saveRoot failure', err);
-                    } else {
-                        logger.debug('saveRoot', result);
-                    }
-                };
-            }
 
             if (!state.viewer && !state.readOnlyProject && state.nodes[ROOT_PATH]) {
-                if (state.msg) {
-                    if (msg) {
-                        state.msg += '\n' + msg;
-                    }
+                if (state.msg && msg) {
+                    state.msg += '\n' + msg;
                 } else {
                     state.msg = msg;
                 }
 
-                if (!state.inTransaction) {
+                if (state.transactions.opened === 0) {
                     ASSERT(state.project && state.core && state.branchName);
+
+                    callbacks = state.transactions.callbacks;
+                    state.transactions.callbacks = [];
+
+                    wrappedCallback = function (err, result) {
+                        if (err) {
+                            logger.error('saveRoot failure', err);
+                        } else {
+                            logger.debug('saveRoot', result);
+                        }
+
+                        callbacks.forEach(function (cb) {
+                            cb(err, result);
+                        });
+                    };
 
                     logger.debug('is NOT in transaction - will persist.');
                     // console.time('persist');
@@ -681,11 +680,12 @@ define([
                     state.msg = '';
                 } else {
                     logger.debug('is in transaction - will NOT persist.');
+
                 }
             } else {
                 //TODO: Why is this set to empty here?
                 state.msg = '';
-                wrappedCallback(null);
+                callback && callback(null);
             }
         }
 
@@ -776,7 +776,8 @@ define([
                 state.loadError = 0;
                 state.rootHash = null;
                 //state.rootObject = null;
-                state.inTransaction = false;
+                state.transactions.opened = 0;
+                state.transactions.callbacks = [];
                 state.msg = '';
 
                 cleanUsersTerritories();
@@ -1098,7 +1099,7 @@ define([
                 logger.debug('hashUpdateHandler invoked. project, branch, commitHash',
                     commitData.projectId, commitData.branchName, commitHash);
 
-                if (state.inTransaction) {
+                if (state.transactions.opened > 0) {
                     logger.warn('Is in transaction, will not load in changes');
                     callback(null, false); // proceed: false
                     return;
@@ -1780,11 +1781,8 @@ define([
         };
 
         this.startTransaction = function (msg) {
-            if (state.inTransaction) {
-                logger.error('Already in transaction, will proceed though..');
-            }
             if (state.core) {
-                state.inTransaction = true;
+                state.transactions.opened += 1;
                 msg = typeof msg === 'string' ? msg : '[';
                 saveRoot(msg);
             } else {
@@ -1793,7 +1791,16 @@ define([
         };
 
         this.completeTransaction = function (msg, callback) {
-            state.inTransaction = false;
+            state.transactions.opened -= 1;
+            if (callback) {
+                state.transactions.callbacks.push(callback);
+            }
+
+            if (state.transactions.opened < 0) {
+                state.transactions.opened = 0;
+                logger.error(new Error('More calls to completeTransaction than transactions started!'));
+            }
+
             if (state.core) {
                 msg = msg || ']';
                 saveRoot(msg, callback);
