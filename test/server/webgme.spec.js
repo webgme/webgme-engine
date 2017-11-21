@@ -80,26 +80,28 @@ describe('webgme', function () {
         expect(requireJS.s.contexts._.config.paths.myDoubleBlob).to.contain('blob', 'plugin');
     });
 
-    it('addToRequireJsPaths should throw a readable exception if requirejsPaths is not an array or string', function () {
-        var webGME = testFixture.WebGME,
-            gmeConfig = testFixture.getGmeConfig();
+    it('addToRequireJsPaths should throw a readable exception if requirejsPaths is not an array or string',
+        function () {
+            var webGME = testFixture.WebGME,
+                gmeConfig = testFixture.getGmeConfig();
 
-        gmeConfig.requirejsPaths.myDoubleBlob = {a: 'b'};
+            gmeConfig.requirejsPaths.myDoubleBlob = {a: 'b'};
 
-        try {
-            webGME.addToRequireJsPaths(gmeConfig);
-            throw new Error('Should have failed!');
-        } catch (e) {
-            expect(e.message).to.include('Given requirejsPaths value is not a string nor array');
+            try {
+                webGME.addToRequireJsPaths(gmeConfig);
+                throw new Error('Should have failed!');
+            } catch (e) {
+                expect(e.message).to.include('Given requirejsPaths value is not a string nor array');
+            }
         }
-    });
+    );
 
     it('should getGmeAuth', function (done) {
         var webGME = testFixture.WebGME,
             gmeConfig = testFixture.getGmeConfig();
 
         webGME.getGmeAuth(gmeConfig)
-            .then(function (gmeAuth) {
+            .then(function (/*gmeAuth*/) {
 
             })
             .nodeify(done);
@@ -132,7 +134,7 @@ describe('webgme', function () {
             .then(function (gmeAuth) {
                 return webGME.getStorage(logger, gmeConfig, gmeAuth);
             })
-            .then(function (storage) {
+            .then(function (/*storage*/) {
 
             })
             .nodeify(done);

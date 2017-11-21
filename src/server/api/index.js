@@ -1,6 +1,6 @@
 /*globals requireJS*/
 /*eslint-env node*/
-/*eslint new-cap: 0 camelcase: 0*/
+/*eslint camelcase: 0*/
 
 /**
  * @module Server:API

@@ -1,5 +1,5 @@
 /*eslint-env node, mocha*/
-/*eslint new-cap: 0*/
+
 /**
  * @author pmeijer / https://github.com/pmeijer
  */

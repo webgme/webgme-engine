@@ -1,6 +1,6 @@
 /*globals define*/
 /*eslint-env browser*/
-/*eslint new-cap: 0*/
+
 /**
  * @author kecso / https://github.com/kecso
  * @author pmeijer / https://github.com/pmeijer
@@ -103,7 +103,7 @@ define([
         this.CONSTANTS = CONSTANTS;
 
         // Internal functions
-        function COPY(object) {
+        function copy(object) {
             if (object) {
                 return JSON.parse(JSON.stringify(object));
             }
@@ -234,7 +234,7 @@ define([
                 pathsSoFar[patternId] = true;
                 if (pattern.children && pattern.children > 0) {
                     children = state.core.getChildrenPaths(state.nodes[patternId].node);
-                    subPattern = COPY(pattern);
+                    subPattern = copy(pattern);
                     subPattern.children -= 1;
                     for (i = 0; i < children.length; i += 1) {
                         if (fitsInPatternTypes(children[i], pattern)) {
@@ -303,7 +303,7 @@ define([
                 events.unshift({etype: 'complete', eid: null});
             }
 
-            state.users[userId].FN(events);
+            state.users[userId].FN(events); //eslint-disable-line new-cap
         }
 
         function loadChildrenPattern(core, nodesSoFar, node, level, callback) {
@@ -425,7 +425,7 @@ define([
             });
 
             if (state.users[guid]) {
-                state.users[guid].PATTERNS = COPY(patterns);
+                state.users[guid].PATTERNS = copy(patterns);
                 if (!error) {
                     userEvents(guid, []);
                 }
@@ -532,7 +532,7 @@ define([
                     for (j = 0; j < patternPaths.length; j += 1) {
                         patternsToLoad.push({
                             id: patternPaths[j],
-                            pattern: COPY(state.users[userIds[i]].PATTERNS[patternPaths[j]])
+                            pattern: copy(state.users[userIds[i]].PATTERNS[patternPaths[j]])
                         });
                     }
                 }
@@ -544,7 +544,7 @@ define([
                     for (j = 0; j < patternPaths.length; j += 1) {
                         patternsToLoad.push({
                             id: patternPaths[j],
-                            pattern: COPY(state.pendingTerritoryUpdatePatterns[userIds[i]][patternPaths[j]])
+                            pattern: copy(state.pendingTerritoryUpdatePatterns[userIds[i]][patternPaths[j]])
                         });
                     }
                 }
@@ -581,7 +581,7 @@ define([
                     state.users[userIds[i]].PATTERNS = {};
                     state.users[userIds[i]].PATHS = {};
                     state.users[userIds[i]].SENDEVENTS = true;
-                    state.users[userIds[i]].FN(events);
+                    state.users[userIds[i]].FN(events); //eslint-disable-line new-cap
                 }
             }
         }
@@ -1857,7 +1857,7 @@ define([
             if (!state.nodes[ROOT_PATH]) {
                 if (state.users[guid]) {
                     logger.debug('early updateTerritory for user[' + guid + ']. No loaded project state yet.');
-                    state.users[guid].PATTERNS = COPY(patterns);
+                    state.users[guid].PATTERNS = copy(patterns);
                 }
                 return;
             }

@@ -1,6 +1,5 @@
 /*globals requireJS*/
 /*eslint-env node*/
-/*eslint new-cap: 0*/
 
 /**
  * @author ksmyth / https://github.com/ksmyth

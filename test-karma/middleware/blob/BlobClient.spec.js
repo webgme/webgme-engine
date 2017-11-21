@@ -1,5 +1,7 @@
-/*globals requirejs, expect, Buffer, File*/
-/*eslint-env node, mocha*/
+/*globals requirejs, expect, Buffer, File, Uint8Array, ArrayBuffer*/
+/*eslint-env browser, mocha*/
+/*eslint no-bitwise: 0*/
+
 /**
  * @author ksmyth / https://github.com/ksmyth
  */
@@ -336,7 +338,7 @@ describe('Browser BlobClient', function () {
 
     function base64DecToArr(sBase64, nBlocksSize) {
         var
-            sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, ''),
+            sB64Enc = sBase64.replace(/[^A-Za-z0-9+/]/g, ''),
             nInLen = sB64Enc.length,
             nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2,
             taBytes = new Uint8Array(nOutLen),

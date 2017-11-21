@@ -9,14 +9,13 @@ var testFixture = require('../../_globals.js');
 describe('StorageHelpers', function () {
     'use strict';
     var expect,
-        logger,
         Q,
         storageHelpers,
         ProjectMock;
 
     before(function () {
         expect = testFixture.expect;
-        logger = testFixture.logger.fork('StorageHelpers');
+        //logger = testFixture.logger.fork('StorageHelpers');
         Q = testFixture.Q;
         storageHelpers = require('../../../src/server/storage/storagehelpers');
         ProjectMock = function (commits) {

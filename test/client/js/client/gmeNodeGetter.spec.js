@@ -473,8 +473,10 @@ describe('gmeNodeGetter', function () {
         context.core.setMemberAttribute(basicState.nodes[''].node,
             'MetaAspectSet', '/175547009/871430202', 'testing', originalAttribute);
 
-        expect(node.getMemberAttribute('MetaAspectSet', '/175547009/871430202', 'testing')).to.deep.equal(originalAttribute);
-        expect(node.getEditableMemberAttribute('MetaAspectSet', '/175547009/871430202', 'other')).to.equal(undefined);
+        expect(node.getMemberAttribute('MetaAspectSet', '/175547009/871430202', 'testing'))
+            .to.deep.equal(originalAttribute);
+        expect(node.getEditableMemberAttribute('MetaAspectSet', '/175547009/871430202', 'other'))
+            .to.equal(undefined);
         expect(node.getEditableMemberAttribute('MetaAspectSet', '/175547009/871430202', 'testing'))
             .not.to.equal(originalAttribute);
 
@@ -666,7 +668,7 @@ describe('gmeNodeGetter', function () {
 
         try {
             node.getLibraryGuid();
-            throw new Error('missing error handling')
+            throw new Error('missing error handling');
         } catch (e) {
             expect(e instanceof Error).to.eql(true);
             expect(e.name).to.eql('CoreIllegalOperationError');

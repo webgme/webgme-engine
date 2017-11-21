@@ -1,6 +1,5 @@
 /*globals require*/
 /*eslint-env node, mocha*/
-/*jscs:disable maximumLineLength*/
 
 /**
  * @author lattmann / https://github.com/lattmann
@@ -37,7 +36,9 @@ describe('ORGANIZATION REST API', function () {
                         gmeAuth.addUser('userAdminOrg', 'user@example.com', 'plaintext', false, {overwrite: true}),
                         gmeAuth.addUser('userAdminOrg2', 'user@example.com', 'plaintext', false, {overwrite: true}),
                         gmeAuth.addUser('userAddedToOrg', 'user@example.com', 'plaintext', false, {overwrite: true}),
-                        gmeAuth.addUser('userRemovedFromOrg', 'user@example.com', 'plaintext', false, {overwrite: true}),
+                        gmeAuth.addUser('userRemovedFromOrg', 'user@example.com', 'plaintext', false, {
+                            overwrite: true
+                        }),
                         gmeAuth.addOrganization('orgInit', {someInfo: true}),
                         gmeAuth.addOrganization('orgToAddAdmin', null),
                         gmeAuth.addOrganization('orgToRemoveAdmin', null),
@@ -841,18 +842,17 @@ describe('ORGANIZATION REST API', function () {
                 }
             );
 
-            it('should 404 when removing user admin in non-existing org DELETE /api/v1/orgs/noExist/admins/userAddedToOrg',
-                function (done) {
-                    var orgId = 'noExist',
-                        userId = 'userAddedToOrg';
-                    agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
-                        .end(function (err, res2) {
-                            expect(res2.status).equal(404, err);
-                            done();
-                        });
-                }
-            );
+            it('should 404 when removing user admin in non-existing org DELETE ' +
+                '/api/v1/orgs/noExist/admins/userAddedToOrg', function (done) {
+                var orgId = 'noExist',
+                    userId = 'userAddedToOrg';
+                agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
+                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .end(function (err, res2) {
+                        expect(res2.status).equal(404, err);
+                        done();
+                    });
+            });
 
             it('should 204 when removing non-existing user admin in org DELETE /api/v1/orgs/orgInit/admins/noExist',
                 function (done) {

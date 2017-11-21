@@ -1,5 +1,5 @@
 /*eslint-env node*/
-/*eslint no-console: 0, new-cap: 0*/
+/*eslint no-console: 0*/
 
 /**
  * Script for listing, adding and removing webhooks in projects.

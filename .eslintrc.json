@@ -30,7 +30,12 @@
         "functions": false
       }
     ],
-    "new-cap": 2,
+    "new-cap": [2, {
+      "newIsCap": true,
+      "capIsNew": true,
+      "capIsNewExceptions": ["Q", "ASSERT", "GUID", "Router"],
+      "newIsCapExceptions": []
+    }],
     "no-caller": 2,
     "quotes": [
       2,
@@ -84,6 +89,7 @@
     "max-len": [
       2,
       120
-    ]
+    ],
+    "semi": 2
   }
 }

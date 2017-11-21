@@ -1,5 +1,4 @@
 /*eslint-env node*/
-/*eslint new-cap: 0*/
 /**
  * @module Server:Storage:Redis
  * @author pmeijer / https://github.com/pmeijer

@@ -114,7 +114,7 @@ describe('Plugin MergeExample', function () {
                 mergeTo: 'b2'
             };
 
-        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
+        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err) {
             expect(err).to.equal(null);
 
             project.getBranches()
@@ -138,7 +138,7 @@ describe('Plugin MergeExample', function () {
                 newBranchName: 'newBranchFromTwoIdentical'
             };
 
-        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
+        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err) {
             expect(err).to.equal(null);
 
             project.getBranches()
@@ -163,7 +163,7 @@ describe('Plugin MergeExample', function () {
                 newBranchName: 'fastForwardFrom'
             };
 
-        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
+        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err) {
             expect(err).to.equal(null);
 
             project.getBranches()
@@ -188,7 +188,7 @@ describe('Plugin MergeExample', function () {
                 newBranchName: 'fastForwardTo'
             };
 
-        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
+        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err) {
             expect(err).to.equal(null);
 
             project.getBranches()
@@ -213,7 +213,7 @@ describe('Plugin MergeExample', function () {
                 newBranchName: 'fastForwardToCommitHash'
             };
 
-        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
+        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err) {
             expect(err).to.equal(null);
 
             project.getBranches()
@@ -238,7 +238,7 @@ describe('Plugin MergeExample', function () {
                 newBranchName: 'conflict1'
             };
 
-        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
+        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err) {
             expect(err).to.equal(null);
 
             project.getBranches()
@@ -274,7 +274,7 @@ describe('Plugin MergeExample', function () {
                 newBranchName: 'conflict2'
             };
 
-        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
+        pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err) {
             expect(err).to.equal(null);
 
             project.getBranches()

@@ -14,7 +14,7 @@ describe('GME authentication', function () {
 
     var gmeConfig = testFixture.getGmeConfig(),
         GMEAuth = testFixture.GMEAuth,
-        __should = testFixture.should,
+        __should = testFixture.should, //eslint-disable-line
         expect = testFixture.expect,
         Q = testFixture.Q,
 

@@ -1,5 +1,5 @@
 /*eslint-env node*/
-/*eslint new-cap: 0*/
+
 /**
  * This serves the login.html in src/client/app without authentication at profile/login
  *

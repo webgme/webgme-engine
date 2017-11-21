@@ -1,5 +1,4 @@
 /*eslint-env node, mocha*/
-/*eslint new-cap: 0*/
 
 /**
  * @author lattmann / https://github.com/lattmann

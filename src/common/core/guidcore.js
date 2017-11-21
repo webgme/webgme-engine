@@ -1,6 +1,6 @@
 /*globals define*/
 /*eslint-env node, browser*/
-/*eslint no-bitwise: 0, new-cap: 0*/
+/*eslint no-bitwise: 0*/
 
 /**
  * @author kecso / https://github.com/kecso

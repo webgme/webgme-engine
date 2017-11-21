@@ -1,6 +1,5 @@
 /*globals requireJS*/
 /*eslint-env node*/
-/*eslint new-cap: 0*/
 
 /**
  * @module Server:GMEAuth

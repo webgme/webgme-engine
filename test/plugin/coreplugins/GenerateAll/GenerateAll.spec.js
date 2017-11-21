@@ -16,7 +16,6 @@ describe('Generate All Plugin', function () {
         storage,
         expect,
         project,
-        commitHash,
         gmeAuth,
         importResult,
         pluginManager;
@@ -50,7 +49,6 @@ describe('Generate All Plugin', function () {
             .then(function (importResult_) {
                 importResult = importResult_;
                 project = importResult.project;
-                commitHash = importResult.commitHash;
                 pluginManager = new PluginCliManager(project, logger, gmeConfig);
             })
             .nodeify(done);

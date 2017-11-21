@@ -1910,7 +1910,8 @@ describe('Simple worker', function () {
             projectName = 'emptyPackageImportWithKind',
             projectId = testFixture.projectName2Id(projectName);
 
-        blobClient.putFile('emptyWithKind.webgmex', fs.readFileSync('./test/server/worker/simpleworker/emptyWithKind.webgmex'))
+        blobClient.putFile('emptyWithKind.webgmex',
+            fs.readFileSync('./test/server/worker/simpleworker/emptyWithKind.webgmex'))
             .then(function (hash) {
                 blobHash = hash;
                 return worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig});
@@ -1955,7 +1956,8 @@ describe('Simple worker', function () {
             projectName = 'emptyPackageThatHasKindAlreadyImport',
             projectId = testFixture.projectName2Id(projectName);
 
-        blobClient.putFile('emptyWithKind.webgmex', fs.readFileSync('./test/server/worker/simpleworker/emptyWithKind.webgmex'))
+        blobClient.putFile('emptyWithKind.webgmex',
+            fs.readFileSync('./test/server/worker/simpleworker/emptyWithKind.webgmex'))
             .then(function (hash) {
                 blobHash = hash;
                 return worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig});

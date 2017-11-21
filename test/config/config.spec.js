@@ -77,11 +77,10 @@ describe('configuration and components', function () {
     });
 
     it('should throw if configuration is malformed', function () {
-        var config;
         process.env.NODE_ENV = 'malformed';
 
         (function () {
-            config = require('../../config');
+            require('../../config');
         }).should.throw(Error);
     });
 

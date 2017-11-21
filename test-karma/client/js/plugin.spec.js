@@ -268,12 +268,12 @@ describe('Plugin', function () {
                     client.setAttribute('', 'name', 'PluginForkedNameFromClient', 'conflicting change');
 
                     setTimeout(function () {
-                        console.log('ACH', client.getActiveCommitHash());
-                        console.log('context hash', context.managerConfig.commit);
+                        // console.log('ACH', client.getActiveCommitHash());
+                        // console.log('context hash', context.managerConfig.commit);
                         client.runBrowserPlugin(pluginId, context, function (err, pluginResult) {
                             expect(pluginResult).not.to.equal(null);
                             expect(pluginResult.success).to.equal(true, 'PluginForked did not succeed.');
-                            console.log(JSON.stringify(pluginResult.commits, null, 2));
+                            // console.log(JSON.stringify(pluginResult.commits, null, 2));
                             expect(pluginResult.commits.length).to.equal(2);
                             expect(pluginResult.commits[0].status).to.equal(client.CONSTANTS.STORAGE.SYNCED);
                             expect(pluginResult.commits[0].branchName).to.equal(branchName);
@@ -284,19 +284,23 @@ describe('Plugin', function () {
 
                                 expect(Object.keys(branches).length).to.equal(3);
                                 expect(branches).to.include.keys('master', branchName, 'PluginForked1Fork');
-                                client.deleteBranch(projectId, 'PluginForked1Fork', branches.PluginForked1Fork, function (err) {
-                                    expect(err).to.equal(null);
-
-                                    client.selectBranch('master', null, function (err) {
+                                client.deleteBranch(projectId, 'PluginForked1Fork',
+                                    branches.PluginForked1Fork, function (err) {
                                         expect(err).to.equal(null);
 
-                                        client.deleteBranch(projectId, branchName, branches[branchName], function (err) {
+                                        client.selectBranch('master', null, function (err) {
                                             expect(err).to.equal(null);
 
-                                            done();
+                                            client.deleteBranch(projectId, branchName, branches[branchName],
+                                                function (err) {
+                                                    expect(err).to.equal(null);
+
+                                                    done();
+                                                }
+                                            );
                                         });
-                                    });
-                                });
+                                    }
+                                );
                             });
                         });
                     });

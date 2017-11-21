@@ -1,4 +1,3 @@
-// jscs:disable
 /*eslint-env node, mocha*/
 /**
  * @author kecso / https://github.com/kecso

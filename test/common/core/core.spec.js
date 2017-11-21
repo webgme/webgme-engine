@@ -61,7 +61,7 @@ describe('core', function () {
                 originalRootHash = result.rootHash;
                 commit = result.commitHash;
 
-                return Q.ninvoke(core, 'loadByPath', rootNode, '/175547009/1104061497')
+                return Q.ninvoke(core, 'loadByPath', rootNode, '/175547009/1104061497');
             })
             .then(function (node) {
                 setNode = node;
@@ -4853,11 +4853,11 @@ describe('core', function () {
                     [commit],
                     persisted.rootHash,
                     persisted.objects,
-                    'some message')
+                    'some message');
             })
             .then(function () {
                 return Q.nfcall(core.loadRoot, newRootHash);
-            })
+            });
     }
 
     function genTests(methods) {

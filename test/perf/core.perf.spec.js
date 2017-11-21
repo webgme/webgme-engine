@@ -1,5 +1,5 @@
 /*eslint-env node, mocha*/
-
+/*eslint no-console: 0*/
 /**
  * TODO: This is outdated as serializer does not exist anymore.
  * @author pmeijer / https://github.com/pmeijer
@@ -300,7 +300,8 @@ describe.skip('Core Performance test', function () {
                     expect(patchResult.status).to.equal('success');
 
                     //TODO this should be used in the code as well to make it simpler
-                    persisted.objects[persisted.rootHash] = getPatchObject(persisted.objects[persisted.rootHash].oldData,
+                    persisted.objects[persisted.rootHash] = getPatchObject(
+                        persisted.objects[persisted.rootHash].oldData,
                         persisted.objects[persisted.rootHash].newData);
 
                     console.time('makeCommit');
@@ -320,7 +321,7 @@ describe.skip('Core Performance test', function () {
         it('should export quickly', function (done) {
             this.timeout(120000);
             core.loadRoot(rootHash)
-                .then(function (root) {
+                .then(function () {
                     // return Q.nfcall(serializer.export, core, root);
                     return testFixture.storageUtil.getProjectJson(project, {commitHash: baseCommitHash});
                 })
@@ -362,7 +363,7 @@ describe.skip('Core Performance test', function () {
 
         it('should load the whole huge project', function (done) {
             this.timeout(1200000);
-            var count = 0;
+            //var count = 0;
             console.time('load');
             core.loadTree(rootHash)
                 .then(function (nodes) {
@@ -377,7 +378,7 @@ describe.skip('Core Performance test', function () {
         });
         it('should load the whole huge project without instances', function (done) {
             this.timeout(1200000);
-            var count = 0;
+            //var count = 0;
             console.time('load');
             core.loadRoot(rootHash)
                 .then(function (root) {
@@ -394,18 +395,17 @@ describe.skip('Core Performance test', function () {
             core.loadRoot(rootHash)
                 .then(function (root) {
                     var allMetaNodes = core.getAllMetaNodes(root),
-                        i,
-                        meta;
+                        i;
 
                     console.time('getJsonMeta');
                     for (i in allMetaNodes) {
-                        meta = core.getJsonMeta(allMetaNodes[i]);
+                        core.getJsonMeta(allMetaNodes[i]);
                     }
                     console.timeEnd('getJsonMeta');
 
                     console.time('getOwnJsonMeta');
                     for (i in allMetaNodes) {
-                        meta = core.getOwnJsonMeta(allMetaNodes[i]);
+                        core.getOwnJsonMeta(allMetaNodes[i]);
                     }
                     console.timeEnd('getOwnJsonMeta');
                 })

@@ -1,6 +1,5 @@
 /*globals define*/
 /*eslint-env node, browser*/
-/*eslint new-cap: 0*/
 
 /**
  * Plugin mainly used for testing.

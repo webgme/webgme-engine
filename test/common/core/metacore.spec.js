@@ -404,7 +404,7 @@ describe('meta core', function () {
             defInstT1 = core.createNode({base: defTarget1, parent: defRoot, relid: 'IT1'}),
             defInstT2 = core.createNode({base: defTarget2, parent: defRoot, relid: 'IT2'});
 
-        core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'})
+        core.createNode({base: defOwner1, parent: defRoot, relid: 'I1'});
         core.setAttributeMeta(defFCO, 'name', {type: 'string'});
         core.setPointerMetaTarget(defOwner1, 'ptr', defFCO);
         core.setPointerMetaLimits(defOwner1, 'ptr', 0, 1);

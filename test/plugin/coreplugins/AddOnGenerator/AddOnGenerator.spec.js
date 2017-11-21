@@ -11,7 +11,6 @@ describe('AddOnGenerator', function () {
     var logger = testFixture.logger.fork('AddOnGeneratorTest'),
         requirejs = testFixture.requirejs,
         expect = testFixture.expect,
-        path = testFixture.path,
         esprima = require('esprima'),
         pluginConfig = {
             addOnId: 'NewAddOn',

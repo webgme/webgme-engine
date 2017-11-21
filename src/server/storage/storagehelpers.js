@@ -1,6 +1,5 @@
 /*globals requireJS*/
 /*eslint-env node*/
-/*eslint new-cap: 0*/
 
 /**
  * @author pmeijer / https://github.com/pmeijer
@@ -211,4 +210,4 @@ module.exports = {
     loadPath: loadPath,
     filterArray: filterArray,
     loadObject: loadObject
-}
+};

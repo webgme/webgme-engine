@@ -22,9 +22,7 @@ describe('Plugin ImportV1 - assets', function () {
         projectName = 'Plugin_ImportV1_Assets',
         commitHash,
         aTxtHash,
-        aaTxtHash,
         bTxtHash,
-        assZipHash,
         gmeAuth,
         blobClient,
         importResult,
@@ -78,7 +76,6 @@ describe('Plugin ImportV1 - assets', function () {
                 artifact = blobClient.createArtifact('ass');
                 aTxtHash = blobHashes[0];
                 bTxtHash = blobHashes[1];
-                aaTxtHash = blobHashes[2];
                 return Q.allDone([
                     Q.ninvoke(artifact, 'addMetadataHash', 'a.txt', aTxtHash),
                     Q.ninvoke(artifact, 'addMetadataHash', 'b.txt', bTxtHash)
@@ -86,9 +83,6 @@ describe('Plugin ImportV1 - assets', function () {
             })
             .then(function () {
                 return Q.ninvoke(artifact, 'save');
-            })
-            .then(function (assHash) {
-                assZipHash = assHash;
             })
             .nodeify(done);
     });

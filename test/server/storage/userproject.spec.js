@@ -127,7 +127,7 @@ describe('UserProject', function () {
                 return project.getCommits((new Date()).getTime(), 100);
             })
             .then(function (commits) {
-                numCommitsBefore = commits.length - 1;
+                expect(numCommitsBefore).to.equal(commits.length - 1);
             })
             .nodeify(done);
     });

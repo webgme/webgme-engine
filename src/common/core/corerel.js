@@ -1,6 +1,5 @@
 /*globals define*/
 /*eslint-env node, browser*/
-/*eslint new-cap: 0*/
 
 /**
  * @author mmaroti / https://github.com/mmaroti
@@ -14,7 +13,7 @@ define([
     'common/storage/constants',
     'common/util/key',
     'common/regexp'
-], function (ASSERT, TASYNC, RANDOM, CONSTANTS, STORAGE_CONSTANTS, GENKEY, REGEXP) {
+], function (ASSERT, TASYNC, RANDOM, CONSTANTS, STORAGE_CONSTANTS, generateKey, REGEXP) {
 
     'use strict';
 
@@ -364,7 +363,7 @@ define([
                         }
                     }
 
-                    hash = '#' + GENKEY(node.overlays[shardId], options.globConf);
+                    hash = '#' + generateKey(node.overlays[shardId], options.globConf);
                     node.overlays[shardId][self.ID_NAME] = hash;
                     innerCore.insertObject(node.overlays[shardId], stackedObjects);
                     stackedObjects[hash] = {

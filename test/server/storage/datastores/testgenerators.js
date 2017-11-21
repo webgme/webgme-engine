@@ -1321,4 +1321,4 @@ module.exports = {
     genInsertLoadAndCommits: genInsertLoadAndCommits,
     genBranchOperations: genBranchOperations,
     genTagOperations: genTagOperations
-}
+};

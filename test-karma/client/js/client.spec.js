@@ -6,7 +6,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-var WebGMEGlobal = {}; // jshint ignore:line
+var WebGMEGlobal = {}; //eslint-disable-line
 
 describe('GME client', function () {
     'use strict';
@@ -694,13 +694,11 @@ describe('GME client', function () {
         });
 
         it('should list the available branches of the opened project', function (done) {
-            var actualBranch,
-                actualCommit;
             client.selectProject(projectId, null, function (err) {
                 expect(err).to.equal(null);
 
-                actualBranch = client.getActiveBranchName();
-                actualCommit = client.getActiveCommitHash();
+                client.getActiveBranchName();
+                client.getActiveCommitHash();
 
                 client.getBranches(projectId, function (err, branches) {
                     expect(err).to.equal(null);
@@ -1128,7 +1126,7 @@ describe('GME client', function () {
                         expect(err).to.equal(null);
                         expect(tags).to.deep.equal({newTag: branches.master});
 
-                        client.deleteTag(genericProjectId, 'newTag', function (err, info) {
+                        client.deleteTag(genericProjectId, 'newTag', function (err) {
                             expect(err).to.equal(null);
 
                             client.getTags(genericProjectId, function (err, tags) {
@@ -1143,13 +1141,11 @@ describe('GME client', function () {
         });
 
         it('should fork the active branch without giving commitHash', function (done) {
-            var activeBranchName,
-                forkName = 'forked',
+            var forkName = 'forked',
                 commitHash;
 
             client.selectProject(projectId, null, function (err) {
                 expect(err).to.equal(null);
-                activeBranchName = client.getActiveBranchName();
                 commitHash = client.getActiveCommitHash();
                 client.deleteBranch(projectId, forkName, commitHash, function (err) {
                     expect(err).to.equal(null);
@@ -1170,12 +1166,10 @@ describe('GME client', function () {
         });
 
         it('should fork the active branch without giving commitHash and forkName', function (done) {
-            var activeBranchName,
-                commitHash;
+            var commitHash;
 
             client.selectProject(projectId, null, function (err) {
                 expect(err).to.equal(null);
-                activeBranchName = client.getActiveBranchName();
                 commitHash = client.getActiveCommitHash();
 
                 client.forkCurrentBranch(null, null, function (err, name, hash) {
@@ -1193,13 +1187,11 @@ describe('GME client', function () {
         });
 
         it('should fork the active branch to given commitHash', function (done) {
-            var activeBranchName,
-                forkName = 'myForkWithGivenHash',
+            var forkName = 'myForkWithGivenHash',
                 commitHash;
 
             client.selectProject(projectId, null, function (err) {
                 expect(err).to.equal(null);
-                activeBranchName = client.getActiveBranchName();
                 commitHash = client.getActiveCommitHash();
                 expect(err).to.equal(null);
 
@@ -1223,13 +1215,11 @@ describe('GME client', function () {
         });
 
         it('should fail before forking with bogus commitHash', function (done) {
-            var activeBranchName,
-                forkName = 'willNotBeForked',
+            var forkName = 'willNotBeForked',
                 commitHash = '#abc123';
 
             client.selectProject(projectId, null, function (err) {
                 expect(err).to.equal(null);
-                activeBranchName = client.getActiveBranchName();
 
                 client.forkCurrentBranch(forkName, commitHash, function (err /*, name, hash*/) {
                     expect(err.message).to.include('Could not find specified commitHash');
@@ -1259,10 +1249,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs([
-                'client/client',
-                'text!gmeConfig.json'],
-            function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 client = new Client(gmeConfig);
@@ -1277,8 +1264,7 @@ describe('GME client', function () {
                         done();
                     });
                 });
-            }
-            );
+            });
         });
 
         after(function (done) {
@@ -1288,6 +1274,7 @@ describe('GME client', function () {
         it('should raise BRANCH_CREATED when a new branch is created', function (done) {
             var branchName = 'b1',
                 triggered = false,
+                unwatch,
                 handler = function (storage, eventData) {
                     expect(triggered).to.equal(false);
                     expect(eventData).to.not.equal(null);
@@ -1300,17 +1287,18 @@ describe('GME client', function () {
 
                     triggered = true;
                     unwatch();
-                },
-                unwatch = function () {
-                    client.unwatchProject(projectId, handler, function (err) {
-                        expect(err).to.equal(null);
-
-                        client.deleteBranch(projectId, branchName, masterHash, function (err) {
-                            expect(err).to.equal(null);
-                            done(err);
-                        });
-                    });
                 };
+
+            unwatch = function () {
+                client.unwatchProject(projectId, handler, function (err) {
+                    expect(err).to.equal(null);
+
+                    client.deleteBranch(projectId, branchName, masterHash, function (err) {
+                        expect(err).to.equal(null);
+                        done(err);
+                    });
+                });
+            };
 
             client.watchProject(projectId, handler, function (err) {
                 expect(err).to.equal(null);
@@ -1324,6 +1312,7 @@ describe('GME client', function () {
         it('should raise BRANCH_DELETED when a branch is deleted', function (done) {
             var branchName = 'b2',
                 triggered = 0,
+                unwatch,
                 handler = function (storage, eventData) {
                     expect(triggered).to.be.below(2);
                     expect(eventData).to.not.equal(null);
@@ -1344,12 +1333,13 @@ describe('GME client', function () {
                     }
 
                     triggered += 1;
-                },
-                unwatch = function () {
-                    client.unwatchProject(projectId, handler, function (err) {
-                        done(err);
-                    });
                 };
+
+            unwatch = function () {
+                client.unwatchProject(projectId, handler, function (err) {
+                    done(err);
+                });
+            };
 
             client.watchProject(projectId, handler, function (err) {
                 expect(err).to.equal(null);
@@ -1366,6 +1356,7 @@ describe('GME client', function () {
             var branchName = 'b3',
                 triggered = false,
                 newHash,
+                unwatch,
                 handler = function (storage, eventData) {
                     expect(triggered).to.equal(false);
                     expect(eventData).to.not.equal(null);
@@ -1379,17 +1370,18 @@ describe('GME client', function () {
 
                     triggered = true;
                     unwatch();
-                },
-                unwatch = function () {
-                    client.unwatchProject(projectId, handler, function (err) {
-                        expect(err).to.equal(null);
-
-                        client.deleteBranch(projectId, branchName, newHash, function (err) {
-                            expect(err).to.equal(null);
-                            done(err);
-                        });
-                    });
                 };
+
+            unwatch = function () {
+                client.unwatchProject(projectId, handler, function (err) {
+                    expect(err).to.equal(null);
+
+                    client.deleteBranch(projectId, branchName, newHash, function (err) {
+                        expect(err).to.equal(null);
+                        done(err);
+                    });
+                });
+            };
 
             client.createBranch(projectId, branchName, masterHash, function (err) {
                 expect(err).to.equal(null);
@@ -1431,7 +1423,7 @@ describe('GME client', function () {
             projectId,
             clientNodePath = '/323573539',
             clientNode,
-            factoryConsoleLog = console.log;
+            factoryConsoleLog = console.log; //eslint-disable-line
 
         before(function (done) {
             this.timeout(10000);
@@ -1475,7 +1467,7 @@ describe('GME client', function () {
         });
 
         afterEach(function () {
-            console.log = factoryConsoleLog;
+            console.log = factoryConsoleLog; //eslint-disable-line
         });
 
         after(function () {
@@ -1762,8 +1754,7 @@ describe('GME client', function () {
         });
 
         it('should preserve the relids of the original nodes', function () {
-            var rootNode = client.getNode(''),
-                container,
+            var container,
                 resultIds,
                 childrenIds = [],
                 copyParams = {},
@@ -2093,9 +2084,7 @@ describe('GME client', function () {
                 basicNodePaths = ['', '/1', '/701504349', '/5185791', '/1400778473', '/1697300825'];
 
             function tOneEvents(events) {
-                var node,
-                    parent,
-                    i,
+                var i,
                     eventPaths = [],
                     expectedEventNodes = [],
                     getEventPaths = function (events) {
@@ -2111,8 +2100,6 @@ describe('GME client', function () {
                 if (tOneState === 'init') {
                     tOneState = 'tUpdate';
                     expect(events).to.have.length(2);
-                    node = client.getNode(events[1].eid);
-                    parent = client.getNode(node.getParentId());
                     client.updateTerritory(tOneId, {'': {children: 1}});
                     client.copyMoreNodes({parentId: '', '/323573539': {}}, 'duplicating node');
 
@@ -2257,8 +2244,7 @@ describe('GME client', function () {
                 childPath;
 
             function tOneEvents(events) {
-                var node,
-                    i;
+                var i;
 
                 if (tOneState === 'init') {
                     tOneState = 'tCreate';
@@ -2281,7 +2267,7 @@ describe('GME client', function () {
                     }
 
                     childPath = '/' + newNodeRelid + '/' + baseChildRelid;
-                    node = client.setRegistry(childPath, 'position', {x: 0, y: 0}, 'new position for child');
+                    client.setRegistry(childPath, 'position', {x: 0, y: 0}, 'new position for child');
                 } else if (tOneState === 'tUpdate') {
                     tOneState = 'tRemove';
                     // Root, parent and child should be updated.
@@ -2290,7 +2276,7 @@ describe('GME client', function () {
                         expect(events[i].etype).to.equal('update');
                     }
 
-                    node = client.deleteNodes([childPath]);
+                    client.deleteNodes([childPath]);
                 } else if (tOneState === 'tRemove') {
                     tOneState = null;
                     // Root, parent and child should be updated,
@@ -2327,8 +2313,7 @@ describe('GME client', function () {
                 childPath;
 
             function tOneEvents(events) {
-                var node,
-                    i;
+                var i;
 
                 if (tOneState === 'init') {
                     tOneState = 'tCreate';
@@ -2349,7 +2334,7 @@ describe('GME client', function () {
                         expect(events[i].etype).to.equal('load');
                     }
                     childPath = '/' + newNodeRelid + '/' + baseChildRelid;
-                    node = client.deleteNodes([childPath]);
+                    client.deleteNodes([childPath]);
                 } else if (tOneState === 'tRemove') {
                     tOneState = null;
                     // Only the root should have an event.
@@ -2713,7 +2698,7 @@ describe('GME client', function () {
                             client.startTransaction('starting a transaction');
                             client.setAttribute('/1', attr, attr + 'value', 'change without commit');
                             setTimeout(function () {
-                                client.completeTransaction('complete ' + attr, function (err, status) {
+                                client.completeTransaction('complete ' + attr, function (err) {
                                     error = error || err;
                                     cnt += 1;
                                     if (cnt === attrs.length) {
@@ -2769,7 +2754,7 @@ describe('GME client', function () {
                             client.startTransaction('starting a transaction');
                             client.setAttribute('/1', attr, attr + 'value', 'change without commit');
                             setTimeout(function () {
-                                var cb = function (err, status) {
+                                var cb = function (err) {
                                     error = error || err;
                                     cnt += 1;
                                     if (cnt === attrs.length - 1) {
@@ -2993,12 +2978,13 @@ describe('GME client', function () {
                     expect(node).not.to.equal(null);
                     expect(node.getPointer('ptr')).to.deep.equal({to: '/323573539', from: []});
 
-                    client.copyMoreNodes({
-                        parentId: '',
-                        '/1697300825': {attributes: {name: 'member2copy'}, registry: {}},
-                        '/1400778473': {attributes: {name: 'member1copy'}}
-                    },
-                    'basic copy nodes test');
+                    client.copyMoreNodes(
+                        {
+                            parentId: '',
+                            '/1697300825': {attributes: {name: 'member2copy'}, registry: {}},
+                            '/1400778473': {attributes: {name: 'member1copy'}}
+                        },
+                        'basic copy nodes test');
                     return;
                 }
 
@@ -3076,12 +3062,13 @@ describe('GME client', function () {
                     expect(node.getPointer('ptr')).to.deep.equal({to: '/323573539', from: []});
 
                     client.startTransaction();
-                    client.copyMoreNodes({
-                        parentId: '',
-                        '/1697300825': {attributes: {name: 'member2copy'}, registry: {}},
-                        '/1400778473': {attributes: {name: 'member1copy'}}
-                    },
-                    'basic copy nodes test');
+                    client.copyMoreNodes(
+                        {
+                            parentId: '',
+                            '/1697300825': {attributes: {name: 'member2copy'}, registry: {}},
+                            '/1400778473': {attributes: {name: 'member1copy'}}
+                        },
+                        'basic copy nodes test');
                     client.completeTransaction();
                     return;
                 }
@@ -3165,13 +3152,14 @@ describe('GME client', function () {
                     expect(node).not.to.equal(null);
                     expect(node.getAttribute('name')).to.equal('check');
 
-                    client.copyMoreNodes({
-                        parentId: '',
-                        '/1697300825': {attributes: {name: 'member2copy'}},
-                        '/1400778473': {attributes: {name: 'member1copy'}},
-                        '/323573539': {attributes: {name: 'check-copy'}, registry: {position: {x: 100, y: 100}}}
-                    },
-                    'basic copy nodes test');
+                    client.copyMoreNodes(
+                        {
+                            parentId: '',
+                            '/1697300825': {attributes: {name: 'member2copy'}},
+                            '/1400778473': {attributes: {name: 'member1copy'}},
+                            '/323573539': {attributes: {name: 'check-copy'}, registry: {position: {x: 100, y: 100}}}
+                        },
+                        'basic copy nodes test');
                     return;
                 }
 
@@ -3260,14 +3248,15 @@ describe('GME client', function () {
                     expect(node).not.to.equal(null);
                     expect(node.getPointer('ptr')).to.deep.equal({to: '/323573539', from: []});
 
-                    client.copyMoreNodes({
-                        parentId: '',
-                        '/1400778473': {
-                            attributes: {name: 'member1copy'},
-                            registry: {position: {x: 100, y: 100}}
-                        }
-                    },
-                    'copy single node test');
+                    client.copyMoreNodes(
+                        {
+                            parentId: '',
+                            '/1400778473': {
+                                attributes: {name: 'member1copy'},
+                                registry: {position: {x: 100, y: 100}}
+                            }
+                        },
+                        'copy single node test');
                     return;
                 }
 
@@ -3307,16 +3296,16 @@ describe('GME client', function () {
                     callback(false);
                     done();
                 },
-                oldConsoleLog = console.log; //TODO awkward but probably should be changed in the code as well
+                oldConsoleLog = console.log; //eslint-disable-line
 
             currentTestId = testId;
 
             buildUpForTest(testId, {'': {children: 1}}, commitHandler, function (/*events*/) {
 
-                console.log = function (txt) {
+                console.log = function (txt) { //eslint-disable-line
                     expect(txt).to.contain('wrong');
                     if (++failures === wantedFailures) {
-                        console.log = oldConsoleLog;
+                        console.log = oldConsoleLog; //eslint-disable-line
                         done();
                     }
                 };
@@ -3481,13 +3470,14 @@ describe('GME client', function () {
                     expect(node).not.to.equal(null);
                     expect(node.getAttribute('name')).to.equal('check');
 
-                    client.createChildren({
-                        parentId: '',
-                        '/1697300825': {attributes: {name: 'member2copy'}},
-                        '/1400778473': {attributes: {name: 'member1copy'}},
-                        '/323573539': {attributes: {name: 'check-copy'}, registry: {position: {x: 400, y: 400}}}
-                    },
-                    'basic copy nodes test');
+                    client.createChildren(
+                        {
+                            parentId: '',
+                            '/1697300825': {attributes: {name: 'member2copy'}},
+                            '/1400778473': {attributes: {name: 'member1copy'}},
+                            '/323573539': {attributes: {name: 'check-copy'}, registry: {position: {x: 400, y: 400}}}
+                        },
+                        'basic copy nodes test');
                     return;
                 }
 
@@ -4503,29 +4493,25 @@ describe('GME client', function () {
 
         it('should return the meta rules of the given node in a json format', function (done) {
             prepareBranchForTest('simpleGet', null, function (err) {
+                var jsonMeta;
                 expect(err).to.equal(null);
 
-                expect(client.getNode('/1').getJsonMeta()).to.deep.equal({
-                    attributes: {
-                        name: {
-                            type: 'string'
-                        }
-                    },
-                    children: {
-                        minItems: [],
-                        maxItems: [],
-                        items: []
-                    },
-                    pointers: {},
-                    aspects: {},
-                    constraints: {
-                        meta: {
-                            script: 'function(core, node, callback) {\n    "use strict";\n    var error = null,\n        returnValue = {hasViolation:false,message:""},\n        i,\n        neededChekings = 4,\n        meta = core.getJsonMeta(node),\n        typeIndexOfChild = function(typePathsArray,childNode){\n            var index = -1;\n\n            while(childNode && index === -1){\n                index = typePathsArray.indexOf(core.getPath(childNode));\n                childNode = core.getBase(childNode);\n            }\n\n            return index;\n        },\n        checkChildrenRules = function(){\n            var childCount = [],\n                index;\n            core.loadChildren(node,function(err,children){\n                if(err){\n                    returnValue.message += "error during loading of node\\\'s children\\n";\n                    error = error || err;\n                    return checkingDone();\n                }\n\n                //global count check\n                //min\n                if(meta.children.min && meta.children.min !== -1){\n                    if(children.length < meta.children.min){\n                        returnValue.hasViolation = true;\n                        returnValue.message += "node hase fewer nodes than needed\\n";\n                    }\n                }\n                //max\n                if(meta.children.max && meta.children.max !== -1){\n                    if(children.length > meta.children.max){\n                        returnValue.hasViolation = true;\n                        returnValue.message += "node hase more nodes than allowed\\n";\n                    }\n                }\n\n                //typedCounts\n                for(i=0;i<meta.children.items.length;i++){\n                    childCount.push(0);\n                }\n                for(i=0;i<children.length;i++){\n                    index = typeIndexOfChild(meta.children.items,children[i]);\n                    if(index === -1 ){\n                        returnValue.hasViolation = true;\n                        returnValue.message += "child " + core.getGuid(children[i]) +" is from prohibited type\\n";\n                    }\n                    else {\n                        childCount[index]++;\n                    }\n                }\n                for(i=0;i<meta.children.items.length;i++){\n                    //min\n                    if(meta.children.minItems[i] !== -1){\n                        if(meta.children.minItems[i] > childCount[i]){\n                            returnValue.hasViolation = true;\n                            returnValue.message += "too few type "+ meta.children.items[i] +" children\\n";\n                        }\n                    }\n                    //max\n                    if(meta.children.maxItems[i] !== -1){\n                        if(meta.children.maxItems[i] < childCount[i]){\n                            returnValue.hasViolation = true;\n                            returnValue.message += "too many type "+ meta.children.items[i] +" children\\n";\n                        }\n                    }\n                }\n                return checkingDone();\n            });\n        },\n        checkPointerRules = function(){\n            //TODO currently there is no quantity check\n            var validNames = core.getValidPointerNames(node),\n                names = core.getPointerNames(node),\n                checkPointer = function(name){\n                    core.loadPointer(node,name,function(err,target){\n                        if(err || !target){\n                            error = error || err;\n                            returnValue.message += "error during pointer "+ name +" load\\n";\n                            return checkDone();\n                        }\n\n                        if(!core.isValidTargetOf(target,node,name)){\n                            returnValue.hasViolation = true;\n                            returnValue.message += "target of pointer "+ name +" is invalid\\n";\n                        }\n                        return checkDone();\n                    });\n                },\n                checkDone = function(){\n                    if(--needs === 0){\n                        checkingDone();\n                    }\n                },\n                needs,i;\n            \n            needs = names.length;\n            if(needs > 0){\n                for(i=0;i<names.length;i++){\n                    if(validNames.indexOf(names[i]) === -1){\n                        returnValue.hasViolation = true;\n                        returnValue.message += " invalid pointer "+ names[i] +" has been found\\n";\n                        checkDone();\n                    } else {\n                        checkPointer(names[i]);\n                    }\n\n                }\n            } else {\n                checkDone();\n            }\n\n        },\n        checkSetRules = function(){\n            //TODO this part is missing yet\n            checkingDone();\n        },\n        checkAttributeRules = function(){\n            var names = core.getAttributeNames(node),\n                validNames = core.getValidAttributeNames(node);\n            for(i=0;i<names.length;i++){\n                if(validNames.indexOf(names[i]) !== -1){\n                    if(!core.isValidAttributeValueOf(node,names[i],core.getAttribute(node,names[i]))){\n                        returnValue.hasViolation = true;\n                        returnValue.message += "attribute "+names[i]+" has invalid value\\n";\n                    }\n                }\n                else {\n                    returnValue.hasViolation = true;\n                    returnValue.message += "node has an undefined attribute: "+names[i];\n                }\n            }\n            checkingDone();\n        },\n        checkingDone = function(){\n            if(--neededChekings === 0){\n                callback(error,returnValue);\n            }\n        };\n\n    checkChildrenRules();\n    checkPointerRules();\n    checkSetRules();\n    checkAttributeRules();\n}',
-                            priority: 10,
-                            info: 'this constraint will check all the meta rules defined to an object'
-                        }
+                jsonMeta = client.getNode('/1').getJsonMeta();
+                expect(jsonMeta.attributes).to.deep.equal({
+                    name: {
+                        type: 'string'
                     }
                 });
+
+                expect(jsonMeta.children).to.deep.equal({
+                    minItems: [],
+                    maxItems: [],
+                    items: []
+                });
+
+                expect(jsonMeta.pointers).to.deep.equal({});
+                expect(jsonMeta.aspects).to.deep.equal({});
+                expect(typeof jsonMeta.constraints.meta).to.equal('string');
                 done();
             });
 
@@ -4692,10 +4678,7 @@ describe('GME client', function () {
 
         before(function (done) {
             this.timeout(10000);
-            requirejs([
-                'client/client',
-                'text!gmeConfig.json'],
-            function (Client_, gmeConfigJSON) {
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
                 Client = Client_;
                 gmeConfig = JSON.parse(gmeConfigJSON);
                 client = new Client(gmeConfig);
@@ -4704,8 +4687,7 @@ describe('GME client', function () {
                     expect(err).to.equal(null);
                     done();
                 });
-            }
-            );
+            });
         });
 
         after(function (done) {
@@ -4756,6 +4738,8 @@ describe('GME client', function () {
                     projectName: projectName
                 },
                 triggered = false,
+                projectId = projectName2Id(projectName, gmeConfig, client),
+                unwatch,
                 handler = function (storage, eventData) {
                     expect(triggered).to.equal(false);
                     expect(eventData).to.not.equal(null);
@@ -4765,17 +4749,17 @@ describe('GME client', function () {
 
                     triggered = true;
                     unwatch();
-                },
-                unwatch = function () {
-                    client.unwatchDatabase(handler, function (err) {
+                };
+
+            unwatch = function () {
+                client.unwatchDatabase(handler, function (err) {
+                    expect(err).to.equal(null);
+                    client.deleteProject(projectId, function (err) {
                         expect(err).to.equal(null);
-                        client.deleteProject(projectId, function (err) {
-                            expect(err).to.equal(null);
-                            done(err);
-                        });
+                        done(err);
                     });
-                },
-                projectId = projectName2Id(projectName, gmeConfig, client);
+                });
+            };
 
             //* Triggers eventHandler(storage, eventData) on PROJECT_CREATED and PROJECT_DELETED.
             //*
@@ -4802,6 +4786,8 @@ describe('GME client', function () {
                     projectName: projectName
                 },
                 triggered = false,
+                projectId = projectName2Id(projectName, gmeConfig, client),
+                unwatch,
                 handler = function (storage, eventData) {
                     expect(triggered).to.equal(false);
                     expect(eventData).to.not.equal(null);
@@ -4811,13 +4797,13 @@ describe('GME client', function () {
 
                     triggered = true;
                     unwatch();
-                },
-                unwatch = function () {
-                    client.unwatchDatabase(handler, function (err) {
-                        done(err);
-                    });
-                },
-                projectId = projectName2Id(projectName, gmeConfig, client);
+                };
+
+            unwatch = function () {
+                client.unwatchDatabase(handler, function (err) {
+                    done(err);
+                });
+            };
 
             client.seedProject(seedConfig, function (err) {
                 expect(err).to.equal(null);

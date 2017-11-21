@@ -312,8 +312,6 @@ function clearDatabase(gmeConfigParameter, callback) {
             collectionNames.map(function (collData) {
                 if (collData.name.indexOf('system.') === -1) {
                     collectionPromises.push(Q.ninvoke(db, 'dropCollection', collData.name));
-                } else {
-
                 }
             });
             return Q.allDone(collectionPromises);
@@ -531,7 +529,7 @@ function importProject(storage, parameters, callback) {
  * @returns {Q.Promise}
  */
 function loadNode(core, rootNode, nodePath, callback) {
-    var deferred = new Q.defer();
+    var deferred = Q.defer();
 
     core.loadByPath(rootNode, nodePath, function (err, node) {
         if (err) {
@@ -555,7 +553,7 @@ function loadNode(core, rootNode, nodePath, callback) {
  * @returns {Q.Promise}
  */
 function loadRootNodeFromCommit(project, core, commitHash, callback) {
-    var deferred = new Q.defer();
+    var deferred = Q.defer();
 
     project.loadObject(commitHash, function (err, commitObj) {
         if (err) {
@@ -728,6 +726,7 @@ function getChangedNodesFromPersisted(persisted, printPatches) {
 
     if (printPatches) {
         keys = Object.keys(coreObjects);
+        /*eslint-disable no-console*/
         for (i = 0; i < keys.length; i += 1) {
             console.log('############## ' + keys[i].substring(0, 7) + ' ###################');
             if (coreObjects[keys[i]].type === 'patch') {
@@ -737,6 +736,7 @@ function getChangedNodesFromPersisted(persisted, printPatches) {
                 console.log('New data');
             }
         }
+        /*eslint-enable no-console*/
     }
 
     return storageUtil.getChangedNodes(coreObjects, persisted.rootHash);

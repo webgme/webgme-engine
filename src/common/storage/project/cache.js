@@ -1,6 +1,5 @@
 /*globals define*/
 /*eslint-env node, browser*/
-/*eslint new-cap: 0*/
 /**
  * This class (extracted functionality from cache implemented by mmaroti) caches objects associated
  * with a project.

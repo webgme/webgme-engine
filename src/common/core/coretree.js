@@ -1,6 +1,5 @@
 /*globals define*/
 /*eslint-env node, browser*/
-/*eslint new-cap: 0*/
 
 /**
  * @author mmaroti / https://github.com/mmaroti
@@ -15,8 +14,18 @@ define([
     'common/core/constants',
     'common/storage/constants',
     'common/core/convertData',
-    'common/core/CoreIllegalArgumentError'
-], function (ASSERT, GENKEY, TASYNC, RANDOM, REGEXP, CONSTANTS, STORAGE_CONSTANTS, convertData, IllegalArgumentError) {
+    'common/core/CoreIllegalArgumentError',
+    'common/util/util',
+], function (ASSERT,
+             generateKey,
+             TASYNC,
+             RANDOM,
+             REGEXP,
+             CONSTANTS,
+             STORAGE_CONSTANTS,
+             convertData,
+             IllegalArgumentError,
+             UTIL) {
 
     'use strict';
 
@@ -55,14 +64,10 @@ define([
 
         this.ID_NAME = ID_NAME;
 
-        function ASSERT_IS_OBJECT(value) {
-            ASSERT(value !== null && typeof value === 'object' && value instanceof Array === false);
-        }
-
         // ------- memory management
 
         function __detachChildren(node) {
-            ASSERT_IS_OBJECT(node.children);
+            ASSERT(UTIL.isTrueObject(node.children));
             ASSERT(node.age >= CONSTANTS.MAX_AGE - 1);
 
             var children = node.children;
@@ -75,7 +80,7 @@ define([
         }
 
         function __ageNodes(nodes) {
-            ASSERT_IS_OBJECT(nodes);
+            ASSERT(UTIL.isTrueObject(nodes));
 
             var keys = Object.keys(nodes),
                 node,
@@ -113,7 +118,7 @@ define([
         }
 
         function __getChildNode(children, relid) {
-            ASSERT_IS_OBJECT(children);
+            ASSERT(UTIL.isTrueObject(children));
             ASSERT(typeof relid === 'string');
 
             if (children.hasOwnProperty(relid)) {
@@ -216,7 +221,7 @@ define([
                     data.__v = STORAGE_CONSTANTS.VERSION;
                     //TODO: This is a temporary fix. We should modify CANON.
                     cleanData = JSON.parse(JSON.stringify(data));
-                    hash = '#' + GENKEY(cleanData, gmeConfig);
+                    hash = '#' + generateKey(cleanData, gmeConfig);
                     data[ID_NAME] = hash;
                     cleanData[ID_NAME] = hash;
 

@@ -1,6 +1,5 @@
 /*globals define*/
 /*eslint-env node, browser*/
-/*eslint new-cap: 0*/
 
 /**
  * @author mmaroti / https://github.com/mmaroti

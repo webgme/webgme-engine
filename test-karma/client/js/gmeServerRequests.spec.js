@@ -4,7 +4,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-var WebGMEGlobal = {}; // jshint ignore:line
+var WebGMEGlobal = {}; // eslint-disable-line
 
 describe('Server worker requests', function () {
     'use strict';
@@ -29,7 +29,7 @@ describe('Server worker requests', function () {
                     return Q.ninvoke(client, 'selectProject',
                         projectName2Id('ServerWorkerRequests', gmeConfig, client));
                 })
-                .nodeify(done)
+                .nodeify(done);
         });
     });
 
@@ -37,7 +37,6 @@ describe('Server worker requests', function () {
         Q.ninvoke(client.workerRequests, 'checkMetaRules', [''], true)
             .then(function (result) {
                 expect(result.length).to.equal(1);
-                console.log(result);
                 expect(result[0].hasViolation).to.equal(false);
             })
             .nodeify(done);

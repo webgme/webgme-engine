@@ -41,7 +41,6 @@ describe('WebSocket', function () {
         safeStorage,
 
         server,
-        serverBaseUrl,
         agent,
         webgmeToken, //TODO: this is not a nice approach, but don't want change all openSocketIo
 
@@ -103,7 +102,6 @@ describe('WebSocket', function () {
             gmeConfigWithAuth.authentication.allowGuests = true;
 
             server = WebGME.standaloneServer(gmeConfigWithAuth);
-            serverBaseUrl = server.getUrl();
             server.start(function (err) {
                 if (err) {
                     done(new Error(err));
@@ -751,7 +749,6 @@ describe('WebSocket', function () {
 
         before(function (done) {
             server = WebGME.standaloneServer(gmeConfig);
-            serverBaseUrl = server.getUrl();
             server.start(function (err) {
                 if (err) {
                     done(new Error(err));
@@ -1645,7 +1642,6 @@ describe('WebSocket', function () {
             gmeConfigWithAuth.authentication.enable = true;
             gmeConfigWithAuth.authentication.allowGuests = true;
             server = WebGME.standaloneServer(gmeConfigWithAuth);
-            serverBaseUrl = server.getUrl();
             Q.ninvoke(server, 'start')
                 .then(function () {
                     return testFixture.clearDBAndGetGMEAuth(gmeConfigWithAuth, projectName);
@@ -1687,7 +1683,6 @@ describe('WebSocket', function () {
             gmeConfigWithAutoMerge.storage.autoMerge.enable = true;
             user = gmeConfigWithAutoMerge.authentication.guestAccount;
             server = WebGME.standaloneServer(gmeConfigWithAutoMerge);
-            serverBaseUrl = server.getUrl();
             server.start(function (err) {
                 if (err) {
                     done(new Error(err));

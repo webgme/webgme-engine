@@ -14,10 +14,6 @@ describe('Executor Plugin', function () {
         childProcess = testFixture.childProcess,
         expect = testFixture.expect,
         logger = testFixture.logger.fork('ExecutorPlugin.spec'),
-        ExecutorClient = testFixture.ExecutorClient,
-        BlobClient = testFixture.BlobClient,
-        executorClient,
-        blobClient,
         server,
         nodeWorkerProcess,
 
@@ -91,8 +87,6 @@ describe('Executor Plugin', function () {
                 clientsParam.executorNonce = gmeConfig.executor.nonce;
                 clientsParam.logger = logger.fork('blobOrExecutor');
 
-                executorClient = new ExecutorClient(clientsParam);
-                blobClient = new BlobClient(clientsParam);
                 workerConfig[server.getUrl()] = workerNonce ? {executorNonce: workerNonce} : {};
                 return Q.nfcall(fs.writeFile, 'test-tmp/worker_config.json', JSON.stringify(workerConfig));
             })

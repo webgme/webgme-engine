@@ -40,7 +40,7 @@ describe('storage cache', function () {
                         callback(new Error('ouchPaths'));
                     }, options.timeout || 10);
                 }
-            }
+            };
         };
 
     it('should have all the goo functions', function () {

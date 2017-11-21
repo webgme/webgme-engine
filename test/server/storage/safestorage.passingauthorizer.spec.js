@@ -12,11 +12,8 @@ describe('SafeStorage with Passing Authorizer', function () {
         expect = testFixture.expect,
         logger,
         Q = testFixture.Q,
-        __should = testFixture.should,
         gmeAuth,
-        safeStorage,
-        projectName = 'newProject',
-        projectId = gmeConfig.authentication.guestAccount + testFixture.STORAGE_CONSTANTS.PROJECT_ID_SEP + projectName;
+        safeStorage;
 
     function getProjectData(projects, projectId) {
         var res;
