@@ -113,7 +113,7 @@ Q.all(COMMON_LIBS.map(browserifyModule))
     .then(function () {
         if (hasDistFiles() === false) {
             console.log('dist files did not exist, will call prepublish');
-            //prepublish(resolveJSDocConfigPath());
+            prepublish(resolveJSDocConfigPath());
         } else {
             console.log('dist files existed, will not build from postinstall');
         }
