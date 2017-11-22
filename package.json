@@ -79,6 +79,7 @@
     "socket.io-client": "2.0.4",
     "socket.io-redis": "5.2.0",
     "superagent": "3.5.2",
+    "text": "github:requirejs/text",
     "underscore": "1.8.3",
     "webgme-webhook-manager": "0.1.0",
     "winston": "2.4.0"
