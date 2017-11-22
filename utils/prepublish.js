@@ -46,7 +46,7 @@ function prepublish(jsdocConfigPath) {
         });
     }
 
-    if (jsdocConfigPath) {
+    if (jsdocConfigPath === false) {
         console.log('Generating webgme source code documentation ...');
         childProcess.execFile(process.execPath,
             [path.join(__dirname, './jsdoc_build.js'), '-c', jsdocConfigPath || './jsdoc_conf.json'],

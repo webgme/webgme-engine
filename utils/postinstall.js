@@ -68,6 +68,7 @@ function resolveJSDocConfigPath() {
             } catch (err2) {
                 if (err.code === 'ENOENT') {
                     console.error('Will not generate source code documentation files!');
+                    jsdocConfPath = false;
                 } else {
                     console.error(err);
                 }
