@@ -37,7 +37,6 @@ define([
              getServerRequests,
              stateLogHelpers,
              PluginManager,
-             DocumentManager,
              superagent) {
 
     'use strict';

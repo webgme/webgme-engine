@@ -1,4 +1,7 @@
-/*jshint node:true, mocha:true*/
+/*eslint-env node, mocha*/
+/*eslint no-unused-vars: 0*/
+
+// TODO: Remove no-unused-vars before merge
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -94,7 +97,7 @@ describe('storage document editing', function () {
                         err = new Error('Unexpected network state: ' + networkState);
                         // Log it since promise may already have been resolved..
                         logger.error(err);
-                        deferred.reject(err)
+                        deferred.reject(err);
                     }
                 });
             })

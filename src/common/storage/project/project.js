@@ -106,19 +106,19 @@ define([
         };
 
         // TODO: Implement these as plugins and other agents might want to participate in a document.
-        this.watchDocument = function (data, atOperation, atSelection, callback) {
+        this.watchDocument = function (/*data, atOperation, atSelection, callback*/) {
             throw new Error('Not implemented!');
         };
 
-        this.unwatchDocument = function (data, callback) {
+        this.unwatchDocument = function (/*data, callback*/) {
             throw new Error('Not implemented!');
         };
 
-        this.sendDocumentOperation = function (data) {
+        this.sendDocumentOperation = function (/*data*/) {
             throw new Error('Not implemented!');
         };
 
-        this.sendDocumentSelection = function (data) {
+        this.sendDocumentSelection = function (/*data*/) {
             throw new Error('Not implemented!');
         };
     }

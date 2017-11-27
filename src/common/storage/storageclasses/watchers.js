@@ -33,7 +33,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
             branchName: pieces[1],
             nodeId: pieces[2],
             attrName: pieces[3]
-        }
+        };
     }
 
     StorageWatcher.prototype.watchDatabase = function (eventHandler, callback) {
@@ -275,7 +275,8 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
 
         if (typeof data.docId === 'string') {
             pieces = _splitDocId(data.docId);
-            Object.keys(pieces).forEach(function (key) {
+            Object.keys(pieces)
+                .forEach(function (key) {
                     data[key] = pieces[key];
                 });
         } else {
@@ -427,7 +428,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
 
                                     if (self.watchers.documents.hasOwnProperty(docId)) {
                                         self.watchers.documents[docId].awaitingAck = null;
-                                        self.watchers.documents[docId].otClient.serverAck(revision);
+                                        self.watchers.documents[docId].otClient.serverAck(sendData.revision);
                                     } else {
                                         self.logger.error(new Error('Received document acknowledgement ' +
                                             'after leaving document ' + docId));

@@ -1130,9 +1130,10 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 var transformedSelection;
 
                 if (documents.hasOwnProperty(data.docId) && documents[data.docId].users.hasOwnProperty(socket.id)) {
-                    // TODO: The selection needs to be transformed..
                     try {
-                        transformedSelection = documents[data.docId].otServer.onSelection(data.revision, data.selection);
+                        transformedSelection = documents[data.docId].otServer.onSelection(
+                            data.revision, data.selection);
+
                         socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, {
                             docId: data.docId,
                             clientId: socket.id,

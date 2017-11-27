@@ -1,9 +1,10 @@
-/*globals*/
+/*globals define*/
+/*eslint-env node, browser*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
 define([], function () {
-    function DocumentClient (socket) {
+    function DocumentClient(socket) {
         this.socket = socket;
 
         var self = this;
@@ -16,7 +17,7 @@ define([], function () {
             })
             .on('ack', function () { self.trigger('ack'); })
             .on('operation', function (data) {
-                console.log('Incoming operation', data.clientId, data.operation, data.selection);
+                //console.log('Incoming operation', data.clientId, data.operation, data.selection);
                 self.trigger('operation', data);
                 self.trigger('selection', data);
             })

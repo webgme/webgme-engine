@@ -1,17 +1,18 @@
 /*globals*/
+/*eslint-env node*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
 
 'use strict';
 
-var Q = require('q'),
+var //Q = require('q'),
     ot = require('ot'),
     TextOperation = ot.TextOperation,
     WrappedOperation = ot.WrappedOperation,
     Selection = ot.Selection;
 
-function DocumentServer (mainLogger, documentStr, docId, gmeConfig, operations) {
+function DocumentServer(mainLogger, documentStr, docId, gmeConfig, operations) {
     this.logger = mainLogger.fork('DocumentServer' + docId);
     this.document = documentStr;
     this.gmeConfig = gmeConfig;
