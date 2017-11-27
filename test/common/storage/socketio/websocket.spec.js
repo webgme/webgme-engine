@@ -573,13 +573,20 @@ describe('storage socketio websocket', function () {
                     logger,
                     gmeConfig);
                 storage.open(function (networkState) {
+                    var cnt = 0;
                     if (networkState === STORAGE_CONSTANTS.CONNECTED) {
                         webSocket = storage.webSocket;
                         webSocket.connect(function (err, networkStateNew) {
-                            if (networkStateNew === STORAGE_CONSTANTS.RECONNECTED) {
-                                done();
-                            } else {
-                                throw new Error('Unexpected network state: ' + networkStateNew + ' error: ' + err);
+                            try {
+                                if (cnt === 0) {
+                                    expect(networkStateNew).to.equal(STORAGE_CONSTANTS.RECONNECTING);
+                                    cnt = 1;
+                                } else if (cnt === 1) {
+                                    expect(networkStateNew).to.equal(STORAGE_CONSTANTS.RECONNECTED);
+                                    done();
+                                }
+                            } catch (e) {
+                                done(e);
                             }
                         });
                     } else {
