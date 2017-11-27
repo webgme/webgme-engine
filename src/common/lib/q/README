@@ -1,3 +1,0 @@
-Bump the npm version and install
-
-cp ./node_modules/q/q.js ./common/lib/q/q.js

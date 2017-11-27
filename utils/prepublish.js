@@ -1,7 +1,6 @@
 /*eslint-env node*/
 /*eslint no-console: 0*/
 /**
- * Arguments passed to this script are propagated to jsdoc.
  * @author pmeijer / https://github.com/pmeijer
  */
 
