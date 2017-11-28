@@ -24,7 +24,9 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         projectAuthParams = {
             entityType: authorizer.ENTITY_TYPES.PROJECT
         },
-        documents = {}, // TODO: This is a single state on one server!
+        documents = {
+            //<docId> : { otServer: DocumentServer, users: {}, disconnectedUsers: {} }
+        }, // TODO: This is a single state on one server!
         webSocket;
 
     logger.debug('ctor');
@@ -249,6 +251,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 var i,
                     roomIds,
                     projectIdBranchName,
+                    userInfo,
                     roomDividerCnt;
 
                 if (webSocket) {
@@ -271,13 +274,20 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         } else if (roomDividerCnt === 4) {
                             logger.info('Disconnected socket was in document room', roomIds[i]);
                             if (documents.hasOwnProperty(roomIds[i])) {
+                                userInfo = documents[roomIds[i]].users[socket.id];
+                                documents[roomIds[i]].disconnectedUsers[userInfo.sessionId] = true;
                                 delete documents[roomIds[i]].users[socket.id];
+
                                 socket.leave(roomIds[i]);
-                                logger.info('Client left document', roomIds[i]);
+                                logger.info('socket left document room.');
 
                                 if (Object.keys(documents[roomIds[i]].users).length === 0) {
-                                    logger.info('No more connected clients in document', roomIds[i]);
-                                    delete documents[roomIds[i]];
+                                    logger.info('No more connected sockets in document  - setting timeout to remove',
+                                        gmeConfig.documentEditing.disconnectTimeout);
+
+                                    documents[roomIds[i]].timeoutId = setTimeout(function () {
+                                        delete documents[roomIds[i]];
+                                    }, gmeConfig.documentEditing.disconnectTimeout);
                                 }
                             } else {
                                 logger.error('No document server object for active room');
@@ -1020,11 +1030,17 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 logger.info('First user joining document, will create it..');
                                 documents[docId] = {
                                     otServer: new DocumentServer(logger, data.attrValue, docId, gmeConfig),
-                                    users: {}
+                                    users: {},
+                                    disconnectedUsers: {},
+                                    timeoutId: null
                                 };
+                            } else {
+                                clearTimeout(documents[docId].timeoutId);
                             }
 
                             documents[docId].users[socket.id] = {
+                                socketId: socket.id,
+                                sessionId: data.sessionId,
                                 userId: socket.userId,
                                 access: access
                             };
@@ -1045,12 +1061,19 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
                             if (documents.hasOwnProperty(docId) === false) {
                                 throw new Error('Document room was closed ' + docId);
+                            } else if (documents[docId].disconnectedUsers.hasOwnProperty(data.sessionId) === false) {
+                                throw new Error('Document room was closed ' + docId + ' and then reopened.');
                             }
 
                             documents[docId].otServer.getOperationsSince(data.revision);
 
+                            delete documents[docId].disconnectedUsers[data.sessionId];
+                            clearTimeout(documents[docId].timeoutId);
+
                             documents[docId].users[socket.id] = {
+                                socketId: socket.id,
                                 userId: socket.userId,
+                                sessionId: data.sessionId,
                                 access: access
                             };
 
@@ -1076,8 +1099,17 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 socket.leave(docId);
                                 logger.info('Client left document', docId);
                                 if (Object.keys(documents[docId].users).length === 0) {
-                                    logger.info('No more connected clients in document', docId);
-                                    delete documents[docId];
+                                    logger.info('No more connected sockets in document ...');
+                                    if (Object.keys(documents[docId].disconnectedUsers).length === 0) {
+                                        logger.info('... no disconnectedUsers either will close the document.');
+                                        delete documents[docId];
+                                    } else {
+                                        logger.info('.. there are disconnected users - setting timeout to close doc',
+                                            gmeConfig.documentEditing.disconnectTimeout);
+                                        documents[docId].timeoutId = setTimeout(function () {
+                                            delete documents[docId];
+                                        }, gmeConfig.documentEditing.disconnectTimeout);
+                                    }
                                 }
                                 callback();
                             } else {

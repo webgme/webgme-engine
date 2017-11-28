@@ -204,11 +204,11 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
             awaitingAck: null
         };
 
-        this.logger.debug('First watcher will enter document room:', docId);
         this.webSocket.addEventListener(docUpdateEventName, this.watchers.documents[docId].eventHandler);
         this.webSocket.addEventListener(docSelectionEventName, this.watchers.documents[docId].eventHandler);
 
         data.join = true;
+        data.sessionId = this.watchers.sessionId;
         this.webSocket.watchDocument(data, function (err, initData) {
             if (err) {
                 deferred.reject(err);
@@ -378,10 +378,11 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
                 rejoinData.docId = docId;
                 rejoinData.rejoin = true;
                 rejoinData.revision = self.watchers.documents[docId].otClient.revision;
+                rejoinData.sessionId = self.watchers.sessionId;
 
                 return Q.ninvoke(self.webSocket, 'watchDocument', rejoinData)
                     .then(function (joinData) {
-                        var awaiting,
+                        var awaiting = self.watchers.documents[docId].awaitingAck,
                             sendData;
 
                         function applyFromServer() {
@@ -392,14 +393,15 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
                             self.watchers.documents[docId].applyBuffer.forEach(function (op) {
                                 self.watchers.documents[docId].otClient.applyServer(op);
                             });
+
+                            self.watchers.documents[docId].applyBuffer = [];
                         }
 
-                        if (self.watchers.documents[docId].awaitingAck === null) {
+                        if (awaiting === null) {
+                            // We had no outstanding operations - apply all from the server.
                             applyFromServer();
                         } else {
-                            // We were awaiting an acknowledgement, did it make it?
-                            awaiting = self.watchers.documents[docId].awaitingAck;
-
+                            // We were awaiting an acknowledgement, did it make it to the server?
                             if (joinData.operations.length > 0 &&
                                 joinData.operations[0].metadata.sessionId === self.watchers.sessionId) {
                                 // It made it to the server - so send the acknowledgement to the otClient.

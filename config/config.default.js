@@ -96,7 +96,8 @@ var path = require('path'),
         debug: false,
 
         documentEditing: {
-            acknowledgementDelay: 2000
+            enable: true,
+            disconnectTimeout: 3600 * 1000
         },
 
         executor: {
