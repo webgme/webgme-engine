@@ -1,0 +1,33 @@
+{
+  "id": "OTAttributeEditing",
+  "name": "OT Attribute Editing",
+  "version": "0.1.0",
+  "description": "Example of how to connect to and update an attribute as an OT document.",
+  "icon": {
+    "class": "glyphicon glyphicon-cog",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "writeAccessRequired": true,
+  "configStructure": [
+    {
+      "name": "cycles",
+      "displayName": "Cycles",
+      "description": "Number of cycles",
+      "value": 10,
+      "valueType": "number",
+      "minValue": 0,
+      "readOnly": false
+    },
+    {
+      "name": "interval",
+      "displayName": "Interval Length",
+      "description": "Length of each cycle in ms",
+      "value": 100,
+      "valueType": "number",
+      "minValue": 16,
+      "readOnly": false
+    }
+  ]
+}

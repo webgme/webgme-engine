@@ -14,7 +14,7 @@ var //Q = require('q'),
 
 function DocumentServer(mainLogger, documentStr, docId, gmeConfig, operations) {
     this.logger = mainLogger.fork('DocumentServer' + docId);
-    this.document = documentStr;
+    this.document = documentStr || '';
     this.gmeConfig = gmeConfig;
     this.operations = operations || [];
     this.users = {};

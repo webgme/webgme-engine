@@ -106,10 +106,15 @@ define([
         };
 
         this.watchDocument = function (data, atOperation, atSelection, callback) {
+            data.projectId = self.projectId;
             return storage.watchDocument(data, atOperation, atSelection).nodeify(callback);
         };
 
         this.unwatchDocument = function (data, callback) {
+            if (!data.docId) {
+                data.projectId = self.projectId;
+            }
+
             return storage.unwatchDocument(data).nodeify(callback);
         };
 

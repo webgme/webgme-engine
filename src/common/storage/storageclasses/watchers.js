@@ -163,9 +163,16 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
      * @param {string} data.nodeId
      * @param {string} data.attrName
      * @param {string} data.attrValue
-     * @param {function} atOperation
+     * @param {function(ot.Operation)} atOperation
      * @param {function} atSelection
+     * @param {ot.Selection} atSelection.selection
+     * @param {string} atSelection.clientId
+     * @param {string} atSelection.userId
      * @param {function} [callback]
+     * @param {Error | null} [callback.err]
+     * @param {object} [callback.data]
+     * @param {object} [callback.data]
+     * @param {object} [callback.data]
      * @returns {Promise}
      */
     StorageWatcher.prototype.watchDocument = function (data, atOperation, atSelection, callback) {
