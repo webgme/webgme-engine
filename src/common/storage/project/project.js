@@ -105,21 +105,20 @@ define([
                 .nodeify(callback);
         };
 
-        // TODO: Implement these as plugins and other agents might want to participate in a document.
-        this.watchDocument = function (/*data, atOperation, atSelection, callback*/) {
-            throw new Error('Not implemented!');
+        this.watchDocument = function (data, atOperation, atSelection, callback) {
+            return storage.watchDocument(data, atOperation, atSelection).nodeify(callback);
         };
 
-        this.unwatchDocument = function (/*data, callback*/) {
-            throw new Error('Not implemented!');
+        this.unwatchDocument = function (data, callback) {
+            return storage.unwatchDocument(data).nodeify(callback);
         };
 
-        this.sendDocumentOperation = function (/*data*/) {
-            throw new Error('Not implemented!');
+        this.sendDocumentOperation = function (data) {
+            return storage.sendDocumentOperation(data);
         };
 
-        this.sendDocumentSelection = function (/*data*/) {
-            throw new Error('Not implemented!');
+        this.sendDocumentSelection = function (data) {
+            return storage.sendDocumentSelection(data);
         };
     }
 

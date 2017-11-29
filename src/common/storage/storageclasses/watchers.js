@@ -314,8 +314,8 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
      *
      * @param {object} data
      * @param {string} data.docId
-     * @param {object} data.operation
-     * @param {object} [data.selection]
+     * @param {ot.TextOperation} data.operation
+     * @param {ot.Selection} [data.selection]
      */
     StorageWatcher.prototype.sendDocumentOperation = function (data) {
         // TODO: Do we need to add a callback for confirmation here?
@@ -330,6 +330,12 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
         }
     };
 
+    /**
+     *
+     * @param {object} data
+     * @param {string} data.docId
+     * @param {ot.Selection} data.selection
+     */
     StorageWatcher.prototype.sendDocumentSelection = function (data) {
         var otClient;
         if (this.watchers.documents.hasOwnProperty(data.docId) &&

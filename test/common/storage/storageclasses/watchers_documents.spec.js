@@ -77,7 +77,7 @@ describe('storage document editing', function () {
 
     function getNewStorage(userId, password, callback) {
         var deferred = Q.defer();
-        
+
         testFixture.openSocketIo(server, superagent.agent(), userId, password)
             .then(function (result) {
                 var storage;
@@ -85,7 +85,7 @@ describe('storage document editing', function () {
 
                 storage.open(function (networkState) {
                     var err;
-                    
+
                     if (networkState === STORAGE_CONSTANTS.CONNECTED) {
                         users[userId] = {
                             storage: storage,
@@ -446,6 +446,158 @@ describe('storage document editing', function () {
                 user2.sendDocumentOperation({
                     docId: docId,
                     operation: new ot.TextOperation().insert('well, ').retain('hello'.length)
+                });
+            })
+            .catch(done);
+    });
+
+    it('should send selection when synchronized and it should be transformed for other client', function (done) {
+        var user1,
+            user2,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            },
+            cnt = 0;
+
+        Q.allDone([
+            getNewStorage('user1', 'pass'),
+            getNewStorage('user2', 'pass')
+        ])
+            .then(function (res) {
+                user1 = res[0];
+                user2 = res[1];
+
+                return Q.allDone([
+                    user1.watchDocument(initParams,
+                        function atOp1(op) {
+                        },
+                        function atSel1(data) {
+
+                        }
+                    ),
+                    user2.watchDocument(initParams,
+                        function atOp2(op) {
+
+                        },
+                        function atSel2(data) {
+                            try {
+                                expect(data.selection.ranges[0].anchor).to.equal(data.selection.ranges[0].head);
+                                expect(data.selection.ranges[0].anchor).to.equal(1 + 'well, '.length);
+                                done();
+                            } catch (e) {
+                                done(e);
+                            }
+                        }
+                    )
+                ]);
+            })
+            .then(function (res) {
+                docId = res[0].docId;
+                users['user1'].docId = docId;
+                users['user2'].docId = docId;
+
+                expect(res[0].str).to.equal(res[1].str);
+                expect(res[0].str).to.equal('hello');
+
+                expect(res[0].revision).to.equal(res[1].revision);
+                expect(res[0].revision).to.equal(0);
+
+                // user ends up with "hello there!"
+                user2.sendDocumentOperation({
+                    docId: docId,
+                    operation: new ot.TextOperation().insert('well, ').retain('hello'.length)
+                });
+
+                user1.sendDocumentSelection({
+                    docId: docId,
+                    selection: new ot.Selection({anchor: 1, head: 1})
+                });
+            })
+            .catch(done);
+    });
+
+    it('should send wide selection when synchronized and expand it with changes', function (done) {
+        var user1,
+            user2,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            },
+            cnt = 0;
+
+        Q.allDone([
+            getNewStorage('user1', 'pass'),
+            getNewStorage('user2', 'pass')
+        ])
+            .then(function (res) {
+                user1 = res[0];
+                user2 = res[1];
+
+                return Q.allDone([
+                    user1.watchDocument(initParams,
+                        function atOp1(op) {
+                            cnt += 1;
+                            try {
+                                expect(op.apply(initParams.attrValue)).to.equal('hel there lo');
+                                if (cnt === 2) {
+                                    done();
+                                }
+                            } catch (e) {
+                                done(e);
+                            }
+                        },
+                        function atSel1(data) {
+
+                        }
+                    ),
+                    user2.watchDocument(initParams,
+                        function atOp2(op) {
+
+                        },
+                        function atSel2(data) {
+                            cnt += 1;
+                            try {
+                                expect(data.selection.ranges[0].anchor).to.equal(0);
+                                expect(data.selection.ranges[0].head).to.equal('hel there lo'.length - 1);
+                                if (cnt === 2) {
+                                    done();
+                                }
+                            } catch (e) {
+                                done(e);
+                            }
+                        }
+                    )
+                ]);
+            })
+            .then(function (res) {
+                docId = res[0].docId;
+                users['user1'].docId = docId;
+                users['user2'].docId = docId;
+
+                expect(res[0].str).to.equal(res[1].str);
+                expect(res[0].str).to.equal('hello');
+
+                expect(res[0].revision).to.equal(res[1].revision);
+                expect(res[0].revision).to.equal(0);
+
+                // user ends up with "hello there!"
+                user2.sendDocumentOperation({
+                    docId: docId,
+                    operation: new ot.TextOperation().retain('hel'.length).insert(' there ').retain('lo'.length)
+                });
+
+                user1.sendDocumentSelection({
+                    docId: docId,
+                    selection: new ot.Selection({anchor: 0, head: 'hello'.length - 1})
                 });
             })
             .catch(done);

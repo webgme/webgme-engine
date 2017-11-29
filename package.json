@@ -70,7 +70,7 @@
     "mongo-uri": "0.1.2",
     "mongodb": "2.2.33",
     "ncp": "2.0.0",
-    "ot": "pmeijer/ot.js",
+    "ot": "github:pmeijer/ot.js",
     "q": "1.5.1",
     "raml2html": "3.0.1",
     "redis": "2.8.0",
