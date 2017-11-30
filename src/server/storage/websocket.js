@@ -1049,7 +1049,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
                             callback(null, {
                                 docId: docId,
-                                str: documents[docId].otServer.document,
+                                document: documents[docId].otServer.document,
                                 revision: documents[docId].otServer.operations.length,
                                 clients: documents[docId].users
                             });
@@ -1092,7 +1092,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 // FIXME: Introduce a special event for this?
                                 socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, {
                                     docId: data.docId,
-                                    clientId: socket.id,
+                                    socketId: socket.id,
                                     userId: socket.userId,
                                     selection: undefined
                                 });
@@ -1142,7 +1142,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
                                 socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, {
                                     docId: data.docId,
-                                    clientId: socket.id,
+                                    socketId: socket.id,
                                     userId: socket.userId,
                                     operation: wrappedOperation.wrapped.toJSON(),
                                     selection: wrappedOperation.selection
@@ -1168,7 +1168,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
                         socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, {
                             docId: data.docId,
-                            clientId: socket.id,
+                            socketId: socket.id,
                             userId: socket.userId,
                             selection: transformedSelection
                         });

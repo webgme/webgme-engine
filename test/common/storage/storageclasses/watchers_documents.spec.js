@@ -10,15 +10,13 @@ var testFixture = require('../../../_globals.js');
 
 describe('storage document editing', function () {
     'use strict';
-    var NodeStorage = testFixture.requirejs('common/storage/nodestorage'),
-        STORAGE_CONSTANTS = testFixture.requirejs('common/storage/constants'),
-        gmeConfig = testFixture.getGmeConfig(),
+    var gmeConfig = testFixture.getGmeConfig(),
         WebGME = testFixture.WebGME,
-        superagent = testFixture.superagent,
         Q = testFixture.Q,
         expect = testFixture.expect,
         logger = testFixture.logger.fork('watchers.spec'),
         users = {},
+        userTokens = {},
         projectName = 'DocumentEditingProject',
         ot = require('ot'),
         server,
@@ -53,13 +51,22 @@ describe('storage document editing', function () {
             .then(function (result) {
                 projectId = result[0].project.projectId;
                 return Q.allDone([
+                    gmeAuth.generateJWTokenForAuthenticatedUser('user1'),
+                    gmeAuth.generateJWTokenForAuthenticatedUser('user2'),
+                    gmeAuth.generateJWTokenForAuthenticatedUser('user3'),
+                    gmeAuth.generateJWTokenForAuthenticatedUser('userRead'),
                     gmeAuth.authorizeByUserId('user1', projectId, null, {read: true, write: true, delete: true}),
                     gmeAuth.authorizeByUserId('user2', projectId, null, {read: true, write: true, delete: true}),
                     gmeAuth.authorizeByUserId('user3', projectId, null, {read: true, write: true, delete: true}),
                     gmeAuth.authorizeByUserId('userRead', projectId, null, {read: true, write: false, delete: false})
                 ]);
             })
-            .then(function () {
+            .then(function (res) {
+                userTokens.user1 = res[0];
+                userTokens.user2 = res[1];
+                userTokens.user3 = res[2];
+                userTokens.userRead = res[3];
+
                 server = WebGME.standaloneServer(gmeConfig);
                 return Q.allDone([
                     Q.ninvoke(server, 'start'),
@@ -75,35 +82,15 @@ describe('storage document editing', function () {
         server.stop(done);
     });
 
-    function getNewStorage(userId, password, callback) {
-        var deferred = Q.defer();
+    function getNewStorage(userId) {
+        return testFixture.getConnectedStorage(gmeConfig, logger, userTokens[userId])
+            .then(function (storage) {
+                users[userId] = {
+                    storage: storage,
+                };
 
-        testFixture.openSocketIo(server, superagent.agent(), userId, password)
-            .then(function (result) {
-                var storage;
-                storage = NodeStorage.createStorage(null, result.webgmeToken, logger, gmeConfig);
-
-                storage.open(function (networkState) {
-                    var err;
-
-                    if (networkState === STORAGE_CONSTANTS.CONNECTED) {
-                        users[userId] = {
-                            storage: storage,
-                            socket: result.socket
-                        };
-
-                        deferred.resolve(storage);
-                    } else {
-                        err = new Error('Unexpected network state: ' + networkState);
-                        // Log it since promise may already have been resolved..
-                        logger.error(err);
-                        deferred.reject(err);
-                    }
-                });
-            })
-            .catch(deferred.reject);
-
-        return deferred.promise.nodeify(callback);
+                return storage;
+            });
     }
 
     afterEach(function (done) {
@@ -120,16 +107,18 @@ describe('storage document editing', function () {
             return unwatchDeferred.promise
                 .then(function () {
                     return Q.ninvoke(uData.storage, 'close');
-                })
-                .then(function () {
-                    uData.socket.disconnect();
                 });
+
         }))
             .then(function () {
                 users = {};
             })
             .nodeify(done);
     });
+
+    function noop() {
+
+    }
 
     it('should get new connected storages for two users', function (done) {
         Q.allDone([
@@ -172,14 +161,7 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams,
-                        function atOp1(op) {
-                            //console.log('atOp1', op);
-                        },
-                        function atSel1(data) {
-                            //console.log('atSel1', JSON.stringify(data, null, 2));
-                        }
-                    ),
+                    user1.watchDocument(initParams, noop, noop),
                     user2.watchDocument(initParams,
                         function atOp2(op) {
                             try {
@@ -188,24 +170,17 @@ describe('storage document editing', function () {
                             } catch (e) {
                                 done(e);
                             }
-                        },
-                        function atSel2(data) {
-                            //console.log('atSel2', JSON.stringify(data, null, 2));
-                        }
-                    )
+                        }, noop)
                 ]);
             })
             .then(function (res) {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
                 users['user2'].docId = docId;
-
-                expect(res[0].str).to.equal(res[1].str);
-                expect(res[0].str).to.equal('hello');
-
+                expect(res[0].document).to.equal(res[1].document);
+                expect(res[0].document).to.equal('hello');
                 expect(res[0].revision).to.equal(res[1].revision);
                 expect(res[0].revision).to.equal(0);
-
                 // user ends up with "hello there"
                 user1.sendDocumentOperation({
                     docId: docId,
@@ -237,14 +212,7 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams,
-                        function atOp1(op) {
-                            //console.log('atOp1', op);
-                        },
-                        function atSel1(data) {
-                            //console.log('atSel1', JSON.stringify(data, null, 2));
-                        }
-                    ),
+                    user1.watchDocument(initParams, noop, noop),
                     user2.watchDocument(initParams,
                         function atOp2(op) {
                             cnt += 1;
@@ -258,10 +226,7 @@ describe('storage document editing', function () {
                             } catch (e) {
                                 done(e);
                             }
-                        },
-                        function atSel2(data) {
-                            //console.log('atSel2', JSON.stringify(data, null, 2));
-                        }
+                        }, noop
                     )
                 ]);
             })
@@ -269,12 +234,6 @@ describe('storage document editing', function () {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
                 users['user2'].docId = docId;
-
-                expect(res[0].str).to.equal(res[1].str);
-                expect(res[0].str).to.equal('hello');
-
-                expect(res[0].revision).to.equal(res[1].revision);
-                expect(res[0].revision).to.equal(0);
 
                 // user ends up with "hello there!"
                 user1.sendDocumentOperation({
@@ -312,14 +271,7 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams,
-                        function atOp1(op) {
-                            //console.log('atOp1', op);
-                        },
-                        function atSel1(data) {
-                            //console.log('atSel1', JSON.stringify(data, null, 2));
-                        }
-                    ),
+                    user1.watchDocument(initParams, noop, noop),
                     user2.watchDocument(initParams,
                         function atOp2(op) {
                             cnt += 1;
@@ -333,10 +285,7 @@ describe('storage document editing', function () {
                             } catch (e) {
                                 done(e);
                             }
-                        },
-                        function atSel2(data) {
-                            //console.log('atSel2', JSON.stringify(data, null, 2));
-                        }
+                        }, noop
                     )
                 ]);
             })
@@ -344,12 +293,6 @@ describe('storage document editing', function () {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
                 users['user2'].docId = docId;
-
-                expect(res[0].str).to.equal(res[1].str);
-                expect(res[0].str).to.equal('hello');
-
-                expect(res[0].revision).to.equal(res[1].revision);
-                expect(res[0].revision).to.equal(0);
 
                 // user ends up with "hello there!"
                 user1.sendDocumentOperation({
@@ -403,10 +346,7 @@ describe('storage document editing', function () {
                             } catch (e) {
                                 done(e);
                             }
-                        },
-                        function atSel1(data) {
-                            //console.log('atSel1', JSON.stringify(data, null, 2));
-                        }
+                        }, noop
                     ),
                     user2.watchDocument(initParams,
                         function atOp2(op) {
@@ -419,10 +359,7 @@ describe('storage document editing', function () {
                             } catch (e) {
                                 done(e);
                             }
-                        },
-                        function atSel2(data) {
-                            //console.log('atSel2', JSON.stringify(data, null, 2));
-                        }
+                        }, noop
                     )
                 ]);
             })
@@ -430,12 +367,6 @@ describe('storage document editing', function () {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
                 users['user2'].docId = docId;
-
-                expect(res[0].str).to.equal(res[1].str);
-                expect(res[0].str).to.equal('hello');
-
-                expect(res[0].revision).to.equal(res[1].revision);
-                expect(res[0].revision).to.equal(0);
 
                 // user ends up with "hello there!"
                 user1.sendDocumentOperation({
@@ -473,21 +404,13 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams,
-                        function atOp1(op) {
-                        },
-                        function atSel1(data) {
-
-                        }
-                    ),
-                    user2.watchDocument(initParams,
-                        function atOp2(op) {
-
-                        },
+                    user1.watchDocument(initParams, noop, noop),
+                    user2.watchDocument(initParams, noop,
                         function atSel2(data) {
                             try {
                                 expect(data.selection.ranges[0].anchor).to.equal(data.selection.ranges[0].head);
                                 expect(data.selection.ranges[0].anchor).to.equal(1 + 'well, '.length);
+                                expect(data.userId).to.equal('user1');
                                 done();
                             } catch (e) {
                                 done(e);
@@ -500,12 +423,6 @@ describe('storage document editing', function () {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
                 users['user2'].docId = docId;
-
-                expect(res[0].str).to.equal(res[1].str);
-                expect(res[0].str).to.equal('hello');
-
-                expect(res[0].revision).to.equal(res[1].revision);
-                expect(res[0].revision).to.equal(0);
 
                 // user ends up with "hello there!"
                 user2.sendDocumentOperation({
@@ -554,15 +471,9 @@ describe('storage document editing', function () {
                             } catch (e) {
                                 done(e);
                             }
-                        },
-                        function atSel1(data) {
-
-                        }
+                        }, noop
                     ),
-                    user2.watchDocument(initParams,
-                        function atOp2(op) {
-
-                        },
+                    user2.watchDocument(initParams, noop,
                         function atSel2(data) {
                             cnt += 1;
                             try {
@@ -582,13 +493,6 @@ describe('storage document editing', function () {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
                 users['user2'].docId = docId;
-
-                expect(res[0].str).to.equal(res[1].str);
-                expect(res[0].str).to.equal('hello');
-
-                expect(res[0].revision).to.equal(res[1].revision);
-                expect(res[0].revision).to.equal(0);
-
                 // user ends up with "hello there!"
                 user2.sendDocumentOperation({
                     docId: docId,

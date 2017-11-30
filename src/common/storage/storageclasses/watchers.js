@@ -166,13 +166,15 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
      * @param {function(ot.Operation)} atOperation
      * @param {function} atSelection
      * @param {ot.Selection} atSelection.selection
-     * @param {string} atSelection.clientId
      * @param {string} atSelection.userId
+     * @param {string} atSelection.socketId
      * @param {function} [callback]
-     * @param {Error | null} [callback.err]
-     * @param {object} [callback.data]
-     * @param {object} [callback.data]
-     * @param {object} [callback.data]
+     * @param {Error | null} callback.err
+     * @param {object} callback.data
+     * @param {string} callback.data.docId
+     * @param {string} callback.data.document
+     * @param {number} callback.data.revision
+     * @param {object} callback.data.users
      * @returns {Promise}
      */
     StorageWatcher.prototype.watchDocument = function (data, atOperation, atSelection, callback) {
@@ -202,7 +204,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
                 if (eData.selection && !self.reconnecting) {
                     atSelection({
                         selection: otClient.transformSelection(ot.Selection.fromJSON(eData.selection)),
-                        clientId: eData.clientId,
+                        socketId: eData.socketId,
                         userId: eData.userId
                     });
                 }

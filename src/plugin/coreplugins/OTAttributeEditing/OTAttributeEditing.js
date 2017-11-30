@@ -57,8 +57,9 @@ define([
         // Use self to access core, project, result, logger etc from PluginBase.
         // These are all instantiated at this point.
         var self = this,
-            n = self.getCurrentConfig().cycles,
-            interval = self.getCurrentConfig.interval,
+            cfg = self.getCurrentConfig(),
+            n = cfg.cycles,
+            interval = cfg.interval,
             fco = self.core.getFCO(self.rootNode),
             document = '';
 
@@ -76,6 +77,9 @@ define([
 
         if (!this.branchName) {
             callback(new Error('Plugin must be invoked from a branch!'));
+            return;
+        } else if (typeof self.project.watchDocument !== 'function') {
+            callback(new Error('Plugin cannot run from bin script. A webgme server must be running!'));
             return;
         }
 
@@ -108,7 +112,7 @@ define([
 
                         document += newText;
 
-                        self.project.sendOperation({
+                        self.project.sendDocumentOperation({
                             docId: initData.docId,
                             operation: newOperation,
                             selection: new ot.Selection({
@@ -127,7 +131,7 @@ define([
             })
             .then(function () {
                 self.logger.info('Persisting current document to attribute in model:\n"""\n', document, '\n"""');
-                self.setAttribute(fco, 'otAttr', document);
+                self.core.setAttribute(fco, 'otAttr', document);
                 return self.save('OT Attribute Editing updated attribute otAttr at FCO');
             })
             .then(function () {
