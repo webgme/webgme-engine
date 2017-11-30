@@ -91,7 +91,10 @@ describe('WebSocket', function () {
             Q.ninvoke(socket, 'emit', 'getLatestCommitData', data),
             Q.ninvoke(socket, 'emit', 'getCommonAncestorCommit', data),
             Q.ninvoke(socket, 'emit', 'simpleRequest', data),
-            Q.ninvoke(socket, 'emit', 'notification', data)
+            Q.ninvoke(socket, 'emit', 'watchDocument', data),
+            Q.ninvoke(socket, 'emit', 'notification', data),
+            Q.ninvoke(socket, 'emit', CONSTANTS.DOCUMENT_OPERATION, data),
+            Q.ninvoke(socket, 'emit', CONSTANTS.DOCUMENT_SELECTION, data)
         ]);
     }
 
@@ -860,7 +863,7 @@ describe('WebSocket', function () {
                 .then(function (result) {
                     result.forEach(function (res, i) {
                         var shouldSucceed = [
-                            0, 1, 2, 3, 7
+                            0, 1, 2, 3, 7, 27
                         ];
                         if (shouldSucceed.indexOf(i) > -1) {
                             expect(res.state).to.equal('fulfilled', i);
@@ -890,7 +893,7 @@ describe('WebSocket', function () {
                 .then(function (result) {
                     result.forEach(function (res, i) {
                         var shouldSucceed = [
-                            0, 1, 2, 3, 7
+                            0, 1, 2, 3, 7, 27
                         ];
                         if (shouldSucceed.indexOf(i) > -1) {
                             expect(res.state).to.equal('fulfilled', i);
@@ -920,7 +923,7 @@ describe('WebSocket', function () {
                 .then(function (result) {
                     result.forEach(function (res, i) {
                         var shouldSucceed = [
-                            0, 1, 2, 3, 7
+                            0, 1, 2, 3, 7, 27
                         ];
                         if (shouldSucceed.indexOf(i) > -1) {
                             expect(res.state).to.equal('fulfilled', i);

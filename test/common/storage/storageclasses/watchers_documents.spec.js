@@ -44,8 +44,8 @@ describe('storage document editing', function () {
                     }),
                     gmeAuth.addUser('user1', 'em@il', 'pass', true, {overwrite: true}),
                     gmeAuth.addUser('user2', 'em@il', 'pass', true, {overwrite: true}),
-                    gmeAuth.addUser('user3', 'em@il', 'pass', true, {overwrite: true}),
-                    gmeAuth.addUser('userRead', 'em@il', 'pass', true, {overwrite: true})
+                    gmeAuth.addUser('userRead', 'em@il', 'pass', true, {overwrite: true}),
+                    gmeAuth.addUser('userNoAccess', 'em@il', 'pass', true, {overwrite: true})
                 ]);
             })
             .then(function (result) {
@@ -53,18 +53,17 @@ describe('storage document editing', function () {
                 return Q.allDone([
                     gmeAuth.generateJWTokenForAuthenticatedUser('user1'),
                     gmeAuth.generateJWTokenForAuthenticatedUser('user2'),
-                    gmeAuth.generateJWTokenForAuthenticatedUser('user3'),
+                    gmeAuth.generateJWTokenForAuthenticatedUser('userNoAccess'),
                     gmeAuth.generateJWTokenForAuthenticatedUser('userRead'),
                     gmeAuth.authorizeByUserId('user1', projectId, null, {read: true, write: true, delete: true}),
                     gmeAuth.authorizeByUserId('user2', projectId, null, {read: true, write: true, delete: true}),
-                    gmeAuth.authorizeByUserId('user3', projectId, null, {read: true, write: true, delete: true}),
                     gmeAuth.authorizeByUserId('userRead', projectId, null, {read: true, write: false, delete: false})
                 ]);
             })
             .then(function (res) {
                 userTokens.user1 = res[0];
                 userTokens.user2 = res[1];
-                userTokens.user3 = res[2];
+                userTokens.userNoAccess = res[2];
                 userTokens.userRead = res[3];
 
                 server = WebGME.standaloneServer(gmeConfig);
@@ -140,6 +139,7 @@ describe('storage document editing', function () {
             .nodeify(done);
     });
 
+    // Operations
     it('operation onto document should be broadcast to other user', function (done) {
         var user1,
             user2,
@@ -382,6 +382,7 @@ describe('storage document editing', function () {
             .catch(done);
     });
 
+    // Selections
     it('should send selection when synchronized and it should be transformed for other client', function (done) {
         var user1,
             user2,
@@ -505,5 +506,92 @@ describe('storage document editing', function () {
                 });
             })
             .catch(done);
+    });
+
+    // Read/write access...
+    it('should only allow user with read access to receive operations', function (done) {
+        var user1,
+            userRead,
+            docId,
+            tId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        Q.allDone([
+            getNewStorage('user1', 'pass'),
+            getNewStorage('userRead', 'pass')
+        ])
+            .then(function (res) {
+                user1 = res[0];
+                userRead = res[1];
+
+                return Q.allDone([
+                    user1.watchDocument(initParams, function () {
+                        clearTimeout(tId);
+                        done(new Error('should not receive any operations'));
+                    }, noop),
+                    userRead.watchDocument(initParams,
+                        function atOp2(op) {
+                            try {
+                                expect(op.apply(initParams.attrValue)).to.equal('hello there');
+                                userRead.sendDocumentOperation({
+                                    docId: docId,
+                                    operation: new ot.TextOperation()
+                                        .retain('hello there'.length)
+                                        .insert(' never makes it!')
+                                });
+
+                                tId = setTimeout(function () {
+                                    done();
+                                }, 100);
+                            } catch (e) {
+                                done(e);
+                            }
+                        }, noop)
+                ]);
+            })
+            .then(function (res) {
+                docId = res[0].docId;
+                users['user1'].docId = docId;
+                users['userRead'].docId = docId;
+
+                // user ends up with "hello there"
+                user1.sendDocumentOperation({
+                    docId: docId,
+                    operation: new ot.TextOperation().retain('hello'.length).insert(' there')
+                });
+            })
+            .catch(done);
+    });
+
+    it('should not allow user without read access to watch document', function (done) {
+        var userNoAccess,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('userNoAccess', 'pass')
+            .then(function (res) {
+                userNoAccess = res;
+
+                return userNoAccess.watchDocument(initParams, noop, noop);
+            })
+            .then(function (res) {
+                throw new Error('Should not succeed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('No read access for guest+DocumentEditingProject');
+            })
+            .nodeify(done);
     });
 });

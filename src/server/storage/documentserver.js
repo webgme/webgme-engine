@@ -48,35 +48,21 @@ DocumentServer.prototype.receiveOperation = function (revision, operation) {
 
     // It's the caller's responsibility to send the operation to all connected
     // clients and an acknowledgement to the creator.
+    this.logger.info('New operation [', operation, '] at revision', this.operations.length);
+
     return operation;
 };
 
-DocumentServer.prototype.onOperation = function (data, callback) {
+DocumentServer.prototype.onOperation = function (data) {
     var wrapped;
 
-    try {
-        wrapped = new WrappedOperation(
-            TextOperation.fromJSON(data.operation),
-            data.selection && Selection.fromJSON(data.selection), {
-                userId: data.userId,
-                sessionId: data.sessionId
-            }
-        );
-    } catch (exc) {
-        this.logger.error('Invalid operation received: ', exc);
-        callback(exc);
-        return;
-    }
+    wrapped = new WrappedOperation(
+        TextOperation.fromJSON(data.operation),
+        data.selection && Selection.fromJSON(data.selection),
+        {userId: data.userId, sessionId: data.sessionId});
 
-    try {
-        var wrappedPrime = this.receiveOperation(data.revision, wrapped);
-        this.logger.info('New operation [', data.operation, '] at revision', this.operations.length);
 
-        callback(null, wrappedPrime);
-    } catch (exc) {
-        this.logger.error(exc);
-        callback(exc);
-    }
+    return this.receiveOperation(data.revision, wrapped);
 };
 
 DocumentServer.prototype.onSelection = function (revision, selection) {

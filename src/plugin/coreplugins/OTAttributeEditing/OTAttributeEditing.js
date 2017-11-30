@@ -61,7 +61,7 @@ define([
             n = cfg.cycles,
             interval = cfg.interval,
             fco = self.core.getFCO(self.rootNode),
-            document = '';
+            document;
 
         function atOperation(operation) {
             // Someone else is sending operations to the document,
@@ -92,6 +92,8 @@ define([
             .then(function (initData) {
                 var deferred = Q.defer(),
                     cnt = 1;
+
+                document = initData.document;
 
                 function addOutput() {
                     try {

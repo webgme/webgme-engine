@@ -11,7 +11,7 @@ var io = require('socket.io'),
     redis = require('socket.io-redis'),
     Q = require('q'),
     UTIL = require('../../utils'),
-    DocumentServer = require('./documentserver'),    URL = requireJS('common/util/url'),
+    DocumentServer = require('./documentserver'), URL = requireJS('common/util/url'),
     CONSTANTS = requireJS('common/storage/constants'),
     PACKAGE_JSON;
 
@@ -1010,16 +1010,16 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             // OT handling
             socket.on('watchDocument', function (data, callback) {
-                var docId = data.join ? [
-                    data.projectId,
-                    data.branchName,
-                    data.nodeId,
-                    data.attrName].join(CONSTANTS.ROOM_DIVIDER) : data.docId;
-
-                logger.info('watchDocument', docId, 'join?', data.join, 'rejoin?', data.rejoin);
-
-                projectAccess(socket, data.webgmeToken, data.projectId)
+                projectAccess(socket, data && data.webgmeToken, data && data.projectId)
                     .then(function (access) {
+                        var docId = data.join ? [
+                            data.projectId,
+                            data.branchName,
+                            data.nodeId,
+                            data.attrName].join(CONSTANTS.ROOM_DIVIDER) : data.docId;
+
+                        logger.info('watchDocument', docId, 'join?', data.join, 'rejoin?', data.rejoin);
+
                         if (data.join === true) {
                             if (!access.read) {
                                 logger.warn('socket not authorized to join document room', docId);
@@ -1128,41 +1128,50 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             });
 
             socket.on(CONSTANTS.DOCUMENT_OPERATION, function (data, callback) {
+                var wrappedOperation;
 
-                if (documents.hasOwnProperty(data.docId) && documents[data.docId].users.hasOwnProperty(socket.id)) {
-
-                    if (documents[data.docId].users[socket.id].access.write === true) {
-                        data.userId = documents[data.docId].users[socket.id].userId;
-                        documents[data.docId].otServer.onOperation(data, function (err, wrappedOperation) {
-                            if (err) {
-                                callback(err.message);
-                            } else {
-                                // Acknowledge the operation.
-                                callback();
-
-                                socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, {
-                                    docId: data.docId,
-                                    socketId: socket.id,
-                                    userId: socket.userId,
-                                    operation: wrappedOperation.wrapped.toJSON(),
-                                    selection: wrappedOperation.selection
-                                });
-                            }
-                        });
+                try {
+                    if (documents.hasOwnProperty(data.docId) && documents[data.docId].users.hasOwnProperty(socket.id)) {
+                        if (documents[data.docId].users[socket.id].access.write === true) {
+                            data.userId = documents[data.docId].users[socket.id].userId;
+                            wrappedOperation = documents[data.docId].otServer.onOperation(data);
+                            // Acknowledge,
+                            callback();
+                            // and then broadcast the operation.
+                            socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, {
+                                docId: data.docId,
+                                socketId: socket.id,
+                                userId: socket.userId,
+                                operation: wrappedOperation.wrapped.toJSON(),
+                                selection: wrappedOperation.selection
+                            });
+                        } else {
+                            throw new Error('Does not have write access to document');
+                        }
                     } else {
-                        callback('Does not have write access to', data.docId);
+                        throw new Error('Client not watching current document');
                     }
-                } else {
-                    logger.error('Client not watching current document', data.docId);
-                    callback('Cannot send operation to document not being watched');
+                } catch (err) {
+                    if (gmeConfig.debug) {
+                        callback(err.stack);
+                    } else {
+                        callback(err.message);
+                    }
                 }
             });
 
-            socket.on(CONSTANTS.DOCUMENT_SELECTION, function (data) {
+            socket.on(CONSTANTS.DOCUMENT_SELECTION, function (data, callback) {
                 var transformedSelection;
 
-                if (documents.hasOwnProperty(data.docId) && documents[data.docId].users.hasOwnProperty(socket.id)) {
-                    try {
+                function done(err) {
+                    if (callback) {
+                        callback(err ? err.message : undefined);
+                    }
+                }
+
+                try {
+                    if (documents.hasOwnProperty(data.docId) && documents[data.docId].users.hasOwnProperty(socket.id)) {
+
                         transformedSelection = documents[data.docId].otServer.onSelection(
                             data.revision, data.selection);
 
@@ -1172,11 +1181,13 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             userId: socket.userId,
                             selection: transformedSelection
                         });
-                    } catch (err) {
-                        logger.error(err);
+                        done();
+
+                    } else {
+                        throw new Error('Client not watching current document');
                     }
-                } else {
-                    logger.error('Client not watching current document', data.docId);
+                } catch (err) {
+                    done(err);
                 }
             });
         });
