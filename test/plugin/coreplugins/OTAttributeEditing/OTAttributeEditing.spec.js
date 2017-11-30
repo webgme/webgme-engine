@@ -10,18 +10,18 @@ describe('OTAttributeEditing Plugin', function () {
     var testFixture = require('../../../_globals');
 
     var WorkerRequests = require('../../../../src/server/worker/workerrequests'),
-        STORAGE_CONSTANTS = testFixture.requirejs('common/storage/constants'),
         gmeConfig = testFixture.getGmeConfig(),
         Q = testFixture.Q,
         WebGME = testFixture.WebGME,
         expect = testFixture.expect,
         logger = testFixture.logger.fork('watchers.spec'),
         projectName = 'OTAttributeEditingPlugin',
+        ot = require('ot'),
         server,
         wr,
+        ir,
         gmeAuth,
-        safeStorage,
-        project;
+        safeStorage;
 
     before(function (done) {
         gmeConfig.socketIO.clientOptions.transports = ['websocket'];
@@ -44,10 +44,11 @@ describe('OTAttributeEditing Plugin', function () {
                 ]);
             })
             .then(function (result) {
-                project = result[0].project;
+                ir = result[0];
                 return Q.allDone([
-                    project.createBranch('b1', result[0].commitHash),
-                    project.createBranch('b2', result[0].commitHash)
+                    ir.project.createBranch('b1', ir.commitHash),
+                    ir.project.createBranch('b2', ir.commitHash),
+                    ir.project.createBranch('b3', ir.commitHash)
                 ]);
             })
             .then(function () {
@@ -70,7 +71,7 @@ describe('OTAttributeEditing Plugin', function () {
     it('should run the plugin and succeed', function (done) {
         var context = {
             managerConfig: {
-                project: project.projectId,
+                project: ir.project.projectId,
                 branchName: 'b1'
             },
             pluginConfig: {
@@ -87,51 +88,147 @@ describe('OTAttributeEditing Plugin', function () {
             .nodeify(done);
     });
 
-    // it('should run the plugin and send messages to other watcher', function (done) {
-    //     var context = {
-    //             managerConfig: {
-    //                 project: project.projectId,
-    //                 branchName: 'b2'
-    //             },
-    //             pluginConfig: {
-    //                 interval: 20,
-    //                 cycles: 10
-    //             }
-    //         },
-    //         storage = testFixture.getConnectedStorage(gmeConfig, logger),
-    //         project,
-    //         doc;
-    //
-    //     function atOperation(op) {
-    //
-    //     }
-    //
-    //     function atSelection() {
-    //
-    //     }
-    //
-    //     Q.ninvoke(storage, 'openProject', project.projectId)
-    //         .then(function (project_) {
-    //             project = project_;
-    //
-    //             return project.watchDocument({
-    //                 branchName: 'b2',
-    //                 nodeId: '/1',
-    //                 attrName: 'otAttr',
-    //                 attrValue: ''
-    //             }, atOperation, atSelection);
-    //
-    //         })
-    //         .then(function (res) {
-    //             doc = res.
-    //             return Q.ninvoke(wr, 'executePlugin', null, null, 'OTAttributeEditing', context);
-    //         })
-    //         .then(function (res) {
-    //             expect(res.success).to.equal(true);
-    //             expect(res.commits.length).to.equal(2);
-    //
-    //             return project.unwatchDocument();
-    //         })
-    //         .nodeify(done);
-    // });
+    it('should run the plugin and send operations to other watcher', function (done) {
+        var context = {
+                managerConfig: {
+                    project: ir.project.projectId,
+                    branchName: 'b2'
+                },
+                pluginConfig: {
+                    interval: 20,
+                    cycles: 10
+                }
+            },
+            storage = testFixture.getConnectedStorage(gmeConfig, logger),
+            connProject,
+            docId,
+            doc;
+
+        function atOperation(op) {
+            doc = op.apply(doc);
+        }
+
+        function atSelection() {
+
+        }
+
+        Q.ninvoke(storage, 'openProject', ir.project.projectId)
+            .then(function (res) {
+                connProject = res[0];
+
+                return connProject.watchDocument({
+                    branchName: 'b2',
+                    nodeId: '/1',
+                    attrName: 'otAttr',
+                    attrValue: ''
+                }, atOperation, atSelection);
+
+            })
+            .then(function (res) {
+                doc = res.document;
+                docId = res.docId;
+                return Q.ninvoke(wr, 'executePlugin', null, null, 'OTAttributeEditing', context);
+            })
+            .then(function (res) {
+                expect(res.success).to.equal(true);
+                expect(res.commits.length).to.equal(2);
+
+                return testFixture.loadRootNodeFromCommit(ir.project, ir.core, res.commits[1].commitHash);
+            })
+            .then(function (newRoot) {
+                var fco = ir.core.getFCO(newRoot),
+                    attr = ir.core.getAttribute(fco, 'otAttr');
+
+                expect(attr).to.equal(doc);
+                expect((attr.match(/This is output nr/g) || []).length).to.equal(context.pluginConfig.cycles);
+
+                return connProject.unwatchDocument({docId: docId});
+            })
+            .then(function () {
+                return Q.ninvoke(storage, 'close');
+            })
+            .nodeify(done);
+    });
+
+    it('should run the plugin and accept operations from other watcher', function (done) {
+        var context = {
+                managerConfig: {
+                    project: ir.project.projectId,
+                    branchName: 'b3'
+                },
+                pluginConfig: {
+                    interval: 20,
+                    cycles: 10
+                }
+            },
+            storage = testFixture.getConnectedStorage(gmeConfig, logger),
+            cnt = 0,
+            connProject,
+            docId,
+            doc;
+
+        function atOperation(op) {
+            var newText = '\nAdded by test watcher ' + cnt,
+                newOperation;
+            cnt += 1;
+            doc = op.apply(doc);
+            // Add some text at the start
+            // we need a counter since operations can come batched from the plugin.
+            // Create the operation that appends the newText to the document.
+            newOperation = new ot.TextOperation()
+                .insert(newText)         //  Insert newText at the beginning
+                .retain(doc.length);     //  and retain the current length.
+
+            doc = newText + doc;
+
+            setTimeout(function () {
+                connProject.sendDocumentOperation({
+                    docId: docId,
+                    operation: newOperation
+                });
+            });
+        }
+
+        function atSelection() {
+
+        }
+
+        Q.ninvoke(storage, 'openProject', ir.project.projectId)
+            .then(function (res) {
+                connProject = res[0];
+
+                return connProject.watchDocument({
+                    branchName: 'b3',
+                    nodeId: '/1',
+                    attrName: 'otAttr',
+                    attrValue: ''
+                }, atOperation, atSelection);
+
+            })
+            .then(function (res) {
+                doc = res.document;
+                docId = res.docId;
+                return Q.ninvoke(wr, 'executePlugin', null, null, 'OTAttributeEditing', context);
+            })
+            .then(function (res) {
+                expect(res.success).to.equal(true);
+                expect(res.commits.length).to.equal(2);
+
+                return testFixture.loadRootNodeFromCommit(ir.project, ir.core, res.commits[1].commitHash);
+            })
+            .then(function (newRoot) {
+                var fco = ir.core.getFCO(newRoot),
+                    attr = ir.core.getAttribute(fco, 'otAttr');
+
+                expect(attr).to.equal(doc);
+                expect((attr.match(/This is output nr/g) || []).length).to.equal(context.pluginConfig.cycles);
+                expect((attr.match(/Added by test watcher/g) || []).length).to.equal(cnt);
+
+                return connProject.unwatchDocument({docId: docId});
+            })
+            .then(function () {
+                return Q.ninvoke(storage, 'close');
+            })
+            .nodeify(done);
+    });
 });

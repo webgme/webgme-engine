@@ -94,34 +94,38 @@ define([
                     cnt = 1;
 
                 function addOutput() {
-                    var newText = '\nThis is output nr ' + cnt,
-                        newOperation;
+                    try {
+                        var newText = '\nThis is output nr ' + cnt,
+                            newOperation;
 
-                    if (cnt > n) {
-                        // All cycles have passed - it's important to unwatch the document.
-                        self.project.unwatchDocument({docId: initData.docId})
-                            .then(deferred.resolve)
-                            .catch(deferred.reject);
-                    } else {
-                        cnt += 1;
+                        if (cnt > n) {
+                            // All cycles have passed - it's important to unwatch the document.
+                            self.project.unwatchDocument({docId: initData.docId})
+                                .then(deferred.resolve)
+                                .catch(deferred.reject);
+                        } else {
+                            cnt += 1;
 
-                        // Create the operation that appends the newText to the document.
-                        newOperation = new ot.TextOperation()
-                            .retain(document.length) // At the end of document -
-                            .insert(newText);        // insert the newText.
+                            // Create the operation that appends the newText to the document.
+                            newOperation = new ot.TextOperation()
+                                .retain(document.length) // At the end of document -
+                                .insert(newText);        // insert the newText.
 
-                        document += newText;
+                            document += newText;
 
-                        self.project.sendDocumentOperation({
-                            docId: initData.docId,
-                            operation: newOperation,
-                            selection: new ot.Selection({
-                                anchor: document.length - 1, // Selection starts at the end of the new document
-                                head: document.length - 1    // and ends there too.
-                            })
-                        });
+                            self.project.sendDocumentOperation({
+                                docId: initData.docId,
+                                operation: newOperation,
+                                selection: new ot.Selection({
+                                    anchor: document.length - 1, // Selection starts at the end of the new document
+                                    head: document.length - 1    // and ends there too.
+                                })
+                            });
 
-                        setTimeout(addOutput, interval);
+                            setTimeout(addOutput, interval);
+                        }
+                    } catch (e) {
+                        deferred.reject(e);
                     }
                 }
 
