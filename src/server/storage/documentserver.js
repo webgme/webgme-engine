@@ -48,7 +48,7 @@ DocumentServer.prototype.receiveOperation = function (revision, operation) {
 
     // It's the caller's responsibility to send the operation to all connected
     // clients and an acknowledgement to the creator.
-    this.logger.info('New operation [', operation, '] at revision', this.operations.length);
+    this.logger.debug('New operation [', operation, '] at revision', this.operations.length);
 
     return operation;
 };

@@ -19,6 +19,7 @@ describe('storage document editing', function () {
         userTokens = {},
         projectName = 'DocumentEditingProject',
         ot = require('ot'),
+        noop = testFixture.noop,
         server,
         gmeAuth,
         safeStorage,
@@ -114,10 +115,6 @@ describe('storage document editing', function () {
             })
             .nodeify(done);
     });
-
-    function noop() {
-
-    }
 
     it('should get new connected storages for two users', function (done) {
         Q.allDone([

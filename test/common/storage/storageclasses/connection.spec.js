@@ -13,14 +13,9 @@ describe('storage-connection', function () {
         STORAGE_CONSTANTS = testFixture.requirejs('common/storage/constants'),
         gmeConfig = testFixture.getGmeConfig(),
         WebGME = testFixture.WebGME,
-        openSocketIo = testFixture.openSocketIo,
-        superagent = testFixture.superagent,
         Q = testFixture.Q,
         projectName2Id = testFixture.projectName2Id,
-
         logger = testFixture.logger.fork('connection.spec'),
-
-        guestAccount = gmeConfig.authentication.guestAccount,
         server,
         gmeAuth,
         safeStorage,
@@ -111,24 +106,15 @@ describe('storage-connection', function () {
     }
 
     it('should disconnect when server stops', function (done) {
-        var agent = superagent.agent(),
-            connected = false,
+        var connected = false,
             res,
-            storage,
-            socket;
+            storage;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
             .then(function () {
-                return openSocketIo(server, agent, guestAccount, guestAccount);
-            })
-            .then(function (result) {
                 var deferred = Q.defer();
-                socket = result.socket;
-                res = createStorage(null,
-                    result.webgmeToken,
-                    logger,
-                    gmeConfig);
+                res = createStorage(null, null, logger, gmeConfig);
 
                 storage = res.storage;
 
@@ -153,7 +139,6 @@ describe('storage-connection', function () {
                 return deferred.promise;
             })
             .nodeify(function (err) {
-                socket.disconnect();
                 Q.ninvoke(storage, 'close')
                     .finally(function (err2) {
                         // Make sure server has been closed.
@@ -166,26 +151,17 @@ describe('storage-connection', function () {
     });
 
     it('should disconnect and reconnect when disconnect on actual socket', function (done) {
-        var agent = superagent.agent(),
-            connected = false,
+        var connected = false,
             disconnected = false,
             res,
-            storage,
-            socket;
+            storage;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
             .then(function () {
-                return openSocketIo(server, agent, guestAccount, guestAccount);
-            })
-            .then(function (result) {
                 var deferred = Q.defer();
-                socket = result.socket;
 
-                res = createStorage(null,
-                    result.webgmeToken,
-                    logger,
-                    gmeConfig);
+                res = createStorage(null, null, logger, gmeConfig);
 
                 storage = res.storage;
 
@@ -213,9 +189,6 @@ describe('storage-connection', function () {
                 return deferred.promise;
             })
             .nodeify(function (err) {
-                if (socket) {
-                    socket.disconnect();
-                }
                 Q.ninvoke(storage, 'close')
                     .finally(function (err2) {
                         Q.ninvoke(server, 'stop')
@@ -227,25 +200,16 @@ describe('storage-connection', function () {
     });
 
     it('should reconnect with branch open', function (done) {
-        var agent = superagent.agent(),
-            connected = false,
+        var connected = false,
             disconnected = false,
             res,
-            storage,
-            socket;
+            storage;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
             .then(function () {
-                return openSocketIo(server, agent, guestAccount, guestAccount);
-            })
-            .then(function (result) {
                 var deferred = Q.defer();
-                socket = result.socket;
-                res = createStorage(null,
-                    result.webgmeToken,
-                    logger,
-                    gmeConfig);
+                res = createStorage(null, null, logger, gmeConfig);
 
                 storage = res.storage;
 
@@ -289,7 +253,6 @@ describe('storage-connection', function () {
                 return deferred.promise;
             })
             .nodeify(function (err) {
-                socket.disconnect();
                 Q.ninvoke(storage, 'close')
                     .finally(function (err2) {
                         Q.ninvoke(server, 'stop')
@@ -301,27 +264,18 @@ describe('storage-connection', function () {
     });
 
     it('should reconnect and commit uncommitted commit', function (done) {
-        var agent = superagent.agent(),
-            connected = false,
+        var connected = false,
             disconnected = false,
             res,
             storage,
-            socket,
             project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
             .then(function () {
-                return openSocketIo(server, agent, guestAccount, guestAccount);
-            })
-            .then(function (result) {
                 var deferred = Q.defer();
-                socket = result.socket;
 
-                res = createStorage(null,
-                    result.webgmeToken,
-                    logger,
-                    gmeConfig);
+                res = createStorage(null, null, logger, gmeConfig);
 
                 storage = res.storage;
 
@@ -357,7 +311,7 @@ describe('storage-connection', function () {
                                 if (disconnected && commitStatus.status === STORAGE_CONSTANTS.SYNCED) {
                                     deferred.resolve();
                                 } else {
-                                    deferred.reject('Not synced after commit ' +  commitStatus.status);
+                                    deferred.reject('Not synced after commit ' + commitStatus.status);
                                 }
                             })
                             .catch(deferred.reject);
@@ -381,7 +335,6 @@ describe('storage-connection', function () {
                 return deferred.promise;
             })
             .nodeify(function (err) {
-                socket.disconnect();
                 Q.ninvoke(storage, 'close')
                     .finally(function (err2) {
                         Q.ninvoke(server, 'stop')
@@ -395,26 +348,17 @@ describe('storage-connection', function () {
     it('should reconnect get into sync with commit send to server but acknowledge did not return', function (done) {
         //  Hc
         //  |
-        var agent = superagent.agent(),
-            connected = false,
+        var connected = false,
             disconnected = false,
             res,
             storage,
-            socket,
             project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
             .then(function () {
-                return openSocketIo(server, agent, guestAccount, guestAccount);
-            })
-            .then(function (result) {
                 var deferred = Q.defer();
-                socket = result.socket;
-                res = createStorage(null,
-                    result.webgmeToken,
-                    logger,
-                    gmeConfig);
+                res = createStorage(null, null, logger, gmeConfig);
 
                 storage = res.storage;
 
@@ -452,7 +396,7 @@ describe('storage-connection', function () {
                                 if (disconnected && commitStatus.status === STORAGE_CONSTANTS.SYNCED) {
                                     deferred.resolve();
                                 } else {
-                                    deferred.reject('Not synced after commit ' +  commitStatus.status);
+                                    deferred.reject('Not synced after commit ' + commitStatus.status);
                                 }
                             })
                             .catch(function (err) {
@@ -478,7 +422,6 @@ describe('storage-connection', function () {
                 return deferred.promise;
             })
             .nodeify(function (err) {
-                socket.disconnect();
                 Q.ninvoke(storage, 'close')
                     .finally(function (err2) {
                         Q.ninvoke(server, 'stop')
@@ -493,26 +436,17 @@ describe('storage-connection', function () {
         // This test sets the branch hash using the safe-storage after the first commit.
         //  c
         //  H
-        var agent = superagent.agent(),
-            connected = false,
+        var connected = false,
             disconnected = false,
             res,
             storage,
-            socket,
             project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
             .then(function () {
-                return openSocketIo(server, agent, guestAccount, guestAccount);
-            })
-            .then(function (result) {
                 var deferred = Q.defer();
-                socket = result.socket;
-                res = createStorage(null,
-                    result.webgmeToken,
-                    logger,
-                    gmeConfig);
+                res = createStorage(null, null, logger, gmeConfig);
 
                 storage = res.storage;
 
@@ -559,7 +493,7 @@ describe('storage-connection', function () {
                                 if (disconnected && commitStatus.status === STORAGE_CONSTANTS.FORKED) {
                                     deferred.resolve();
                                 } else {
-                                    deferred.reject('Not FORKED after commit ' +  commitStatus.status);
+                                    deferred.reject('Not FORKED after commit ' + commitStatus.status);
                                 }
                             })
                             .catch(function (err) {
@@ -585,7 +519,6 @@ describe('storage-connection', function () {
                 return deferred.promise;
             })
             .nodeify(function (err) {
-                socket.disconnect();
                 Q.ninvoke(storage, 'close')
                     .finally(function (err2) {
                         Q.ninvoke(server, 'stop')
@@ -598,27 +531,18 @@ describe('storage-connection', function () {
 
     it('should reconnect get into forked with commit send to server but acknowledge did not return 2', function (done) {
         // This test sets the branch hash and makes a commit using the safe-storage after the first commit.
-        var agent = superagent.agent(),
-            connected = false,
+        var connected = false,
             disconnected = false,
             res,
             storage,
-            socket,
             project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
             .then(function () {
-                return openSocketIo(server, agent, guestAccount, guestAccount);
-            })
-            .then(function (result) {
                 var deferred = Q.defer();
-                socket = result.socket;
 
-                res = createStorage(null,
-                    result.webgmeToken,
-                    logger,
-                    gmeConfig);
+                res = createStorage(null, null, logger, gmeConfig);
 
                 storage = res.storage;
 
@@ -673,7 +597,7 @@ describe('storage-connection', function () {
                                 if (disconnected && commitStatus.status === STORAGE_CONSTANTS.FORKED) {
                                     deferred.resolve();
                                 } else {
-                                    deferred.reject('Not FORKED after commit ' +  commitStatus.status);
+                                    deferred.reject('Not FORKED after commit ' + commitStatus.status);
                                 }
                             })
                             .catch(function (err) {
@@ -699,7 +623,6 @@ describe('storage-connection', function () {
                 return deferred.promise;
             })
             .nodeify(function (err) {
-                socket.disconnect();
                 Q.ninvoke(storage, 'close')
                     .finally(function (err2) {
                         Q.ninvoke(server, 'stop')
@@ -711,26 +634,17 @@ describe('storage-connection', function () {
     });
 
     it('should reconnect and commit uncommitted commits', function (done) {
-        var agent = superagent.agent(),
-            connected = false,
+        var connected = false,
             disconnected = false,
             res,
             storage,
-            socket,
             project;
 
         server = WebGME.standaloneServer(gmeConfig);
         Q.ninvoke(server, 'start')
             .then(function () {
-                return openSocketIo(server, agent, guestAccount, guestAccount);
-            })
-            .then(function (result) {
                 var deferred = Q.defer();
-                socket = result.socket;
-                res = createStorage(null,
-                    result.webgmeToken,
-                    logger,
-                    gmeConfig);
+                res = createStorage(null, null, logger, gmeConfig);
 
                 storage = res.storage;
 
@@ -797,7 +711,6 @@ describe('storage-connection', function () {
                 return deferred.promise;
             })
             .nodeify(function (err) {
-                socket.disconnect();
                 Q.ninvoke(storage, 'close')
                     .finally(function (err2) {
                         Q.ninvoke(server, 'stop')
@@ -806,5 +719,74 @@ describe('storage-connection', function () {
                             });
                     });
             });
+    });
+
+    // Document handling
+    describe('document handling', function () {
+        it.skip('should reconnect to same doc room if reconnecting within timeout', function (done) {
+            var connected = false,
+                disconnected = false,
+                docData = {
+                    projectId: ir.project.projectId,
+                    branchName: 'master',
+                    nodeId: '/1',
+                    attrName: 'name',
+                    attrValue: ''
+                },
+                docId,
+                res,
+                storage,
+                project;
+
+            server = WebGME.standaloneServer(gmeConfig);
+            Q.ninvoke(server, 'start')
+                .then(function () {
+                    var deferred = Q.defer();
+                    res = createStorage(null, null, logger, gmeConfig);
+
+                    storage = res.storage;
+
+                    storage.open(function (networkState) {
+                        if (networkState === STORAGE_CONSTANTS.CONNECTED) {
+                            connected = true;
+
+                            storage.watchDocument(docData, testFixture.noop, testFixture.noop)
+                                .then(function (result) {
+                                    docId = result.docId;
+
+                                })
+                                .then(function () {
+                                    return project.makeCommit('b6', [ir.commitHash], ir.rootHash, {}, 'new commit');
+                                })
+                                .catch(deferred.reject);
+                        } else if (networkState === STORAGE_CONSTANTS.DISCONNECTED) {
+                            if (connected === true) {
+                                disconnected = true;
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else if (networkState === STORAGE_CONSTANTS.RECONNECTED) {
+                            if (disconnected === true) {
+                                // All is fine. Wait for the branch status SYNC (could come before this event too).
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else {
+                            deferred.reject(new Error('Unexpected network state: ' + networkState));
+                        }
+                    });
+
+                    return deferred.promise;
+                })
+                .nodeify(function (err) {
+                    Q.ninvoke(storage, 'close')
+                        .finally(function (err2) {
+                            Q.ninvoke(server, 'stop')
+                                .finally(function (err3) {
+                                    done(err || err2 || err3);
+                                });
+                        });
+                });
+        });
     });
 });

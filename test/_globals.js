@@ -808,5 +808,8 @@ exports.loadNode = loadNode;
 exports.compareWebgmexFiles = compareWebgmexFiles;
 exports.getChangedNodesFromPersisted = getChangedNodesFromPersisted;
 exports.getConnectedStorage = getConnectedStorage;
+exports.noop = function () {
+
+};
 
 module.exports = exports;
