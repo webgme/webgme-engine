@@ -64,7 +64,7 @@ describe('OTAttributeEditing Plugin', function () {
         Q.allDone([
             safeStorage.closeDatabase(),
             gmeAuth.unload(),
-            server.stop()
+            Q.ninvoke(server, 'stop')
         ]).nodeify(done);
     });
 
