@@ -11,6 +11,7 @@ var testFixture = require('../../../_globals.js');
 describe('storage document editing', function () {
     'use strict';
     var gmeConfig = testFixture.getGmeConfig(),
+        CONSTANTS = testFixture.requirejs('common/storage/constants'),
         WebGME = testFixture.WebGME,
         Q = testFixture.Q,
         expect = testFixture.expect,
@@ -491,7 +492,7 @@ describe('storage document editing', function () {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
                 users['user2'].docId = docId;
-                // user ends up with "hello there!"
+                // user ends up with "hel there lo"
                 user2.sendDocumentOperation({
                     docId: docId,
                     operation: new ot.TextOperation().retain('hel'.length).insert(' there ').retain('lo'.length)
@@ -588,6 +589,129 @@ describe('storage document editing', function () {
             })
             .catch(function (err) {
                 expect(err.message).to.include('No read access for guest+DocumentEditingProject');
+            })
+            .nodeify(done);
+    });
+
+    // Error handling
+
+    it('should throw error at DOCUMENT_OPERATION if not watching doc', function (done) {
+        var storage,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                storage = res;
+                docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
+                    .substring(CONSTANTS.DOCUMENT_OPERATION.length);
+
+                storage.sendDocumentOperation({
+                    docId: docId,
+                    operation: new ot.TextOperation().retain('hel'.length).insert(' there ').retain('lo'.length)
+                });
+            })
+            .then(function (res) {
+                throw new Error('Should not succeed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('Document not being watched ' + docId);
+            })
+            .nodeify(done);
+    });
+
+    it('should throw error at DOCUMENT_SELECTION if not watching doc', function (done) {
+        var storage,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                storage = res;
+                docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
+                    .substring(CONSTANTS.DOCUMENT_OPERATION.length);
+
+                storage.sendDocumentSelection({
+                    docId: docId,
+                    selection: new ot.Selection({anchor: 0, head: 'hello'.length - 1})
+                });
+            })
+            .then(function (res) {
+                throw new Error('Should not succeed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('Document not being watched ' + docId);
+            })
+            .nodeify(done);
+    });
+
+    it('should resolve with error when trying to watch same document twice', function (done) {
+        var storage,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                storage = res;
+                docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
+                    .substring(CONSTANTS.DOCUMENT_OPERATION.length);
+
+                return storage.watchDocument(initParams, noop, noop);
+            })
+            .then(function (res) {
+                return storage.watchDocument(initParams, noop, noop);
+            })
+            .then(function (res) {
+                throw new Error('Should not succeed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('Document is already being watched ' + docId);
+            })
+            .nodeify(done);
+    });
+
+    it('should resolve with error when unwatching unwatched document', function (done) {
+        var storage,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                storage = res;
+                docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
+                    .substring(CONSTANTS.DOCUMENT_OPERATION.length);
+
+                return storage.unwatchDocument(initParams);
+            })
+            .then(function (res) {
+                throw new Error('Should not succeed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('Document is not being watched ' + docId);
             })
             .nodeify(done);
     });

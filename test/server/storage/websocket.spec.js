@@ -745,6 +745,36 @@ describe('WebSocket', function () {
                 })
                 .nodeify(done);
         });
+        // DOCUMENT
+
+        it('should return error at DOCUMENT_OPERATION/DOCUMENT_SELECTION when not watching document', function (done) {
+            var socket,
+                data = {
+                    docId: 'guest+SomeProject%someBranch%someNodeId%someAttrName'
+                };
+
+            openSocketIo()
+                .then(function (socket_) {
+                    socket = socket_;
+                    return Q.allSettled([
+                        Q.ninvoke(socket, 'emit', CONSTANTS.DOCUMENT_OPERATION, data),
+                        Q.ninvoke(socket, 'emit', CONSTANTS.DOCUMENT_SELECTION, data)
+                    ]);
+                })
+                .then(function (result) {
+                    result.forEach(function (res, i) {
+                        expect(res.state).to.equal('rejected', i);
+                        expect(res.reason).to.include('Client not watching document');
+                    });
+
+                    // Check that we can still e.g. openProject.
+                    return Q.ninvoke(socket, 'emit', 'getConnectionInfo', {webgmeToken: webgmeToken});
+                })
+                .then(function (result) {
+                    expect(result.userId).to.equal(gmeConfig.authentication.guestAccount);
+                })
+                .nodeify(done);
+        });
     });
 
     describe('with valid token as a guest user', function () {

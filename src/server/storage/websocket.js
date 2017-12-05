@@ -274,8 +274,16 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         } else if (roomDividerCnt === 4) {
                             logger.info('Disconnected socket was in document room', roomIds[i]);
                             if (documents.hasOwnProperty(roomIds[i])) {
+                                socket.broadcast.to(roomIds[i]).emit(CONSTANTS.DOCUMENT_SELECTION, {
+                                    docId: roomIds[i],
+                                    socketId: socket.id,
+                                    userId: socket.userId,
+                                    selection: undefined
+                                });
+
                                 userInfo = documents[roomIds[i]].users[socket.id];
                                 documents[roomIds[i]].disconnectedUsers[userInfo.sessionId] = true;
+
                                 delete documents[roomIds[i]].users[socket.id];
 
                                 socket.leave(roomIds[i]);
@@ -1088,14 +1096,14 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             });
                         } else {
                             if (documents.hasOwnProperty(docId) && documents[docId].users.hasOwnProperty(socket.id)) {
-                                delete documents[docId].users[socket.id];
-                                // FIXME: Introduce a special event for this?
                                 socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, {
                                     docId: data.docId,
                                     socketId: socket.id,
                                     userId: socket.userId,
                                     selection: undefined
                                 });
+
+                                delete documents[docId].users[socket.id];
                                 socket.leave(docId);
                                 logger.info('Client left document', docId);
                                 if (Object.keys(documents[docId].users).length === 0) {
@@ -1149,7 +1157,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             throw new Error('Does not have write access to document');
                         }
                     } else {
-                        throw new Error('Client not watching current document');
+                        throw new Error('Client not watching document - cannot send operation!');
                     }
                 } catch (err) {
                     if (gmeConfig.debug) {
@@ -1184,7 +1192,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         done();
 
                     } else {
-                        throw new Error('Client not watching current document');
+                        throw new Error('Client not watching document - cannot send selection!');
                     }
                 } catch (err) {
                     done(err);
