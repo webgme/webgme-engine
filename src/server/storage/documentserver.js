@@ -6,8 +6,7 @@
 
 'use strict';
 
-var //Q = require('q'),
-    ot = require('ot'),
+var ot = require('ot'),
     TextOperation = ot.TextOperation,
     WrappedOperation = ot.WrappedOperation,
     Selection = ot.Selection;
