@@ -278,7 +278,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                     docId: roomIds[i],
                                     socketId: socket.id,
                                     userId: socket.userId,
-                                    selection: undefined
+                                    selection: null
                                 });
 
                                 userInfo = documents[roomIds[i]].users[socket.id];
@@ -1100,7 +1100,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                     docId: data.docId,
                                     socketId: socket.id,
                                     userId: socket.userId,
-                                    selection: undefined
+                                    selection: null
                                 });
 
                                 delete documents[docId].users[socket.id];

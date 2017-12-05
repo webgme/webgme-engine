@@ -165,9 +165,9 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
      * @param {string} data.attrValue
      * @param {function(ot.Operation)} atOperation
      * @param {function} atSelection
-     * @param {ot.Selection} atSelection.selection
-     * @param {string} atSelection.userId
-     * @param {string} atSelection.socketId
+     * @param {ot.Selection | null} atSelection.selection - null is passed when other client leaves.
+     * @param {string} atSelection.userId - name/id of other user
+     * @param {string} atSelection.socketId - unique id fof other user
      * @param {function} [callback]
      * @param {Error | null} callback.err
      * @param {object} callback.data
@@ -201,9 +201,10 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
                     }
                 }
 
-                if (eData.selection && !self.reconnecting) {
+                if (eData.hasOwnProperty('selection') && !self.reconnecting) {
                     atSelection({
-                        selection: otClient.transformSelection(ot.Selection.fromJSON(eData.selection)),
+                        selection: eData.selection ?
+                            otClient.transformSelection(ot.Selection.fromJSON(eData.selection)) : null,
                         socketId: eData.socketId,
                         userId: eData.userId
                     });
@@ -268,7 +269,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
     /**
      *
      * @param {object} data
-     * @param {string} [data.docId] - document id, if not provided projectId, branchName, nodeId, attrName must be.
+     * @param {string} data.docId - document id, if not provided projectId, branchName, nodeId, attrName must be.
      * @param {string} [data.projectId]
      * @param {string} [data.branchName]
      * @param {string} [data.nodeId]

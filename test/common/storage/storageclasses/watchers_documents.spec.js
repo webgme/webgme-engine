@@ -506,6 +506,58 @@ describe('storage document editing', function () {
             .catch(done);
     });
 
+    it('should send empty selection when when unwatching document', function (done) {
+        var user1,
+            user2,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            },
+            cnt = 0;
+
+        Q.allDone([
+            getNewStorage('user1', 'pass'),
+            getNewStorage('user2', 'pass')
+        ])
+            .then(function (res) {
+                user1 = res[0];
+                user2 = res[1];
+
+                return Q.allDone([
+                    user1.watchDocument(initParams, noop, function atSel2(data) {
+                        cnt += 1;
+                        try {
+                            expect(data.selection).to.equal(null);
+                            expect(data.userId).to.equal('user2');
+                            if (cnt === 2) {
+                                done();
+                            }
+                        } catch (e) {
+                            done(e);
+                        }
+                    }),
+                    user2.watchDocument(initParams, noop, noop)
+                ]);
+            })
+            .then(function (res) {
+                docId = res[0].docId;
+                users['user1'].docId = docId;
+
+                return user2.unwatchDocument({docId: docId});
+            })
+            .then(function () {
+                cnt += 1;
+                if (cnt === 2) {
+                    done();
+                }
+            })
+            .catch(done);
+    });
+
     // Read/write access...
     it('should only allow user with read access to receive operations', function (done) {
         var user1,
@@ -677,6 +729,7 @@ describe('storage document editing', function () {
                 return storage.watchDocument(initParams, noop, noop);
             })
             .then(function (res) {
+                users['user1'].docId = res.docId;
                 return storage.watchDocument(initParams, noop, noop);
             })
             .then(function (res) {
