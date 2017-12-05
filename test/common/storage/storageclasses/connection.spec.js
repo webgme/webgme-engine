@@ -9,6 +9,8 @@ describe('storage-connection', function () {
     'use strict';
     var EditorStorage = testFixture.requirejs('common/storage/storageclasses/editorstorage'),
         WebSocket = testFixture.requirejs('common/storage/socketio/websocket'),
+        expect = testFixture.expect,
+        ot = require('ot'),
         socketIO = require('socket.io-client'),
         STORAGE_CONSTANTS = testFixture.requirejs('common/storage/constants'),
         gmeConfig = testFixture.getGmeConfig(),
@@ -723,7 +725,7 @@ describe('storage-connection', function () {
 
     // Document handling
     describe('document handling', function () {
-        it.skip('should reconnect to same doc room if reconnecting within timeout', function (done) {
+        it('should reconnect to same room and send to server if disconnected before send', function (done) {
             var connected = false,
                 disconnected = false,
                 docData = {
@@ -735,8 +737,91 @@ describe('storage-connection', function () {
                 },
                 docId,
                 res,
-                storage,
-                project;
+                storage;
+
+            server = WebGME.standaloneServer(gmeConfig);
+            Q.ninvoke(server, 'start')
+                .then(function () {
+                    var deferred = Q.defer();
+                    res = createStorage(null, null, logger, gmeConfig);
+
+                    storage = res.storage;
+
+                    storage.open(function (networkState) {
+                        if (networkState === STORAGE_CONSTANTS.CONNECTED) {
+                            connected = true;
+
+                            storage.watchDocument(docData, testFixture.noop, testFixture.noop)
+                                .then(function (result) {
+                                    docId = result.docId;
+                                    res.socket.disconnect();
+
+                                    storage.sendDocumentOperation({
+                                        docId: docId,
+                                        operation: new ot.TextOperation().insert('yello')
+                                    });
+
+                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                        ot.Client.AwaitingConfirm).to.equal(true);
+                                })
+                                .catch(deferred.reject);
+                        } else if (networkState === STORAGE_CONSTANTS.DISCONNECTED) {
+                            if (connected === true) {
+                                disconnected = true;
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else if (networkState === STORAGE_CONSTANTS.RECONNECTED) {
+                            if (disconnected === true) {
+                                try {
+                                    // Reconnected should come before the ack of the sent documentation
+                                    // (the document never reached the server since we disconnected before
+                                    // sending it)
+                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                        ot.Client.AwaitingConfirm).to.equal(true);
+                                    storage.unwatchDocument({docId: docId})
+                                        .then(function () {
+                                            deferred.resolve();
+                                        })
+                                        .catch(deferred.reject);
+
+                                } catch (e) {
+                                    deferred.reject(e);
+                                }
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else {
+                            deferred.reject(new Error('Unexpected network state: ' + networkState));
+                        }
+                    });
+
+                    return deferred.promise;
+                })
+                .nodeify(function (err) {
+                    Q.ninvoke(storage, 'close')
+                        .finally(function (err2) {
+                            Q.ninvoke(server, 'stop')
+                                .finally(function (err3) {
+                                    done(err || err2 || err3);
+                                });
+                        });
+                });
+        });
+
+        it('should reconnect to same doc enter synchronized if disconnected after send', function (done) {
+            var connected = false,
+                disconnected = false,
+                docData = {
+                    projectId: ir.project.projectId,
+                    branchName: 'master',
+                    nodeId: '/1',
+                    attrName: 'name',
+                    attrValue: ''
+                },
+                docId,
+                res,
+                storage;
 
             server = WebGME.standaloneServer(gmeConfig);
             Q.ninvoke(server, 'start')
@@ -754,9 +839,19 @@ describe('storage-connection', function () {
                                 .then(function (result) {
                                     docId = result.docId;
 
-                                })
-                                .then(function () {
-                                    return project.makeCommit('b6', [ir.commitHash], ir.rootHash, {}, 'new commit');
+                                    storage.sendDocumentOperation({
+                                        docId: docId,
+                                        operation: new ot.TextOperation().insert('yello')
+                                    });
+
+                                    expect(Object.keys(res.socket.acks).length).to.equal(1);
+                                    // Inject ack function and disconnect when operation made it to the server.
+                                    res.socket.acks[Object.keys(res.socket.acks)[0]] = function () {
+                                        res.socket.disconnect();
+                                    };
+
+                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                        ot.Client.AwaitingConfirm).to.equal(true);
                                 })
                                 .catch(deferred.reject);
                         } else if (networkState === STORAGE_CONSTANTS.DISCONNECTED) {
@@ -767,7 +862,21 @@ describe('storage-connection', function () {
                             }
                         } else if (networkState === STORAGE_CONSTANTS.RECONNECTED) {
                             if (disconnected === true) {
-                                // All is fine. Wait for the branch status SYNC (could come before this event too).
+                                try {
+                                    // Reconnected should come before the ack of the sent documentation
+                                    // (the document never reached the server since we disconnected before
+                                    // sending it)
+                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                        ot.Client.Synchronized).to.equal(true);
+                                    storage.unwatchDocument({docId: docId})
+                                        .then(function () {
+                                            deferred.resolve();
+                                        })
+                                        .catch(deferred.reject);
+
+                                } catch (e) {
+                                    deferred.reject(e);
+                                }
                             } else {
                                 deferred.reject(new Error('Was not connected before reconnected'));
                             }
