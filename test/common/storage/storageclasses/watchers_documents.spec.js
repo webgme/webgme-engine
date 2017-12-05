@@ -406,6 +406,10 @@ describe('storage document editing', function () {
                     user1.watchDocument(initParams, noop, noop),
                     user2.watchDocument(initParams, noop,
                         function atSel2(data) {
+                            cnt += 1;
+                            if (cnt > 1) {
+                                return;
+                            }
                             try {
                                 expect(data.selection.ranges[0].anchor).to.equal(data.selection.ranges[0].head);
                                 expect(data.selection.ranges[0].anchor).to.equal(1 + 'well, '.length);
@@ -475,6 +479,9 @@ describe('storage document editing', function () {
                     user2.watchDocument(initParams, noop,
                         function atSel2(data) {
                             cnt += 1;
+                            if (cnt > 2) {
+                                return;
+                            }
                             try {
                                 expect(data.selection.ranges[0].anchor).to.equal(0);
                                 expect(data.selection.ranges[0].head).to.equal('hel there lo'.length - 1);
@@ -506,7 +513,7 @@ describe('storage document editing', function () {
             .catch(done);
     });
 
-    it('should send empty selection when when unwatching document', function (done) {
+    it('should send empty selection when unwatching document', function (done) {
         var user1,
             user2,
             docId,
@@ -530,6 +537,9 @@ describe('storage document editing', function () {
                 return Q.allDone([
                     user1.watchDocument(initParams, noop, function atSel2(data) {
                         cnt += 1;
+                        if (cnt > 2) {
+                            return;
+                        }
                         try {
                             expect(data.selection).to.equal(null);
                             expect(data.userId).to.equal('user2');
@@ -646,7 +656,6 @@ describe('storage document editing', function () {
     });
 
     // Error handling
-
     it('should throw error at DOCUMENT_OPERATION if not watching doc', function (done) {
         var storage,
             docId,

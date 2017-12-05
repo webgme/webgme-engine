@@ -863,9 +863,7 @@ describe('storage-connection', function () {
                         } else if (networkState === STORAGE_CONSTANTS.RECONNECTED) {
                             if (disconnected === true) {
                                 try {
-                                    // Reconnected should come before the ack of the sent documentation
-                                    // (the document never reached the server since we disconnected before
-                                    // sending it)
+                                    // In should be synchronized since the sent document did indeed reach the server.
                                     expect(storage.watchers.documents[docId].otClient.state instanceof
                                         ot.Client.Synchronized).to.equal(true);
                                     storage.unwatchDocument({docId: docId})
@@ -889,6 +887,116 @@ describe('storage-connection', function () {
                 })
                 .nodeify(function (err) {
                     Q.ninvoke(storage, 'close')
+                        .finally(function (err2) {
+                            Q.ninvoke(server, 'stop')
+                                .finally(function (err3) {
+                                    done(err || err2 || err3);
+                                });
+                        });
+                });
+        });
+
+        it('should reconnect to same room and apply changes made by other client', function (done) {
+            var connected = false,
+                disconnected = false,
+                docData = {
+                    projectId: ir.project.projectId,
+                    branchName: 'master',
+                    nodeId: '/1',
+                    attrName: 'name',
+                    attrValue: ''
+                },
+                opHandlerCalled = false,
+                docId,
+                res,
+                res2,
+                storage,
+                storage2,
+                revision,
+                server = WebGME.standaloneServer(gmeConfig);
+
+            Q.ninvoke(server, 'start')
+                .then(function () {
+                    var deferred = Q.defer();
+                    res = createStorage(null, null, logger, gmeConfig);
+                    res2 = createStorage(null, null, logger, gmeConfig);
+
+                    storage = res.storage;
+                    storage2 = res2.storage;
+
+                    storage.open(function (networkState) {
+                        if (networkState === STORAGE_CONSTANTS.CONNECTED) {
+                            connected = true;
+
+                            storage2.open(function (networkState2) {
+                                if (networkState2 === STORAGE_CONSTANTS.CONNECTED) {
+                                    Q.allDone([
+                                        storage.watchDocument(docData, function atOperation() {
+                                            opHandlerCalled = true;
+                                        }, testFixture.noop),
+                                        storage2.watchDocument(docData, testFixture.noop, testFixture.noop)
+                                    ])
+                                        .then(function (result) {
+                                            docId = result[0].docId;
+                                            storage2.sendDocumentOperation({
+                                                docId: docId,
+                                                operation: new ot.TextOperation().insert('yello')
+                                            });
+
+                                            revision = storage.watchers.documents[docId].otClient.revision;
+
+                                            res.socket.disconnect();
+                                        })
+                                        .catch(deferred.reject);
+                                }
+                            });
+                        } else if (networkState === STORAGE_CONSTANTS.DISCONNECTED) {
+                            if (connected === true) {
+                                disconnected = true;
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else if (networkState === STORAGE_CONSTANTS.RECONNECTED) {
+                            if (disconnected === true) {
+                                try {
+                                    // In should be synchronized since the operation from the other client
+                                    // should be retrieved at rejoin.
+                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                        ot.Client.Synchronized).to.equal(true);
+
+                                    expect(storage.watchers.documents[docId].otClient.revision).to.equal(revision + 1,
+                                        'Other clients change was not retrieved after rejoin.');
+                                    Q.allDone([
+                                        storage.unwatchDocument({docId: docId}),
+                                        storage2.unwatchDocument({docId: docId})
+                                    ])
+                                        .then(function () {
+                                            if (opHandlerCalled) {
+                                                deferred.resolve();
+                                            } else {
+                                                throw new Error('Operation handler was never called!');
+                                            }
+                                        })
+                                        .catch(deferred.reject);
+
+                                } catch (e) {
+                                    deferred.reject(e);
+                                }
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else {
+                            deferred.reject(new Error('Unexpected network state: ' + networkState));
+                        }
+                    });
+
+                    return deferred.promise;
+                })
+                .nodeify(function (err) {
+                    Q.allDone([
+                        Q.ninvoke(storage, 'close'),
+                        Q.ninvoke(storage2, 'close')
+                    ])
                         .finally(function (err2) {
                             Q.ninvoke(server, 'stop')
                                 .finally(function (err3) {
