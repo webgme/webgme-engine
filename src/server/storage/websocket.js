@@ -1034,6 +1034,10 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             data.nodeId,
                             data.attrName].join(CONSTANTS.ROOM_DIVIDER) : data.docId;
 
+                        if (!gmeConfig.documentEditing.enable) {
+                            throw new Error('Document editing is disabled from gmeConfig!');
+                        }
+
                         logger.info('watchDocument', docId, 'join?', data.join, 'rejoin?', data.rejoin);
 
                         if (data.join === true) {

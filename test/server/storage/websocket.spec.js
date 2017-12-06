@@ -745,8 +745,8 @@ describe('WebSocket', function () {
                 })
                 .nodeify(done);
         });
-        // DOCUMENT
 
+        // DOCUMENT
         it('should return error at DOCUMENT_OPERATION/DOCUMENT_SELECTION when not watching document', function (done) {
             var socket,
                 data = {
@@ -772,6 +772,25 @@ describe('WebSocket', function () {
                 })
                 .then(function (result) {
                     expect(result.userId).to.equal(gmeConfig.authentication.guestAccount);
+                })
+                .nodeify(done);
+        });
+
+        it('should return error at rejoin when no read access', function (done) {
+            var socket;
+
+            openSocketIo()
+                .then(function (socket_) {
+                    socket = socket_;
+                    return Q.ninvoke(socket, 'emit', 'watchDocument', {
+                        projectId: 'guest+SomeProject',
+                        docId: 'guest+SomeProject%someBranch%someNodeId%someAttrName',
+                        rejoin: true,
+                        webgmeToken: webgmeToken
+                    });
+                })
+                .catch(function (errStr) {
+                    expect(errStr).to.include('No longer has read access to guest+SomeProject');
                 })
                 .nodeify(done);
         });

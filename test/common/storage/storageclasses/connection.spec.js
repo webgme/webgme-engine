@@ -1179,5 +1179,56 @@ describe('storage-connection', function () {
                         });
                 });
         });
+
+        it('should fail to watch document when disabled', function (done) {
+            var docData = {
+                    projectId: ir.project.projectId,
+                    branchName: 'master',
+                    nodeId: '/1',
+                    attrName: 'name',
+                    attrValue: ''
+                },
+                res,
+                storage,
+                modifiedConfig = JSON.parse(JSON.stringify(gmeConfig));
+
+            modifiedConfig.documentEditing.enable = false;
+
+            server = WebGME.standaloneServer(modifiedConfig);
+            Q.ninvoke(server, 'start')
+                .then(function () {
+                    var deferred = Q.defer();
+                    res = createStorage(null, null, logger, modifiedConfig);
+
+                    storage = res.storage;
+
+                    storage.open(function (networkState) {
+                        if (networkState === STORAGE_CONSTANTS.CONNECTED) {
+                            storage.watchDocument(docData, testFixture.noop, testFixture.noop)
+                                .then(function () {
+                                    throw new Error('Should have failed!');
+                                })
+                                .catch(function (err) {
+                                    expect(err.message).to.include('Document editing is disabled from gmeConfig');
+                                })
+                                .then(deferred.resolve)
+                                .catch(deferred.reject);
+                        } else {
+                            deferred.reject(new Error('Unexpected network state: ' + networkState));
+                        }
+                    });
+
+                    return deferred.promise;
+                })
+                .nodeify(function (err) {
+                    Q.ninvoke(storage, 'close')
+                        .finally(function (err2) {
+                            Q.ninvoke(server, 'stop')
+                                .finally(function (err3) {
+                                    done(err || err2 || err3);
+                                });
+                        });
+                });
+        });
     });
 });

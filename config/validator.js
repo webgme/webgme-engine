@@ -159,7 +159,7 @@ function validateConfig(configOrFileName) {
 
     expectedKeys.push('documentEditing');
     assertObject('config.documentEditing', config.documentEditing);
-    assertBoolean('config.enable', config.documentEditing.enable);
+    assertBoolean('config.documentEditing.enable', config.documentEditing.enable, true);
     assertNumber('config.documentEditing.disconnectTimeout', config.documentEditing.disconnectTimeout);
 
     // executor
