@@ -64,7 +64,7 @@ describe('storage-connection', function () {
             .nodeify(done);
     });
 
-    function createStorage(hostUrl, webgmeToken, logger, gmeConfig) {
+    function createStorage(hostUrl, webgmeToken, logger, gmeConfig, timeout) {
         var ioClient,
             webSocket,
             result = {
@@ -81,7 +81,6 @@ describe('storage-connection', function () {
 
             this.connect = function (callback) {
                 var socketIoOptions = JSON.parse(JSON.stringify(gmeConfig.socketIO.clientOptions));
-
                 if (webgmeToken) {
                     socketIoOptions.extraHeaders = {
                         Cookies: 'access_token=' + webgmeToken
@@ -91,6 +90,12 @@ describe('storage-connection', function () {
                 logger.debug('Connecting to "' + host + '" with options', {metadata: socketIoOptions});
 
                 result.socket = socketIO.connect(host, socketIoOptions);
+                if (socketIoOptions.autoConnect === false) {
+                    setTimeout(function () {
+                        result.socket.open();
+                    }, timeout || 0);
+                }
+
                 callback(null, result.socket);
             };
 
@@ -982,6 +987,175 @@ describe('storage-connection', function () {
                                 } catch (e) {
                                     deferred.reject(e);
                                 }
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else {
+                            deferred.reject(new Error('Unexpected network state: ' + networkState));
+                        }
+                    });
+
+                    return deferred.promise;
+                })
+                .nodeify(function (err) {
+                    Q.allDone([
+                        Q.ninvoke(storage, 'close'),
+                        Q.ninvoke(storage2, 'close')
+                    ])
+                        .finally(function (err2) {
+                            Q.ninvoke(server, 'stop')
+                                .finally(function (err3) {
+                                    done(err || err2 || err3);
+                                });
+                        });
+                });
+        });
+
+        it('should fail to reconnect after disconnectTimeout and trigger CONNECTION_ERROR', function (done) {
+            var connected = false,
+                disconnected = false,
+                docData = {
+                    projectId: ir.project.projectId,
+                    branchName: 'master',
+                    nodeId: '/1',
+                    attrName: 'name',
+                    attrValue: ''
+                },
+                docId,
+                res,
+                storage,
+                modifiedConfig = JSON.parse(JSON.stringify(gmeConfig));
+
+            modifiedConfig.socketIO.clientOptions.autoConnect = false;
+            modifiedConfig.documentEditing.disconnectTimeout = 10;
+
+            server = WebGME.standaloneServer(modifiedConfig);
+            Q.ninvoke(server, 'start')
+                .then(function () {
+                    var deferred = Q.defer();
+                    res = createStorage(null, null, logger, modifiedConfig, 100);
+
+                    storage = res.storage;
+
+                    storage.open(function (networkState) {
+                        if (networkState === STORAGE_CONSTANTS.CONNECTED) {
+                            connected = true;
+
+                            storage.watchDocument(docData, testFixture.noop, testFixture.noop)
+                                .then(function (result) {
+                                    docId = result.docId;
+
+                                    res.socket.disconnect();
+
+                                    storage.sendDocumentOperation({
+                                        docId: docId,
+                                        operation: new ot.TextOperation().insert('yello')
+                                    });
+
+                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                        ot.Client.AwaitingConfirm).to.equal(true);
+                                })
+                                .catch(deferred.reject);
+                        } else if (networkState === STORAGE_CONSTANTS.DISCONNECTED) {
+                            if (connected === true) {
+                                disconnected = true;
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else if (networkState === STORAGE_CONSTANTS.CONNECTION_ERROR) {
+                            if (disconnected === true) {
+                                deferred.resolve();
+                            } else {
+                                deferred.reject(new Error('Was not connected before CONNECTION_ERROR'));
+                            }
+                        } else {
+                            deferred.reject(new Error('Unexpected network state: ' + networkState));
+                        }
+                    });
+
+                    return deferred.promise;
+                })
+                .nodeify(function (err) {
+                    Q.ninvoke(storage, 'close')
+                        .finally(function (err2) {
+                            Q.ninvoke(server, 'stop')
+                                .finally(function (err3) {
+                                    done(err || err2 || err3);
+                                });
+                        });
+                });
+        });
+
+        // Consider skipping this test on travis/appveyor as it depends on timeouts..
+        it('should fail to reconnect same room if closed and opened by other client', function (done) {
+            var connected = false,
+                disconnected = false,
+                docData = {
+                    projectId: ir.project.projectId,
+                    branchName: 'master',
+                    nodeId: '/1',
+                    attrName: 'name',
+                    attrValue: ''
+                },
+                docId,
+                res,
+                res2,
+                storage,
+                storage2,
+                server,
+                modifiedConfig = JSON.parse(JSON.stringify(gmeConfig));
+
+            this.timeout(5000);
+
+            modifiedConfig.socketIO.clientOptions.autoConnect = false;
+            modifiedConfig.documentEditing.disconnectTimeout = 10;
+
+            server = WebGME.standaloneServer(modifiedConfig);
+
+            Q.ninvoke(server, 'start')
+                .then(function () {
+                    var deferred = Q.defer();
+                    res = createStorage(null, null, logger, modifiedConfig, 300);
+                    res2 = createStorage(null, null, logger, modifiedConfig, 10);
+
+                    storage = res.storage;
+                    storage2 = res2.storage;
+
+                    storage.open(function (networkState) {
+                        if (networkState === STORAGE_CONSTANTS.CONNECTED) {
+                            connected = true;
+
+                            storage2.open(function (networkState2) {
+                                if (networkState2 === STORAGE_CONSTANTS.CONNECTED) {
+                                    // 1. Client 1 opens the document.
+                                    storage.watchDocument(docData, testFixture.noop, testFixture.noop)
+                                        .then(function (result) {
+                                            docId = result.docId;
+                                            // 2. Client 1 gets disconnected and removal triggered on server.
+                                            res.socket.disconnect();
+                                        })
+                                        .catch(deferred.reject);
+                                } else {
+                                    deferred.reject(new Error('Unexpected network state: ' + networkState2));
+                                }
+                            });
+                        } else if (networkState === STORAGE_CONSTANTS.DISCONNECTED) {
+                            if (connected === true) {
+                                disconnected = true;
+                                // 3. Wait till the document has been closed (100 > 10 ms)
+                                // and open it with Client 2
+                                setTimeout(function () {
+                                    storage2.watchDocument(docData, testFixture.noop, testFixture.noop);
+                                }, 100);
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else if (networkState === STORAGE_CONSTANTS.CONNECTION_ERROR) {
+                            // 4. Client 1 should get an error at reconnect.
+                            if (disconnected === true) {
+                                storage2.unwatchDocument({docId: docId})
+                                    .then(deferred.resolve)
+                                    .catch(deferred.reject);
                             } else {
                                 deferred.reject(new Error('Was not connected before reconnected'));
                             }

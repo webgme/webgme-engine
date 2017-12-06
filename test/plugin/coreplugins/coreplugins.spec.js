@@ -133,7 +133,7 @@ describe('CorePlugins', function () {
         var agent = superagent.agent();
 
         agent.get(serverBaseUrl + '/api/plugins', function (err, res) {
-            expect(err).to.equal(null);
+            expect(err).to.equal(null, err && err.message);
             // As pluginNames contains unique names, we can check that each is
             // in the response and the response is the proper length
             expect(res.body.length).to.equal(pluginNames.length);  // ensures that we test all available core plugins

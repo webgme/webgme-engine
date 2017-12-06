@@ -182,6 +182,22 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         return deferred.promise;
     }
 
+    function triggerDocumentRemoval(docId) {
+        if (Object.keys(documents[docId].users).length === 0) {
+            logger.info('No more connected sockets in document ...');
+            if (Object.keys(documents[docId].disconnectedUsers).length === 0) {
+                logger.info('... no disconnectedUsers either will close the document.');
+                delete documents[docId];
+            } else {
+                logger.info('.. there are disconnected users - setting timeout to close doc',
+                    gmeConfig.documentEditing.disconnectTimeout);
+                documents[docId].timeoutId = setTimeout(function () {
+                    delete documents[docId];
+                }, gmeConfig.documentEditing.disconnectTimeout);
+            }
+        }
+    }
+
     storage.addEventListener(CONSTANTS.PROJECT_DELETED, function (_s, data) {
         getEmitter(data).to(CONSTANTS.DATABASE_ROOM).emit(CONSTANTS.PROJECT_DELETED, data);
     });
@@ -251,7 +267,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 var i,
                     roomIds,
                     projectIdBranchName,
-                    userInfo,
+                    document,
                     roomDividerCnt;
 
                 if (webSocket) {
@@ -274,6 +290,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         } else if (roomDividerCnt === 4) {
                             logger.info('Disconnected socket was in document room', roomIds[i]);
                             if (documents.hasOwnProperty(roomIds[i])) {
+                                document = documents[roomIds[i]];
                                 socket.broadcast.to(roomIds[i]).emit(CONSTANTS.DOCUMENT_SELECTION, {
                                     docId: roomIds[i],
                                     socketId: socket.id,
@@ -281,22 +298,13 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                     selection: null
                                 });
 
-                                userInfo = documents[roomIds[i]].users[socket.id];
-                                documents[roomIds[i]].disconnectedUsers[userInfo.sessionId] = true;
+                                document.disconnectedUsers[document.users[socket.id].sessionId] = true;
 
-                                delete documents[roomIds[i]].users[socket.id];
+                                delete document.users[socket.id];
 
                                 socket.leave(roomIds[i]);
                                 logger.info('socket left document room.');
-
-                                if (Object.keys(documents[roomIds[i]].users).length === 0) {
-                                    logger.info('No more connected sockets in document  - setting timeout to remove',
-                                        gmeConfig.documentEditing.disconnectTimeout);
-
-                                    documents[roomIds[i]].timeoutId = setTimeout(function () {
-                                        delete documents[roomIds[i]];
-                                    }, gmeConfig.documentEditing.disconnectTimeout);
-                                }
+                                triggerDocumentRemoval(roomIds[i]);
                             } else {
                                 logger.error('No document server object for active room');
                             }
@@ -1067,6 +1075,11 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 throw new Error('No longer has read access to ' + data.projectId);
                             }
 
+                            // The document will be removed after config.documentEditing.disconnectTimeout
+                            // (default is 20 seconds) when a socket left without leaving the room.
+                            // To prohibit disconnected users to overwrite changes while they were
+                            // disconnected - at reconnect they are rejected (the UI should clearly notify
+                            // that edits made while disconnected could be lost).
                             if (documents.hasOwnProperty(docId) === false) {
                                 throw new Error('Document room was closed ' + docId);
                             } else if (documents[docId].disconnectedUsers.hasOwnProperty(data.sessionId) === false) {
@@ -1106,19 +1119,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 delete documents[docId].users[socket.id];
                                 socket.leave(docId);
                                 logger.info('Client left document', docId);
-                                if (Object.keys(documents[docId].users).length === 0) {
-                                    logger.info('No more connected sockets in document ...');
-                                    if (Object.keys(documents[docId].disconnectedUsers).length === 0) {
-                                        logger.info('... no disconnectedUsers either will close the document.');
-                                        delete documents[docId];
-                                    } else {
-                                        logger.info('.. there are disconnected users - setting timeout to close doc',
-                                            gmeConfig.documentEditing.disconnectTimeout);
-                                        documents[docId].timeoutId = setTimeout(function () {
-                                            delete documents[docId];
-                                        }, gmeConfig.documentEditing.disconnectTimeout);
-                                    }
-                                }
+                                triggerDocumentRemoval(docId);
+
                                 callback();
                             } else {
                                 logger.warn('Client was never watching document', docId);
