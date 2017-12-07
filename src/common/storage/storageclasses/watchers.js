@@ -179,14 +179,16 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
      */
     StorageWatcher.prototype.watchDocument = function (data, atOperation, atSelection, callback) {
         var self = this,
-            deferred = Q.defer(),
             docUpdateEventName = this.webSocket.getDocumentUpdatedEventName(data),
             docSelectionEventName = this.webSocket.getDocumentSelectionEventName(data),
-            docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length);
+            docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length),
+            deferred;
 
         if (this.watchers.documents.hasOwnProperty(docId)) {
-            return Q.reject(new Error('Document is already being watched ' + docId));
+            return Q.reject(new Error('Document is already being watched ' + docId)).nodeify(callback);
         }
+
+        deferred = Q.defer();
 
         this.logger.debug('watchDocument - handler added for project', data);
         this.watchers.documents[docId] = {
@@ -306,15 +308,19 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CO
 
             delete this.watchers.documents[data.docId];
 
-            // Finally exit socket.io room on server.
-            data.join = false;
-            this.webSocket.watchDocument(data, function (err) {
-                if (err) {
-                    deferred.reject(err);
-                } else {
-                    deferred.resolve();
-                }
-            });
+            // Finally exit socket.io room on server if connected.
+            if (this.connected) {
+                data.join = false;
+                this.webSocket.watchDocument(data, function (err) {
+                    if (err) {
+                        deferred.reject(err);
+                    } else {
+                        deferred.resolve();
+                    }
+                });
+            } else {
+                deferred.resolve();
+            }
         }
 
         return deferred.promise.nodeify(callback);

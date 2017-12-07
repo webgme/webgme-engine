@@ -1058,14 +1058,18 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 clearTimeout(documents[docId].timeoutId);
                             }
 
-                            documents[docId].users[socket.id] = {
-                                socketId: socket.id,
-                                sessionId: data.sessionId,
-                                userId: socket.userId,
-                                access: access
-                            };
+                            if (documents[docId].users.hasOwnProperty(socket.id) === false) {
+                                documents[docId].users[socket.id] = {
+                                    socketId: socket.id,
+                                    sessionId: data.sessionId,
+                                    userId: socket.userId,
+                                    access: access
+                                };
 
-                            socket.join(docId);
+                                socket.join(docId);
+                            } else {
+                                logger.warn('socket trying to join same document again..', docId);
+                            }
 
                             callback(null, {
                                 docId: docId,
