@@ -9,7 +9,7 @@ define([
     'plugin/PluginConfig',
     'text!./metadata.json',
     'plugin/PluginBase',
-    'ot',
+    'webgme-ot',
     'q'
 ], function (PluginConfig,
              pluginMetadata,
