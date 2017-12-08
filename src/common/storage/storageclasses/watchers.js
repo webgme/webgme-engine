@@ -7,7 +7,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-define(['common/storage/constants', 'q', 'common/util/guid', 'ot'], function (CONSTANTS, Q, GUID, ot) {
+define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], function (CONSTANTS, Q, GUID, ot) {
     'use strict';
 
     function StorageWatcher(webSocket, logger, gmeConfig) {

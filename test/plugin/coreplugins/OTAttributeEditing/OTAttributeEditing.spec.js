@@ -16,7 +16,7 @@ describe('OTAttributeEditing Plugin', function () {
         expect = testFixture.expect,
         logger = testFixture.logger.fork('watchers.spec'),
         projectName = 'OTAttributeEditingPlugin',
-        ot = require('ot'),
+        ot = require('webgme-ot'),
         server,
         wr,
         ir,

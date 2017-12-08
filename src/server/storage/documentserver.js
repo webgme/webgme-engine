@@ -6,7 +6,7 @@
 
 'use strict';
 
-var ot = require('ot'),
+var ot = require('webgme-ot'),
     TextOperation = ot.TextOperation,
     WrappedOperation = ot.WrappedOperation,
     Selection = ot.Selection;

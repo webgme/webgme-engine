@@ -184,12 +184,12 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
     function triggerDocumentRemoval(docId) {
         if (Object.keys(documents[docId].users).length === 0) {
-            logger.info('No more connected sockets in document ...');
+            logger.debug('No more connected sockets in document ...');
             if (Object.keys(documents[docId].disconnectedUsers).length === 0) {
-                logger.info('... no disconnectedUsers either will close the document.');
+                logger.debug('... no disconnectedUsers either will close the document.');
                 delete documents[docId];
             } else {
-                logger.info('.. there are disconnected users - setting timeout to close doc',
+                logger.debug('.. there are disconnected users - setting timeout to close doc',
                     gmeConfig.documentEditing.disconnectTimeout);
                 documents[docId].timeoutId = setTimeout(function () {
                     delete documents[docId];
@@ -288,7 +288,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                     logger.error(err);
                                 });
                         } else if (roomDividerCnt === 4) {
-                            logger.info('Disconnected socket was in document room', roomIds[i]);
+                            logger.debug('Disconnected socket was in document room', roomIds[i]);
                             if (documents.hasOwnProperty(roomIds[i])) {
                                 document = documents[roomIds[i]];
                                 socket.broadcast.to(roomIds[i]).emit(CONSTANTS.DOCUMENT_SELECTION, {
@@ -303,7 +303,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 delete document.users[socket.id];
 
                                 socket.leave(roomIds[i]);
-                                logger.info('socket left document room.');
+                                logger.debug('socket left document room.');
                                 triggerDocumentRemoval(roomIds[i]);
                             } else {
                                 logger.error('No document server object for active room');
@@ -1038,7 +1038,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             throw new Error('Document editing is disabled from gmeConfig!');
                         }
 
-                        logger.info('watchDocument', docId, 'join?', data.join, 'rejoin?', data.rejoin);
+                        logger.debug('watchDocument', docId, 'join?', data.join, 'rejoin?', data.rejoin);
 
                         if (data.join === true) {
                             if (!access.read) {
@@ -1047,7 +1047,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             }
 
                             if (documents.hasOwnProperty(docId) === false) {
-                                logger.info('First user joining document, will create it..');
+                                logger.debug('First user joining document, will create it..');
                                 documents[docId] = {
                                     otServer: new DocumentServer(logger, data.attrValue, docId, gmeConfig),
                                     users: {},
@@ -1126,7 +1126,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
                                 delete documents[docId].users[socket.id];
                                 socket.leave(docId);
-                                logger.info('Client left document', docId);
+                                logger.debug('Client left document', docId);
                                 triggerDocumentRemoval(docId);
 
                                 callback();

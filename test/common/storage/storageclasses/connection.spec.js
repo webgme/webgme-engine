@@ -10,7 +10,7 @@ describe('storage-connection', function () {
     var EditorStorage = testFixture.requirejs('common/storage/storageclasses/editorstorage'),
         WebSocket = testFixture.requirejs('common/storage/socketio/websocket'),
         expect = testFixture.expect,
-        ot = require('ot'),
+        ot = require('webgme-ot'),
         socketIO = require('socket.io-client'),
         STORAGE_CONSTANTS = testFixture.requirejs('common/storage/constants'),
         gmeConfig = testFixture.getGmeConfig(),

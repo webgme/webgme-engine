@@ -19,7 +19,7 @@ describe('storage document editing', function () {
         users = {},
         userTokens = {},
         projectName = 'DocumentEditingProject',
-        ot = require('ot'),
+        ot = require('webgme-ot'),
         noop = testFixture.noop,
         server,
         gmeAuth,
