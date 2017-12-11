@@ -123,6 +123,13 @@ ubuntu
 - `config.debug = false`
  - If true will add extra debug messages.
 
+##### documentEditing
+
+- `config.documentEditing.enable = true`
+ - Set to false to disable channels for document editing.
+- `config.documentEditing.disconnectTimeout = 20000`
+ - In milliseconds, the amount of time to keep a document channel with only disconnected users open.
+ 
 ##### executor
 
 - `config.executor.enable = false`
