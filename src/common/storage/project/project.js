@@ -120,7 +120,7 @@ define([
          * @param {string} atSelection.data.userId - name/id of other user
          * @param {string} atSelection.data.socketId - unique id of other user
          * @param {function} [callback]
-         * @param {Error | null} callback.err - If it failed to watch the document
+         * @param {Error | null} callback.err - If failed to watch the document
          * @param {object} callback.data
          * @param {string} callback.data.docId - Id of document
          * @param {string} callback.data.document - Current document on server
@@ -141,6 +141,7 @@ define([
          * @param {string} [data.nodeId]
          * @param {string} [data.attrName]
          * @param {function} [callback]
+         * @param {Error | null} callback.err - If failed to unwatch the document
          * @returns {Promise}
          */
         this.unwatchDocument = function (data, callback) {
