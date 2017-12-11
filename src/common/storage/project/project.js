@@ -105,11 +105,44 @@ define([
                 .nodeify(callback);
         };
 
+        /**
+         * Start watching the document at the provided context.
+         * @param {object} data
+         * @param {string} data.branchName
+         * @param {string} data.nodeId
+         * @param {string} data.attrName
+         * @param {string} data.attrValue - If the first client entering the document the value will be used
+         * @param {function} atOperation - Triggered when other clients' operations were applied
+         * @param {ot.Operation} atOperation.operation - Triggered when other clients made changes
+         * @param {function} atSelection - Triggered when other clients send their selection info
+         * @param {object} atSelection.data
+         * @param {ot.Selection | null} atSelection.data.selection - null is passed when other client leaves
+         * @param {string} atSelection.data.userId - name/id of other user
+         * @param {string} atSelection.data.socketId - unique id of other user
+         * @param {function} [callback]
+         * @param {Error | null} callback.err - If it failed to watch the document
+         * @param {object} callback.data
+         * @param {string} callback.data.docId - Id of document
+         * @param {string} callback.data.document - Current document on server
+         * @param {number} callback.data.revision - Revision at server when connecting
+         * @param {object} callback.data.users - Users that were connected when connecting
+         * @returns {Promise}
+         */
         this.watchDocument = function (data, atOperation, atSelection, callback) {
             data.projectId = self.projectId;
             return storage.watchDocument(data, atOperation, atSelection).nodeify(callback);
         };
 
+        /**
+         * Stop watching the document.
+         * @param {object} data
+         * @param {string} data.docId - document id, if not provided branchName, nodeId, attrName must be.
+         * @param {string} [data.branchName]
+         * @param {string} [data.nodeId]
+         * @param {string} [data.attrName]
+         * @param {function} [callback]
+         * @returns {Promise}
+         */
         this.unwatchDocument = function (data, callback) {
             if (!data.docId) {
                 data.projectId = self.projectId;
@@ -118,10 +151,23 @@ define([
             return storage.unwatchDocument(data).nodeify(callback);
         };
 
+        /**
+         * Send operation made, and optionally selection, on document at docId.
+         * @param {object} data
+         * @param {string} data.docId
+         * @param {ot.TextOperation} data.operation
+         * @param {ot.Selection} [data.selection]
+         */
         this.sendDocumentOperation = function (data) {
             return storage.sendDocumentOperation(data);
         };
 
+        /**
+         * Send selection on document at docId. (Will only be transmitted if client is Synchronized.)
+         * @param {object} data
+         * @param {string} data.docId
+         * @param {ot.Selection} data.selection
+         */
         this.sendDocumentSelection = function (data) {
             return storage.sendDocumentSelection(data);
         };

@@ -156,25 +156,27 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
     };
 
     /**
-     * 
+     * Start watching the document at the provided context.
      * @param {object} data
      * @param {string} data.projectId
      * @param {string} data.branchName
      * @param {string} data.nodeId
      * @param {string} data.attrName
-     * @param {string} data.attrValue
-     * @param {function(ot.Operation)} atOperation
-     * @param {function} atSelection
-     * @param {ot.Selection | null} atSelection.selection - null is passed when other client leaves.
-     * @param {string} atSelection.userId - name/id of other user
-     * @param {string} atSelection.socketId - unique id fof other user
+     * @param {string} data.attrValue - If the first client entering the document the value will be used
+     * @param {function} atOperation - Triggered when other clients made changes
+     * @param {ot.Operation} atOperation.operation - Triggered when other clients' operations were applied
+     * @param {function} atSelection - Triggered when other clients send their selection info
+     * @param {object} atSelection.data
+     * @param {ot.Selection | null} atSelection.data.selection - null is passed when other client leaves
+     * @param {string} atSelection.data.userId - name/id of other user
+     * @param {string} atSelection.data.socketId - unique id of other user
      * @param {function} [callback]
-     * @param {Error | null} callback.err
+     * @param {Error | null} callback.err - If it failed to watch the document
      * @param {object} callback.data
-     * @param {string} callback.data.docId
-     * @param {string} callback.data.document
-     * @param {number} callback.data.revision
-     * @param {object} callback.data.users
+     * @param {string} callback.data.docId - Id of document
+     * @param {string} callback.data.document - Current document on server
+     * @param {number} callback.data.revision - Revision at server when connecting
+     * @param {object} callback.data.users - Users that were connected when connecting
      * @returns {Promise}
      */
     StorageWatcher.prototype.watchDocument = function (data, atOperation, atSelection, callback) {
@@ -269,15 +271,16 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
     };
 
     /**
-     *
+     * Stop watching the document.
      * @param {object} data
      * @param {string} data.docId - document id, if not provided projectId, branchName, nodeId, attrName must be.
      * @param {string} [data.projectId]
      * @param {string} [data.branchName]
      * @param {string} [data.nodeId]
      * @param {string} [data.attrName]
-     * @param callback
-     * @returns {*}
+     * @param {function} [callback]
+     * @param {Error | null} callback.err - If it failed to unwatch the document
+     * @returns {Promise}
      */
     StorageWatcher.prototype.unwatchDocument = function (data, callback) {
         var deferred = Q.defer(),
@@ -327,7 +330,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
     };
 
     /**
-     *
+     * Send operation made, and optionally selection, on document at docId.
      * @param {object} data
      * @param {string} data.docId
      * @param {ot.TextOperation} data.operation
@@ -347,7 +350,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
     };
 
     /**
-     *
+     * Send selection on document at docId. (Will only be transmitted if client is Synchronized.)
      * @param {object} data
      * @param {string} data.docId
      * @param {ot.Selection} data.selection
