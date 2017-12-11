@@ -581,6 +581,10 @@ describe('Library core ', function () {
 
         core.setGuid(metaNodes['/L/I'], 'any')
             .then(function () {
+                throw new Error('Should have failed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('Parameter \'guid\' is not a valid GUID');
                 expect(core.getGuid(metaNodes['/L/I'])).to.equal(oldGuid);
             })
             .nodeify(done);
