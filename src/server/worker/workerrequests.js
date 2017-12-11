@@ -284,11 +284,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
     function _getSeedFromFile(name, webgmeToken) {
         return _findSeedFilename(name)
             .then(function (filename) {
-                var blobClient,
-                    deferred;
+                var blobClient;
 
                 if (filename.toLowerCase().indexOf('.webgmex') > -1) {
-                    deferred = Q.defer();
 
                     if (filename.toLowerCase().indexOf('.webgmex') > -1) {
                         logger.debug('Found .webgmex seed at:', filename);
@@ -296,30 +294,24 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                     blobClient = getBlobClient(webgmeToken);
 
-                    _addZippedExportToBlob(filename, blobClient)
-                        .then(function (projectStr) {
-                            var jsonProject = JSON.parse(projectStr);
-
-                            if (typeof jsonProject.kind !== 'string') {
-                                jsonProject.kind = name;
-                                logger.debug('Seed did not define a kind, the seed-name [' + name + '] will be used ' +
-                                    'as kind for new project.');
-                            }
-
-                            deferred.resolve(JSON.stringify({
-                                seed: jsonProject,
-                                msg: 'Seeded project from file-seed ' + name + '.webgmex.'
-                            }));
-                        })
-                        .catch(deferred.reject);
-
-                    return deferred.promise;
+                    return _addZippedExportToBlob(filename, blobClient);
                 } else {
                     throw new Error('Unexpected file');
                 }
             })
-            .then(function (jsonStr) {
-                return JSON.parse(jsonStr);
+            .then(function (projectStr) {
+                var jsonProject = JSON.parse(projectStr);
+
+                if (typeof jsonProject.kind !== 'string') {
+                    jsonProject.kind = name;
+                    logger.debug('Seed did not define a kind, the seed-name [' + name + '] will be used ' +
+                        'as kind for new project.');
+                }
+
+                return {
+                    seed: jsonProject,
+                    msg: 'Seeded project from file-seed ' + name + '.webgmex.'
+                };
             });
     }
 
@@ -1070,6 +1062,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} parameters.branchName
      * @param {string} parameters.libraryName
      * @param {string} [parameters.blobHash] - Add from an uploaded file.
+     * @param {string} [parameters.seed] - Add from a seed on the server.
      * @param {object} [parameters.libraryInfo] - Add from an existing project.
      * @param {string} [parameters.libraryInfo.projectId] - if libraryInfo, projectId must be given.
      * @param {string} [parameters.libraryInfo.branchName] - if libraryInfo and not commitHash, it must be given.
@@ -1132,6 +1125,12 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                             }
                         );
                     }
+                } else if (parameters.seed) {
+                    _getSeedFromFile(parameters.seed, webgmeToken)
+                        .then(function (res) {
+                            deferred.resolve(res.seed);
+                        })
+                        .catch(deferred.reject);
                 } else {
                     deferred.reject(new Error('Missing information about the library to add.'));
                 }
@@ -1147,14 +1146,11 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             })
             .then(function (/*commitResult*/) {
 
-                return Q.nfcall(context.core.addLibrary,
-                    context.rootNode,
-                    parameters.libraryName,
-                    jsonProject.rootHash, {
-                        projectId: jsonProject.projectId,
-                        branchName: jsonProject.branchName,
-                        commitHash: jsonProject.commitHash
-                    });
+                return context.core.addLibrary(context.rootNode, parameters.libraryName, jsonProject.rootHash, {
+                    projectId: jsonProject.projectId,
+                    branchName: jsonProject.branchName,
+                    commitHash: jsonProject.commitHash
+                });
             })
             .then(function () {
                 var persisted = context.core.persist(context.rootNode),
@@ -1804,10 +1800,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         autoMerge: autoMerge,
         resolve: resolve,
         checkConstraints: checkConstraints,
-        // This is exposed for unit tests..
-        _addZippedExportToBlob: _addZippedExportToBlob,
         exportProjectToFile: exportProjectToFile,
-        importProjectFromFile: importProjectFromFile,
+        importProjectFromFile: importProjectFromFile, // FIXME: This should be a branch of seedProject!
         exportSelectionToFile: exportSelectionToFile,
         importSelectionFromFile: importSelectionFromFile,
         addLibrary: addLibrary,
@@ -1817,7 +1811,11 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         changeAttributeMeta: changeAttributeMeta,
         renameMetaPointerTarget: renameMetaPointerTarget,
         changeAspectMeta: changeAspectMeta,
-        removeMetaRule: removeMetaRule
+        removeMetaRule: removeMetaRule,
+
+        // This is exposed for unit tests and reuse..
+        _addZippedExportToBlob: _addZippedExportToBlob,
+        _getSeedFromFile: _getSeedFromFile,
     };
 }
 
