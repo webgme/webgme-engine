@@ -2215,7 +2215,7 @@ describe('Simple worker', function () {
             .nodeify(done);
     });
 
-    it('should fail to add Library when no branch nor commitHash given of other project.', function (done) {
+    it('should fail to add Library when branch does not exist', function (done) {
         var worker = getSimpleWorker(),
             projectId = testFixture.projectName2Id(libraryProjectContext.name);
 
@@ -2230,15 +2230,16 @@ describe('Simple worker', function () {
                     libraryName: 'Lib4',
                     branchName: libraryProjectContext.branch,
                     libraryInfo: {
-                        projectId: modelProjectContext.id
+                        projectId: modelProjectContext.id,
+                        branchName: 'doesNotExist'
                     }
                 });
             })
             .then(function (/*msg*/) {
-                done(new Error('missing error handling'));
+                throw new Error('missing error handling');
             })
             .catch(function (err) {
-                expect(err.message).to.include('No valid input was given to search for rootHash');
+                expect(err.message).to.include('unknown branch: doesNotExist');
             })
             .finally(restoreProcessFunctions)
             .nodeify(done);

@@ -224,40 +224,17 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             .catch(finish);
     }
 
-    // Seeding functionality
-    function _findSeedFilename(name) {
-        var deferred = Q.defer(),
-            seedDictionary = webgmeUtils.getSeedDictionary(gmeConfig),
-            filename;
-
-        // TODO: maybe read the dirs async.
-        // It uses a promise here to avoid extra try-catch in _getSeedFromFile..
-
-        if (gmeConfig.seedProjects.enable !== true) {
-            deferred.reject(new Error('seeding is disabled'));
-        } else {
-            filename = seedDictionary[name];
-            if (filename) {
-                deferred.resolve(filename);
-            } else {
-                deferred.reject(new Error('unknown file seed [' + name + ']'));
-            }
-        }
-
-        return deferred.promise;
-    }
-
     /**
      * Extracts the exported zip file and adds the contained files to the blob using
      * the import-part of ExportImport Plugin.
-     * @param {string} filename
+     * @param {string|Buffer} filenameOrBuffer
      * @param {BlobClient} blobClient
      * @param function [callback]
      * @returns {string} - The project json as a string
      * @private
      */
-    function _addZippedExportToBlob(filename, blobClient, callback) {
-        var zip = new AdmZip(filename),
+    function _extractProjectJsonAndAddAssets(filenameOrBuffer, blobClient, callback) {
+        var zip = new AdmZip(filenameOrBuffer),
             artifact = blobClient.createArtifact('files'),
             projectStr;
 
@@ -267,7 +244,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 if (entryName === 'project.json') {
                     projectStr = zip.readAsText(entry);
                 } else {
-                    return Q.ninvoke(artifact, 'addFileAsSoftLink', entryName, zip.readFile(entry));
+                    return artifact.addFileAsSoftLink(entryName, zip.readFile(entry));
                 }
             })
         )
@@ -276,46 +253,44 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return blobUtil.addAssetsFromExportedProject(logger, blobClient, metadata);
             })
             .then(function () {
-                return projectStr;
+                return JSON.parse(projectStr);
             })
             .nodeify(callback);
     }
 
-    function _getSeedFromFile(name, webgmeToken) {
-        return _findSeedFilename(name)
-            .then(function (filename) {
-                var blobClient;
+    function _getProjectJsonFromFileSeed(name, webgmeToken) {
+        return webgmeUtils.getSeedDictionary(gmeConfig)
+            .then(function (seedMap) {
+                var blobClient,
+                    filename;
 
-                if (filename.toLowerCase().indexOf('.webgmex') > -1) {
-
-                    if (filename.toLowerCase().indexOf('.webgmex') > -1) {
-                        logger.debug('Found .webgmex seed at:', filename);
-                    }
-
-                    blobClient = getBlobClient(webgmeToken);
-
-                    return _addZippedExportToBlob(filename, blobClient);
-                } else {
-                    throw new Error('Unexpected file');
+                if (gmeConfig.seedProjects.enable !== true) {
+                    throw new Error('File seeding is disabled from gmeConfig');
+                } else if (seedMap.hasOwnProperty(name) === false) {
+                    throw new Error('unknown file seed [' + name + ']');
                 }
-            })
-            .then(function (projectStr) {
-                var jsonProject = JSON.parse(projectStr);
 
-                if (typeof jsonProject.kind !== 'string') {
-                    jsonProject.kind = name;
+                filename = seedMap[name];
+                blobClient = getBlobClient(webgmeToken);
+
+                return _extractProjectJsonAndAddAssets(filename, blobClient);
+            })
+            .then(function (projectJson) {
+                if (typeof projectJson.kind !== 'string') {
+                    projectJson.kind = name;
                     logger.debug('Seed did not define a kind, the seed-name [' + name + '] will be used ' +
                         'as kind for new project.');
                 }
 
                 return {
-                    seed: jsonProject,
-                    msg: 'Seeded project from file-seed ' + name + '.webgmex.'
+                    projectJson: projectJson,
+                    //msg: 'Seeded project from file-seed ' + name + '.webgmex.'
+                    seedName: name + '.webgmex'
                 };
             });
     }
 
-    function _getSeedFromProject(storage, projectId, branchName, commitHash, callback) {
+    function _getProjectJsonFromProject(storage, projectId, branchName, commitHash, callback) {
         var deferred = Q.defer(),
             options = {};
 
@@ -340,10 +315,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             Q.all([project.getProjectInfo(), storageUtils.getProjectJson(project, options)])
                 .then(function (res) {
                     res[1].kind = res[0].info.kind;
-
                     deferred.resolve({
-                        seed: res[1],
-                        msg: 'Seeded project from project-seed ' + projectId + '@' + commitHash + '.'
+                        projectJson: res[1],
+                        commitHash: commitHash
                     });
                 })
                 .catch(deferred.reject);
@@ -352,11 +326,37 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         return deferred.promise.nodeify(callback);
     }
 
-    function _createProjectFromRawJson(storage, projectName, ownerId, branchName, jsonProject, msg, callback) {
+    function _getProjectJsonFromBlob(blobClient, packageHash, fullProject) {
+
+        return blobClient.getObject(packageHash)
+            .then(function (buffer) {
+                if (buffer instanceof Buffer !== true) {
+                    throw new Error('invalid package received');
+                }
+
+                return _extractProjectJsonAndAddAssets(buffer, blobClient);
+            })
+            .then(function (projectJson) {
+                if (fullProject && projectJson.selectionInfo) {
+                    throw new Error('given package is not a full project');
+                }
+
+                if (!fullProject && !projectJson.selectionInfo) {
+                    throw new Error('given package contains a full project and not a model');
+                }
+
+                return {
+                    projectJson: projectJson,
+                    blobHash: packageHash
+                };
+            });
+    }
+
+    function _createProjectFromRawJson(storage, projectName, ownerId, branchName, projectJson, msg, callback) {
         var projectId,
             project;
 
-        return Q.ninvoke(storage, 'createProject', projectName, ownerId, jsonProject.kind)
+        return Q.ninvoke(storage, 'createProject', projectName, ownerId, projectJson.kind)
             .then(function (projectId_) {
                 var deferred = Q.defer();
 
@@ -372,7 +372,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return deferred.promise;
             })
             .then(function () {
-                return storageUtils.insertProjectJson(project, jsonProject, {
+                return storageUtils.insertProjectJson(project, projectJson, {
                     commitMessage: msg
                 });
             })
@@ -391,10 +391,10 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} projectName - Name of new project.
      * @param {string} [ownerId] - Owner of new project, if not given falls back to user associated with the token.
      * @param {object} parameters
-     * @param {string} parameters.seedName - Name of seed, file or projectId.
-     * @param {string} parameters.type - 'db' or 'file'
-     * @param {string} [parameters.seedBranch='master'] - If db - optional name of branch.
-     * @param {string} [parameters.seedCommit] - If db - optional commit-hash to seed from
+     * @param {string} parameters.seedName - Name of seed: file, projectId or blobHash
+     * @param {string} parameters.type - 'db', 'file' or 'blob'
+     * @param {string} [parameters.seedBranch='master'] - If type === db, optional name of branch.
+     * @param {string} [parameters.seedCommit] - If type === db, optional commit-hash to seed from
      * if given branchName will not be used.
      * @param {string} [parameters.kind]
      * @param [function} callback
@@ -431,21 +431,32 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 if (parameters.type === 'file') {
                     logger.debug('seedProject - seeding from file:', parameters.seedName);
-                    return _getSeedFromFile(parameters.seedName, webgmeToken);
+                    return _getProjectJsonFromFileSeed(parameters.seedName, webgmeToken);
                 } else if (parameters.type === 'db') {
                     logger.debug('seedProject - seeding from existing project:', parameters.seedName);
-                    return _getSeedFromProject(storage, parameters.seedName, parameters.seedBranch,
+                    return _getProjectJsonFromProject(storage, parameters.seedName, parameters.seedBranch,
                         parameters.seedCommit);
-                    //} else if (parameters.type === 'blob') {
-                    //    return _getSeedFromBlob(parameters.seedName, webgmeToken);
+                } else if (parameters.type === 'blob') {
+                    return _getProjectJsonFromBlob(getBlobClient(webgmeToken), parameters.seedName, true);
                 } else {
                     throw new Error('Unknown seeding type [' + parameters.type + ']');
                 }
             })
-            .then(function (jsonSeed) {
-                jsonSeed.seed.kind = typeof parameters.kind === 'string' ? parameters.kind : jsonSeed.seed.kind;
+            .then(function (res) {
+                var commitMessage = 'Seeded project from ';
+                // First set the correct kind of the project.
+                res.projectJson.kind = typeof parameters.kind === 'string' ? parameters.kind : res.projectJson.kind;
+
+                if (parameters.type === 'file') {
+                    commitMessage += 'file-seed ' + res.seedName + '.';
+                } else if (parameters.type === 'db') {
+                    commitMessage += 'project-seed ' + parameters.seedName + '@' + res.commitHash + '.';
+                } else if (parameters.type === 'blob') {
+                    commitMessage = 'Imported project from uploaded blob ' + res.blobHash + '.';
+                }
+
                 return _createProjectFromRawJson(storage, projectName, ownerId,
-                    parameters.branchName || 'master', jsonSeed.seed, jsonSeed.msg);
+                    parameters.branchName || 'master', res.projectJson, commitMessage);
             })
             .nodeify(finish);
     }
@@ -874,57 +885,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
     }
 
-    function _importProjectPackage(blobClient, packageHash, fullProject) {
-        var zip = new AdmZip(),
-            artifact = blobClient.createArtifact('files'),
-            projectStr,
-            deferred = Q.defer();
-
-        blobClient.getObject(packageHash)
-            .then(function (buffer) {
-                if (buffer instanceof Buffer !== true) {
-                    throw new Error('invalid package received');
-                }
-
-                zip = new AdmZip(buffer);
-                return Q.all(zip.getEntries()
-                    .map(function (entry) {
-                        var entryName = entry.entryName;
-                        if (entryName === 'project.json') {
-                            projectStr = zip.readAsText(entry);
-                        } else {
-                            return artifact.addFileAsSoftLink(entryName, zip.readFile(entry));
-                        }
-                    })
-                );
-            })
-            .then(function () {
-                var projectJson,
-                    metadata;
-                if (!projectStr) {
-                    throw new Error('given package missing project data!');
-                }
-                projectJson = JSON.parse(projectStr);
-                if (fullProject) {
-                    if (projectJson.selectionInfo) {
-                        throw new Error('given package is not a full project');
-                    }
-                } else {
-                    if (!projectJson.selectionInfo) {
-                        throw new Error('given package contains a full project and not a model');
-                    }
-                }
-                metadata = artifact.descriptor;
-                return blobUtil.addAssetsFromExportedProject(logger, blobClient, metadata);
-            })
-            .then(function () {
-                deferred.resolve(JSON.parse(projectStr));
-            })
-            .catch(deferred.reject);
-
-        return deferred.promise;
-    }
-
     /**
      *
      * @param {string} webgmeToken
@@ -936,7 +896,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {function} callback
      */
     function importSelectionFromFile(webgmeToken, parameters, callback) {
-        var jsonProject,
+        var projectJson,
             context,
             storage,
             blobClient = getBlobClient(webgmeToken),
@@ -965,14 +925,15 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             .then(function (context_) {
                 context = context_;
 
-                return _importProjectPackage(blobClient, parameters.blobHash, false);
+                return _getProjectJsonFromBlob(blobClient, parameters.blobHash, false);
             })
-            .then(function (jsonProject_) {
+            .then(function (res) {
                 var contentJson = {
                     rootHash: null,
-                    objects: jsonProject_.objects
+                    objects: res.projectJson.objects
                 };
-                jsonProject = jsonProject_;
+
+                projectJson = res.projectJson;
 
                 return storageUtils.insertProjectJson(context.project,
                     contentJson,
@@ -983,15 +944,14 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return context.core.loadByPath(context.rootNode, parameters.parentPath);
             })
             .then(function (parent) {
-                var deferred = Q.defer(),
-                    persisted,
+                var persisted,
                     closureInfo;
 
                 if (parent === null) {
                     throw new Error('Given parentPath does not exist [' + parameters.parentPath + ']');
                 }
 
-                closureInfo = context.core.importClosure(parent, jsonProject.selectionInfo);
+                closureInfo = context.core.importClosure(parent, projectJson.selectionInfo);
 
                 if (closureInfo instanceof Error) {
                     throw closureInfo;
@@ -999,59 +959,40 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 persisted = context.core.persist(context.rootNode);
 
-                context.project.makeCommit(
+                return context.project.makeCommit(
                     parameters.branchName,
                     [context.commitObject._id],
                     persisted.rootHash,
                     persisted.objects,
-                    'importing models', function (err, saveResult) {
-                        if (err) {
-                            deferred.reject(err);
-                        } else {
-                            deferred.resolve(saveResult);
-                        }
-                    });
-
-                return deferred.promise;
+                    'importing models');
             })
             .nodeify(finish);
     }
 
-    /**
-     *
-     * @param {string} webgmeToken
-     * @param {object} parameters
-     * @param {function} callback
-     */
-    function importProjectFromFile(webgmeToken, parameters, callback) {
-        var storage,
-            blobClient = getBlobClient(webgmeToken),
-            finish = function (err, result) {
-                if (err) {
-                    err = err instanceof Error ? err : new Error(err);
-                    logger.error('importProjectFromFile failed with error', err);
-                } else {
-                    logger.debug('importProjectFromFile completed');
+
+    function _persistLibrary(context, libraryName, branchName, update) {
+        var persisted = context.core.persist(context.rootNode),
+            info = context.core.getLibraryInfo(context.rootNode, libraryName),
+            message = update ? 'updates library [' : 'adds library [';
+
+        if (info.projectId) {
+            message += info.projectId;
+            if (info.branchName) {
+                message += ':' + info.branchName;
+                if (info.commitHash) {
+                    message += '@' + info.commitHash;
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
-            };
+            } else if (info.commitHash) {
+                message += ':' + info.commitHash;
+            }
+        } else {
+            message += '_no_info_';
+        }
 
-        logger.debug('importProjectFromFile', {metadata: parameters});
+        message += ']';
 
-        getConnectedStorage(webgmeToken)
-            .then(function (storage_) {
-                storage = storage_;
-                return _importProjectPackage(blobClient, parameters.blobHash, true);
-            })
-            .then(function (jsonProject) {
-                jsonProject.kind = typeof parameters.kind === 'string' ? parameters.kind : jsonProject.kind;
-                return _createProjectFromRawJson(storage, parameters.projectName, parameters.ownerId,
-                    parameters.branchName, jsonProject, 'Imported project from uploaded blob ' +
-                    parameters.blobHash + '.');
-            })
-            .nodeify(finish);
+        return context.project.makeCommit(branchName, [context.commitObject._id], persisted.rootHash,
+            persisted.objects, message);
     }
 
     /**
@@ -1070,7 +1011,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {function} callback
      */
     function addLibrary(webgmeToken, parameters, callback) {
-        var jsonProject,
+        var projectJson,
             context,
             storage,
             blobClient = getBlobClient(webgmeToken),
@@ -1094,100 +1035,47 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return _getCoreAndRootNode(storage, parameters.projectId, null, parameters.branchName, null);
             })
             .then(function (context_) {
-                var deferred = Q.defer();
                 context = context_;
 
                 if (typeof parameters.libraryName !== 'string' ||
                     context.core.getLibraryNames(context.rootNode).indexOf(parameters.libraryName) !== -1) {
-                    deferred.reject(new Error('New library name should be unique'));
+                    throw new Error('New library name should be unique [' + parameters.libraryName + ']!');
                 }
+
                 if (parameters.blobHash) {
-                    _importProjectPackage(blobClient, parameters.blobHash, true)
-                        .then(deferred.resolve)
-                        .catch(deferred.reject);
+                    return _getProjectJsonFromBlob(blobClient, parameters.blobHash, true);
                 } else if (parameters.libraryInfo) {
                     if (parameters.libraryInfo.projectId === parameters.projectId) {
-                        deferred.reject(
-                            new Error('Not allowed to add self as a library [' + parameters.projectId + ']'));
-                    } else {
-                        storage.openProject(parameters.libraryInfo.projectId,
-                            function (err, project/*,branches,access*/) {
-                                if (err) {
-                                    deferred.reject(err);
-                                } else {
-                                    storageUtils.getProjectJson(project, {
-                                        branchName: parameters.libraryInfo.branchName,
-                                        commitHash: parameters.libraryInfo.commitHash
-                                    })
-                                        .then(deferred.resolve)
-                                        .catch(deferred.reject);
-                                }
-                            }
-                        );
+                        throw new Error('Not allowed to add self as a library [' + parameters.projectId + ']');
                     }
+
+                    return _getProjectJsonFromProject(storage,
+                        parameters.libraryInfo.projectId,
+                        parameters.libraryInfo.branchName,
+                        parameters.libraryInfo.commitHash);
+
                 } else if (parameters.seed) {
-                    _getSeedFromFile(parameters.seed, webgmeToken)
-                        .then(function (res) {
-                            deferred.resolve(res.seed);
-                        })
-                        .catch(deferred.reject);
+                    return _getProjectJsonFromFileSeed(parameters.seed, webgmeToken);
                 } else {
-                    deferred.reject(new Error('Missing information about the library to add.'));
+                    throw new Error('Missing information about the library to add.');
                 }
-
-                return deferred.promise;
             })
-            .then(function (jsonProject_) {
-                jsonProject = jsonProject_;
+            .then(function (res) {
+                projectJson = res.projectJson;
 
-                return storageUtils.insertProjectJson(context.project,
-                    jsonProject,
+                return storageUtils.insertProjectJson(context.project, projectJson,
                     {commitMessage: 'commit that represents the library to be imported'});
             })
             .then(function (/*commitResult*/) {
 
-                return context.core.addLibrary(context.rootNode, parameters.libraryName, jsonProject.rootHash, {
-                    projectId: jsonProject.projectId,
-                    branchName: jsonProject.branchName,
-                    commitHash: jsonProject.commitHash
+                return context.core.addLibrary(context.rootNode, parameters.libraryName, projectJson.rootHash, {
+                    projectId: projectJson.projectId,
+                    branchName: projectJson.branchName,
+                    commitHash: projectJson.commitHash
                 });
             })
             .then(function () {
-                var persisted = context.core.persist(context.rootNode),
-                    info = context.core.getLibraryInfo(context.rootNode, parameters.libraryName),
-                    deferred = Q.defer(),
-                    message = 'adds library [';
-
-                if (info.projectId) {
-                    message += info.projectId;
-                    if (info.branchName) {
-                        message += ':' + info.branchName;
-                        if (info.commitHash) {
-                            message += '@' + info.commitHash;
-                        }
-                    } else if (info.commitHash) {
-                        message += ':' + info.commitHash;
-                    }
-                } else {
-                    message += '_no_info_';
-                }
-                message += ']';
-
-                context.project.makeCommit(
-                    parameters.branchName,
-                    [context.commitObject._id],
-                    persisted.rootHash,
-                    persisted.objects,
-                    message, function (err, saveResult) {
-                        if (err) {
-                            deferred.reject(err);
-                            return;
-                        }
-
-                        deferred.resolve(saveResult);
-                    });
-
-                return deferred.promise;
+                return _persistLibrary(context, parameters.libraryName, parameters.branchName, false);
             })
             .nodeify(finish);
     }
@@ -1201,6 +1089,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} parameters.branchName
      * @param {string} parameters.libraryName
      * @param {string} [parameters.blobHash] - Update from an uploaded file.
+     * @param {string} [parameters.seed] - Update from a seed on the server.
      * @param {object} [parameters.libraryInfo] - Update from an existing project.
      * @param {string} [parameters.libraryInfo.projectId] - if libraryInfo, projectId must be given.
      * @param {string} [parameters.libraryInfo.branchName] - if libraryInfo and not commitHash, it must be given.
@@ -1211,7 +1100,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         var projectId = parameters.projectId,
             context,
             storage,
-            jsonProject,
+            projectJson,
             blobClient = getBlobClient(webgmeToken),
             finish = function (err, result) {
                 if (err) {
@@ -1233,112 +1122,51 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return _getCoreAndRootNode(storage, projectId, null, parameters.branchName, null);
             })
             .then(function (context_) {
-                var deferred = Q.defer(),
-                    libs = context_.core.getLibraryNames(context_.rootNode),
-                    libraryInfo;
+                var libs = context_.core.getLibraryNames(context_.rootNode),
+                    libraryInfo = context_.core.getLibraryInfo(context_.rootNode, parameters.libraryName);
 
                 context = context_;
 
                 if (libs.indexOf(parameters.libraryName) < 0) {
-                    deferred.reject(new Error('No such library "' + parameters.libraryName +
-                        '" among [' + libs.toString() + '].'));
-                    return deferred.promise;
+                    throw new Error('No such library "' + parameters.libraryName +
+                        '" among [' + libs.toString() + '].');
                 }
 
                 if (parameters.blobHash) {
-                    _importProjectPackage(blobClient, parameters.blobHash, true)
-                        .then(deferred.resolve)
-                        .catch(deferred.reject);
+                    return _getProjectJsonFromBlob(blobClient, parameters.blobHash, true);
                 } else if (parameters.libraryInfo) {
-                    storage.openProject(parameters.libraryInfo.projectId, function (err, project/*,branches,access*/) {
-                        if (err) {
-                            deferred.reject(err);
-                        } else {
-                            storageUtils.getProjectJson(project, {
-                                branchName: parameters.libraryInfo.branchName,
-                                commitHash: parameters.libraryInfo.commitHash
-                            })
-                                .then(deferred.resolve)
-                                .catch(deferred.reject);
-                        }
-                    });
-                } else {
+                    return _getProjectJsonFromProject(storage,
+                        parameters.libraryInfo.projectId,
+                        parameters.libraryInfo.branchName,
+                        parameters.libraryInfo.commitHash);
+                } else if (parameters.seed) {
+                    return _getProjectJsonFromFileSeed(parameters.seed, webgmeToken);
+                } else if (libraryInfo && libraryInfo.projectId && libraryInfo.branchName) {
                     // We have to dig out library info from our own project
-
-                    libraryInfo = context.core.getLibraryInfo(context.rootNode, parameters.libraryName);
-                    if (libraryInfo && libraryInfo.projectId && libraryInfo.branchName) {
-                        if (projectId === libraryInfo.projectId) {
-                            deferred.reject(new Error('Automatic update of self-contained libraries are not allowed!'));
-                        } else {
-                            storage.openProject(libraryInfo.projectId, function (err, project/*, branches, access*/) {
-                                if (err) {
-                                    deferred.reject(err);
-                                } else {
-                                    storageUtils.getProjectJson(project, {branchName: libraryInfo.branchName})
-                                        .then(deferred.resolve)
-                                        .catch(deferred.reject);
-                                }
-                            });
-                        }
-                    } else {
-                        deferred.reject(new Error('only libraries that follows branch can be refreshed!'));
+                    if (projectId === libraryInfo.projectId) {
+                        throw new Error('Automatic update of self-contained libraries are not allowed!');
                     }
+
+                    return _getProjectJsonFromProject(storage, libraryInfo.projectId, libraryInfo.branchName, null);
+                } else {
+                    throw new Error('only libraries that follows branch can be refreshed!');
                 }
-                return deferred.promise;
             })
-            .then(function (jsonProject_) {
-                jsonProject = jsonProject_;
-                return storageUtils.insertProjectJson(context.project, jsonProject, {
+            .then(function (res) {
+                projectJson = res.projectJson;
+                return storageUtils.insertProjectJson(context.project, projectJson, {
                     commitMessage: 'commit that represents the library to be updated'
                 });
             })
             .then(function (/*commitResult*/) {
-
-                return Q.nfcall(context.core.updateLibrary,
-                    context.rootNode,
-                    parameters.libraryName,
-                    jsonProject.rootHash, {
-                        projectId: jsonProject.projectId,
-                        branchName: jsonProject.branchName,
-                        commitHash: jsonProject.commitHash
-                    }, null/*placeholder for instructions*/);
+                return context.core.updateLibrary(context.rootNode, parameters.libraryName, projectJson.rootHash, {
+                    projectId: projectJson.projectId,
+                    branchName: projectJson.branchName,
+                    commitHash: projectJson.commitHash
+                }, null/*placeholder for instructions*/);
             })
             .then(function () {
-                var persisted = context.core.persist(context.rootNode),
-                    info = context.core.getLibraryInfo(context.rootNode, parameters.libraryName),
-                    deferred = Q.defer(),
-                    message = 'updates library [';
-
-                if (info.projectId) {
-                    message += info.projectId;
-                    if (info.branchName) {
-                        message += ':' + info.branchName;
-                        if (info.commitHash) {
-                            message += '@' + info.commitHash;
-                        }
-                    } else if (info.commitHash) {
-                        message += ':' + info.commitHash;
-                    }
-                } else {
-                    message += '_no_info_';
-                }
-                message += ']';
-
-                context.project.makeCommit(
-                    parameters.branchName,
-                    [context.commitObject._id],
-                    persisted.rootHash,
-                    persisted.objects,
-                    message, function (err, commitResult) {
-                        if (err) {
-                            deferred.reject(err);
-                            return;
-                        }
-
-                        deferred.resolve(commitResult);
-                    });
-
-                return deferred.promise;
+                return _persistLibrary(context, parameters.libraryName, parameters.branchName, true);
             })
             .nodeify(finish);
     }
@@ -1350,7 +1178,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param callback
      */
     function updateProjectFromFile(webgmeToken, parameters, callback) {
-        var jsonProject,
+        var projectJson,
             context,
             storage,
             blobClient = getBlobClient(webgmeToken),
@@ -1376,19 +1204,17 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             })
             .then(function (context_) {
                 context = context_;
-                return _importProjectPackage(blobClient, parameters.blobHash, true);
+                return _getProjectJsonFromBlob(blobClient, parameters.blobHash, true);
             })
-            .then(function (jsonProject_) {
-                jsonProject = jsonProject_;
+            .then(function (res) {
+                projectJson = res.projectJson;
 
                 // This resolves with commitResult.
-                return storageUtils.insertProjectJson(context.project,
-                    jsonProject,
-                    {
-                        branch: parameters.branchName,
-                        parentCommit: [context.commitObject[STORAGE_CONSTANTS.MONGO_ID]],
-                        commitMessage: 'update project from file'
-                    });
+                return storageUtils.insertProjectJson(context.project, projectJson, {
+                    branch: parameters.branchName,
+                    parentCommit: [context.commitObject[STORAGE_CONSTANTS.MONGO_ID]],
+                    commitMessage: 'update project from file'
+                });
             })
             .nodeify(finish);
     }
@@ -1436,26 +1262,15 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     parameters.oldName, parameters.newName);
             })
             .then(function () {
-                var deferred = Q.defer(),
-                    persisted;
+                var persisted = context.core.persist(context.rootNode);
 
-                persisted = context.core.persist(context.rootNode);
-
-                context.project.makeCommit(
+                return context.project.makeCommit(
                     parameters.branchName,
                     [context.commitObject._id],
                     persisted.rootHash,
                     persisted.objects,
-                    'rename concept [' + parameters.oldName +
-                    '->' + parameters.newName + '] of [' + parameters.nodePath + ']', function (err, saveResult) {
-                        if (err) {
-                            deferred.reject(err);
-                        } else {
-                            deferred.resolve(saveResult);
-                        }
-                    });
-
-                return deferred.promise;
+                    'rename concept [' + parameters.oldName + '->' + parameters.newName +
+                    '] of [' + parameters.nodePath + ']');
             })
             .nodeify(finish);
     }
@@ -1504,26 +1319,15 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return metaRename.propagateMetaDefinitionRename(context.core, node, parameters);
             })
             .then(function () {
-                var deferred = Q.defer(),
-                    persisted;
+                var persisted = context.core.persist(context.rootNode);
 
-                persisted = context.core.persist(context.rootNode);
-
-                context.project.makeCommit(
+                return context.project.makeCommit(
                     parameters.branchName,
                     [context.commitObject._id],
                     persisted.rootHash,
                     persisted.objects,
-                    'rename attribute definition [' + parameters.oldName +
-                    '->' + parameters.newName + '] of [' + parameters.nodePath + ']', function (err, saveResult) {
-                        if (err) {
-                            deferred.reject(err);
-                        } else {
-                            deferred.resolve(saveResult);
-                        }
-                    });
-
-                return deferred.promise;
+                    'rename attribute definition [' + parameters.oldName + '->' + parameters.newName +
+                    '] of [' + parameters.nodePath + ']');
             })
             .nodeify(finish);
     }
@@ -1573,27 +1377,16 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return metaRename.propagateMetaDefinitionRename(context.core, nodes[0], parameters);
             })
             .then(function () {
-                var deferred = Q.defer(),
-                    persisted;
+                var persisted = context.core.persist(context.rootNode);
 
-                persisted = context.core.persist(context.rootNode);
-
-                context.project.makeCommit(
+                return context.project.makeCommit(
                     parameters.branchName,
                     [context.commitObject._id],
                     persisted.rootHash,
                     persisted.objects,
                     'rename pointer definition [' + parameters.oldName + '->' +
                     parameters.newName + '] of [' + parameters.nodePath + '] regarding target [' +
-                    parameters.targetPath + ']', function (err, saveResult) {
-                        if (err) {
-                            deferred.reject(err);
-                        } else {
-                            deferred.resolve(saveResult);
-                        }
-                    });
-
-                return deferred.promise;
+                    parameters.targetPath + ']');
             })
             .nodeify(finish);
     }
@@ -1675,26 +1468,15 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 });
             })
             .then(function () {
-                var deferred = Q.defer(),
-                    persisted;
+                var persisted = context.core.persist(context.rootNode);
 
-                persisted = context.core.persist(context.rootNode);
-
-                context.project.makeCommit(
+                return context.project.makeCommit(
                     parameters.branchName,
                     [context.commitObject._id],
                     persisted.rootHash,
                     persisted.objects,
                     'rename aspect definition [' + parameters.oldName +
-                    '->' + parameters.newName + '] of [' + parameters.nodePath + ']', function (err, saveResult) {
-                        if (err) {
-                            deferred.reject(err);
-                        } else {
-                            deferred.resolve(saveResult);
-                        }
-                    });
-
-                return deferred.promise;
+                    '->' + parameters.newName + '] of [' + parameters.nodePath + ']');
             })
             .nodeify(finish);
     }
@@ -1744,8 +1526,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return metaRename.propagateMetaDefinitionRemove(context.core, node, parameters);
             })
             .then(function () {
-                var deferred = Q.defer(),
-                    persisted;
+                var persisted;
 
                 switch (parameters.type) {
                     case 'attribute':
@@ -1778,17 +1559,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     [context.commitObject._id],
                     persisted.rootHash,
                     persisted.objects,
-                    'remove meta definition [' + parameters.name + '] of [' + parameters.nodePath + ']',
-                    function (err, saveResult) {
-                        if (err) {
-                            deferred.reject(err);
-                        } else {
-                            deferred.resolve(saveResult);
-                        }
-                    }
-                );
-
-                return deferred.promise;
+                    'remove meta definition [' + parameters.name + '] of [' + parameters.nodePath + ']');
             })
             .nodeify(finish);
     }
@@ -1801,7 +1572,19 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         resolve: resolve,
         checkConstraints: checkConstraints,
         exportProjectToFile: exportProjectToFile,
-        importProjectFromFile: importProjectFromFile, // FIXME: This should be a branch of seedProject!
+        importProjectFromFile: function (webgmeToken, parameters, callback) {
+            var params = {
+                type: 'blob',
+                seedName: parameters.blobHash,
+
+                kind: parameters.kind
+            };
+
+            seedProject(webgmeToken, parameters.projectName, parameters.ownerId, params, function (err, res) {
+                res = res ? res.projectId : res;
+                callback(err, res);
+            });
+        },
         exportSelectionToFile: exportSelectionToFile,
         importSelectionFromFile: importSelectionFromFile,
         addLibrary: addLibrary,
@@ -1814,8 +1597,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         removeMetaRule: removeMetaRule,
 
         // This is exposed for unit tests and reuse..
-        _addZippedExportToBlob: _addZippedExportToBlob,
-        _getSeedFromFile: _getSeedFromFile,
+        _addZippedExportToBlob: _extractProjectJsonAndAddAssets,
+        _getProjectJsonFromFileSeed: _getProjectJsonFromFileSeed,
     };
 }
 

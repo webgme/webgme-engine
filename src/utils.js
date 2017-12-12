@@ -300,7 +300,45 @@ function getRedirectUrlParameter(req) {
     return '?redirect=' + encodeURIComponent(req.originalUrl);
 }
 
-function getSeedDictionary(config) {
+/**
+ * Looks for all .webgmex files in config.seedProjects.basePaths and returns
+ * a map from the names (filename without extension) to the file-paths.
+ * @param {object} config
+ * @param {function} [callback]
+ * @param {object} callback.result
+ * @returns {Promise}
+ */
+function getSeedDictionary(config, callback) {
+    var result = {};
+
+    if (config.seedProjects.enable === true) {
+        return Q.all(config.seedProjects.basePaths
+            .map(function (seedDir) {
+                return Q.ninvoke(fs, 'readdir', seedDir)
+                    .then(function (seedPaths) {
+                        seedPaths.forEach(function (seedPath) {
+                            var extension = path.extname(seedPath),
+                                seedName;
+
+                            if (extension.toLowerCase() === '.webgmex') {
+                                seedName = path.basename(seedPath, extension);
+                                if (result.hasOwnProperty(seedName) === false) {
+                                    result[seedName] = seedDir + '/' + seedName + extension;
+                                }
+                            }
+                        });
+                    });
+            }))
+            .then(function () {
+                return result;
+            })
+            .nodeify(callback);
+    } else {
+        return Q(result).nodeify(callback);
+    }
+}
+
+function getSeedDictionarySync(config) {
     var names = [],
         result = {},
         seedName,
@@ -391,5 +429,6 @@ module.exports = {
     getBasePathByName: getBasePathByName,
     getRedirectUrlParameter: getRedirectUrlParameter,
     getSeedDictionary: getSeedDictionary,
+    getSeedDictionarySync: getSeedDictionarySync,
     getComponentsJson: getComponentsJson
 };
