@@ -1123,7 +1123,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             })
             .then(function (context_) {
                 var libs = context_.core.getLibraryNames(context_.rootNode),
-                    libraryInfo = context_.core.getLibraryInfo(context_.rootNode, parameters.libraryName);
+                    libraryInfo;
 
                 context = context_;
 
@@ -1131,6 +1131,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     throw new Error('No such library "' + parameters.libraryName +
                         '" among [' + libs.toString() + '].');
                 }
+
+                libraryInfo = context_.core.getLibraryInfo(context_.rootNode, parameters.libraryName);
 
                 if (parameters.blobHash) {
                     return _getProjectJsonFromBlob(blobClient, parameters.blobHash, true);
