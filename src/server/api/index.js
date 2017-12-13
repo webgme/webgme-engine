@@ -2212,13 +2212,16 @@ function createAPI(app, mountPath, middlewareOpts) {
     //router.get('/addOns/:addOnId/queryParamsStructure', ensureAuthenticated, function (req, res) {});
     //router.post('/addOns/:addOnId/query', ensureAuthenticated, function (req, res) {});
 
-    router.get('/seeds', ensureAuthenticated, function (req, res) {
-        var seedDictionary = webgmeUtils.getSeedDictionary(gmeConfig);
-
-        logger.debug('/seeds', {metadata: seedDictionary});
-        res.send(Object.keys(seedDictionary));
+    router.get('/seeds', ensureAuthenticated, function (req, res, next) {
+        webgmeUtils.getSeedDictionary(gmeConfig)
+            .then(function (seedDictionary) {
+                logger.debug('/seeds', {metadata: seedDictionary});
+                res.send(Object.keys(seedDictionary));
+            })
+            .catch(next);
     });
 
+    // FIXME: This should be async
     function getVisualizersDescriptor() {
         //we merge the contents of the CONFIG.visualizerDescriptors by id
         var indexById = function (objectArray, id) {

@@ -2061,7 +2061,7 @@ describe('Simple worker', function () {
     });
 
     //addLibrary
-    it('should add Library from a file.', function (done) {
+    it('should add Library from a blob.', function (done) {
         var worker = getSimpleWorker(),
             blobHash,
             blobClient = new BlobClient(gmeConfig, logger.fork('BlobClient')),
@@ -2215,7 +2215,7 @@ describe('Simple worker', function () {
             .nodeify(done);
     });
 
-    it('should fail to add Library when no branch nor commitHash given of other project.', function (done) {
+    it('should fail to add Library when branch does not exist', function (done) {
         var worker = getSimpleWorker(),
             projectId = testFixture.projectName2Id(libraryProjectContext.name);
 
@@ -2230,22 +2230,51 @@ describe('Simple worker', function () {
                     libraryName: 'Lib4',
                     branchName: libraryProjectContext.branch,
                     libraryInfo: {
-                        projectId: modelProjectContext.id
+                        projectId: modelProjectContext.id,
+                        branchName: 'doesNotExist'
                     }
                 });
             })
             .then(function (/*msg*/) {
-                done(new Error('missing error handling'));
+                throw new Error('missing error handling');
             })
             .catch(function (err) {
-                expect(err.message).to.include('No valid input was given to search for rootHash');
+                expect(err.message).to.include('unknown branch: doesNotExist');
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
+    it('should add Library from a seed.', function (done) {
+        var worker = getSimpleWorker(),
+            projectId = testFixture.projectName2Id(libraryProjectContext.name);
+
+        worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.initialized);
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.addLibrary,
+                    projectId: projectId,
+                    libraryName: 'Lib44',
+                    branchName: libraryProjectContext.branch,
+                    seed: 'EmptyProject'
+                });
+            })
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.result);
+                expect(msg.error).equal(null);
+
+                expect(msg.result).to.include.keys('hash', 'status');
             })
             .finally(restoreProcessFunctions)
             .nodeify(done);
     });
 
     //updateLibrary
-    it('should update Library from a file.', function (done) {
+    it('should update Library from a blob.', function (done) {
         var worker = getSimpleWorker(),
             blobHash,
             blobClient = new BlobClient(gmeConfig, logger.fork('BlobClient')),
@@ -2533,6 +2562,86 @@ describe('Simple worker', function () {
             })
             .catch(function (err) {
                 expect(err.message).to.contains('Not authorized to read project');
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
+    it('should update Library from a seed.', function (done) {
+        var worker = getSimpleWorker(),
+            projectId = testFixture.projectName2Id(libraryProjectContext.name);
+
+        worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.initialized);
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.addLibrary,
+                    projectId: projectId,
+                    libraryName: 'Lib10',
+                    branchName: libraryProjectContext.branch,
+                    seed: 'EmptyProject'
+                });
+            })
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.result);
+                expect(msg.error).equal(null);
+
+                expect(msg.result).to.include.keys('hash', 'status');
+
+                return restoreProcessFunctions();
+            })
+            .then(function () {
+                worker = getSimpleWorker();
+                return worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig});
+            })
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.initialized);
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.updateLibrary,
+                    projectId: projectId,
+                    libraryName: 'Lib10',
+                    branchName: libraryProjectContext.branch,
+                    seed: 'EmptyProject'
+                });
+            })
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.result);
+                expect(msg.error).equal(null);
+
+                expect(msg.result).to.include.keys('hash', 'status');
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
+    it('should fail to update library that does not exist', function (done) {
+        var worker = getSimpleWorker(),
+            projectId = testFixture.projectName2Id(libraryProjectContext.name);
+
+        worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.initialized);
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.updateLibrary,
+                    projectId: projectId,
+                    libraryName: 'DoesNotExist',
+                    branchName: libraryProjectContext.branch,
+                    seed: 'EmptyProject'
+                });
+            })
+            .then(function () {
+                throw new Error('test failed -- missing error handling');
+            })
+            .catch(function (err) {
+                expect(err.message).to.contain('No such library "DoesNotExist" among');
             })
             .finally(restoreProcessFunctions)
             .nodeify(done);
