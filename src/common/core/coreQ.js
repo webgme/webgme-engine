@@ -189,7 +189,13 @@ define(['common/core/core', 'q'], function (Core, Q) {
         var setGuidOrg = this.setGuid;
         this.setGuid = function (node, guid, callback) {
             var deferred = Q.defer();
-            setGuidOrg(node, guid, deferred.resolve);
+            setGuidOrg(node, guid, function (err, res) {
+                if (err) {
+                    deferred.reject(err instanceof Error ? err : new Error(err));
+                } else {
+                    deferred.resolve(res);
+                }
+            });
 
             return deferred.promise.nodeify(callback);
         };
@@ -197,7 +203,13 @@ define(['common/core/core', 'q'], function (Core, Q) {
         var addLibraryOrg = this.addLibrary;
         this.addLibrary = function (node, name, libraryRootHash, libraryInfo, callback) {
             var deferred = Q.defer();
-            addLibraryOrg(node, name, libraryRootHash, libraryInfo, deferred.resolve);
+            addLibraryOrg(node, name, libraryRootHash, libraryInfo, function (err, res) {
+                if (err) {
+                    deferred.reject(err instanceof Error ? err : new Error(err));
+                } else {
+                    deferred.resolve(res);
+                }
+            });
 
             return deferred.promise.nodeify(callback);
         };

@@ -16,7 +16,7 @@ describe('CoreQ Async with Promises', function () {
         projectName = 'CoreQAsync',
         core,
         rootHash,
-
+        ir,
         gmeAuth;
 
     before(function (done) {
@@ -44,6 +44,7 @@ describe('CoreQ Async with Promises', function () {
             .then(function (importResult) {
                 core = importResult.core;
                 rootHash = importResult.rootHash;
+                ir = importResult;
             })
             .nodeify(done);
     });
@@ -273,5 +274,30 @@ describe('CoreQ Async with Promises', function () {
             return;
         }
         throw new Error('should have failed to use isEmpty');
+    });
+
+    it('should throw helpful error when passing commitHash to addLibrary', function (done) {
+        core.loadRoot(rootHash)
+            .then(function (rootNode) {
+                return core.addLibrary(rootNode, 'myLib', ir.commitHash);
+            })
+            .then(function () {
+                throw new Error('Should have failed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('Cannot load commit object');
+            })
+            .nodeify(done);
+    });
+
+    it('should reject with error when trying to setGuid and it fails', function (done) {
+        core.setGuid(null, null)
+            .then(function () {
+                throw new Error('Should have failed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('is not a valid node');
+            })
+            .nodeify(done);
     });
 });

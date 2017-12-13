@@ -21,6 +21,7 @@ describe('core', function () {
         Q = testFixture.Q,
         expect = testFixture.expect,
         logger = {},
+        ir,
         //lastError = null,
         storage,
         gmeAuth;
@@ -55,6 +56,7 @@ describe('core', function () {
                 });
             })
             .then(function (result) {
+                ir = result;
                 project = result.project;
                 core = new Core(project, {globConf: gmeConfig, logger: logger});
                 rootNode = result.rootNode;
@@ -4885,10 +4887,10 @@ describe('core', function () {
     genTests(['getAttribute', 'getOwnAttribute', 'getSetAttribute', 'getOwnSetAttribute']);
     genTests(['getRegistry', 'getOwnRegistry', 'getSetRegistry', 'getOwnSetRegistry']);
     genTests([
-        {name: 'getMemberAttribute', memberPath: '' },
-        {name: 'getMemberOwnAttribute', memberPath: '' },
-        {name: 'getMemberRegistry', memberPath: '' },
-        {name: 'getMemberOwnRegistry', memberPath: '' }
+        {name: 'getMemberAttribute', memberPath: ''},
+        {name: 'getMemberOwnAttribute', memberPath: ''},
+        {name: 'getMemberRegistry', memberPath: ''},
+        {name: 'getMemberOwnRegistry', memberPath: ''}
     ]);
     genTests(['getAttributeMeta', 'getLibraryInfo']);
 
@@ -4927,6 +4929,17 @@ describe('core', function () {
 
                 mutateComplex(obj);
                 expect(JSON.stringify(core.getOwnJsonMeta(rootNode)).indexOf('41')).to.equal(-1);
+            })
+            .nodeify(done);
+    });
+
+    it('should throw helpful error when passing commitHash to loadRoot', function (done) {
+        ir.core.loadRoot(ir.commitHash)
+            .then(function () {
+                throw new Error('Should have failed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('Cannot load commit object');
             })
             .nodeify(done);
     });
