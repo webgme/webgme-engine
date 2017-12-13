@@ -1,5 +1,25 @@
 # Change Log
 
+## [v2.19.0](https://github.com/webgme/webgme-engine/tree/v2.19.0) (2017-12-13)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.5...v2.19.0)
+
+**Implemented enhancements:**
+
+- addLibrary from seed [\#29](https://github.com/webgme/webgme-engine/issues/29)
+- Add postinstall builder for generating common/libs  [\#2](https://github.com/webgme/webgme-engine/issues/2)
+- Fixes \#29 addLibrary and updateLibrary from seed possible [\#31](https://github.com/webgme/webgme-engine/pull/31) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#2 browserify common-libs in postinstall script and bump versions [\#26](https://github.com/webgme/webgme-engine/pull/26) ([pmeijer](https://github.com/pmeijer))
+- Use eslint for style rules [\#25](https://github.com/webgme/webgme-engine/pull/25) ([pmeijer](https://github.com/pmeijer))
+- Track opened transactions and allow multiple invocations to join a single transaction [\#24](https://github.com/webgme/webgme-engine/pull/24) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- CoreQ should not swallow errors from addLibrary and setGuid [\#30](https://github.com/webgme/webgme-engine/pull/30) ([pmeijer](https://github.com/pmeijer))
+
+**Merged pull requests:**
+
+- Add support for editing attributes using Operation Transformations [\#28](https://github.com/webgme/webgme-engine/pull/28) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.18.5](https://github.com/webgme/webgme-engine/tree/v2.18.5) (2017-11-14)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.4...v2.18.5)
 
