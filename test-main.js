@@ -40,6 +40,7 @@ requirejs.config({
         debug: './src/common/lib/debug/debug',
         chance: './src/common/lib/chance/chance',
         q: './src/common/lib/q/q',
+        'webgme-ot': './src/common/lib/webgme-ot/webgme-ot',
 
         karmatest: './test-karma'
     },

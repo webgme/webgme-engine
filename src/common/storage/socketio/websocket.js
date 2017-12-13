@@ -38,6 +38,7 @@ define([
         }
 
         this.connect = function (networkHandler) {
+
             logger.debug('Connecting via ioClient.');
             forcedDisconnect = false;
 
@@ -46,6 +47,7 @@ define([
                     networkHandler(err);
                     return;
                 }
+
                 self.socket = socket_;
 
                 self.socket.on('connect', function () {
@@ -53,11 +55,14 @@ define([
                         sendBufferSave = [];
                     if (beenConnected) {
                         logger.debug('Socket got reconnected.');
+                        networkHandler(null, CONSTANTS.RECONNECTING);
 
                         // #368
                         for (i = 0; i < self.socket.sendBuffer.length; i += 1) {
-                            // Clear all makeCommits. If pushed - they would be emitted back to the socket.
-                            if (self.socket.sendBuffer[i].data[0] === 'makeCommit') {
+                            // Clear all makeCommit and document operations.
+                            // If pushed - they would be emitted back to the socket!
+                            if (self.socket.sendBuffer[i].data[0] === 'makeCommit' ||
+                                self.socket.sendBuffer[i].data[0] === CONSTANTS.DOCUMENT_OPERATION) {
                                 logger.debug('Removed makeCommit from sendBuffer...');
                             } else {
                                 sendBufferSave.push(self.socket.sendBuffer[i]);
@@ -169,6 +174,16 @@ define([
                 self.socket.on(CONSTANTS.NOTIFICATION, function (data) {
                     logger.debug('NOTIFICATION event', {metadata: data});
                     self.dispatchEvent(CONSTANTS.NOTIFICATION, data);
+                });
+
+                self.socket.on(CONSTANTS.DOCUMENT_OPERATION, function (data) {
+                    logger.debug('DOCUMENT_OPERATION event', {metadata: data});
+                    self.dispatchEvent(self.getDocumentUpdatedEventName(data), data);
+                });
+
+                self.socket.on(CONSTANTS.DOCUMENT_SELECTION, function (data) {
+                    logger.debug('DOCUMENT_SELECTION event', {metadata: data});
+                    self.dispatchEvent(self.getDocumentSelectionEventName(data), data);
                 });
             });
         };
@@ -328,9 +343,43 @@ define([
             self.socket.emit('notification', data, wrapError(callback));
         };
 
+        // OT handling
+        this.watchDocument = function (data, callback) {
+            data.webgmeToken = ioClient.getToken();
+            self.socket.emit('watchDocument', data, wrapError(callback));
+        };
+
+        this.sendDocumentOperation = function (data, callback) {
+            data.webgmeToken = ioClient.getToken();
+            self.socket.emit(CONSTANTS.DOCUMENT_OPERATION, data, wrapError(callback));
+        };
+
+        this.sendDocumentSelection = function (data) {
+            data.webgmeToken = ioClient.getToken();
+            self.socket.emit(CONSTANTS.DOCUMENT_SELECTION, data);
+        };
+
         // Helper functions
         this.getBranchUpdateEventName = function (projectId, branchName) {
             return CONSTANTS.BRANCH_UPDATED + projectId + CONSTANTS.ROOM_DIVIDER + branchName;
+        };
+
+        this.getDocumentUpdatedEventName = function (data) {
+            if (typeof data.docId === 'string') {
+                return CONSTANTS.DOCUMENT_OPERATION + data.docId;
+            } else {
+                return [CONSTANTS.DOCUMENT_OPERATION + data.projectId, data.branchName, data.nodeId, data.attrName]
+                    .join(CONSTANTS.ROOM_DIVIDER);
+            }
+        };
+
+        this.getDocumentSelectionEventName = function (data) {
+            if (typeof data.docId === 'string') {
+                return CONSTANTS.DOCUMENT_SELECTION + data.docId;
+            } else {
+                return [CONSTANTS.DOCUMENT_SELECTION + data.projectId, data.branchName, data.nodeId, data.attrName]
+                    .join(CONSTANTS.ROOM_DIVIDER);
+            }
         };
     }
 

@@ -5,11 +5,10 @@
 
 'use strict';
 
-var testFixture = require('../../_globals.js');
-
 describe('CorePlugins', function () {
 
-    var gmeConfig = testFixture.getGmeConfig(),
+    var testFixture = require('../../_globals.js'),
+        gmeConfig = testFixture.getGmeConfig(),
         Q = testFixture.Q,
         expect = testFixture.expect,
         superagent = testFixture.superagent,
@@ -39,7 +38,8 @@ describe('CorePlugins', function () {
             'CustomPluginConfig',
             'GuidCollider',
             'GenerateAll',
-            'SavingDependency'
+            'SavingDependency',
+            'OTAttributeEditing'
         ],
 
         pluginsShouldFail = [
@@ -49,12 +49,10 @@ describe('CorePlugins', function () {
             'MultipleMainCallbackCalls',
             'InvalidActiveNode',
             'ConstraintEvaluator',
-            'ImportV1'
+            'ImportV1',
+            'OTAttributeEditing'
         ],
-        projectNames = pluginNames.map(function (name) {
-            return name + 'TestMain';
-        }),
-        importResults = [],
+        importResult,
         gmeAuth,
         safeStorage,
 
@@ -77,7 +75,7 @@ describe('CorePlugins', function () {
                 return;
             }
 
-            testFixture.clearDBAndGetGMEAuth(gmeConfigWithAuth, projectNames)
+            testFixture.clearDBAndGetGMEAuth(gmeConfigWithAuth)
                 .then(function (gmeAuth_) {
                     gmeAuth = gmeAuth_;
                     safeStorage = testFixture.getMongoStorage(logger, gmeConfigWithAuth, gmeAuth);
@@ -87,27 +85,22 @@ describe('CorePlugins', function () {
                     ]);
                 })
                 .then(function () {
-                    var projectName,
-                        promises = [],
-                        promise,
-                        i;
-
-                    for (i = 0; i < projectNames.length; i += 1) {
-                        projectName = projectNames[i];
-                        promise = testFixture.importProject(safeStorage, {
-                            projectSeed: './seeds/ActivePanels.webgmex',
-                            projectName: projectName,
-                            branchName: 'master',
-                            gmeConfig: gmeConfig,
-                            logger: logger
-                        });
-                        promises.push(promise);
-                    }
-
-                    return Q.allDone(promises);
+                    return testFixture.importProject(safeStorage, {
+                        projectSeed: './seeds/EmptyProject.webgmex',
+                        projectName: 'CorePluginsTestAll',
+                        branchName: 'master',
+                        gmeConfig: gmeConfig,
+                        logger: logger
+                    });
                 })
-                .then(function (results) {
-                    importResults = results;
+                .then(function (result) {
+                    importResult = result;
+
+                    return Q.allDone(pluginNames
+                        .map(function (name) {
+                            return importResult.project.createBranch(name, importResult.commitHash);
+                        })
+                    );
                 })
                 .nodeify(done);
         });
@@ -133,7 +126,7 @@ describe('CorePlugins', function () {
         var agent = superagent.agent();
 
         agent.get(serverBaseUrl + '/api/plugins', function (err, res) {
-            expect(err).to.equal(null);
+            expect(err).to.equal(null, err && err.message);
             // As pluginNames contains unique names, we can check that each is
             // in the response and the response is the proper length
             expect(res.body.length).to.equal(pluginNames.length);  // ensures that we test all available core plugins
@@ -150,10 +143,10 @@ describe('CorePlugins', function () {
         function createPluginTest(name, cnt) {
             // import seed designs
             it('should run plugin ' + name, function (done) {
-                var pluginManager = new PluginCliManager(importResults[cnt].project, logger, gmeConfig),
+                var pluginManager = new PluginCliManager(importResult.project, logger, gmeConfig),
                     pluginContext = {
                         activeNode: '/1',
-                        branchName: 'master'
+                        branchName: pluginNames[cnt]
                     },
                     callbackCnt = 0;
 

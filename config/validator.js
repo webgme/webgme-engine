@@ -157,6 +157,11 @@ function validateConfig(configOrFileName) {
     expectedKeys.push('debug');
     assertBoolean('config.debug', config.debug);
 
+    expectedKeys.push('documentEditing');
+    assertObject('config.documentEditing', config.documentEditing);
+    assertBoolean('config.documentEditing.enable', config.documentEditing.enable, true);
+    assertNumber('config.documentEditing.disconnectTimeout', config.documentEditing.disconnectTimeout);
+
     // executor
     expectedKeys.push('executor');
     assertObject('config.executor', config.executor);

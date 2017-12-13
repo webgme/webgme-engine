@@ -742,6 +742,36 @@ function getChangedNodesFromPersisted(persisted, printPatches) {
     return storageUtil.getChangedNodes(coreObjects, persisted.rootHash);
 }
 
+/**
+ *
+ * @param gmeConfig
+ * @param logger
+ * @param [webgmeToken]
+ * @param [callback]
+ * @returns {*}
+ */
+function getConnectedStorage(gmeConfig, logger, webgmeToken, callback) {
+    var deferred = Q.defer(),
+        NodeStorage = requireJS('common/storage/nodestorage'),
+        STORAGE_CONSTANTS = requireJS('common/storage/constants'),
+        storage = NodeStorage.createStorage(null, webgmeToken, logger, gmeConfig);
+
+    storage.open(function (networkState) {
+        var err;
+
+        if (networkState === STORAGE_CONSTANTS.CONNECTED) {
+            deferred.resolve(storage);
+        } else {
+            err = new Error('Unexpected network state: ' + networkState);
+            // Log it since promise may already have been resolved..
+            logger.error(err);
+            deferred.reject(err);
+        }
+    });
+
+    return deferred.promise.nodeify(callback);
+}
+
 // Only load the config if globals is used for webgme and not for a domain repo.
 if (process.cwd() === exports.path.join(__dirname, '..')) {
     WebGME.addToRequireJsPaths(getGmeConfig());
@@ -771,10 +801,15 @@ exports.importProject = importProject;
 exports.projectName2Id = projectName2Id;
 exports.logIn = logIn;
 exports.openSocketIo = openSocketIo;
+exports.getConnectedStorage = getConnectedStorage;
 exports.loadRootNodeFromCommit = loadRootNodeFromCommit;
 exports.loadNode = loadNode;
 
 exports.compareWebgmexFiles = compareWebgmexFiles;
 exports.getChangedNodesFromPersisted = getChangedNodesFromPersisted;
+exports.getConnectedStorage = getConnectedStorage;
+exports.noop = function () {
+
+};
 
 module.exports = exports;

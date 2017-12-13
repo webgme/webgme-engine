@@ -21,7 +21,8 @@ var requirejs = require('requirejs'),
             superagent: './common/lib/superagent/superagent',
             debug: './common/lib/debug/debug',
             q: './common/lib/q/q',
-            chance: './common/lib/chance/chance'
+            chance: './common/lib/chance/chance',
+            'webgme-ot': './common/lib/webgme-ot/webgme-ot'
         },
         optimize: 'none',
         generateSourceMaps: true,

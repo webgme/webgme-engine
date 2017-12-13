@@ -1740,6 +1740,12 @@ define([
             storage.unwatchProject(projectId, eventHandler, callback);
         };
 
+        // Document handling
+        this.watchDocument = storage.watchDocument.bind(storage);
+        this.unwatchDocument = storage.unwatchDocument.bind(storage);
+        this.sendDocumentOperation = storage.sendDocumentOperation.bind(storage);
+        this.sendDocumentSelection = storage.sendDocumentSelection.bind(storage);
+
         // Node handling
         this.getNode = function (nodePath) {
             return getNode(nodePath, logger, state, storeNode);

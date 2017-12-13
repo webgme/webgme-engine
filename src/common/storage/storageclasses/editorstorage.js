@@ -55,6 +55,10 @@ define([
                     self.userId = webSocket.userId;
                     self.serverVersion = webSocket.serverVersion;
                     networkHandler(connectionState);
+                } else if (connectionState === CONSTANTS.RECONNECTING) {
+                    // This is an internal state only to handle rejoining of rooms.
+                    // Technically the websocket is connected at this point.
+                    self.reconnecting = true;
                 } else if (connectionState === CONSTANTS.RECONNECTED) {
                     self.connected = true;
                     self._rejoinWatcherRooms()
@@ -62,6 +66,7 @@ define([
                             return self._rejoinBranchRooms();
                         })
                         .then(function () {
+                            self.reconnecting = false;
                             networkHandler(connectionState);
                         })
                         .catch(function (err) {
