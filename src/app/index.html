@@ -39,26 +39,7 @@
                         return;
                     }
 
-                    //document.getElementById('#info').innerHTML = JSON.stringify(projectInfo, null, 4);
-
-                    client.watchDocument({
-                                projectId: 'guest+doc',
-                                branchName: 'master',
-                                nodeId: '/1',
-                                attrName: 'doc',
-                                attrValue: 'hello'
-                            },
-                            function (operation) {
-                                console.log(operation);
-                            },
-                            function (err, result) {
-                                if (err) {
-                                    alert('Failed to watch document:' + err);
-                                    return;
-                                }
-
-                                console.log(result);
-                            });
+                    document.getElementById('#info').innerHTML = JSON.stringify(projectInfo, null, 4);
                 })
             });
 
@@ -68,7 +49,7 @@
                     return;
                 }
 
-                //console.log(res.body);
+                console.log(res.body);
 
                 document.getElementById('#user').innerHTML = res.body._id;
             });
