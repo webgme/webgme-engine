@@ -331,6 +331,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, info);
                     })
                     .catch(function (err) {
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
                         callback(err.message);
                     });
             });
@@ -343,7 +344,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 } else {
                     socket.leave(CONSTANTS.DATABASE_ROOM);
                 }
-                callback(null);
+
+                callback();
             });
 
             socket.on('watchProject', function (data, callback) {
@@ -355,7 +357,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             if (access.read) {
                                 socket.join(data.projectId);
                                 logger.debug('socket joined room', data.projectId);
-                                callback(null);
+                                callback();
                             } else {
                                 logger.warn('socket not authorized to join room', data.projectId);
                                 callback('No read access for ' + data.projectId);
@@ -363,15 +365,12 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         } else {
                             socket.leave(data.projectId);
                             logger.debug('socket left room', data.projectId);
-                            callback(null);
+                            callback();
                         }
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -402,11 +401,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -436,11 +432,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, branches, access);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -457,11 +450,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback();
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -485,11 +475,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, latestCommitData);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -575,6 +562,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                     });
                                 })
                                 .catch(function (err) {
+                                    logger.error(err.stack, '\n', (new Error('Caught by')).stack);
                                     callback(err.message);
                                 });
                         } else {
@@ -582,11 +570,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         }
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -600,11 +585,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, loadedObjects); //Single load-fails are reported in this object.
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -618,11 +600,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, hashDictionary);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -653,11 +632,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, status);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -671,11 +647,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, result);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -690,11 +663,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, projects);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -712,11 +682,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, didExist);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -734,11 +701,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, project.projectId);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -756,11 +720,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, newProjectId);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -778,11 +739,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, newProject.projectId);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -797,11 +755,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, branches);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -815,11 +770,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -833,11 +785,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -851,11 +800,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, tags);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -869,11 +815,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, commits);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -887,11 +830,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, commits);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -905,11 +845,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, commitData);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -923,11 +860,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, commonCommitHash);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -941,11 +875,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null, commitResult);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -971,11 +902,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         });
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -1016,11 +944,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(null);
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -1137,11 +1062,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         }
                     })
                     .catch(function (err) {
-                        if (gmeConfig.debug) {
-                            callback(err.stack);
-                        } else {
-                            callback(err.message);
-                        }
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
                     });
             });
 
@@ -1170,11 +1092,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         throw new Error('Client not watching document - cannot send operation!');
                     }
                 } catch (err) {
-                    if (gmeConfig.debug) {
-                        callback(err.stack);
-                    } else {
-                        callback(err.message);
-                    }
+                    logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                    callback(err.message);
                 }
             });
 
@@ -1205,6 +1124,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         throw new Error('Client not watching document - cannot send selection!');
                     }
                 } catch (err) {
+                    logger.error(err.stack, '\n', (new Error('Caught by')).stack);
                     done(err);
                 }
             });
