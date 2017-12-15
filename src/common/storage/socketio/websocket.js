@@ -8,8 +8,9 @@
 //
 define([
     'common/EventDispatcher',
-    'common/storage/constants'
-], function (EventDispatcher, CONSTANTS) {
+    'common/storage/constants',
+    'q'
+], function (EventDispatcher, CONSTANTS, Q) {
 
     'use strict';
 
@@ -35,6 +36,11 @@ define([
                     callback.apply(null, arguments);
                 }
             };
+        }
+
+        function emitWithToken(data, eventName) {
+            data.webgmeToken = ioClient.getToken();
+            return Q.ninvoke(self.socket, 'emit', eventName, data);
         }
 
         this.connect = function (networkHandler) {
@@ -196,141 +202,222 @@ define([
 
         // watcher functions
         this.watchDatabase = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('watchDatabase', data, wrapError(callback));
+            return emitWithToken(data, 'watchDatabase')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.watchProject = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('watchProject', data, wrapError(callback));
+            return emitWithToken(data, 'watchProject')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.watchBranch = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('watchBranch', data, wrapError(callback));
+            return emitWithToken(data, 'watchBranch')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         // model editing functions
         this.openProject = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('openProject', data, wrapError(callback));
+            return emitWithToken(data, 'openProject')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.closeProject = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('closeProject', data, wrapError(callback));
+            return emitWithToken(data, 'closeProject')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.openBranch = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('openBranch', data, wrapError(callback));
+            return emitWithToken(data, 'openBranch')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.closeBranch = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('closeBranch', data, wrapError(callback));
+            return emitWithToken(data, 'closeBranch')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.makeCommit = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('makeCommit', data, wrapError(callback));
+            return emitWithToken(data, 'makeCommit')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.loadObjects = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('loadObjects', data, wrapError(callback));
+            return emitWithToken(data, 'loadObjects')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.loadPaths = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('loadPaths', data, wrapError(callback));
+            return emitWithToken(data, 'loadPaths')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.setBranchHash = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('setBranchHash', data, wrapError(callback));
+            return emitWithToken(data, 'setBranchHash')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.getBranchHash = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('getBranchHash', data, wrapError(callback));
+            return emitWithToken(data, 'getBranchHash')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.squashCommits = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('squashCommits', data, wrapError(callback));
+            return emitWithToken(data, 'squashCommits')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         // REST like functions
         this.getProjects = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('getProjects', data, wrapError(callback));
+            return emitWithToken(data, 'getProjects')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.deleteProject = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('deleteProject', data, wrapError(callback));
+            return emitWithToken(data, 'deleteProject')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.createProject = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('createProject', data, wrapError(callback));
+            return emitWithToken(data, 'createProject')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.transferProject = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('transferProject', data, wrapError(callback));
+            return emitWithToken(data, 'transferProject')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.duplicateProject = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('duplicateProject', data, wrapError(callback));
+            return emitWithToken(data, 'duplicateProject')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.getBranches = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('getBranches', data, wrapError(callback));
+            return emitWithToken(data, 'getBranches')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.createTag = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('createTag', data, wrapError(callback));
+            return emitWithToken(data, 'createTag')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.deleteTag = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('deleteTag', data, wrapError(callback));
+            return emitWithToken(data, 'deleteTag')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.getTags = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('getTags', data, wrapError(callback));
+            return emitWithToken(data, 'getTags')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.getCommits = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('getCommits', data, wrapError(callback));
+            return emitWithToken(data, 'getCommits')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.getHistory = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('getHistory', data, wrapError(callback));
+            return emitWithToken(data, 'getHistory')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.getLatestCommitData = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('getLatestCommitData', data, wrapError(callback));
+            return emitWithToken(data, 'getLatestCommitData')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.getCommonAncestorCommit = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('getCommonAncestorCommit', data, wrapError(callback));
+            return emitWithToken(data, 'getCommonAncestorCommit')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         //temporary simple request / result functions
         this.simpleRequest = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('simpleRequest', data, wrapError(callback));
+            return emitWithToken(data, 'simpleRequest')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.simpleQuery = function (workerId, data, callback) {
@@ -339,24 +426,36 @@ define([
         };
 
         this.sendNotification = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('notification', data, wrapError(callback));
+            return emitWithToken(data, 'notification')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         // OT handling
         this.watchDocument = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('watchDocument', data, wrapError(callback));
+            return emitWithToken(data, 'watchDocument')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         this.sendDocumentOperation = function (data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit(CONSTANTS.DOCUMENT_OPERATION, data, wrapError(callback));
+            return emitWithToken(data, CONSTANTS.DOCUMENT_OPERATION)
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
-        this.sendDocumentSelection = function (data) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit(CONSTANTS.DOCUMENT_SELECTION, data);
+        this.sendDocumentSelection = function (data, callback) {
+            return emitWithToken(data, CONSTANTS.DOCUMENT_SELECTION)
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
         };
 
         // Helper functions
