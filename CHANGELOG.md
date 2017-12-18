@@ -1,5 +1,15 @@
 # Change Log
 
+## [v2.19.2](https://github.com/webgme/webgme-engine/tree/v2.19.2) (2017-12-18)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.1...v2.19.2)
+
+**Fixed bugs:**
+
+- Fix Plugin MetaGME Paradigm Importer does not properly import connections [\#33](https://github.com/webgme/webgme-engine/pull/33) ([kecso](https://github.com/kecso))
+
+## [v2.19.1](https://github.com/webgme/webgme-engine/tree/v2.19.1) (2017-12-13)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.0...v2.19.1)
+
 ## [v2.19.0](https://github.com/webgme/webgme-engine/tree/v2.19.0) (2017-12-13)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.18.5...v2.19.0)
 
