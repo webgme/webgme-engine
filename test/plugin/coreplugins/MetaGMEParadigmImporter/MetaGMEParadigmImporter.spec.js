@@ -84,7 +84,7 @@ describe('Plugin MetaGMEParadigmImporter', function () {
             .then(function (plugin) {
                 expect(plugin instanceof PluginBase).to.equal(true);
                 expect(plugin.getName()).to.equal('MetaGME Paradigm Importer');
-                expect(typeof plugin.getDescription ()).to.equal('string');
+                expect(typeof plugin.getDescription()).to.equal('string');
                 expect(plugin.getConfigStructure() instanceof Array).to.equal(true);
                 expect(plugin.getConfigStructure().length).to.equal(1);
             })
@@ -173,6 +173,25 @@ describe('Plugin MetaGMEParadigmImporter', function () {
                 }
                 expect(typeof languageNode).not.to.equal('undefined');
                 expect(importResult.core.getAttribute(languageNode, 'author')).to.equal('An author');
+                return Q.ninvoke(importResult.core, 'loadChildren', languageNode);
+            })
+            .then(function (children) {
+                var i,
+                    name;
+
+                for (i = 0; i < children.length; i += 1) {
+                    name = importResult.core.getAttribute(children[i], 'name');
+                    expect(typeof name).to.equal('string');
+
+                    if (name === 'Param') {
+                        expect(importResult.core.getValidAttributeNames(children[i]))
+                            .to.include.members(['DataType', 'Global', 'InitValue', 'Size']);
+                    }
+
+                    if (name === 'ParameterConn') {
+                        expect(importResult.core.getValidPointerNames(children[i])).to.include.members(['src', 'dst']);
+                    }
+                }
             })
             .nodeify(done);
     });
