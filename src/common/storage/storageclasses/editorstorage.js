@@ -91,19 +91,13 @@ define([
         };
 
         this.close = function (callback) {
-            var error = null,
-                openProjects = Object.keys(projects),
-                projectCnt = openProjects.length;
+            logger.debug('Closing storage, openProjects', Object.keys(projects));
 
-            logger.debug('Closing storage, openProjects', openProjects);
-
-            function afterProjectClosed(err) {
-                if (err) {
-                    logger.error(err.message);
-                    error = err;
-                }
-                logger.debug('inside afterProjectClosed projectCnt', projectCnt);
-                if (projectCnt === 0) {
+            return Q.all(Object.keys(projects)
+                .map(function (projectId) {
+                    return self.closeProject(projectId);
+                }))
+                .then(function () {
                     // Remove the handler for the socket.io events 'connect' and 'disconnect'.
                     logger.debug('Removing connect and disconnect events');
                     webSocket.socket.removeAllListeners('connect');
@@ -114,19 +108,8 @@ define([
                     self.connected = false;
                     // Remove all local event-listeners.
                     webSocket.clearAllEvents();
-                    callback(error);
-                }
-            }
-
-            if (projectCnt > 0) {
-                while (projectCnt) {
-                    projectCnt -= 1;
-                    this.closeProject(openProjects[projectCnt], afterProjectClosed);
-                }
-            } else {
-                logger.debug('No projects were open, will disconnect directly');
-                afterProjectClosed(null);
-            }
+                })
+                .nodeify(callback);
         };
 
         this.getToken = function () {
@@ -190,49 +173,27 @@ define([
         };
 
         this.closeProject = function (projectId, callback) {
-            var project = projects[projectId],
-                error = null,
-                branchCnt,
-                branchNames;
             logger.debug('closeProject', projectId);
 
-            function closeAndDelete(err) {
-                if (err) {
-                    logger.error(err.message);
-                    error = err;
-                }
-                logger.debug('inside closeAndDelete branchCnt', branchCnt);
-                if (branchCnt === 0) {
-                    if (self.connected) {
-                        webSocket.closeProject({projectId: projectId}, function (err) {
-                            logger.debug('project closed on server.');
-                            delete projects[projectId];
-                            callback(err || error);
-                        });
-                    } else {
-                        logger.debug('Disconnected while closing project.. skipping webSocket request to server.');
+            if (projects[projectId]) {
+                return Q.all(Object.keys(projects[projectId].branches)
+                    .map(function (branchName) {
+                        return self.closeBranch(projectId, branchName);
+                    }))
+                    .then(function () {
+                        if (self.connected) {
+                            return webSocket.closeProject({projectId: projectId});
+                        } else {
+                            logger.debug('Disconnected while closing project.. skipping webSocket request to server.');
+                        }
+                    })
+                    .then(function () {
                         delete projects[projectId];
-                        callback(error);
-                    }
-
-                }
-            }
-
-            if (project) {
-                branchNames = Object.keys(project.branches);
-                branchCnt = branchNames.length;
-                if (branchCnt > 0) {
-                    logger.warn('Branches still open for project, will be closed.', projectId, branchNames);
-                    while (branchCnt) {
-                        branchCnt -= 1;
-                        this.closeBranch(projectId, branchNames[branchCnt], closeAndDelete);
-                    }
-                } else {
-                    closeAndDelete(null);
-                }
+                    })
+                    .nodeify(callback);
             } else {
                 logger.warn('Project is not open ', projectId);
-                callback(null);
+                return Q().nodeify(callback);
             }
         };
 

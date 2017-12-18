@@ -159,8 +159,8 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams, noop, noop),
-                    user2.watchDocument(initParams,
+                    user1.watchDocument(testFixture.copy(initParams), noop, noop),
+                    user2.watchDocument(testFixture.copy(initParams),
                         function atOp2(op) {
                             try {
                                 expect(op.apply(initParams.attrValue)).to.equal('hello there');
@@ -210,8 +210,8 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams, noop, noop),
-                    user2.watchDocument(initParams,
+                    user1.watchDocument(testFixture.copy(initParams), noop, noop),
+                    user2.watchDocument(testFixture.copy(initParams),
                         function atOp2(op) {
                             cnt += 1;
                             try {
@@ -269,8 +269,8 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams, noop, noop),
-                    user2.watchDocument(initParams,
+                    user1.watchDocument(testFixture.copy(initParams), noop, noop),
+                    user2.watchDocument(testFixture.copy(initParams),
                         function atOp2(op) {
                             cnt += 1;
                             try {
@@ -333,7 +333,7 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams,
+                    user1.watchDocument(testFixture.copy(initParams),
                         function atOp1(op) {
                             cnt += 1;
                             try {
@@ -346,7 +346,7 @@ describe('storage document editing', function () {
                             }
                         }, noop
                     ),
-                    user2.watchDocument(initParams,
+                    user2.watchDocument(testFixture.copy(initParams),
                         function atOp2(op) {
                             cnt += 1;
                             try {
@@ -403,8 +403,8 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams, noop, noop),
-                    user2.watchDocument(initParams, noop,
+                    user1.watchDocument(testFixture.copy(initParams), noop, noop),
+                    user2.watchDocument(testFixture.copy(initParams), noop,
                         function atSel2(data) {
                             cnt += 1;
                             if (cnt > 1) {
@@ -463,7 +463,7 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams,
+                    user1.watchDocument(testFixture.copy(initParams),
                         function atOp1(op) {
                             cnt += 1;
                             try {
@@ -476,7 +476,7 @@ describe('storage document editing', function () {
                             }
                         }, noop
                     ),
-                    user2.watchDocument(initParams, noop,
+                    user2.watchDocument(testFixture.copy(initParams), noop,
                         function atSel2(data) {
                             cnt += 1;
                             if (cnt > 2) {
@@ -535,7 +535,7 @@ describe('storage document editing', function () {
                 user2 = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams, noop, function atSel2(data) {
+                    user1.watchDocument(testFixture.copy(initParams), noop, function atSel2(data) {
                         cnt += 1;
                         if (cnt > 2) {
                             return;
@@ -550,7 +550,7 @@ describe('storage document editing', function () {
                             done(e);
                         }
                     }),
-                    user2.watchDocument(initParams, noop, noop)
+                    user2.watchDocument(testFixture.copy(initParams), noop, noop)
                 ]);
             })
             .then(function (res) {
@@ -591,11 +591,11 @@ describe('storage document editing', function () {
                 userRead = res[1];
 
                 return Q.allDone([
-                    user1.watchDocument(initParams, function () {
+                    user1.watchDocument(testFixture.copy(initParams), function () {
                         clearTimeout(tId);
                         done(new Error('should not receive any operations'));
                     }, noop),
-                    userRead.watchDocument(initParams,
+                    userRead.watchDocument(testFixture.copy(initParams),
                         function atOp2(op) {
                             try {
                                 expect(op.apply(initParams.attrValue)).to.equal('hello there');
@@ -644,7 +644,7 @@ describe('storage document editing', function () {
             .then(function (res) {
                 userNoAccess = res;
 
-                return userNoAccess.watchDocument(initParams, noop, noop);
+                return userNoAccess.watchDocument(testFixture.copy(initParams), noop, noop);
             })
             .then(function (res) {
                 throw new Error('Should not succeed!');
@@ -735,11 +735,11 @@ describe('storage document editing', function () {
                 docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
                     .substring(CONSTANTS.DOCUMENT_OPERATION.length);
 
-                return storage.watchDocument(initParams, noop, noop);
+                return storage.watchDocument(testFixture.copy(initParams), noop, noop);
             })
             .then(function (res) {
                 users['user1'].docId = res.docId;
-                return storage.watchDocument(initParams, noop, noop);
+                return storage.watchDocument(testFixture.copy(initParams), noop, noop);
             })
             .then(function (res) {
                 throw new Error('Should not succeed!');
@@ -767,7 +767,7 @@ describe('storage document editing', function () {
                 docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
                     .substring(CONSTANTS.DOCUMENT_OPERATION.length);
 
-                return storage.unwatchDocument(initParams);
+                return storage.unwatchDocument(testFixture.copy(initParams));
             })
             .then(function (res) {
                 throw new Error('Should not succeed!');
