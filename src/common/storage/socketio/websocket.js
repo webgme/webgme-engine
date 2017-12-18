@@ -28,19 +28,13 @@ define([
         logger.debug('ctor');
         EventDispatcher.call(this);
 
-        function wrapError(callback) {
-            return function () {
-                if (typeof arguments[0] === 'string') {
-                    callback(new Error(arguments[0]), arguments[1]); // Add second argument for e.g. pluginResults
-                } else {
-                    callback.apply(null, arguments);
-                }
-            };
-        }
-
-        function emitWithToken(data, eventName) {
+        function emitWithToken(data, eventName, callback) {
             data.webgmeToken = ioClient.getToken();
-            return Q.ninvoke(self.socket, 'emit', eventName, data);
+            if (callback) {
+                self.socket.emit(eventName, data, callback);
+            } else {
+                return Q.ninvoke(self.socket, 'emit', eventName, data);
+            }
         }
 
         this.connect = function (networkHandler) {
@@ -421,8 +415,7 @@ define([
         };
 
         this.simpleQuery = function (workerId, data, callback) {
-            data.webgmeToken = ioClient.getToken();
-            self.socket.emit('simpleQuery', workerId, data, wrapError(callback));
+            return Q.reject(new Error('Not implemented!')).nodeify(callback);
         };
 
         this.sendNotification = function (data, callback) {
@@ -443,19 +436,23 @@ define([
         };
 
         this.sendDocumentOperation = function (data, callback) {
-            return emitWithToken(data, CONSTANTS.DOCUMENT_OPERATION)
-                .catch(function (err) {
-                    return Q.reject(new Error(err));
-                })
-                .nodeify(callback);
+            emitWithToken(data, CONSTANTS.DOCUMENT_OPERATION, function (err, res) {
+                if (err) {
+                    callback(new Error(err));
+                } else {
+                    callback(null, res);
+                }
+            });
         };
 
         this.sendDocumentSelection = function (data, callback) {
-            return emitWithToken(data, CONSTANTS.DOCUMENT_SELECTION)
-                .catch(function (err) {
-                    return Q.reject(new Error(err));
-                })
-                .nodeify(callback);
+            emitWithToken(data, CONSTANTS.DOCUMENT_SELECTION, function (err, res) {
+                if (err) {
+                    callback(new Error(err));
+                } else {
+                    callback(null, res);
+                }
+            });
         };
 
         // Helper functions

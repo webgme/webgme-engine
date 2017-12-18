@@ -155,23 +155,38 @@ define([
          * @param {EditorStorage~openProjectCallback} - callback
          */
         this.openProject = function (projectId, callback) {
-            var data = {
-                projectId: projectId
-            };
+            var deferred,
+                data = {
+                    projectId: projectId
+                };
+
             if (projects[projectId]) {
-                callback(new Error('project is already open ' + projectId));
-                return;
+                return Q.reject(new Error('project is already open ' + projectId)).nodeify(callback);
             }
 
-            webSocket.openProject(data, function (err, branches, access) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                var project = new Project(projectId, self, logger, gmeConfig);
-                projects[projectId] = project;
-                callback(null, project, branches, access);
-            });
+            webSocket.openProject(data)
+                .spread(function (branches, access) {
+                    var project = new Project(projectId, self, logger, gmeConfig);
+                    projects[projectId] = project;
+
+                    if (callback) {
+                        callback(null, project, branches, access);
+                    } else {
+                        deferred.resolve([project, branches, access]);
+                    }
+                })
+                .catch(function (err) {
+                    if (callback) {
+                        callback(err);
+                    } else {
+                        deferred.reject(err);
+                    }
+                });
+
+            if (!callback) {
+                deferred = Q.defer();
+                return deferred.promise;
+            }
         };
 
         this.closeProject = function (projectId, callback) {
@@ -219,7 +234,6 @@ define([
                 logger.warn('Project is not open ', projectId);
                 callback(null);
             }
-
         };
 
         this.openBranch = function (projectId, branchName, hashUpdateHandler, branchStatusHandler, callback) {
@@ -301,16 +315,14 @@ define([
 
             if (!project) {
                 logger.warn('closeBranch: project is not open', projectId, branchName);
-                callback(null);
-                return;
+                return Q(null).nodeify(callback);
             }
 
             branch = project.branches[branchName];
 
             if (!branch) {
                 logger.warn('closeBranch: project does not have given branch.', projectId, branchName);
-                callback(null);
-                return;
+                return Q(null).nodeify(callback);
             }
 
             // This will prevent memory leaks and expose if a commit is being
@@ -323,14 +335,15 @@ define([
 
             branch.cleanUp();
             if (self.connected) {
-                webSocket.closeBranch({projectId: projectId, branchName: branchName}, function (err) {
-                    delete project.branches[branchName];
-                    callback(err);
-                });
+                return webSocket.closeBranch({projectId: projectId, branchName: branchName})
+                    .then(function () {
+                        delete project.branches[branchName];
+                    })
+                    .nodeify(callback);
             } else {
                 logger.debug('Disconnected while closing branch.. skipping webSocket request to server.');
                 delete project.branches[branchName];
-                callback(null);
+                return Q(null).nodeify(callback);
             }
         };
 
@@ -342,45 +355,39 @@ define([
             this.logger.debug('forkBranch', projectId, branchName, forkName, commitHash);
 
             if (!project) {
-                callback(new Error('Cannot fork branch, ' + branchName + ', project ' + projectId + ' is not opened.'));
-                return;
+                return Q.reject(new Error('Cannot fork branch, ' + branchName + ', project '
+                    + projectId + ' is not opened.'))
+                    .nodeify(callback);
             }
 
             branch = project.branches[branchName];
 
             if (!branch) {
-                callback(new Error('Cannot fork branch, branch is not open ' + branchName + ', project: ' + projectId));
-                return;
+                return Q.reject(new Error('Cannot fork branch, branch is not open ' + branchName +
+                    ', project: ' + projectId))
+                    .nodeify(callback);
             }
 
             forkData = branch.getCommitsForNewFork(commitHash, forkName); // commitHash = null defaults to latest commit
             self.logger.debug('forkBranch - forkData', forkData);
 
             if (forkData === false) {
-                callback(new Error('Could not find specified commitHash: ' + commitHash));
-                return;
+                return Q.reject(new Error('Could not find specified commitHash: ' + commitHash)).nodeify(callback);
             }
 
-            self.persistCommits(forkData.queue, function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-
-                self.createBranch(projectId, forkName, forkData.commitHash, function (err) {
-                    if (err) {
-                        logger.error('forkBranch - failed creating new branch', err);
-                        callback(err);
-                        return;
-                    }
-
-                    callback(null, forkData.commitHash);
-                });
-            });
+            return self.persistCommits(forkData.queue)
+                .then(function () {
+                    return self.createBranch(projectId, forkName, forkData.commitHash);
+                })
+                .then(function () {
+                    return forkData.commitHash;
+                })
+                .nodeify(callback);
         };
 
         this.persistCommits = function (commitQueue, callback) {
-            var commitHash;
+            var deferred = Q.defer(),
+                commitHash;
 
             function commitNext(i) {
                 var currentCommitData = commitQueue[i];
@@ -391,22 +398,20 @@ define([
                     delete currentCommitData.branchName;
                     commitHash = currentCommitData.commitObject[CONSTANTS.MONGO_ID];
 
-                    webSocket.makeCommit(currentCommitData, function (err, result) {
-                        if (err) {
-                            logger.error('persistCommits - failed committing', err);
-                            callback(err);
-                            return;
-                        }
-
-                        logger.debug('persistCommits - commit successful, hash', result);
-                        commitNext(i += 1);
-                    });
+                    webSocket.makeCommit(currentCommitData)
+                        .then(function (result) {
+                            logger.debug('persistCommits - commit successful, hash', result);
+                            commitNext(i += 1);
+                        })
+                        .catch(deferred.reject);
                 } else {
-                    callback(null, commitHash);
+                    deferred.resolve(commitHash);
                 }
             }
 
             commitNext(0);
+
+            return deferred.promise.nodeify(callback);
         };
 
         this.makeCommit = function (projectId, branchName, parents, rootHash, coreObjects, msg, callback) {
@@ -451,7 +456,7 @@ define([
             }
             // console.timeEnd('patch-computation');
             // console.time('getChangedNodes');
-            
+
             commitData.changedNodes = UTIL.getChangedNodes(commitData.coreObjects, rootHash);
 
             // console.timeEnd('getChangedNodes');
@@ -865,7 +870,7 @@ define([
                                 branchName: branchName
                             });
 
-                            promises.push(Q.ninvoke(webSocket, 'watchBranch', {
+                            promises.push(webSocket.watchBranch({
                                 projectId: projectId,
                                 branchName: branchName,
                                 join: true
