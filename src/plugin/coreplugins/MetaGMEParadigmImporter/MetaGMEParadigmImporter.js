@@ -50,7 +50,6 @@ define([
     MetaGMEParadigmImporter.prototype = Object.create(PluginBase.prototype);
     MetaGMEParadigmImporter.prototype.constructor = MetaGMEParadigmImporter;
 
-
     /**
      * Main function for the plugin to execute. This will perform the execution.
      * Notes:
@@ -166,7 +165,6 @@ define([
             return new Error('Invalid xmpData: paradigm key does not exist.');
         }
 
-
         if (paradigm.hasOwnProperty('folder') === false) {
             return new Error('Invalid xmpData.paradigm: folder key does not exist.');
         }
@@ -203,7 +201,6 @@ define([
         }
     };
 
-
     MetaGMEParadigmImporter.prototype.createLanguageNode = function (paradigm) {
         var self = this,
             languageNode;
@@ -238,7 +235,6 @@ define([
 
         self.core.setRegistry(languageNode, 'position', {x: 100, y: 200});
         self.core.setRegistry(languageNode, 'decorator', 'DefaultDecorator');
-
 
         self.cache.languageNode = languageNode;
 
@@ -459,7 +455,6 @@ define([
                 self.addValidPointerSpecs(node, xmpNode);
             }
 
-
             if (i % numElementsInARow === 0) {
                 // first element
                 maxAttrInThisRow = 0;
@@ -540,6 +535,7 @@ define([
                     if (pointerName === 'set') {
                         self.core.createSet(node, pointerName);
                     } else {
+                        self.core.setPointerMetaLimits(node, pointerName, 0, 1);
                         self.core.setPointer(node, pointerName, null);
                     }
                 }
