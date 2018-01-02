@@ -203,69 +203,78 @@ define([
                     projectId: projectId,
                     branchName: branchName
                 },
+                deferred,
                 branch;
 
             if (!project) {
-                callback(new Error('Cannot open branch, ' + branchName + ', project ' + projectId + ' is not opened.'));
-                return;
+                return Q.reject(
+                    new Error('Cannot open branch, ' + branchName + ', project ' + projectId + ' is not opened.'))
+                    .nodeify(callback);
             }
 
             if (project.branches[branchName]) {
-                callback(new Error('Branch is already open ' + branchName + ', project: ' + projectId));
-                return;
+                return Q.reject(new Error('Branch is already open ' + branchName + ', project: ' + projectId))
+                    .nodeify(callback);
             }
 
             logger.debug('openBranch, calling webSocket openBranch', projectId, branchName);
 
-            webSocket.openBranch(data, function (err, latestCommit) {
-                var branchHash;
-                if (err) {
-                    callback(err);
-                    return;
-                }
+            deferred = Q.defer();
 
-                branch = new Branch(branchName, project.logger);
-                project.branches[branchName] = branch;
+            webSocket.openBranch(data)
+                .then(function (latestCommit) {
+                    var branchHash;
 
-                // Update state of branch
-                branch.latestCommitData = latestCommit;
-                branchHash = latestCommit.commitObject[CONSTANTS.MONGO_ID];
-                branch.updateHashes(branchHash, branchHash);
+                    branch = new Branch(branchName, project.logger);
+                    project.branches[branchName] = branch;
 
-                // Add handlers to branch and set the remote update handler for the web-socket.
-                branch.addHashUpdateHandler(hashUpdateHandler);
-                branch.addBranchStatusHandler(branchStatusHandler);
+                    // Update state of branch
+                    branch.latestCommitData = latestCommit;
+                    branchHash = latestCommit.commitObject[CONSTANTS.MONGO_ID];
+                    branch.updateHashes(branchHash, branchHash);
 
-                branch._remoteUpdateHandler = function (_ws, updateData, initCallback) {
-                    var j,
-                        originHash = updateData.commitObject[CONSTANTS.MONGO_ID];
-                    logger.debug('_remoteUpdateHandler invoked for project, branch', projectId, branchName);
-                    for (j = 0; j < updateData.coreObjects.length; j += 1) {
-                        if (updateData.coreObjects[j] && updateData.coreObjects[j].type === 'patch') {
-                            project.insertPatchObject(updateData.coreObjects[j]);
+                    // Add handlers to branch and set the remote update handler for the web-socket.
+                    branch.addHashUpdateHandler(hashUpdateHandler);
+                    branch.addBranchStatusHandler(branchStatusHandler);
+
+                    branch._remoteUpdateHandler = function (_ws, updateData, initCallback) {
+                        var j,
+                            originHash = updateData.commitObject[CONSTANTS.MONGO_ID];
+                        logger.debug('_remoteUpdateHandler invoked for project, branch', projectId, branchName);
+                        for (j = 0; j < updateData.coreObjects.length; j += 1) {
+                            if (updateData.coreObjects[j] && updateData.coreObjects[j].type === 'patch') {
+                                project.insertPatchObject(updateData.coreObjects[j]);
+                            } else {
+                                project.insertObject(updateData.coreObjects[j]);
+                            }
+                        }
+
+                        branch.queueUpdate(updateData);
+                        branch.updateHashes(null, originHash);
+
+                        if (branch.getCommitQueue().length === 0) {
+                            if (branch.getUpdateQueue().length === 1) {
+                                self._pullNextQueuedCommit(projectId, branchName, initCallback); // hashUpdateHandlers
+                            }
                         } else {
-                            project.insertObject(updateData.coreObjects[j]);
+                            logger.debug('commitQueue is not empty, only updating originHash.');
                         }
-                    }
+                    };
 
-                    branch.queueUpdate(updateData);
-                    branch.updateHashes(null, originHash);
+                    branch._remoteUpdateHandler(null, latestCommit, function (err) {
+                        webSocket.addEventListener(webSocket.getBranchUpdateEventName(projectId, branchName),
+                            branch._remoteUpdateHandler);
 
-                    if (branch.getCommitQueue().length === 0) {
-                        if (branch.getUpdateQueue().length === 1) {
-                            self._pullNextQueuedCommit(projectId, branchName, initCallback); // hashUpdateHandlers
+                        if (err) {
+                            deferred.reject(err);
+                        } else {
+                            deferred.resolve(latestCommit);
                         }
-                    } else {
-                        logger.debug('commitQueue is not empty, only updating originHash.');
-                    }
-                };
+                    });
+                })
+                .catch(deferred.reject);
 
-                branch._remoteUpdateHandler(null, latestCommit, function (err) {
-                    webSocket.addEventListener(webSocket.getBranchUpdateEventName(projectId, branchName),
-                        branch._remoteUpdateHandler);
-                    callback(err, latestCommit);
-                });
-            });
+            return deferred.promise.nodeify(callback);
         };
 
         this.closeBranch = function (projectId, branchName, callback) {
