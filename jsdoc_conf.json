@@ -47,7 +47,7 @@
   "templates": {
     "systemName": "WebGME",
     "footer": "",
-    "copyright": "Copyright (c) 2012-2017 Vanderbilt University, ISIS (MIT)",
+    "copyright": "Copyright (c) 2012-2018 Vanderbilt University, ISIS (MIT)",
     "includeDate": true,
     "navType": "inline",
     "theme": "slate",
