@@ -20,6 +20,7 @@ var requirejs = require('requirejs'),
             executor: './common/executor',
             superagent: './common/lib/superagent/superagent',
             debug: './common/lib/debug/debug',
+            ejs: './common/lib/ejs/ejs',
             q: './common/lib/q/q',
             chance: './common/lib/chance/chance',
             'webgme-ot': './common/lib/webgme-ot/webgme-ot'

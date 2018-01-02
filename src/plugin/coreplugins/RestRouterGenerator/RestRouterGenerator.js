@@ -10,7 +10,7 @@
 define([
     'plugin/PluginBase',
     'text!./metadata.json',
-    'common/util/ejs',
+    'ejs',
     'text!./RestRouter.ejs',
     'text!./RestRouterTest.ejs'
 ], function (

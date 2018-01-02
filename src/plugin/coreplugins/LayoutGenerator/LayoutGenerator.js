@@ -10,7 +10,7 @@
 define([
     'plugin/PluginBase',
     'text!./metadata.json',
-    'common/util/ejs',
+    'ejs',
     'plugin/LayoutGenerator/LayoutGenerator/Templates/Templates'
 ], function (PluginBase,
              pluginMetadata,

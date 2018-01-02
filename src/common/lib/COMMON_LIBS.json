@@ -1,6 +1,7 @@
 [
   {"name": "chance"},
   {"name": "debug"},
+  {"name": "ejs"},
   {"name": "q"},
   {"name": "superagent"},
   {"name": "webgme-ot"}

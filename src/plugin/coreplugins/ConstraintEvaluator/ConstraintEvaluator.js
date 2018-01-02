@@ -31,7 +31,7 @@ define([
     'text!./metadata.json',
     './Constraints',
     'text!./Templates/Constraints.ejs',
-    'common/util/ejs',
+    'ejs',
     'q'
 ], function (PluginBase, pluginMetadata, Constraints, TEMPLATE, ejs, Q) {
     'use strict';
