@@ -11,7 +11,7 @@ define([
     'plugin/PluginConfig',
     'plugin/PluginBase',
     'text!./metadata.json',
-    'common/util/ejs',
+    'ejs',
     'plugin/VisualizerGenerator/VisualizerGenerator/Templates/Templates'
 ], function (
     PluginConfig,

@@ -12,7 +12,7 @@ define([
     'text!./metadata.json',
     'plugin/PluginBase'<%if (meta) {%>,
     'plugin/<%= pluginID %>/<%= pluginID %>/meta'<%}%><%if (templateType) {%>,
-    'common/util/ejs',
+    'ejs',
     'plugin/<%=pluginID%>/<%=pluginID%>/Templates/Templates'<%}%>
 ], function (
     PluginConfig,

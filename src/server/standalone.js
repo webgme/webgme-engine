@@ -19,7 +19,7 @@ var path = require('path'),
     methodOverride = require('method-override'),
     multipart = require('connect-multiparty'),
     Http = require('http'),
-    ejs = requireJS('common/util/ejs'),
+    ejs = require('ejs'),
 
     MongoAdapter = require('./storage/mongo'),
     RedisAdapter = require('./storage/datastores/redisadapter'),

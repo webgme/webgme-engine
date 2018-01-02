@@ -20,7 +20,7 @@ define([
     'plugin/PluginBase',
     'text!./metadata.json',
     'executor/ExecutorClient',
-    'common/util/ejs',
+    'ejs',
     'text!./Templates/generate_name.py.ejs',
     'q'
 ], function (PluginConfig, PluginBase, pluginMetadata, ExecutorClient, ejs, TEMPLATE, Q) {

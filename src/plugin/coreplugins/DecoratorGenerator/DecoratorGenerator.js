@@ -12,7 +12,7 @@ define([
     'text!./metadata.json',
     'plugin/DecoratorGenerator/DecoratorGenerator/TemplatesInherit/Templates',
     'plugin/DecoratorGenerator/DecoratorGenerator/TemplatesMinimal/Templates',
-    'common/util/ejs'
+    'ejs'
 ], function (PluginBase, pluginMetadata, TEMPLATES_INHERIT, TEMPLATES_MINIMAL, ejs) {
     'use strict';
 
