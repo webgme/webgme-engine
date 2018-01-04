@@ -60,12 +60,6 @@ define([
             }, innerCore.loadRoot(hash));
         };
 
-        this.loadByPath = function (node, path) {
-            return TASYNC.call(function () {
-                return innerCore.loadByPath(node, path);
-            }, self.loadPaths(self.getHash(node), [path]));
-        };
-
         //functions where the cache may needs to be updated
         this.createNode = function (parameters) {
             var node = innerCore.createNode(parameters);
