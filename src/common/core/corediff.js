@@ -526,7 +526,7 @@ define([
 
             for (i = 0; i < relids.length; i++) {
                 done = TASYNC.call(subComputationFinished,
-                    fillMissingGuid(root, sRoot, path + '/' + relids[i], diff[relids[i]]), relids[i]);
+                    fillMissingGuid(root, sRoot, path + '/' + relids[i], diff[relids[i]]), relids[i], done);
             }
 
             return TASYNC.call(function () {
@@ -799,18 +799,18 @@ define([
                     //move
                     needChecking = true;
                     delete yetToCompute[guids[i]];
-                    done = TASYNC.call(computingMove, updateDiff(ytc.from, ytc.to, yetToCompute), ytc);
+                    done = TASYNC.call(computingMove, updateDiff(ytc.from, ytc.to, yetToCompute), ytc, done);
                 } else {
                     if (ytc.from && ytc.fromExpanded === false) {
                         //expand from
                         ytc.fromExpanded = true;
                         needChecking = true;
-                        done = TASYNC.call(expandFrom, expandDiff(ytc.from, true, yetToCompute), ytc);
+                        done = TASYNC.call(expandFrom, expandDiff(ytc.from, true, yetToCompute), ytc, done);
                     } else if (ytc.to && ytc.toExpanded === false) {
                         //expand to
                         ytc.toExpanded = true;
                         needChecking = true;
-                        done = TASYNC.call(expandTo, expandDiff(ytc.to, false, yetToCompute), ytc);
+                        done = TASYNC.call(expandTo, expandDiff(ytc.to, false, yetToCompute), ytc, done);
                     }
                 }
             }
@@ -1251,7 +1251,7 @@ define([
                 if (pointerDiff[keys[i]] === CONSTANTS.TO_DELETE_STRING) {
                     self.deletePointer(node, keys[i]);
                 } else if (diff.removed !== false || keys[i] !== 'base') {
-                    done = setPointer(node, keys[i], pointerDiff[keys[i]]);
+                    done = setPointer(node, keys[i], pointerDiff[keys[i]], done);
                 }
             }
 
@@ -1332,7 +1332,8 @@ define([
                             if (setDiff[setNames[i]][elements[j]] === CONSTANTS.TO_DELETE_STRING) {
                                 self.delMember(node, setNames[i], elements[j]);
                             } else {
-                                done = addMember(node, setNames[i], elements[j], setDiff[setNames[i]][elements[j]]);
+                                done = addMember(node, setNames[i], elements[j], setDiff[setNames[i]][elements[j]],
+                                    done);
                             }
                         }
                     }
