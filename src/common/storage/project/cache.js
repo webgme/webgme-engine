@@ -17,9 +17,10 @@ define([
     'use strict';
     function ProjectCache(storage, projectId, mainLogger, gmeConfig) {
         var self = this,
-            missing = {},
             backup = {},
             cache = {},
+            ongoingObjectRequests = {},
+            ongoingPathsRequests = {},
             logger = mainLogger.fork('ProjectCache'),
             cacheSize = 0;
 
@@ -27,15 +28,38 @@ define([
 
         this.queuedPersists = {};
 
+        // Useful for debugging potential mutations, but not good for performance.
+        function deepFreeze(obj) {
+            Object.freeze(obj);
+
+            if (obj instanceof Array) {
+                for (var i = 0; i < obj.length; i += 1) {
+                    if (obj[i] !== null && typeof obj[i] === 'object') {
+                        deepFreeze(obj[i]);
+                    }
+                }
+            } else {
+                for (var key in obj) {
+                    if (obj[key] !== null && typeof obj[key] === 'object') {
+                        deepFreeze(obj[key]);
+                    }
+                }
+            }
+        }
+
         function cacheInsert(key, obj) {
             ASSERT(obj[CONSTANTS.MONGO_ID] === key);
             logger.debug('cacheInsert', key);
 
-            //deepFreeze(obj);
+            if (gmeConfig.storage.freezeCache) {
+                deepFreeze(obj);
+            }
+
             if (!cache[key]) {
                 cache[key] = obj;
 
                 if (++cacheSize >= gmeConfig.storage.cache) {
+                    logger.debug('Cache size reached - moved to backup');
                     backup = cache;
                     cache = {};
                     cacheSize = 0;
@@ -68,8 +92,7 @@ define([
 
         this.loadObject = function (key, callback) {
             var commitId,
-                cachedObject,
-                ownCallbacks;
+                cachedObject;
 
             ASSERT(typeof key === 'string' && typeof callback === 'function');
             logger.debug('loadObject', {metadata: key});
@@ -84,63 +107,61 @@ define([
                             break;
                         }
                     }
+
                     if (typeof cachedObject === 'undefined') {
-                        ownCallbacks = missing[key];
-                        if (typeof ownCallbacks === 'undefined') {
-                            ownCallbacks = [callback];
-                            missing[key] = ownCallbacks;
-                            logger.debug('object set to be loaded from storage');
+
+                        if (typeof ongoingObjectRequests[key] === 'undefined') {
+                            ongoingObjectRequests[key] = [callback];
+
+                            logger.debug('object set to be loaded from storage', key);
                             storage.loadObject(projectId, key, function (err, loadResult) {
                                 ASSERT(typeof loadResult === 'object' || typeof loadResult === 'undefined');
-
+                                logger.debug('object loaded from database', key);
                                 var callbacks,
                                     subKey,
                                     cb;
 
                                 if ((loadResult || {}).multipleObjects === true) {
                                     for (subKey in loadResult.objects) {
-                                        callbacks = missing[subKey] || [];
-                                        if (callbacks.length !== 0) {
-                                            delete missing[subKey];
-                                            if (!err && loadResult.objects[subKey]) {
-                                                cacheInsert(subKey, loadResult.objects[subKey]);
-                                            }
+                                        callbacks = ongoingObjectRequests[subKey];
+                                        delete ongoingObjectRequests[subKey];
+                                        if (!err && loadResult.objects[subKey]) {
+                                            cacheInsert(subKey, loadResult.objects[subKey]);
+                                        }
 
+                                        if (callbacks) {
                                             while ((cb = callbacks.pop())) {
                                                 cb(err, loadResult.objects[subKey]);
                                             }
                                         }
                                     }
                                 } else {
-                                    if (ownCallbacks.length !== 0) {
-                                        ASSERT(missing[key] === ownCallbacks);
+                                    callbacks = ongoingObjectRequests[key];
+                                    delete ongoingObjectRequests[key];
+                                    if (!err && loadResult) {
+                                        cacheInsert(key, loadResult);
+                                    }
 
-                                        delete missing[key];
-                                        if (!err && loadResult) {
-                                            cacheInsert(key, loadResult);
-                                        }
-
-                                        while ((cb = ownCallbacks.pop())) {
-                                            cb(err, loadResult);
-                                        }
+                                    while ((cb = callbacks.pop())) {
+                                        cb(err, loadResult);
                                     }
                                 }
                             });
                         } else {
-                            logger.debug('object was already queued to be loaded');
-                            ownCallbacks.push(callback);
+                            logger.debug('object was already queued to be loaded', key);
+                            ongoingObjectRequests[key].push(callback);
                         }
                         return;
                     } else {
-                        logger.debug('object was erased from cache and backup but present in queuedPersists');
+                        logger.debug('object was erased from cache and backup but present in queuedPersists', key);
                         cacheInsert(key, cachedObject);
                     }
                 } else {
-                    logger.debug('object was in backup');
+                    logger.debug('object was in backup', key);
                     cacheInsert(key, cachedObject);
                 }
             } else {
-                logger.debug('object was in cache');
+                logger.debug('object was in cache', key);
             }
 
             ASSERT(typeof cachedObject === 'object' &&
@@ -158,11 +179,10 @@ define([
          */
         this.loadPaths = function (rootKey, paths, callback) {
             logger.debug('loadPaths', {metadata: {rootKey: rootKey, paths: paths}});
-
             var cachedObjects = {},
                 excludes = [],
                 rootObj = getFromCache(rootKey),
-                i = paths.length,
+                i,
                 j,
                 pathArray,
                 obj,
@@ -174,6 +194,22 @@ define([
                 callback(null);
                 return;
             }
+
+            // Filter out paths that are currently being requested.
+            // TODO: We need to keep track of when all requested paths are loaded
+            // TODO: and make a final call to the callback at that point.
+            paths = paths.filter(function (path) {
+                var id = rootKey + path;
+
+                if (ongoingPathsRequests[id]) {
+                    return false;
+                } else {
+                    ongoingPathsRequests[id] = true;
+                    return true;
+                }
+            });
+
+            i = paths.length;
 
             if (rootObj) {
                 // The root was loaded, so for each requested path we start from the root
@@ -225,6 +261,12 @@ define([
             logger.debug('loadPaths will request from server, pathsInfo:', pathsInfo);
             storage.loadPaths(projectId, pathsInfo, excludes, function (err, serverObjects) {
                 var keys, i;
+
+                // Clear the requestedPaths
+                for (i = 0; i < paths.length; i += 1) {
+                    delete ongoingPathsRequests[rootKey + paths[i]];
+                }
+
                 if (!err && serverObjects) {
                     // Insert every obtained object into the cache (that was not there before).
                     keys = Object.keys(serverObjects);
@@ -232,7 +274,9 @@ define([
                         if (serverObjects[keys[i]] !== undefined) {
                             // When not going through a web-socket loadPaths returns keys with
                             // undefined values, therefore the extra check.
-                            cacheInsert(keys[i], serverObjects[keys[i]]);
+                            if (!cacheInsert(keys[i], serverObjects[keys[i]])) {
+                                logger.warn('Inserting same object again', keys[i]);
+                            }
                         }
                     }
 
@@ -266,9 +310,9 @@ define([
                     // The storage on the server will return error if it's not the same..
                     logger.debug('object inserted was already in back-up');
                 } else {
-                    item = missing[key];
+                    item = ongoingObjectRequests[key];
                     if (typeof item !== 'undefined') {
-                        delete missing[key];
+                        delete ongoingObjectRequests[key];
 
                         var cb;
                         while ((cb = item.pop())) {
