@@ -123,7 +123,7 @@ define([
 
                                 if ((loadResult || {}).multipleObjects === true) {
                                     for (subKey in loadResult.objects) {
-                                        callbacks = ongoingObjectRequests[subKey];
+                                        callbacks = ongoingObjectRequests[subKey] || [];
                                         delete ongoingObjectRequests[subKey];
                                         if (!err && loadResult.objects[subKey]) {
                                             cacheInsert(subKey, loadResult.objects[subKey]);
@@ -136,7 +136,7 @@ define([
                                         }
                                     }
                                 } else {
-                                    callbacks = ongoingObjectRequests[key];
+                                    callbacks = ongoingObjectRequests[key] || [];
                                     delete ongoingObjectRequests[key];
                                     if (!err && loadResult) {
                                         cacheInsert(key, loadResult);
