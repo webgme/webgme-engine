@@ -530,9 +530,7 @@ Storage.prototype.loadPaths = function (data, callback) {
                     if (data.excludes) {
                         for (i = 0; i < keys.length; i += 1) {
                             if (data.excludes.indexOf(keys[i]) > -1) {
-                                // https://jsperf.com/delete-vs-setting-undefined-vs-new-object
-                                // When sending the data these keys will be removed after JSON.stringify.
-                                loadedObjects[keys[i]] = undefined;
+                                delete loadedObjects[keys[i]];
                             }
                         }
                     }

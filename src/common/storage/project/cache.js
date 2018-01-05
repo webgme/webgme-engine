@@ -118,8 +118,8 @@ define([
                                 ASSERT(typeof loadResult === 'object' || typeof loadResult === 'undefined');
                                 logger.debug('object loaded from database', key);
                                 var callbacks,
-                                    subKey,
-                                    cb;
+                                    cb,
+                                    subKey;
 
                                 if ((loadResult || {}).multipleObjects === true) {
                                     for (subKey in loadResult.objects) {
@@ -173,6 +173,11 @@ define([
         /**
          * Loads the necessary objects for the nodes corresponding to paths and inserts them in the cache.
          * If the rootKey is empty or does not exist - it won't attempt to load any nodes.
+         *
+         * Note that when the callback is called - all requested objects may or may not be in the cache. The resolving
+         * of callback only indicates that between the call to loadPaths and the point of resolving - all objects have
+         * been in the cache.
+         *
          * @param {string} rootKey
          * @param {string[]} paths
          * @param {function(err)} callback
@@ -181,12 +186,17 @@ define([
             logger.debug('loadPaths', {metadata: {rootKey: rootKey, paths: paths}});
             var cachedObjects = {},
                 excludes = [],
+                pathsInfo = [],
                 rootObj = getFromCache(rootKey),
+                whenDone = {
+                    cb: callback,
+                    cnt: paths.length // When all paths are accounted for - callback will be invoked.
+                },
                 i,
                 j,
                 pathArray,
                 obj,
-                pathsInfo = [],
+                doRequest,
                 key;
 
             if (!rootKey) {
@@ -196,15 +206,14 @@ define([
             }
 
             // Filter out paths that are currently being requested.
-            // TODO: We need to keep track of when all requested paths are loaded
-            // TODO: and make a final call to the callback at that point.
+            // We also need to keep track of when all requested paths are loaded
+            // and make a final call to the callback at that point.
             paths = paths.filter(function (path) {
                 var id = rootKey + path;
-
                 if (ongoingPathsRequests[id]) {
+                    ongoingPathsRequests[id].push(whenDone);
                     return false;
                 } else {
-                    ongoingPathsRequests[id] = true;
                     return true;
                 }
             });
@@ -223,6 +232,7 @@ define([
                     pathArray.shift();
 
                     obj = rootObj;
+                    doRequest = false;
                     for (j = 0; j < pathArray.length; j += 1) {
                         key = obj[pathArray[j]];
                         if (key) {
@@ -235,6 +245,7 @@ define([
                                     parentHash: key,
                                     path: '/' + pathArray.slice(j + 1).join('/')
                                 });
+                                doRequest = true;
                                 break;
                             }
                         } else {
@@ -242,9 +253,18 @@ define([
                             break;
                         }
                     }
+
+                    if (doRequest) {
+                        // A request is needed - therefore initialize a new entry to ongoing.
+                        ongoingPathsRequests[rootKey + paths[i]] = [whenDone];
+                    } else {
+                        whenDone.cnt -= 1;
+                        paths.splice(i, 1);
+                    }
                 }
             } else {
                 pathsInfo = paths.map(function (path) {
+                    ongoingPathsRequests[rootKey + path] = [whenDone];
                     return {
                         parentHash: rootKey,
                         path: path
@@ -252,18 +272,35 @@ define([
                 });
             }
 
-            if (pathsInfo.length === 0) {
-                logger.debug('All given paths already loaded');
-                callback(null);
+            if (paths.length === 0) {
+                logger.debug('No new paths to request.');
+                if (whenDone.cnt === 0) {
+                    logger.debug('All objects already in cache too.');
+                    whenDone.cb(null);
+                }
                 return;
             }
 
             logger.debug('loadPaths will request from server, pathsInfo:', pathsInfo);
             storage.loadPaths(projectId, pathsInfo, excludes, function (err, serverObjects) {
-                var keys, i;
+                var callbacks = [],
+                    keys,
+                    id,
+                    i;
 
-                // Clear the requestedPaths
                 for (i = 0; i < paths.length; i += 1) {
+                    id = rootKey + paths[i];
+                    ongoingPathsRequests[id].forEach(function (doneEntry) {
+                        // Account for a completed request...
+                        doneEntry.cnt -= 1;
+                        ASSERT(doneEntry.cnt >= 0, 'ongoingPathsRequests negative for an entry!?');
+                        // if the last one for that entry - that call is completed.
+                        if (doneEntry.cnt === 0) {
+                            callbacks.push(doneEntry.cb);
+                        }
+                    });
+
+                    // Finally clear out all entries stored for this id..
                     delete ongoingPathsRequests[rootKey + paths[i]];
                 }
 
@@ -271,12 +308,8 @@ define([
                     // Insert every obtained object into the cache (that was not there before).
                     keys = Object.keys(serverObjects);
                     for (i = 0; i < keys.length; i += 1) {
-                        if (serverObjects[keys[i]] !== undefined) {
-                            // When not going through a web-socket loadPaths returns keys with
-                            // undefined values, therefore the extra check.
-                            if (!cacheInsert(keys[i], serverObjects[keys[i]])) {
-                                logger.warn('Inserting same object again', keys[i]);
-                            }
+                        if (!cacheInsert(keys[i], serverObjects[keys[i]])) {
+                            logger.debug('Inserting same object again', keys[i]);
                         }
                     }
 
@@ -285,10 +318,15 @@ define([
                     for (i = 0; i < keys.length; i += 1) {
                         cacheInsert(keys[i], cachedObjects[keys[i]]);
                     }
-                    callback(null);
+
+                    callbacks.forEach(function (cb) {
+                        cb(null);
+                    });
                 } else {
                     logger.error('loadingPaths failed', err || new Error('no object arrived from server'));
-                    callback(err);
+                    callbacks.forEach(function (cb) {
+                        cb(err);
+                    });
                 }
             });
         };
