@@ -250,8 +250,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
      * @returns {Promise}
      */
     StorageWatcher.prototype.unwatchDocument = function (data, callback) {
-        var self = this,
-            deferred = Q.defer(),
+        var deferred = Q.defer(),
             docUpdateEventName = this.webSocket.getDocumentUpdatedEventName(data),
             docSelectionEventName = this.webSocket.getDocumentSelectionEventName(data),
             pieces;
