@@ -1,7 +1,8 @@
+/*eslint-env node, mocha*/
 /**
  * @author kecso / https://github.com/kecso
+ * @author pmeijer / https://github.com/pmeijer
  */
-/*eslint-env node, mocha*/
 
 var testFixture = require('../../../_globals.js');
 
@@ -13,7 +14,11 @@ describe('storage cache', function () {
         expect = testFixture.expect,
         Cache = testFixture.requirejs('common/storage/project/cache'),
         MockStorage = function (options) {
-            var waitForIt = {};
+            var self = this,
+                waitForIt = {};
+
+            this.loadPathsRequests = [];
+
             this.loadObject = function (projectId, key, callback) {
                 if (options.waitForIt) {
                     waitForIt[projectId + key] = callback;
@@ -33,7 +38,19 @@ describe('storage cache', function () {
                 }, options.timeout || 10);
             };
             this.loadPaths = function (projectId, pathsInfo, excludes, callback) {
-                if (options.waitForIt) {
+                var res = {};
+                self.loadPathsRequests.push(pathsInfo);
+                if (options.loadPathsTest) {
+                    setTimeout(function () {
+                        pathsInfo.forEach(function (pInfo) {
+                            res[pInfo.parentHash + '__' + pInfo.path] = {
+                                _id: pInfo.parentHash + '__' + pInfo.path
+                            };
+                        });
+
+                        callback(null, res);
+                    }, options.timeout || 10);
+                } else if (options.waitForIt) {
                     waitForIt[projectId + 'loadPaths'] = callback;
                 } else {
                     setTimeout(function () {
@@ -57,6 +74,31 @@ describe('storage cache', function () {
                 expect(result).to.eql({_id: 'one', value: 'two'});
             })
             .nodeify(done);
+    });
+
+    it('should throw error if modifying when freezeCache is turned on', function () {
+        var conf = JSON.parse(JSON.stringify(gmeConfig)),
+            obj = {_id: 'one', value: 'two', arrVal: [{v: 12}], nullVal: null},
+            cache;
+
+        conf.storage.freezeCache = true;
+        cache = new Cache(null, 'noId', logger, conf);
+
+        cache.insertObject(obj);
+
+        try {
+            obj.new = 'added';
+            throw new Error('Should have thrown!');
+        } catch (err) {
+            expect(err.message).to.not.include('Should have thrown!');
+        }
+
+        try {
+            obj.arrVal[0].new = 'added';
+            throw new Error('Should have thrown!');
+        } catch (err) {
+            expect(err.message).to.not.include('Should have thrown!');
+        }
     });
 
     it('should insert an object, then insert a patch based on that one', function (done) {
@@ -205,5 +247,110 @@ describe('storage cache', function () {
                 done();
             })
             .done();
+    });
+
+    // Load paths
+
+    it('should only send out loadPaths once with same rootKey and path', function (done) {
+        var mock = new MockStorage({loadPathsTest: true}),
+            cache = new Cache(mock, 'noId', logger, gmeConfig);
+
+        Q.allDone([
+            Q.nfcall(cache.loadPaths, '#root', ['/1']),
+            Q.nfcall(cache.loadPaths, '#root', ['/1'])
+        ])
+            .then(function () {
+                expect(mock.loadPathsRequests.length).to.equal(1);
+            })
+            .nodeify(done);
+    });
+
+    it('should only include the unrequested path in loadPaths', function (done) {
+        var mock = new MockStorage({loadPathsTest: true}),
+            cache = new Cache(mock, 'noId', logger, gmeConfig);
+
+        Q.allDone([
+            Q.nfcall(cache.loadPaths, '#root', ['/1']),
+            Q.nfcall(cache.loadPaths, '#root', ['/1', '/2']),
+            Q.nfcall(cache.loadPaths, '#root', ['/1', '/2', '/3']),
+            Q.nfcall(cache.loadPaths, '#root', ['/1', '/2', '/3', '/4'])
+        ])
+            .then(function () {
+                expect(mock.loadPathsRequests.length).to.equal(4);
+                mock.loadPathsRequests.forEach(function (batch) {
+                    expect(batch.length).to.equal(1);
+                });
+            })
+            .nodeify(done);
+    });
+
+    it('should not send out if one in cache and one in requested at loadPaths', function (done) {
+        var mock = new MockStorage({loadPathsTest: true}),
+            cache = new Cache(mock, 'noId', logger, gmeConfig);
+
+        cache.insertObject({_id: '#root', 1: '#root__/1', 2: '#root__/2'});
+        cache.insertObject({_id: '#root__/2'});
+
+        Q.allDone([
+            Q.nfcall(cache.loadPaths, '#root', ['/1']),
+            Q.nfcall(cache.loadPaths, '#root', ['/1', '/2'])
+        ])
+            .then(function () {
+                expect(mock.loadPathsRequests.length).to.equal(1);
+                mock.loadPathsRequests.forEach(function (batch) {
+                    expect(batch.length).to.equal(1);
+                    expect(batch[0]).to.deep.equal({
+                        parentHash: '#root__/1',
+                        path: '/'
+                    });
+                });
+            })
+            .nodeify(done);
+    });
+
+    it('should not send out if one in cache and one does not exist at loadPaths', function (done) {
+        var mock = new MockStorage({loadPathsTest: true}),
+            cache = new Cache(mock, 'noId', logger, gmeConfig);
+
+        cache.insertObject({_id: '#root', 1: '#root__/1'});
+        cache.insertObject({_id: '#root__/1'});
+
+        Q.allDone([
+            Q.nfcall(cache.loadPaths, '#root', ['/1']),
+            Q.nfcall(cache.loadPaths, '#root', ['/1', '/2'])
+        ])
+            .then(function () {
+                expect(mock.loadPathsRequests.length).to.equal(0);
+            })
+            .nodeify(done);
+    });
+
+    it('should not send out if all are already loaded in loadPaths', function (done) {
+        var mock = new MockStorage({loadPathsTest: true}),
+            cache = new Cache(mock, 'noId', logger, gmeConfig);
+
+        cache.insertObject({_id: '#root', 1: '#root__/1', 2: '#root__/2'});
+        cache.insertObject({_id: '#root__/1'});
+        cache.insertObject({_id: '#root__/2'});
+
+        Q.allDone([
+            Q.nfcall(cache.loadPaths, '#root', ['/1']),
+            Q.nfcall(cache.loadPaths, '#root', ['/1', '/2'])
+        ])
+            .then(function () {
+                expect(mock.loadPathsRequests.length).to.equal(0);
+            })
+            .nodeify(done);
+    });
+
+    it('should not send out if rootKey not given in loadPaths', function (done) {
+        var mock = new MockStorage({loadPathsTest: true}),
+            cache = new Cache(mock, 'noId', logger, gmeConfig);
+
+        Q.nfcall(cache.loadPaths, '', ['/1', '/2'])
+            .then(function () {
+                expect(mock.loadPathsRequests.length).to.equal(0);
+            })
+            .nodeify(done);
     });
 });

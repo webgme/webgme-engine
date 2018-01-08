@@ -215,6 +215,7 @@ var path = require('path'),
 
         storage: {
             cache: 2000,
+            freezeCache: false,
             // If true events such as PROJECT_CREATED and BRANCH_CREATED will only be broadcasted
             // and not emitted back to the web-socket that triggered the event.
             broadcastProjectEvents: false,

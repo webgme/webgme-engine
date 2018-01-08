@@ -69,6 +69,10 @@ define([
 
                 node.base = target;
 
+                if (!target) {
+                    logger.error('No target in loadBase2', target);
+                }
+
                 return node;
             }
         }
@@ -272,7 +276,7 @@ define([
         }
 
         function isValidNodeThrow(node) {
-            test('core', innerCore.isValidNode(node));
+            test('corerel', innerCore.isValidNode(node));
             test('base', typeof node.base === 'object');
         }
 
