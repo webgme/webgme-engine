@@ -1139,6 +1139,15 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socketIds.forEach(function (socketId) {
                 webSocket.sockets.connected[socketId].disconnect();
             });
+            Object.keys(documents).forEach(function (docId) {
+                logger.warn('Document room was open - will close it', docId);
+
+                if (documents[docId].timeoutId) {
+                    clearTimeout(documents[docId].timeoutId);
+                }
+
+                delete documents[docId];
+            });
             webSocket = null;
         }
     };

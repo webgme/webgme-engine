@@ -166,6 +166,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
         this.watchers.documents[docId] = {
             eventHandler: function (_ws, eData) {
                 var otClient = self.watchers.documents[eData.docId].otClient;
+                self.logger.debug('eventHandler for document', {metadata: eData});
                 if (eData.operation) {
                     if (self.reconnecting) {
                         // We are reconnecting.. Put these on the queue.
@@ -249,7 +250,8 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
      * @returns {Promise}
      */
     StorageWatcher.prototype.unwatchDocument = function (data, callback) {
-        var deferred = Q.defer(),
+        var self = this,
+            deferred = Q.defer(),
             docUpdateEventName = this.webSocket.getDocumentUpdatedEventName(data),
             docSelectionEventName = this.webSocket.getDocumentSelectionEventName(data),
             pieces;
@@ -319,7 +321,8 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
      * @param {ot.Selection} data.selection
      */
     StorageWatcher.prototype.sendDocumentSelection = function (data) {
-        var otClient;
+        var self = this,
+            otClient;
         if (this.watchers.documents.hasOwnProperty(data.docId) &&
             this.watchers.documents[data.docId].otClient instanceof ot.Client) {
 
@@ -331,6 +334,10 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
                     docId: data.docId,
                     revision: otClient.revision,
                     selection: data.selection
+                }, function (err) {
+                    if (err) {
+                        self.logger.error(err);
+                    }
                 });
             }
 

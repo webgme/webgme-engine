@@ -29,6 +29,7 @@ define([
         EventDispatcher.call(this);
 
         function emitWithToken(data, eventName, callback) {
+            logger.debug('emitting event', eventName, {metadata: data});
             data.webgmeToken = ioClient.getToken();
             if (callback) {
                 self.socket.emit(eventName, data, callback);

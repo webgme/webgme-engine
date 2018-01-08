@@ -8,7 +8,7 @@
 
 var testFixture = require('../../../_globals.js');
 
-describe('storage document editing', function () {
+describe('watchers documents', function () {
     'use strict';
     var gmeConfig = testFixture.getGmeConfig(),
         CONSTANTS = testFixture.requirejs('common/storage/constants'),
@@ -84,7 +84,7 @@ describe('storage document editing', function () {
     });
 
     function getNewStorage(userId) {
-        return testFixture.getConnectedStorage(gmeConfig, logger, userTokens[userId])
+        return testFixture.getConnectedStorage(gmeConfig, logger.fork(userId), userTokens[userId])
             .then(function (storage) {
                 users[userId] = {
                     storage: storage,
@@ -381,7 +381,7 @@ describe('storage document editing', function () {
     });
 
     // Selections
-    it('should send selection when synchronized and it should be transformed for other client', function (done) {
+    it.only('should send selection when synchronized and it should be transformed for other client', function (done) {
         var user1,
             user2,
             docId,
