@@ -301,7 +301,7 @@ define([
                     });
 
                     // Finally clear out all entries stored for this id..
-                    delete ongoingPathsRequests[rootKey + paths[i]];
+                    delete ongoingPathsRequests[id];
                 }
 
                 if (!err && serverObjects) {
