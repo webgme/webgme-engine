@@ -936,10 +936,11 @@ describe('storage-connection', function () {
                             storage2.open(function (networkState2) {
                                 if (networkState2 === STORAGE_CONSTANTS.CONNECTED) {
                                     Q.allDone([
-                                        storage.watchDocument(docData, function atOperation() {
+                                        storage.watchDocument(testFixture.copy(docData), function atOperation() {
                                             opHandlerCalled = true;
                                         }, testFixture.noop),
-                                        storage2.watchDocument(docData, testFixture.noop, testFixture.noop)
+                                        storage2.watchDocument(testFixture.copy(docData), testFixture.noop,
+                                            testFixture.noop)
                                     ])
                                         .then(function (result) {
                                             docId = result[0].docId;

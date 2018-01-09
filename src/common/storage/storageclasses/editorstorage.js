@@ -91,19 +91,13 @@ define([
         };
 
         this.close = function (callback) {
-            var error = null,
-                openProjects = Object.keys(projects),
-                projectCnt = openProjects.length;
+            logger.debug('Closing storage, openProjects', Object.keys(projects));
 
-            logger.debug('Closing storage, openProjects', openProjects);
-
-            function afterProjectClosed(err) {
-                if (err) {
-                    logger.error(err.message);
-                    error = err;
-                }
-                logger.debug('inside afterProjectClosed projectCnt', projectCnt);
-                if (projectCnt === 0) {
+            return Q.all(Object.keys(projects)
+                .map(function (projectId) {
+                    return self.closeProject(projectId);
+                }))
+                .then(function () {
                     // Remove the handler for the socket.io events 'connect' and 'disconnect'.
                     logger.debug('Removing connect and disconnect events');
                     webSocket.socket.removeAllListeners('connect');
@@ -114,19 +108,8 @@ define([
                     self.connected = false;
                     // Remove all local event-listeners.
                     webSocket.clearAllEvents();
-                    callback(error);
-                }
-            }
-
-            if (projectCnt > 0) {
-                while (projectCnt) {
-                    projectCnt -= 1;
-                    this.closeProject(openProjects[projectCnt], afterProjectClosed);
-                }
-            } else {
-                logger.debug('No projects were open, will disconnect directly');
-                afterProjectClosed(null);
-            }
+                })
+                .nodeify(callback);
         };
 
         this.getToken = function () {
@@ -155,71 +138,63 @@ define([
          * @param {EditorStorage~openProjectCallback} - callback
          */
         this.openProject = function (projectId, callback) {
-            var data = {
-                projectId: projectId
-            };
+            var deferred,
+                data = {
+                    projectId: projectId
+                };
+
             if (projects[projectId]) {
-                callback(new Error('project is already open ' + projectId));
-                return;
+                return Q.reject(new Error('project is already open ' + projectId)).nodeify(callback);
             }
 
-            webSocket.openProject(data, function (err, branches, access) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-                var project = new Project(projectId, self, logger, gmeConfig);
-                projects[projectId] = project;
-                callback(null, project, branches, access);
-            });
+            webSocket.openProject(data)
+                .spread(function (branches, access) {
+                    var project = new Project(projectId, self, logger, gmeConfig);
+                    projects[projectId] = project;
+
+                    if (callback) {
+                        callback(null, project, branches, access);
+                    } else {
+                        deferred.resolve([project, branches, access]);
+                    }
+                })
+                .catch(function (err) {
+                    if (callback) {
+                        callback(err);
+                    } else {
+                        deferred.reject(err);
+                    }
+                });
+
+            if (!callback) {
+                deferred = Q.defer();
+                return deferred.promise;
+            }
         };
 
         this.closeProject = function (projectId, callback) {
-            var project = projects[projectId],
-                error = null,
-                branchCnt,
-                branchNames;
             logger.debug('closeProject', projectId);
 
-            function closeAndDelete(err) {
-                if (err) {
-                    logger.error(err.message);
-                    error = err;
-                }
-                logger.debug('inside closeAndDelete branchCnt', branchCnt);
-                if (branchCnt === 0) {
-                    if (self.connected) {
-                        webSocket.closeProject({projectId: projectId}, function (err) {
-                            logger.debug('project closed on server.');
-                            delete projects[projectId];
-                            callback(err || error);
-                        });
-                    } else {
-                        logger.debug('Disconnected while closing project.. skipping webSocket request to server.');
+            if (projects[projectId]) {
+                return Q.all(Object.keys(projects[projectId].branches)
+                    .map(function (branchName) {
+                        return self.closeBranch(projectId, branchName);
+                    }))
+                    .then(function () {
+                        if (self.connected) {
+                            return webSocket.closeProject({projectId: projectId});
+                        } else {
+                            logger.debug('Disconnected while closing project.. skipping webSocket request to server.');
+                        }
+                    })
+                    .then(function () {
                         delete projects[projectId];
-                        callback(error);
-                    }
-
-                }
-            }
-
-            if (project) {
-                branchNames = Object.keys(project.branches);
-                branchCnt = branchNames.length;
-                if (branchCnt > 0) {
-                    logger.warn('Branches still open for project, will be closed.', projectId, branchNames);
-                    while (branchCnt) {
-                        branchCnt -= 1;
-                        this.closeBranch(projectId, branchNames[branchCnt], closeAndDelete);
-                    }
-                } else {
-                    closeAndDelete(null);
-                }
+                    })
+                    .nodeify(callback);
             } else {
                 logger.warn('Project is not open ', projectId);
-                callback(null);
+                return Q().nodeify(callback);
             }
-
         };
 
         this.openBranch = function (projectId, branchName, hashUpdateHandler, branchStatusHandler, callback) {
@@ -228,69 +203,78 @@ define([
                     projectId: projectId,
                     branchName: branchName
                 },
+                deferred,
                 branch;
 
             if (!project) {
-                callback(new Error('Cannot open branch, ' + branchName + ', project ' + projectId + ' is not opened.'));
-                return;
+                return Q.reject(
+                    new Error('Cannot open branch, ' + branchName + ', project ' + projectId + ' is not opened.'))
+                    .nodeify(callback);
             }
 
             if (project.branches[branchName]) {
-                callback(new Error('Branch is already open ' + branchName + ', project: ' + projectId));
-                return;
+                return Q.reject(new Error('Branch is already open ' + branchName + ', project: ' + projectId))
+                    .nodeify(callback);
             }
 
             logger.debug('openBranch, calling webSocket openBranch', projectId, branchName);
 
-            webSocket.openBranch(data, function (err, latestCommit) {
-                var branchHash;
-                if (err) {
-                    callback(err);
-                    return;
-                }
+            deferred = Q.defer();
 
-                branch = new Branch(branchName, project.logger);
-                project.branches[branchName] = branch;
+            webSocket.openBranch(data)
+                .then(function (latestCommit) {
+                    var branchHash;
 
-                // Update state of branch
-                branch.latestCommitData = latestCommit;
-                branchHash = latestCommit.commitObject[CONSTANTS.MONGO_ID];
-                branch.updateHashes(branchHash, branchHash);
+                    branch = new Branch(branchName, project.logger);
+                    project.branches[branchName] = branch;
 
-                // Add handlers to branch and set the remote update handler for the web-socket.
-                branch.addHashUpdateHandler(hashUpdateHandler);
-                branch.addBranchStatusHandler(branchStatusHandler);
+                    // Update state of branch
+                    branch.latestCommitData = latestCommit;
+                    branchHash = latestCommit.commitObject[CONSTANTS.MONGO_ID];
+                    branch.updateHashes(branchHash, branchHash);
 
-                branch._remoteUpdateHandler = function (_ws, updateData, initCallback) {
-                    var j,
-                        originHash = updateData.commitObject[CONSTANTS.MONGO_ID];
-                    logger.debug('_remoteUpdateHandler invoked for project, branch', projectId, branchName);
-                    for (j = 0; j < updateData.coreObjects.length; j += 1) {
-                        if (updateData.coreObjects[j] && updateData.coreObjects[j].type === 'patch') {
-                            project.insertPatchObject(updateData.coreObjects[j]);
+                    // Add handlers to branch and set the remote update handler for the web-socket.
+                    branch.addHashUpdateHandler(hashUpdateHandler);
+                    branch.addBranchStatusHandler(branchStatusHandler);
+
+                    branch._remoteUpdateHandler = function (_ws, updateData, initCallback) {
+                        var j,
+                            originHash = updateData.commitObject[CONSTANTS.MONGO_ID];
+                        logger.debug('_remoteUpdateHandler invoked for project, branch', projectId, branchName);
+                        for (j = 0; j < updateData.coreObjects.length; j += 1) {
+                            if (updateData.coreObjects[j] && updateData.coreObjects[j].type === 'patch') {
+                                project.insertPatchObject(updateData.coreObjects[j]);
+                            } else {
+                                project.insertObject(updateData.coreObjects[j]);
+                            }
+                        }
+
+                        branch.queueUpdate(updateData);
+                        branch.updateHashes(null, originHash);
+
+                        if (branch.getCommitQueue().length === 0) {
+                            if (branch.getUpdateQueue().length === 1) {
+                                self._pullNextQueuedCommit(projectId, branchName, initCallback); // hashUpdateHandlers
+                            }
                         } else {
-                            project.insertObject(updateData.coreObjects[j]);
+                            logger.debug('commitQueue is not empty, only updating originHash.');
                         }
-                    }
+                    };
 
-                    branch.queueUpdate(updateData);
-                    branch.updateHashes(null, originHash);
+                    branch._remoteUpdateHandler(null, latestCommit, function (err) {
+                        webSocket.addEventListener(webSocket.getBranchUpdateEventName(projectId, branchName),
+                            branch._remoteUpdateHandler);
 
-                    if (branch.getCommitQueue().length === 0) {
-                        if (branch.getUpdateQueue().length === 1) {
-                            self._pullNextQueuedCommit(projectId, branchName, initCallback); // hashUpdateHandlers
+                        if (err) {
+                            deferred.reject(err);
+                        } else {
+                            deferred.resolve(latestCommit);
                         }
-                    } else {
-                        logger.debug('commitQueue is not empty, only updating originHash.');
-                    }
-                };
+                    });
+                })
+                .catch(deferred.reject);
 
-                branch._remoteUpdateHandler(null, latestCommit, function (err) {
-                    webSocket.addEventListener(webSocket.getBranchUpdateEventName(projectId, branchName),
-                        branch._remoteUpdateHandler);
-                    callback(err, latestCommit);
-                });
-            });
+            return deferred.promise.nodeify(callback);
         };
 
         this.closeBranch = function (projectId, branchName, callback) {
@@ -301,16 +285,14 @@ define([
 
             if (!project) {
                 logger.warn('closeBranch: project is not open', projectId, branchName);
-                callback(null);
-                return;
+                return Q(null).nodeify(callback);
             }
 
             branch = project.branches[branchName];
 
             if (!branch) {
                 logger.warn('closeBranch: project does not have given branch.', projectId, branchName);
-                callback(null);
-                return;
+                return Q(null).nodeify(callback);
             }
 
             // This will prevent memory leaks and expose if a commit is being
@@ -323,14 +305,15 @@ define([
 
             branch.cleanUp();
             if (self.connected) {
-                webSocket.closeBranch({projectId: projectId, branchName: branchName}, function (err) {
-                    delete project.branches[branchName];
-                    callback(err);
-                });
+                return webSocket.closeBranch({projectId: projectId, branchName: branchName})
+                    .then(function () {
+                        delete project.branches[branchName];
+                    })
+                    .nodeify(callback);
             } else {
                 logger.debug('Disconnected while closing branch.. skipping webSocket request to server.');
                 delete project.branches[branchName];
-                callback(null);
+                return Q(null).nodeify(callback);
             }
         };
 
@@ -342,45 +325,39 @@ define([
             this.logger.debug('forkBranch', projectId, branchName, forkName, commitHash);
 
             if (!project) {
-                callback(new Error('Cannot fork branch, ' + branchName + ', project ' + projectId + ' is not opened.'));
-                return;
+                return Q.reject(new Error('Cannot fork branch, ' + branchName + ', project '
+                    + projectId + ' is not opened.'))
+                    .nodeify(callback);
             }
 
             branch = project.branches[branchName];
 
             if (!branch) {
-                callback(new Error('Cannot fork branch, branch is not open ' + branchName + ', project: ' + projectId));
-                return;
+                return Q.reject(new Error('Cannot fork branch, branch is not open ' + branchName +
+                    ', project: ' + projectId))
+                    .nodeify(callback);
             }
 
             forkData = branch.getCommitsForNewFork(commitHash, forkName); // commitHash = null defaults to latest commit
             self.logger.debug('forkBranch - forkData', forkData);
 
             if (forkData === false) {
-                callback(new Error('Could not find specified commitHash: ' + commitHash));
-                return;
+                return Q.reject(new Error('Could not find specified commitHash: ' + commitHash)).nodeify(callback);
             }
 
-            self.persistCommits(forkData.queue, function (err) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-
-                self.createBranch(projectId, forkName, forkData.commitHash, function (err) {
-                    if (err) {
-                        logger.error('forkBranch - failed creating new branch', err);
-                        callback(err);
-                        return;
-                    }
-
-                    callback(null, forkData.commitHash);
-                });
-            });
+            return self.persistCommits(forkData.queue)
+                .then(function () {
+                    return self.createBranch(projectId, forkName, forkData.commitHash);
+                })
+                .then(function () {
+                    return forkData.commitHash;
+                })
+                .nodeify(callback);
         };
 
         this.persistCommits = function (commitQueue, callback) {
-            var commitHash;
+            var deferred = Q.defer(),
+                commitHash;
 
             function commitNext(i) {
                 var currentCommitData = commitQueue[i];
@@ -391,22 +368,20 @@ define([
                     delete currentCommitData.branchName;
                     commitHash = currentCommitData.commitObject[CONSTANTS.MONGO_ID];
 
-                    webSocket.makeCommit(currentCommitData, function (err, result) {
-                        if (err) {
-                            logger.error('persistCommits - failed committing', err);
-                            callback(err);
-                            return;
-                        }
-
-                        logger.debug('persistCommits - commit successful, hash', result);
-                        commitNext(i += 1);
-                    });
+                    webSocket.makeCommit(currentCommitData)
+                        .then(function (result) {
+                            logger.debug('persistCommits - commit successful, hash', result);
+                            commitNext(i += 1);
+                        })
+                        .catch(deferred.reject);
                 } else {
-                    callback(null, commitHash);
+                    deferred.resolve(commitHash);
                 }
             }
 
             commitNext(0);
+
+            return deferred.promise.nodeify(callback);
         };
 
         this.makeCommit = function (projectId, branchName, parents, rootHash, coreObjects, msg, callback) {
@@ -451,7 +426,7 @@ define([
             }
             // console.timeEnd('patch-computation');
             // console.time('getChangedNodes');
-            
+
             commitData.changedNodes = UTIL.getChangedNodes(commitData.coreObjects, rootHash);
 
             // console.timeEnd('getChangedNodes');
@@ -865,7 +840,7 @@ define([
                                 branchName: branchName
                             });
 
-                            promises.push(Q.ninvoke(webSocket, 'watchBranch', {
+                            promises.push(webSocket.watchBranch({
                                 projectId: projectId,
                                 branchName: branchName,
                                 join: true

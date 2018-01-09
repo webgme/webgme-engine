@@ -812,4 +812,8 @@ exports.noop = function () {
 
 };
 
+exports.copy = function copy(obj) {
+    return JSON.parse(JSON.stringify(obj));
+};
+
 module.exports = exports;

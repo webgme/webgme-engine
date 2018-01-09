@@ -179,9 +179,9 @@ describe('storage storageclasses editorstorage', function () {
     }
 
     it('should closeBranch if it is not open', function (done) {
-        Q.nfcall(storage.openProject, projectName2Id(projectName))
+        storage.openProject(projectName2Id(projectName))
             .then(function () {
-                return Q.nfcall(storage.closeBranch, projectName2Id(projectName), 'not_open');
+                return storage.closeBranch(projectName2Id(projectName), 'not_open');
             })
             .nodeify(done);
     });
@@ -192,12 +192,12 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     it('should open and close project', function (done) {
-        Q.nfcall(storage.openProject, projectName2Id(projectName))
+        storage.openProject(projectName2Id(projectName))
             .then(function () {
-                return Q.nfcall(storage.closeProject, projectName2Id(projectName));
+                return storage.closeProject(projectName2Id(projectName));
             })
             .then(function () {
-                return Q.nfcall(storage.closeProject, projectName2Id(projectName));
+                return storage.closeProject(projectName2Id(projectName));
             })
             .nodeify(done);
     });

@@ -37,7 +37,6 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
     }
 
     StorageWatcher.prototype.watchDatabase = function (eventHandler, callback) {
-        var deferred = Q.defer();
         this.logger.debug('watchDatabase - handler added');
         this.webSocket.addEventListener(CONSTANTS.PROJECT_DELETED, eventHandler);
         this.webSocket.addEventListener(CONSTANTS.PROJECT_CREATED, eventHandler);
@@ -46,18 +45,10 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
 
         if (this.watchers.database === 1) {
             this.logger.debug('First watcher will enter database room.');
-            this.webSocket.watchDatabase({join: true}, function (err) {
-                if (err) {
-                    deferred.reject(err);
-                } else {
-                    deferred.resolve();
-                }
-            });
+            return this.webSocket.watchDatabase({join: true}).nodeify(callback);
         } else {
-            deferred.resolve();
+            return Q().nodeify(callback);
         }
-
-        return deferred.promise.nodeify(callback);
     };
 
     StorageWatcher.prototype.unwatchDatabase = function (eventHandler, callback) {
@@ -72,13 +63,9 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
         if (this.watchers.database === 0) {
             this.logger.debug('No more watchers will exit database room.');
             if (this.connected) {
-                this.webSocket.watchDatabase({join: false}, function (err) {
-                    if (err) {
-                        deferred.reject(err);
-                    } else {
-                        deferred.resolve();
-                    }
-                });
+                this.webSocket.watchDatabase({join: false})
+                    .then(deferred.resolve)
+                    .catch(deferred.reject);
             } else {
                 deferred.resolve();
             }
@@ -93,8 +80,6 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
     };
 
     StorageWatcher.prototype.watchProject = function (projectId, eventHandler, callback) {
-        var deferred = Q.defer();
-
         this.logger.debug('watchProject - handler added for project', projectId);
         this.webSocket.addEventListener(CONSTANTS.BRANCH_DELETED + projectId, eventHandler);
         this.webSocket.addEventListener(CONSTANTS.BRANCH_CREATED + projectId, eventHandler);
@@ -105,18 +90,11 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
         this.logger.debug('Nbr of watchers for project:', projectId, this.watchers.projects[projectId]);
         if (this.watchers.projects[projectId] === 1) {
             this.logger.debug('First watcher will enter project room:', projectId);
-            this.webSocket.watchProject({projectId: projectId, join: true}, function (err) {
-                if (err) {
-                    deferred.reject(err);
-                } else {
-                    deferred.resolve();
-                }
-            });
+            this.webSocket.watchProject({projectId: projectId, join: true})
+                .nodeify(callback);
         } else {
-            deferred.resolve();
+            return Q().nodeify(callback);
         }
-
-        return deferred.promise.nodeify(callback);
     };
 
     StorageWatcher.prototype.unwatchProject = function (projectId, eventHandler, callback) {
@@ -135,13 +113,9 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
             this.logger.debug('No more watchers will exit project room:', projectId);
             delete this.watchers.projects[projectId];
             if (this.connected) {
-                this.webSocket.watchProject({projectId: projectId, join: false}, function (err) {
-                    if (err) {
-                        deferred.reject(err);
-                    } else {
-                        deferred.resolve();
-                    }
-                });
+                this.webSocket.watchProject({projectId: projectId, join: false})
+                    .then(deferred.resolve)
+                    .catch(deferred.reject);
             } else {
                 deferred.resolve();
             }
@@ -183,19 +157,16 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
         var self = this,
             docUpdateEventName = this.webSocket.getDocumentUpdatedEventName(data),
             docSelectionEventName = this.webSocket.getDocumentSelectionEventName(data),
-            docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length),
-            deferred;
-
+            docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length);
         if (this.watchers.documents.hasOwnProperty(docId)) {
             return Q.reject(new Error('Document is already being watched ' + docId)).nodeify(callback);
         }
-
-        deferred = Q.defer();
 
         this.logger.debug('watchDocument - handler added for project', data);
         this.watchers.documents[docId] = {
             eventHandler: function (_ws, eData) {
                 var otClient = self.watchers.documents[eData.docId].otClient;
+                self.logger.debug('eventHandler for document', {metadata: eData});
                 if (eData.operation) {
                     if (self.reconnecting) {
                         // We are reconnecting.. Put these on the queue.
@@ -223,10 +194,8 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
 
         data.join = true;
         data.sessionId = this.watchers.sessionId;
-        this.webSocket.watchDocument(data, function (err, initData) {
-            if (err) {
-                deferred.reject(err);
-            } else {
+        return this.webSocket.watchDocument(data)
+            .then(function (initData) {
                 self.watchers.documents[initData.docId].otClient = new ot.Client(initData.revision);
 
                 self.watchers.documents[initData.docId].otClient.sendOperation = function (revision, operation) {
@@ -263,11 +232,9 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
 
                 self.watchers.documents[initData.docId].otClient.applyOperation = atOperation;
 
-                deferred.resolve(initData);
-            }
-        });
-
-        return deferred.promise.nodeify(callback);
+                return initData;
+            })
+            .nodeify(callback);
     };
 
     /**
@@ -307,20 +274,17 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
 
             // "Remove" handlers attached to the otClient.
             this.watchers.documents[data.docId].otClient.sendOperation =
-                this.watchers.documents[data.docId].otClient.applyOperation = function () {};
+                this.watchers.documents[data.docId].otClient.applyOperation = function () {
+                };
 
             delete this.watchers.documents[data.docId];
 
             // Finally exit socket.io room on server if connected.
             if (this.connected) {
                 data.join = false;
-                this.webSocket.watchDocument(data, function (err) {
-                    if (err) {
-                        deferred.reject(err);
-                    } else {
-                        deferred.resolve();
-                    }
-                });
+                this.webSocket.watchDocument(data)
+                    .then(deferred.resolve)
+                    .catch(deferred.reject);
             } else {
                 deferred.resolve();
             }
@@ -356,7 +320,8 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
      * @param {ot.Selection} data.selection
      */
     StorageWatcher.prototype.sendDocumentSelection = function (data) {
-        var otClient;
+        var self = this,
+            otClient;
         if (this.watchers.documents.hasOwnProperty(data.docId) &&
             this.watchers.documents[data.docId].otClient instanceof ot.Client) {
 
@@ -368,6 +333,10 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
                     docId: data.docId,
                     revision: otClient.revision,
                     selection: data.selection
+                }, function (err) {
+                    if (err) {
+                        self.logger.error(err);
+                    }
                 });
             }
 
@@ -393,7 +362,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
         for (projectId in this.watchers.projects) {
             if (this.watchers.projects.hasOwnProperty(projectId) && this.watchers.projects[projectId] > 0) {
                 this.logger.debug('Rejoining project room', projectId, this.watchers.projects[projectId]);
-                promises.push(Q.ninvoke(this.webSocket, 'watchProject', {projectId: projectId, join: true}));
+                promises.push(this.webSocket.watchProject({projectId: projectId, join: true}));
             }
         }
 
@@ -405,7 +374,7 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
                 rejoinData.revision = self.watchers.documents[docId].otClient.revision;
                 rejoinData.sessionId = self.watchers.sessionId;
 
-                return Q.ninvoke(self.webSocket, 'watchDocument', rejoinData)
+                return self.webSocket.watchDocument(rejoinData)
                     .then(function (joinData) {
                         var awaiting = self.watchers.documents[docId].awaitingAck,
                             sendData;
