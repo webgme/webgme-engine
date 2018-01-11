@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.19.3](https://github.com/webgme/webgme-engine/tree/v2.19.3) (2018-01-11)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.2...v2.19.3)
+
+**Implemented enhancements:**
+
+- Bump year to 2018. [\#36](https://github.com/webgme/webgme-engine/pull/36) ([kecso](https://github.com/kecso))
+- Update to ejs 2.5.7 and use it as a node\_module [\#35](https://github.com/webgme/webgme-engine/pull/35) ([pmeijer](https://github.com/pmeijer))
+- Websocket error reporting and promises in storage [\#34](https://github.com/webgme/webgme-engine/pull/34) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Prohibit core and storage to bombard server with loadPaths requests [\#37](https://github.com/webgme/webgme-engine/pull/37) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.19.2](https://github.com/webgme/webgme-engine/tree/v2.19.2) (2017-12-18)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.1...v2.19.2)
 
