@@ -40,6 +40,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             storage = Storage.createStorage(webgmeUrl, webgmeToken, logger, gmeConfig);
 
         storage.open(function (networkState) {
+            var connErr;
             if (networkState === STORAGE_CONSTANTS.CONNECTED) {
                 if (typeof projectId === 'string') {
                     storage.openProject(projectId, function (err, project, branches, access) {
@@ -64,7 +65,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     deferred.resolve(storage);
                 }
             } else {
-                deferred.reject(new Error('Problems connecting to the webgme server, network state: ' + networkState));
+                connErr = new Error('Problems connecting to the webgme server, network state: ' + networkState);
+                logger.error(connErr);
+                deferred.reject(connErr);
             }
         });
 
@@ -141,6 +144,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} webgmeToken
      * @param {string} [socketId] - Id of socket that send the request (used for notifications).
      * @param {string} pluginName
+     * @param {object} context
      * @param {object} context.managerConfig - where the plugin should execute.
      * @param {string} context.managerConfig.project - id of project.
      * @param {string} context.managerConfig.activeNode - path to activeNode.
