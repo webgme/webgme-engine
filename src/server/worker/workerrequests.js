@@ -254,7 +254,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 pluginManager.executePlugin(pluginName, context.pluginConfig, pluginContext, finish);
             })
-            .catch(finish);
+            .catch(finish)
+            .done();
     }
 
     /**
@@ -606,7 +607,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 mergeTillSyncOrConflict(mine)
                     .nodeify(finish);
             })
-            .catch(finish);
+            .catch(finish)
+            .done();
     }
 
     /**
@@ -650,7 +652,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 })
                     .nodeify(finish);
             })
-            .catch(finish);
+            .catch(finish)
+            .done();
     }
 
     /**

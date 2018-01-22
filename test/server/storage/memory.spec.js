@@ -609,9 +609,7 @@ describe('Memory storage', function () {
         it('should getBranchHash', function (done) {
             project.getBranchHash('master')
                 .then(function (hash) {
-                    return project.getBranchHash('master', hash);
-                })
-                .then(function (/*hash*/) {
+                    expect(typeof hash).to.equal('string');
                     done();
                 })
                 .catch(done);
