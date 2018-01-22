@@ -71,7 +71,7 @@ define([], function () {
     return {
         //Version
         VERSION: '1.2.0',
-        // Database related     
+        // Database related
         MONGO_ID: '_id',
         COMMIT_TYPE: 'commit',
         OVERLAY_SHARD_TYPE: 'shard',
@@ -83,6 +83,9 @@ define([], function () {
         // Socket IO
         DATABASE_ROOM: 'database',
         ROOM_DIVIDER: '%',
+
+        NETWORK_STATUS_CHANGED: 'NETWORK_STATUS_CHANGED',
+
         CONNECTED: 'CONNECTED',
         DISCONNECTED: 'DISCONNECTED',
         RECONNECTED: 'RECONNECTED',

@@ -16,7 +16,6 @@ describe.only('Worker Requests', function () {
         BlobClient = require('./../../../src/server/middleware/blob/BlobClientWithFSBackend'),
         logger,
         WorkerRequests = require('./../../../src/server/worker/workerrequests'),
-        wr,
         blobClient,
         ir,
         gmeAuth,
@@ -93,10 +92,10 @@ describe.only('Worker Requests', function () {
     });
 
     // Disconnections
-
     it('should run plugin execution connecting to server', function (done) {
         var server = WebGME.standaloneServer(gmeConfig),
-            wr = new WorkerRequests(logger, gmeConfig);
+            wr = new WorkerRequests(logger, gmeConfig),
+            error;
 
         Q.ninvoke(server, 'start')
             .then(function () {
@@ -118,9 +117,64 @@ describe.only('Worker Requests', function () {
 
                 return deferred.promise;
             })
-            .finally(function (err) {
+            .catch(function (err) {
+                error = err;
+            })
+            .finally(function () {
                 server.stop(function () {
-                    done(err);
+                    done(error);
+                });
+            });
+    });
+
+    it('should end plugin execution when disconnected from server', function (done) {
+        var server = WebGME.standaloneServer(gmeConfig),
+            wr = new WorkerRequests(logger, gmeConfig),
+            error;
+
+        this.timeout(10000);
+
+        Q.ninvoke(server, 'start')
+            .then(function () {
+                var deferred = Q.defer();
+
+                wr.executePlugin(null, null, 'PluginForked', {
+                    managerConfig: {
+                        project: ir.project.projectId,
+                        activeNode: '',
+                        branchName: 'b2'
+                    },
+                    pluginConfig: {
+                        timeout: 5000
+                    }
+                }, function (err/*, result*/) {
+                    if (err) {
+                        deferred.reject(err);
+                    } else {
+                        deferred.resolve();
+                    }
+                });
+
+                setTimeout(function () {
+                    server.stop(function () {
+                    });
+                }, 400);
+
+                return deferred.promise;
+            })
+            .then(function () {
+                throw new Error('Should have failed!');
+            })
+            .catch(function (err) {
+                try {
+                    expect(err.message).to.include('Unexpected network status: DISCONNECTED');
+                } catch (e) {
+                    error = e;
+                }
+            })
+            .finally(function () {
+                server.stop(function () {
+                    done(error);
                 });
             });
     });

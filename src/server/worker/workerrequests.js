@@ -30,6 +30,7 @@ var Core = requireJS('common/core/coreQ'),
  *
  * @param {GmeLogger} mainLogger
  * @param {GmeConfig} gmeConfig
+ * @param {string} [webgmeUrl]
  * @constructor
  */
 function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
@@ -72,6 +73,30 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         });
 
         return deferred.promise.nodeify(callback);
+    }
+
+    /**
+     * This event handler is added after the initial connect (potentially failed)
+     * @param finishFn
+     * @returns {Function}
+     */
+    function getNetworkStatusChangeHandler(finishFn) {
+        var timeoutId;
+
+        return function (storage, status) {
+            if (status === storage.CONSTANTS.DISCONNECTED) {
+                logger.warn('Connected worker got disconnected from server, awaiting reconnect',
+                    gmeConfig.server.workerManager.disconnectTimeout);
+
+                timeoutId = setTimeout(function () {
+                    finishFn(new Error('Unexpected network status: ' + status));
+                }, gmeConfig.server.workerManager.disconnectTimeout);
+            } else if (status === storage.CONSTANTS.RECONNECTED) {
+                clearTimeout(timeoutId);
+            } else {
+                finishFn(new Error('Unexpected network status: ' + status));
+            }
+        };
     }
 
     function _getCoreAndRootNode(storage, projectId, commitHash, branchName, tagName, callback) {
@@ -202,6 +227,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken, context.managerConfig.project)
             .then(function (res) {
                 storage = res.storage;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
+
                 var pluginContext = JSON.parse(JSON.stringify(context.managerConfig));
 
                 pluginContext.project = res.project;

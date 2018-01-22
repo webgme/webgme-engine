@@ -45,16 +45,21 @@ define([
 
         StorageObjectLoaders.call(this, webSocket, mainLogger, gmeConfig);
 
+        function triggerNetworkChange(connectionState, networkHandler) {
+            networkHandler(connectionState);
+            self.dispatchEvent(CONSTANTS.NETWORK_STATUS_CHANGED, connectionState);
+        }
+
         this.open = function (networkHandler) {
             webSocket.connect(function (err, connectionState) {
                 if (err) {
                     logger.error(err);
-                    networkHandler(CONSTANTS.CONNECTION_ERROR);
+                    triggerNetworkChange(CONSTANTS.CONNECTION_ERROR, networkHandler);
                 } else if (connectionState === CONSTANTS.CONNECTED) {
                     self.connected = true;
                     self.userId = webSocket.userId;
                     self.serverVersion = webSocket.serverVersion;
-                    networkHandler(connectionState);
+                    triggerNetworkChange(connectionState, networkHandler);
                 } else if (connectionState === CONSTANTS.RECONNECTING) {
                     // This is an internal state only to handle rejoining of rooms.
                     // Technically the websocket is connected at this point.
@@ -67,25 +72,25 @@ define([
                         })
                         .then(function () {
                             self.reconnecting = false;
-                            networkHandler(connectionState);
+                            triggerNetworkChange(connectionState, networkHandler);
                         })
                         .catch(function (err) {
                             logger.error('failing during reconnect', err);
-                            networkHandler(CONSTANTS.CONNECTION_ERROR);
+                            triggerNetworkChange(CONSTANTS.CONNECTION_ERROR, networkHandler);
                         });
 
                 } else if (connectionState === CONSTANTS.DISCONNECTED) {
                     self.connected = false;
-                    networkHandler(connectionState);
+                    triggerNetworkChange(connectionState, networkHandler);
                 } else if (connectionState === CONSTANTS.INCOMPATIBLE_CONNECTION) {
-                    networkHandler(connectionState);
+                    triggerNetworkChange(connectionState, networkHandler);
                 } else if (connectionState === CONSTANTS.JWT_ABOUT_TO_EXPIRE) {
-                    networkHandler(connectionState);
+                    triggerNetworkChange(connectionState, networkHandler);
                 } else if (connectionState === CONSTANTS.JWT_EXPIRED) {
-                    networkHandler(connectionState);
+                    triggerNetworkChange(connectionState, networkHandler);
                 } else {
                     logger.error('unexpected connection state');
-                    networkHandler(CONSTANTS.CONNECTION_ERROR);
+                    triggerNetworkChange(CONSTANTS.CONNECTION_ERROR, networkHandler);
                 }
             });
         };
@@ -108,6 +113,7 @@ define([
                     self.connected = false;
                     // Remove all local event-listeners.
                     webSocket.clearAllEvents();
+                    self.clearAllEvents();
                 })
                 .nodeify(callback);
         };
