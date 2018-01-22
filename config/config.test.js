@@ -35,7 +35,7 @@ config.server.log = {
         transportType: 'Console',
         options: {
             level: 'error',
-            silent: true, // Uncomment this to get error messages
+            //silent: true, // Uncomment this to get error messages
             colorize: true,
             timestamp: true,
             prettyPrint: true,
