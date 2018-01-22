@@ -227,7 +227,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         logger.debug('executePlugin context', {metadata: context});
         getConnectedStorage(webgmeToken, context.managerConfig.project)
             .then(function (res) {
-                storage = res.storage;
+                storage = res.storage || res;
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
 
@@ -532,7 +532,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken, projectId)
             .then(function (res) {
                 var loggerCompare = logger.fork('compare');
-                storage = res.storage;
+                storage = res.storage || res;
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
 
@@ -579,7 +579,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken, projectId)
             .then(function (res) {
                 var mergeLogger = logger.fork('merge');
-                storage = res.storage;
+                storage = res.storage || res;
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
 
@@ -638,7 +638,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
         getConnectedStorage(webgmeToken, partial.projectId)
             .then(function (res) {
-                storage = res.storage;
+                storage = res.storage || res;
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
 
@@ -776,7 +776,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
         getConnectedStorage(webgmeToken, parameters.projectId)
             .then(function (res) {
-                storage = res.storage;
+                storage = res.storage || res;
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
 
