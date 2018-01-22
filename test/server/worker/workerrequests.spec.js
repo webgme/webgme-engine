@@ -6,7 +6,7 @@
 
 var testFixture = require('../../_globals.js');
 
-describe.only('Worker Requests', function () {
+describe('Worker Requests', function () {
     'use strict';
 
     var gmeConfig = testFixture.getGmeConfig(),
@@ -128,9 +128,14 @@ describe.only('Worker Requests', function () {
     });
 
     it('should end plugin execution when disconnected from server', function (done) {
-        var server = WebGME.standaloneServer(gmeConfig),
-            wr = new WorkerRequests(logger, gmeConfig),
+        var config = testFixture.copy(gmeConfig),
+            server,
+            wr,
             error;
+
+        config.server.workerManager.disconnectTimeout = 10;
+        server = WebGME.standaloneServer(config);
+        wr = new WorkerRequests(logger, config);
 
         this.timeout(10000);
 
@@ -158,7 +163,7 @@ describe.only('Worker Requests', function () {
                 setTimeout(function () {
                     server.stop(function () {
                     });
-                }, 400);
+                }, 200);
 
                 return deferred.promise;
             })
@@ -171,6 +176,59 @@ describe.only('Worker Requests', function () {
                 } catch (e) {
                     error = e;
                 }
+            })
+            .finally(function () {
+                server.stop(function () {
+                    done(error);
+                });
+            });
+    });
+
+    it('should resume plugin execution when reconnected to server', function (done) {
+        var config = testFixture.copy(gmeConfig),
+            server,
+            wr,
+            error;
+
+        config.server.workerManager.disconnectTimeout = 2000;
+        config.socketIO.clientOptions.reconnection = true;
+        server = WebGME.standaloneServer(config);
+        wr = new WorkerRequests(logger, config);
+
+        this.timeout(10000);
+
+        Q.ninvoke(server, 'start')
+            .then(function () {
+                var deferred = Q.defer();
+
+                wr.executePlugin(null, null, 'PluginForked', {
+                    managerConfig: {
+                        project: ir.project.projectId,
+                        activeNode: '',
+                        branchName: 'b3'
+                    },
+                    pluginConfig: {
+                        timeout: 5000
+                    }
+                }, function (err/*, result*/) {
+                    if (err) {
+                        deferred.reject(err);
+                    } else {
+                        deferred.resolve();
+                    }
+                });
+
+                setTimeout(function () {
+                    server.stop(function () {
+                        server.start(function () {
+                        });
+                    });
+                }, 200);
+
+                return deferred.promise;
+            })
+            .catch(function (err) {
+                error = err;
             })
             .finally(function () {
                 server.stop(function () {

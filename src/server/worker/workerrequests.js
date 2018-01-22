@@ -66,7 +66,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     deferred.resolve(storage);
                 }
             } else {
-                connErr = new Error('Problems connecting to the webgme server, network state: ' + networkState);
+                connErr = new Error('Problems with connection to the webgme server, network state: ' + networkState);
                 logger.error(connErr);
                 deferred.reject(connErr);
             }
@@ -94,6 +94,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             } else if (status === storage.CONSTANTS.RECONNECTED) {
                 clearTimeout(timeoutId);
             } else {
+                clearTimeout(timeoutId);
                 finishFn(new Error('Unexpected network status: ' + status));
             }
         };
@@ -443,9 +444,13 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('seeding [' + parameters.seedName + '] to [' + result.projectId + '] completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         logger.debug('seedProject');
@@ -459,6 +464,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 logger.debug('seedProject - storage is connected');
 
                 if (parameters.type === 'file') {
@@ -526,6 +533,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             .then(function (res) {
                 var loggerCompare = logger.fork('compare');
                 storage = res.storage;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
 
                 return merger.diff({
                     project: res.project,
@@ -571,6 +580,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             .then(function (res) {
                 var mergeLogger = logger.fork('merge');
                 storage = res.storage;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
 
                 function mergeTillSyncOrConflict(currentMine) {
                     return merger.merge({
@@ -628,6 +639,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken, partial.projectId)
             .then(function (res) {
                 storage = res.storage;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
 
                 merger.resolve({
                     project: res.project,
@@ -661,9 +674,14 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('checkConstraints [' + projectId + '] completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         logger.debug('checkConstraints ' + projectId);
@@ -687,6 +705,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage, projectId, parameters.commitHash, null);
             })
             .then(function (res) {
@@ -757,6 +777,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken, parameters.projectId)
             .then(function (res) {
                 storage = res.storage;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
 
                 return storageUtils.getProjectJson(res.project, {
                     branchName: parameters.branchName,
@@ -816,9 +838,14 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('exportSelectionToFile completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         logger.debug('exportSelectionToFile', {metadata: parameters});
@@ -826,6 +853,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage,
                     parameters.projectId, parameters.commitHash, parameters.branchName, parameters.tagName);
             })
@@ -939,9 +968,14 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('importSelectionFromFile completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         logger.debug('importSelectionFromFile', {metadata: parameters});
@@ -949,6 +983,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
+
                 if (parameters.hasOwnProperty('parentPath') === false) {
                     throw new Error('No parentPath given');
                 }
@@ -1054,9 +1091,14 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('addLibrary completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         logger.debug('addLibrary', {metadata: parameters});
@@ -1064,6 +1106,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage, parameters.projectId, null, parameters.branchName, null);
             })
             .then(function (context_) {
@@ -1141,9 +1185,14 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('updateLibrary completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         logger.debug('updateLibrary', {metadata: parameters});
@@ -1151,6 +1200,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage, projectId, null, parameters.branchName, null);
             })
             .then(function (context_) {
@@ -1223,9 +1274,14 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('updateProjectFromFile completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         logger.debug('updateProjectFromFile', {metadata: parameters});
@@ -1233,6 +1289,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage, parameters.projectId,
                     parameters.commitHash, parameters.branchName, parameters.tagName);
             })
@@ -1277,14 +1335,21 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('renameConcept completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage, parameters.projectId, undefined, parameters.branchName, undefined);
             })
             .then(function (context_) {
@@ -1330,14 +1395,21 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('changeAttributeMeta completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage, parameters.projectId, parameters.commitHash,
                     parameters.branchName, parameters.tagName);
             })
@@ -1390,14 +1462,21 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('changeAttributeMeta completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage, parameters.projectId, parameters.commitHash,
                     parameters.branchName, parameters.tagName);
             })
@@ -1447,14 +1526,21 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('changeAspectMeta completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage, parameters.projectId, parameters.commitHash,
                     parameters.branchName, parameters.tagName);
             })
@@ -1539,14 +1625,21 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     logger.debug('changeAspectMeta completed');
                 }
-                storage.close(function (closeErr) {
-                    callback(err || closeErr, result);
-                });
+
+                if (storage) {
+                    storage.close(function (closeErr) {
+                        callback(err || closeErr, result);
+                    });
+                } else {
+                    callback(err, result);
+                }
             };
 
         getConnectedStorage(webgmeToken)
             .then(function (storage_) {
                 storage = storage_;
+                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                    getNetworkStatusChangeHandler(finish));
                 return _getCoreAndRootNode(storage, parameters.projectId, parameters.commitHash,
                     parameters.branchName, parameters.tagName);
             })
