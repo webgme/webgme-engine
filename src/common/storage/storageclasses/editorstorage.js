@@ -59,7 +59,7 @@ define([
                     self.connected = true;
                     self.userId = webSocket.userId;
                     self.serverVersion = webSocket.serverVersion;
-                    triggerNetworkChange(connectionState, networkHandler);
+                    triggerNetworkChange(CONSTANTS.CONNECTED, networkHandler);
                 } else if (connectionState === CONSTANTS.RECONNECTING) {
                     // This is an internal state only to handle rejoining of rooms.
                     // Technically the websocket is connected at this point.
@@ -72,7 +72,7 @@ define([
                         })
                         .then(function () {
                             self.reconnecting = false;
-                            triggerNetworkChange(connectionState, networkHandler);
+                            triggerNetworkChange(CONSTANTS.RECONNECTED, networkHandler);
                         })
                         .catch(function (err) {
                             logger.error('failing during reconnect', err);
@@ -81,7 +81,7 @@ define([
 
                 } else if (connectionState === CONSTANTS.DISCONNECTED) {
                     self.connected = false;
-                    triggerNetworkChange(connectionState, networkHandler);
+                    triggerNetworkChange(CONSTANTS.DISCONNECTED, networkHandler);
                 } else if (connectionState === CONSTANTS.INCOMPATIBLE_CONNECTION) {
                     triggerNetworkChange(connectionState, networkHandler);
                 } else if (connectionState === CONSTANTS.JWT_ABOUT_TO_EXPIRE) {

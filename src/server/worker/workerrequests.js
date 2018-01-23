@@ -82,8 +82,13 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      */
     function getNetworkStatusChangeHandler(finishFn) {
         var timeoutId;
-
         return function (storage, status) {
+            var UNRECOVERABLE_STATUSES = [
+                storage.CONSTANTS.INCOMPATIBLE_CONNECTION,
+                storage.CONSTANTS.CONNECTION_ERROR,
+                storage.CONSTANTS.JWT_EXPIRED
+            ];
+
             if (status === storage.CONSTANTS.DISCONNECTED) {
                 logger.warn('Connected worker got disconnected from server, awaiting reconnect',
                     gmeConfig.server.workerManager.disconnectTimeout);
@@ -93,7 +98,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 }, gmeConfig.server.workerManager.disconnectTimeout);
             } else if (status === storage.CONSTANTS.RECONNECTED) {
                 clearTimeout(timeoutId);
-            } else {
+            } else if (UNRECOVERABLE_STATUSES.indexOf(status) > -1) {
                 clearTimeout(timeoutId);
                 finishFn(new Error('Unexpected network status: ' + status));
             }
