@@ -21,7 +21,7 @@ var WebGME = require('../index'),
         // makes sure that for each request it returns with a unique object and tests will not interfere
         if (!_gmeConfig) {
             // if some tests are deleting or unloading the config
-            _gmeConfig = require('../config');
+            _gmeConfig = require(process.cwd() + '/config');
         }
         return JSON.parse(JSON.stringify(_gmeConfig));
     },
@@ -105,22 +105,8 @@ Object.defineProperties(exports, {
     logger: {
         get: function () {
             if (!_logger) {
-                _logger = exports.Logger.create('gme:test', {
-                    //patterns: ['gme:test:*cache'],
-                    transports: [{
-                        transportType: 'Console',
-                        options: {
-                            level: 'error',
-                            colorize: true,
-                            timestamp: true,
-                            prettyPrint: true,
-                            //handleExceptions: true, // ignored by default
-                            //exitOnError: false,
-                            depth: 4,
-                            debugStdout: true
-                        }
-                    }]
-                }, false);
+                var config = getGmeConfig();
+                _logger = exports.Logger.create('gme:test', config.server.log, false);
             }
             return _logger;
         }

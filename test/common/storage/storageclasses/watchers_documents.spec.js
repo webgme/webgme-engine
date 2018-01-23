@@ -381,7 +381,7 @@ describe('watchers documents', function () {
     });
 
     // Selections
-    it.only('should send selection when synchronized and it should be transformed for other client', function (done) {
+    it('should send selection when synchronized and it should be transformed for other client', function (done) {
         var user1,
             user2,
             docId,

@@ -35,6 +35,7 @@ config.server.log = {
         transportType: 'Console',
         options: {
             level: 'error',
+            //silent: true,
             colorize: true,
             timestamp: true,
             prettyPrint: true,

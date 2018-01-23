@@ -7,10 +7,17 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], function (CONSTANTS, Q, GUID, ot) {
+define([
+    'q',
+    'webgme-ot',
+    'common/storage/constants',
+    'common/util/guid',
+    'common/EventDispatcher'
+], function (Q, ot, CONSTANTS, GUID, EventDispatcher) {
     'use strict';
 
     function StorageWatcher(webSocket, logger, gmeConfig) {
+        EventDispatcher.call(this);
         // watcher counters determining when to join/leave a room on the sever
         this.watchers = {
             sessionId: GUID(), // Need at reconnect since socket.id changes.
@@ -24,6 +31,10 @@ define(['common/storage/constants', 'q', 'common/util/guid', 'webgme-ot'], funct
         this.logger.debug('StorageWatcher ctor');
         this.connected = false;
     }
+
+    // Inherit from the EventDispatcher
+    StorageWatcher.prototype = Object.create(EventDispatcher.prototype);
+    StorageWatcher.prototype.constructor = StorageWatcher;
 
     function _splitDocId(docId) {
         var pieces = docId.split(CONSTANTS.ROOM_DIVIDER);
