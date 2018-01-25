@@ -154,10 +154,12 @@ var path = require('path'),
             timeout: -1,
             workerManager: {
                 path: path.join(__dirname, '../src/server/worker/serverworkermanager'),
-                disconnectTimeout: 2000,
                 options: {}
             },
-            maxWorkers: 10,
+            // Default worker manager options (can be reused by custom worker managers too).
+            maxWorkers: 2,
+            maxQueuedWorkerRequests: 0,
+            workerDisconnectTimeout: 2000,
             log: {
                 //patterns: ['gme:server:*', '-gme:server:standalone*'],
                 transports: [{

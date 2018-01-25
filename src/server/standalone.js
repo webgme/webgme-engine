@@ -682,7 +682,7 @@ function StandAloneServer(gmeConfig) {
         fs.readFile(indexHtmlPath, 'utf8', function (err, indexTemp) {
             if (err) {
                 logger.error(err);
-                res.send(404);
+                res.sendStatus(404);
             } else {
                 res.contentType('text/html');
                 //http://stackoverflow.com/questions/49547/how-to-control-web-page-caching-across-all-browsers

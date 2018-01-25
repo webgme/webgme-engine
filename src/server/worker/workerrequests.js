@@ -91,11 +91,11 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
             if (status === storage.CONSTANTS.DISCONNECTED) {
                 logger.warn('Connected worker got disconnected from server, awaiting reconnect',
-                    gmeConfig.server.workerManager.disconnectTimeout);
+                    gmeConfig.server.workerDisconnectTimeout);
 
                 timeoutId = setTimeout(function () {
                     finishFn(new Error('Unexpected network status: ' + status));
-                }, gmeConfig.server.workerManager.disconnectTimeout);
+                }, gmeConfig.server.workerDisconnectTimeout);
             } else if (status === storage.CONSTANTS.RECONNECTED) {
                 clearTimeout(timeoutId);
             } else if (UNRECOVERABLE_STATUSES.indexOf(status) > -1) {
