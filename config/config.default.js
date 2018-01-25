@@ -157,8 +157,8 @@ var path = require('path'),
                 options: {}
             },
             // Default worker manager options (can be reused by custom worker managers too).
-            maxWorkers: 2,
-            maxQueuedWorkerRequests: 0,
+            maxWorkers: 10,
+            maxQueuedWorkerRequests: -1,
             workerDisconnectTimeout: 2000,
             log: {
                 //patterns: ['gme:server:*', '-gme:server:standalone*'],

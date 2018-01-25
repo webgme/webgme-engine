@@ -235,6 +235,36 @@ describe('Plugin', function () {
         });
     });
 
+    it('should run MinimalWorkingExample on the server and return results even though it failed', function (done) {
+        var pluginId = 'MinimalWorkingExample',
+            context = {
+                managerConfig: {
+                    project: client.getActiveProjectId(),
+                    activeNode: '',
+                    activeSelection: [],
+                    commit: client.getActiveCommitHash(),
+                    branchName: 'master'
+                },
+                pluginConfig: {
+                    save: false,
+                    shouldFail: true
+                }
+            };
+
+        client.runServerPlugin(pluginId, context, function (err, pluginResult) {
+            try {
+                expect(err instanceof Error).to.equal(true);
+                expect(err.message).to.include('Failed on purpose');
+                expect(pluginResult).to.have.keys(['artifacts', 'commits', 'error', 'finishTime', 'messages',
+                    'pluginName', 'pluginId', 'projectId', 'startTime', 'success']);
+                expect(pluginResult.success).to.equal(false);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+    });
+
     it('should fork when client made changes after invocation', function (done) {
         var pluginId = 'PluginForked',
             context = {

@@ -39,13 +39,13 @@ describe('storage storageclasses simpleapi', function () {
         pluginContext = {
             managerConfig: {
                 project: projectName2Id(projectName),
-                branch: 'b1',
+                branchName: 'b1',
                 commitHash: null,
                 activeNode: '/1'
             },
             pluginConfig: {
                 save: false,
-                fail: true
+                shouldFail: true
             }
         },
         importResult,
@@ -356,6 +356,57 @@ describe('storage storageclasses simpleapi', function () {
             .nodeify(done);
     });
 
+    it('should createProject with callback', function (done) {
+        var projName = 'newProjCb';
+        storage.createProject(projName, function (err, projectId) {
+            try {
+                expect(!err).to.equal(true);
+                expect(projectId).to.equal(projectName2Id(projName));
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+    });
+
+    it('should createProject with owner and callback', function (done) {
+        var projName = 'newProjCb2';
+        storage.createProject(projName, 'guest', function (err, projectId) {
+            try {
+                expect(!err).to.equal(true);
+                expect(projectId).to.equal(projectName2Id(projName));
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+    });
+
+    it('should createProject with owner and kind and callback', function (done) {
+        var projName = 'newProjCb3';
+        storage.createProject(projName, 'guest', 'kindest', function (err, projectId) {
+            try {
+                expect(!err).to.equal(true);
+                expect(projectId).to.equal(projectName2Id(projName));
+                storage.getProjects({info: true})
+                    .then(function (projects) {
+                        var found = false;
+                        projects.forEach(function (project) {
+                            if (project._id === projectId) {
+                                expect(project.info.kind).to.equal('kindest');
+                                found = true;
+                            }
+                        });
+
+                        expect(found).to.equal(true);
+                    })
+                    .nodeify(done);
+            } catch (e) {
+                done(e);
+            }
+        });
+    });
+
     it('should fail to call createProject if project already exists', function (done) {
         storage.createProject(projectNameCreate2)
             .then(function (projectId) {
@@ -460,6 +511,7 @@ describe('storage storageclasses simpleapi', function () {
             function (err) {
                 try {
                     expect(!!err.result && typeof err.result === 'object').to.equal(true);
+                    expect(err.message).to.include('Failed on purpose');
                     expect(err.result).to.have.keys(['artifacts', 'commits', 'error', 'finishTime', 'messages',
                         'pluginName', 'pluginId', 'projectId', 'startTime', 'success']);
                     expect(err.result.success).to.equal(false);
