@@ -500,7 +500,8 @@ define([
                 });
             } else {
                 StorageObjectLoaders.prototype.setBranchHash.call(self,
-                    projectId, branchName, newHash, oldHash, callback);
+                    projectId, branchName, newHash, oldHash)
+                    .nodeify(callback);
             }
         };
 

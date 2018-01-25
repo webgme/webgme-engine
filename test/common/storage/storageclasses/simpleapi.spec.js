@@ -1,6 +1,7 @@
 /*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
+ * @author pmeijer / https://github.com/pmeijer
  */
 
 
@@ -35,6 +36,18 @@ describe('storage storageclasses simpleapi', function () {
         projectNameCreate2 = 'SimpleAPICreateProject2',
         projectNameDelete = 'SimpleAPIDeleteProject',
         projectNameTransfer = 'SimpleAPIProjectNameTransfer',
+        pluginContext = {
+            managerConfig: {
+                project: projectName2Id(projectName),
+                branch: 'b1',
+                commitHash: null,
+                activeNode: '/1'
+            },
+            pluginConfig: {
+                save: false,
+                fail: true
+            }
+        },
         importResult,
         originalHash,
         commitHash1,
@@ -51,8 +64,7 @@ describe('storage storageclasses simpleapi', function () {
                 return;
             }
 
-            testFixture.clearDBAndGetGMEAuth(gmeConfig,
-                [projectName, shardedProjectName, projectNameCreate, projectNameCreate2, projectNameDelete])
+            testFixture.clearDBAndGetGMEAuth(gmeConfig)
                 .then(function (gmeAuth_) {
                     gmeAuth = gmeAuth_;
                     return gmeAuth.addOrganization('orgId');
@@ -116,7 +128,12 @@ describe('storage storageclasses simpleapi', function () {
                 })
                 .then(function (result) {
                     commitHash2 = result.hash;
-                    return importResult.project.createTag('tag', originalHash);
+                    pluginContext.commitHash = originalHash;
+                    return Q.allDone([
+                        importResult.project.createTag('tag', originalHash),
+                        importResult.project.createBranch('b1', originalHash),
+                        importResult.project.createBranch('b2', originalHash)
+                    ]);
                 })
                 .nodeify(done);
         });
@@ -165,7 +182,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getProjects', function (done) {
-        Q.ninvoke(storage, 'getProjects', {})
+        storage.getProjects({})
             .then(function (projects) {
                 var ids = [];
 
@@ -179,7 +196,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getProjectInfo', function (done) {
-        Q.ninvoke(storage, 'getProjectInfo', projectName2Id(projectName))
+        storage.getProjectInfo(projectName2Id(projectName))
             .then(function (projectInfo) {
                 expect(Object.keys(projectInfo)).to.have.members([
                     '_id', 'branches', 'hooks', 'info', 'name', 'owner', 'rights'
@@ -189,7 +206,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should fail to getProjectInfo if it not exist', function (done) {
-        Q.ninvoke(storage, 'getProjectInfo', projectName2Id('DoesNotExist'))
+        storage.getProjectInfo(projectName2Id('DoesNotExist'))
             .then(function () {
                 throw new Error('Should have failed!');
             })
@@ -201,14 +218,14 @@ describe('storage storageclasses simpleapi', function () {
 
     it('getProjects with projectId should return one entry with same data as getProjectInfo', function (done) {
         Q.all([
-            Q.ninvoke(storage, 'getProjects', {
+            storage.getProjects({
                 projectId: projectName2Id(projectName),
                 branches: true,
                 hooks: true,
                 rights: true,
                 info: true
             }),
-            Q.ninvoke(storage, 'getProjectInfo', projectName2Id(projectName))
+            storage.getProjectInfo(projectName2Id(projectName))
         ])
             .then(function (res) {
                 expect(res[0].length).to.equal(1);
@@ -218,7 +235,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should fail to getProjects if projectId given and does not exist', function (done) {
-        Q.ninvoke(storage, 'getProjects', {projectId: projectName2Id('DoesNotExist')})
+        storage.getProjects({projectId: projectName2Id('DoesNotExist')})
             .then(function () {
                 throw new Error('Should have failed!');
             })
@@ -229,9 +246,9 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getBranches', function (done) {
-        Q.ninvoke(storage, 'getBranches', projectName2Id(projectName))
+        storage.getBranches(projectName2Id(projectName))
             .then(function (branches) {
-                expect(Object.keys(branches).length).to.equal(1);
+                expect(Object.keys(branches).length).to.equal(3);
                 expect(branches.master).to.equal(importResult.commitHash);
 
             })
@@ -239,7 +256,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getCommits', function (done) {
-        Q.ninvoke(storage, 'getCommits', projectName2Id(projectName), (new Date()).getTime(), 100)
+        storage.getCommits(projectName2Id(projectName), (new Date()).getTime(), 100)
             .then(function (commits) {
                 expect(commits.length).to.equal(3);
             })
@@ -247,7 +264,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getTags', function (done) {
-        Q.ninvoke(storage, 'getTags', projectName2Id(projectName))
+        storage.getTags(projectName2Id(projectName))
             .then(function (tags) {
                 expect(tags).to.deep.equal({tag: originalHash});
             })
@@ -255,7 +272,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getBranchHash', function (done) {
-        Q.ninvoke(storage, 'getBranchHash', projectName2Id(projectName), 'master')
+        storage.getBranchHash(projectName2Id(projectName), 'master')
             .then(function (hash) {
                 expect(hash).to.equal(importResult.commitHash);
             })
@@ -263,7 +280,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getHistory from master', function (done) {
-        Q.ninvoke(storage, 'getHistory', projectName2Id(projectName), 'master', 10)
+        storage.getHistory(projectName2Id(projectName), 'master', 10)
             .then(function (commits) {
                 expect(commits.length).to.deep.equal(1);
                 expect(commits[0]._id).to.deep.equal(importResult.commitHash);
@@ -272,7 +289,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getLatestCommitData', function (done) {
-        Q.ninvoke(storage, 'getLatestCommitData', projectName2Id(projectName), 'master')
+        storage.getLatestCommitData(projectName2Id(projectName), 'master')
             .then(function (commitData) {
                 expect(commitData.branchName).to.equal('master');
                 expect(commitData.commitObject._id).to.equal(importResult.commitHash);
@@ -281,7 +298,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getLatestCommitData from project with overlay shards', function (done) {
-        Q.ninvoke(storage, 'getLatestCommitData', projectName2Id(shardedProjectName), 'master')
+        storage.getLatestCommitData(projectName2Id(shardedProjectName), 'master')
             .then(function (commitData) {
                 expect(commitData.branchName).to.equal('master');
                 expect(commitData.coreObjects).to.have.length(3);
@@ -294,7 +311,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should getCommonAncestorCommit', function (done) {
-        Q.ninvoke(storage, 'getCommonAncestorCommit', projectName2Id(projectName), commitHash1, commitHash2)
+        storage.getCommonAncestorCommit(projectName2Id(projectName), commitHash1, commitHash2)
             .then(function (commitHash) {
                 expect(commitHash).to.equal(importResult.commitHash);
             })
@@ -302,7 +319,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should createProject', function (done) {
-        Q.ninvoke(storage, 'createProject', projectNameCreate)
+        storage.createProject(projectNameCreate)
             .then(function (projectId) {
                 expect(projectId).to.equal(projectName2Id(projectNameCreate));
             })
@@ -310,7 +327,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should createProject with owner', function (done) {
-        Q.ninvoke(storage, 'createProject', 'aNewProject', 'guest')
+        storage.createProject('aNewProject', 'guest')
             .then(function (projectId) {
                 expect(projectId).to.equal(projectName2Id('aNewProject'));
             })
@@ -319,7 +336,7 @@ describe('storage storageclasses simpleapi', function () {
 
     it('should createProject with owner and kind', function (done) {
         var projectId;
-        Q.ninvoke(storage, 'createProject', 'aNewProjectWithKind', 'guest', 'kindest')
+        storage.createProject('aNewProjectWithKind', 'guest', 'kindest')
             .then(function (projectId_) {
                 projectId = projectId_;
                 expect(projectId).to.equal(projectName2Id('aNewProjectWithKind'));
@@ -340,7 +357,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should fail to call createProject if project already exists', function (done) {
-        Q.ninvoke(storage, 'createProject', projectNameCreate2)
+        storage.createProject(projectNameCreate2)
             .then(function (projectId) {
                 expect(projectId).to.equal(projectName2Id(projectNameCreate2));
                 return Q.ninvoke(storage, 'createProject', projectNameCreate2);
@@ -355,7 +372,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should createProject and deleteProject', function (done) {
-        Q.ninvoke(storage, 'createProject', projectNameDelete)
+        storage.createProject(projectNameDelete)
             .then(function (projectId) {
                 return Q.ninvoke(storage, 'deleteProject', projectId);
             })
@@ -367,7 +384,7 @@ describe('storage storageclasses simpleapi', function () {
 
     it('should createProject and transferProject', function (done) {
         var newOwner = 'orgId';
-        Q.ninvoke(storage, 'createProject', projectNameTransfer)
+        storage.createProject(projectNameTransfer)
             .then(function (projectId) {
                 return Q.ninvoke(storage, 'transferProject', projectId, newOwner);
             })
@@ -379,7 +396,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should fail to transferProject when it does not exist', function (done) {
-        Q.ninvoke(storage, 'transferProject', 'doesNotExist', 'someOwnerId')
+        storage.transferProject('doesNotExist', 'someOwnerId')
             .then(function () {
                 throw new Error('Should have failed!');
             })
@@ -412,7 +429,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should createBranch', function (done) {
-        Q.ninvoke(storage, 'createBranch', projectName2Id(projectName), 'createdBranch', importResult.commitHash)
+        storage.createBranch(projectName2Id(projectName), 'createdBranch', importResult.commitHash)
             .then(function (result) {
                 expect(result.status).to.equal('SYNCED');
             })
@@ -420,7 +437,7 @@ describe('storage storageclasses simpleapi', function () {
     });
 
     it('should create and delete tag', function (done) {
-        Q.ninvoke(storage, 'createTag', projectName2Id(projectName), 'newTag', originalHash)
+        storage.createTag(projectName2Id(projectName), 'newTag', originalHash)
             .then(function () {
                 return Q.ninvoke(storage, 'getTags', projectName2Id(projectName));
             })
@@ -435,6 +452,22 @@ describe('storage storageclasses simpleapi', function () {
                 expect(tags).to.deep.equal({tag: originalHash});
             })
             .nodeify(done);
+    });
+
+    it('should return failed plugin in result at err.result', function (done) {
+
+        storage.simpleRequest({command: 'executePlugin', name: 'MinimalWorkingExample', context: pluginContext},
+            function (err) {
+                try {
+                    expect(!!err.result && typeof err.result === 'object').to.equal(true);
+                    expect(err.result).to.have.keys(['artifacts', 'commits', 'error', 'finishTime', 'messages',
+                        'pluginName', 'pluginId', 'projectId', 'startTime', 'success']);
+                    expect(err.result.success).to.equal(false);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
     });
 
     // it('should fail to execute simpleQuery without addOn configured', function (done) {

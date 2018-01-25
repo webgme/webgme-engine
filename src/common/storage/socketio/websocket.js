@@ -408,11 +408,23 @@ define([
 
         //temporary simple request / result functions
         this.simpleRequest = function (data, callback) {
-            return emitWithToken(data, 'simpleRequest')
-                .catch(function (err) {
-                    return Q.reject(new Error(err));
-                })
-                .nodeify(callback);
+            var deferred = Q.defer();
+            emitWithToken(data, 'simpleRequest', function (errStr, result) {
+                var err;
+                if (errStr) {
+                    err = new Error(errStr);
+                    if (result) {
+                        // webgme #1570 For failed plugin executions we need the result details
+                        err.result = result;
+                    }
+
+                    deferred.reject(err);
+                } else {
+                    deferred.resolve(result);
+                }
+            });
+
+            return deferred.promise.nodeify(callback);
         };
 
         this.simpleQuery = function (workerId, data, callback) {

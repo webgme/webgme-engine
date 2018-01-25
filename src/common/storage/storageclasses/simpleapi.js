@@ -141,6 +141,9 @@ define(['common/storage/storageclasses/watchers'], function (StorageWatcher) {
             } else if (typeof kind === 'function') {
                 data.ownerId = ownerId;
                 callback = kind;
+            } else {
+                data.ownerId = ownerId;
+                data.kind = kind;
             }
         } else {
             data.ownerId = ownerId;
