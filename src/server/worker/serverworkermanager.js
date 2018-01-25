@@ -272,8 +272,17 @@ function ServerWorkerManager(parameters) {
 
     this.request = function (parameters, callback) {
         logger.debug('Incoming request', {metadata: parameters});
-        _waitingRequests.push({request: parameters, cb: callback});
-        reserveWorkerIfNecessary(CONSTANTS.workerTypes.simple);
+
+        if (gmeConfig.server.maxQueuedWorkerRequests > -1 &&
+            _waitingRequests.length > gmeConfig.server.maxQueuedWorkerRequests) {
+            logger.warn('Worker-request got dismissed because of full queue.');
+            callback(new Error('Server currently has too many jobs queued, try again later.'));
+        } else {
+            logger.debug('Queue not full - will add worker-request to wait list.');
+            _waitingRequests.push({request: parameters, cb: callback});
+            reserveWorkerIfNecessary(CONSTANTS.workerTypes.simple);
+            queueManager();
+        }
     };
 
     this.start = function (callback) {

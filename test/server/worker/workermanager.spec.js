@@ -28,6 +28,29 @@ describe('ServerWorkerManager - SimpleWorkers', function () {
         projectId = testFixture.projectName2Id(projectName),
         gmeAuth;
 
+    function exportLibrary(swm, next) {
+        var deferred = Q.defer();
+        swm.request({
+            command: workerConstants.workerCommands.exportProjectToFile,
+            branchName: 'master',
+            projectId: projectId,
+            commitHash: ir.commitHash
+        }, function (err, result) {
+            try {
+                expect(err).to.equal(null);
+                expect(typeof result).to.equal('object');
+                expect(result).to.have.property('hash');
+                expect(typeof result.hash).to.equal('string');
+                deferred.resolve();
+            } catch (e) {
+                deferred.reject(e);
+            }
+
+        });
+
+        return deferred.promise.nodeify(next);
+    }
+
     gmeConfig.server.maxWorkers = 3;
 
     before(function (done) {
@@ -133,7 +156,7 @@ describe('ServerWorkerManager - SimpleWorkers', function () {
             ownGmeConfig = JSON.parse(JSON.stringify(gmeConfig)),
             managerParameters = {
                 gmeConfig: ownGmeConfig,
-                logger: logger,
+                logger: logger
             };
 
         ownGmeConfig.addOn.enable = false;
@@ -159,26 +182,6 @@ describe('ServerWorkerManager - SimpleWorkers', function () {
     describe('simple request-result handling', function () {
         var swm;
 
-        function exportLibrary(next) {
-            swm.request({
-                command: workerConstants.workerCommands.exportProjectToFile,
-                branchName: 'master',
-                projectId: projectId,
-                commitHash: ir.commitHash
-            }, function (err, result) {
-                try {
-                    expect(err).to.equal(null);
-                    expect(typeof result).to.equal('object');
-                    expect(result).to.have.property('hash');
-                    expect(typeof result.hash).to.equal('string');
-                    next();
-                } catch (e) {
-                    next(e);
-                }
-
-            });
-        }
-
         before(function (done) {
             swm = new ServerWorkerManager(workerManagerParameters);
             swm.start(done);
@@ -189,7 +192,7 @@ describe('ServerWorkerManager - SimpleWorkers', function () {
         });
 
         it('should handle a single request', function (done) {
-            exportLibrary(done);
+            exportLibrary(swm, done);
         });
 
         it('should handle multiple requests', function (done) {
@@ -205,7 +208,7 @@ describe('ServerWorkerManager - SimpleWorkers', function () {
                 };
 
             for (i = 0; i < needed; i += 1) {
-                exportLibrary(requestHandled);
+                exportLibrary(swm, requestHandled);
             }
         });
 
@@ -223,8 +226,101 @@ describe('ServerWorkerManager - SimpleWorkers', function () {
                 };
 
             for (i = 0; i < needed; i += 1) {
-                exportLibrary(requestHandled);
+                exportLibrary(swm, requestHandled);
             }
+        });
+    });
+
+    describe.only('maximum queued requests', function () {
+        var swm;
+
+        afterEach(function (done) {
+            swm.stop(done);
+        });
+
+        it('should return error when all workers are busy and queue set to 0', function (done) {
+            var parameters = {
+                gmeConfig: JSON.parse(JSON.stringify(gmeConfig)),
+                logger: logger
+            };
+
+            parameters.gmeConfig.server.maxQueuedWorkerRequests = 0;
+            parameters.gmeConfig.server.maxWorkers = 1; // There is always one spare ( 1 + 1 = 2 workers)
+            parameters.gmeConfig.addOn.enable = false;
+
+            swm = new ServerWorkerManager(parameters);
+            swm.start()
+                .then(function () {
+                    return Q.allSettled([
+                        exportLibrary(swm),
+                        exportLibrary(swm),
+                        exportLibrary(swm)
+                    ]);
+                })
+                .then(function (res) {
+                    var rejected = res.filter(function (r) {
+                        return r.state === 'rejected';
+                    });
+
+                    expect(rejected.length).to.equal(1);
+                    expect(rejected[0].reason.message).to.include('Server currently has too many jobs queued');
+                })
+                .nodeify(done);
+        });
+
+        it('should return error when all workers are busy and queue set to 1', function (done) {
+            var parameters = {
+                gmeConfig: JSON.parse(JSON.stringify(gmeConfig)),
+                logger: logger
+            };
+
+            parameters.gmeConfig.server.maxQueuedWorkerRequests = 1;
+            parameters.gmeConfig.server.maxWorkers = 1; // There is always one spare ( 1 + 1 = 2 workers)
+            parameters.gmeConfig.addOn.enable = false;
+
+            swm = new ServerWorkerManager(parameters);
+            swm.start()
+                .then(function () {
+                    return Q.allSettled([
+                        exportLibrary(swm),
+                        exportLibrary(swm),
+                        exportLibrary(swm),
+                        exportLibrary(swm)
+                    ]);
+                })
+                .then(function (res) {
+                    //expect(res).to.deep.equal([]);
+                    var rejected = res.filter(function (r) {
+                        return r.state === 'rejected';
+                    });
+
+                    expect(rejected.length).to.deep.equal(1);
+                    expect(rejected[0].reason.message).to.include('Server currently has too many jobs queued');
+                })
+                .nodeify(done);
+        });
+
+        it('should queue all when queue set to -1', function (done) {
+            var parameters = {
+                gmeConfig: JSON.parse(JSON.stringify(gmeConfig)),
+                logger: logger
+            };
+
+            parameters.gmeConfig.server.maxQueuedWorkerRequests = -1;
+            parameters.gmeConfig.server.maxWorkers = 1; // There is always one spare ( 1 + 1 = 2 workers)
+            parameters.gmeConfig.addOn.enable = false;
+
+            swm = new ServerWorkerManager(parameters);
+            swm.start()
+                .then(function () {
+                    return Q.allDone([
+                        exportLibrary(swm),
+                        exportLibrary(swm),
+                        exportLibrary(swm),
+                        exportLibrary(swm)
+                    ]);
+                })
+                .nodeify(done);
         });
     });
 });

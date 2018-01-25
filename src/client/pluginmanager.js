@@ -125,7 +125,13 @@ define([
                 context.managerConfig.project = context.managerConfig.project.projectId;
             }
 
-            storage.simpleRequest({command: 'executePlugin', name: pluginId, context: context}, callback);
+            storage.simpleRequest({command: 'executePlugin', name: pluginId, context: context}, function (err, result) {
+                if (err) {
+                    callback(err, err.result);
+                } else {
+                    callback(null, result);
+                }
+            });
         };
 
         /**
