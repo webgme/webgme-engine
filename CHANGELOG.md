@@ -1,5 +1,19 @@
 # Change Log
 
+## [v2.19.4](https://github.com/webgme/webgme-engine/tree/v2.19.4) (2018-01-29)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.3...v2.19.4)
+
+**Implemented enhancements:**
+
+- Worker manager should have a configurable maximum number of queued jobs [\#41](https://github.com/webgme/webgme-engine/issues/41)
+- Fixes \#41 introduce maxQueuedWorkerRequests parameter and fix plugin results at failures [\#44](https://github.com/webgme/webgme-engine/pull/44) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Disconnected worker requests need to be notified properly [\#38](https://github.com/webgme/webgme-engine/issues/38)
+- Fixes \\#41 introduce maxQueuedWorkerRequests parameter and fix plugin results at failures [\#44](https://github.com/webgme/webgme-engine/pull/44) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#38 Server workers act on changes in the connection state [\#39](https://github.com/webgme/webgme-engine/pull/39) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.19.3](https://github.com/webgme/webgme-engine/tree/v2.19.3) (2018-01-11)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.2...v2.19.3)
 
