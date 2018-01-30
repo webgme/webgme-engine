@@ -1264,9 +1264,17 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
     /**
      *
-     * @param webgmeToken
-     * @param parameters
-     * @param callback
+     * @param {string} webgmeToken
+     * @param {object} parameters
+     * @param {string} parameters.projectId
+     *
+     * @param {string} [parameters.commitHash] - Specific commit to update from
+     * @param {string} [parameters.branchName] - Branch to update from and update the branch hash
+     * @param {string} [parameters.tagName] - Specific tag to update from
+     *
+     * @param {string} [parameters.blobHash] - Provide if webgmex file is in blob storage
+     * @param {string} [parameters.seedName] - Provide if webgmex is a seed.
+     * @param {function} callback
      */
     function updateProjectFromFile(webgmeToken, parameters, callback) {
         var projectJson,
@@ -1302,7 +1310,13 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             })
             .then(function (context_) {
                 context = context_;
-                return _getProjectJsonFromBlob(blobClient, parameters.blobHash, true);
+                if (parameters.blobHash) {
+                    return _getProjectJsonFromBlob(blobClient, parameters.blobHash, true);
+                } else if (parameters.seedName) {
+                    return _getProjectJsonFromFileSeed(parameters.seedName, webgmeToken);
+                } else {
+                    throw new Error('blobHash or seedName must be provided');
+                }
             })
             .then(function (res) {
                 projectJson = res.projectJson;

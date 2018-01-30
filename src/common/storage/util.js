@@ -281,6 +281,8 @@ define([
          *
          * @param {ProjectInterface} project
          * @param {object} [options]
+         * @param {string} [options.branch] - Name of branch to update
+         * @param {string} [options.parentCommit] - Array of parents for new commit
          * @param {string} [options.commitMessage=%defaultCommitMessage%] information about the insertion
          * @param {function(Error, hashes)} callback
          */
