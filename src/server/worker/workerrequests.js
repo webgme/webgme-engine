@@ -889,9 +889,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 }
 
                 closureInformation = context.core.getClosureInformation(baseNodes);
-                if (closureInformation instanceof Error) {
-                    throw closureInformation;
-                }
 
                 for (i = 0; i < baseNodes.length; i += 1) {
                     promises.push(
@@ -909,6 +906,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                         projectId: parameters.projectId,
                         commitHash: parameters.commitHash,
                         selectionInfo: closureInformation,
+                        kind: rawJsons[0].kind,
                         objects: [],
                         hashes: {objects: [], assets: []}
                     },
