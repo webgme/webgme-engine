@@ -541,4 +541,27 @@ describe('gmeNodeSetter', function () {
         expect(context.core.getOwnJsonMeta(basicState.nodes[nodeId].node))
             .to.deep.equal({});
     });
+
+    it('should create a node at 0,0 or 100,100 by default', function () {
+        var newId = setNode.createNode({parentId: '', baseId: '/1'}, {registry: {position: {x: 0, y: 0}}});
+
+        //0,0
+        expect(context.core.getRegistry(basicState.nodes[newId].node, 'position')).to.eql({x: 0, y: 0});
+        setNode.deleteNode(newId);
+
+        //100,100 no registry
+        newId = setNode.createNode({parentId: '', baseId: '/1'});
+        expect(context.core.getRegistry(basicState.nodes[newId].node, 'position')).to.eql({x: 100, y: 100});
+        setNode.deleteNode(newId);
+
+        //100,100 wrong number
+        newId = setNode.createNode({parentId: '', baseId: '/1'}, {registry: {position: {x: 'alpha', y: 'beta'}}});
+        expect(context.core.getRegistry(basicState.nodes[newId].node, 'position')).to.eql({x: 100, y: 100});
+        setNode.deleteNode(newId);
+
+        //0,0 string number
+        newId = setNode.createNode({parentId: '', baseId: '/1'}, {registry: {position: {x: '0', y: '0'}}});
+        expect(context.core.getRegistry(basicState.nodes[newId].node, 'position')).to.eql({x: 0, y: 0});
+        setNode.deleteNode(newId);
+    });
 });
