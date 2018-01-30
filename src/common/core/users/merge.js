@@ -63,6 +63,19 @@ define([
         return deferred.promise;
     }
 
+    /**
+     *
+     * @param {object} parameters
+     * @param {object} parameters.gmeConfig
+     * @param {object} parameters.logger
+     * @param {object} parameters.project
+     * @param {object} parameters.branchOrCommitA - the source
+     * @param {string} parameters.branchOrCommitB - the target
+     * @param callback
+     * @param callback.error
+     * @param callback.diff - The diff/patch object that when applied to source will generate the target.
+     * @returns {Promise}
+     */
     function diff(parameters, callback) {
         var deferred = Q.defer(),
             core = new Core(parameters.project, {
@@ -93,8 +106,10 @@ define([
      * @param {string} parameters.branchOrCommit
      * @param {string} [parameters.branchName]
      * @param {boolean} [parameters.noUpdate=false]
-     * @param callback
-     * @returns {*}
+     * @param {string} [parameters.msg]
+     * @param callback.error
+     * @param callback.diff - The diff/patch object that when applied to source will generate the target.
+     * @returns {Promise}
      */
     function apply(parameters, callback) {
         var core = new Core(parameters.project, {
