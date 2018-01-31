@@ -29,6 +29,17 @@
  * @return {(GMENode|null)} If the node is loaded it will be returned, otherwise null.
  */
 
+/**
+ * @description Returns all meta-nodes as [GMENodes]{@link GMENode}.
+ * @function getAllMetaNodes
+ * @memberOf Client
+ * @instance
+ *
+ * @param {boolean} asObject - If true return an object with ids/path as keys and nodes as values.
+ *
+ * @return {GMENode[]|object} If the node is loaded it will be returned, otherwise null.
+ */
+
 // Territory related
 /**
  * @description Adds a "user" for receiving events regarding nodes in a specified territory.
@@ -399,8 +410,6 @@
  "unwatchDatabase",
  "watchProject",
  "unwatchProject",
-
- "getAllMetaNodes",
  "checkMetaConsistency",
 
  "_removeAllUIs",
