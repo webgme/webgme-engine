@@ -47,14 +47,17 @@ define([
             // If executed from the Generic UI we can access the active- and selected-nodes.
             if (typeof WebGMEGlobal !== 'undefined') {
                 /* eslint-disable no-undef*/
-                activeNodeId = typeof activeNodeId === 'string' ? activeNodeId : WebGMEGlobal.State.getActiveObject();
                 context.managerConfig.activeSelection = WebGMEGlobal.State.getActiveSelection();
-                context.managerConfig.activeNode = activeNodeId;
+                context.managerConfig.activeNode = WebGMEGlobal.State.getActiveObject();
                 /* eslint-enable no-undef*/
             }
 
             if (activeSelectionIds) {
                 context.managerConfig.activeSelection = activeSelectionIds;
+            }
+
+            if (typeof activeNodeId === 'string') {
+                context.managerConfig.activeNode = activeNodeId;
             }
 
             // Given the active-node we infer the namespace (user may still select another one).
