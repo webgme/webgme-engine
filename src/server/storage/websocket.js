@@ -1049,6 +1049,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 };
 
                                 socket.join(docId);
+                            } else {
+                                documents[docId].users[socket.id].watchers.push(data.watcherId);
                             }
 
                             callback(null, {

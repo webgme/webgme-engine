@@ -171,6 +171,7 @@ define([
             docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length),
             watcherId = GUID();
 
+        data = JSON.parse(JSON.stringify(data));
         this.logger.debug('watchDocument - handler added for project', data);
         this.watchers.documents[docId] = this.watchers.documents[docId] || {};
         this.watchers.documents[docId][watcherId] = {
@@ -408,77 +409,94 @@ define([
             }
         }
 
-        Object.keys(this.watchers.documents).forEach(function (docId) {
-            Object.keys(self.watchers.documents[docId]).forEach(function (watcherId) {
-                var rejoinData = _splitDocId(docId);
-                rejoinData.docId = docId;
-                rejoinData.rejoin = true;
-                rejoinData.revision = self.watchers.documents[docId][watcherId].otClient.revision;
-                rejoinData.sessionId = self.watchers.sessionId;
-                rejoinData.watcherId = watcherId;
+        function rejoinWatchers(docId, watcherIds) {
+            var rejoinData = _splitDocId(docId),
+                watcherId = watcherIds.pop();
 
-                promises.push(self.webSocket.watchDocument(rejoinData)
-                    .then(function (joinData) {
-                        var awaiting = self.watchers.documents[docId][watcherId].awaitingAck,
-                            sendData;
+            rejoinData.docId = docId;
+            rejoinData.rejoin = true;
+            rejoinData.revision = self.watchers.documents[docId][watcherId].otClient.revision;
+            rejoinData.sessionId = self.watchers.sessionId;
+            rejoinData.watcherId = watcherId;
 
-                        function applyFromServer() {
-                            joinData.operations.forEach(function (op) {
-                                self.watchers.documents[docId][watcherId].otClient.applyServer(op.wrapped);
-                            });
+            return self.webSocket.watchDocument(rejoinData)
+                .then(function (joinData) {
+                    var deferred = Q.defer(),
+                        awaiting = self.watchers.documents[docId][watcherId].awaitingAck,
+                        sendData;
 
-                            self.watchers.documents[docId][watcherId].applyBuffer.forEach(function (op) {
-                                self.watchers.documents[docId][watcherId].otClient.applyServer(op);
-                            });
+                    function applyFromServer() {
+                        joinData.operations.forEach(function (op) {
+                            self.watchers.documents[docId][watcherId].otClient.applyServer(op.wrapped);
+                        });
 
-                            self.watchers.documents[docId][watcherId].applyBuffer = [];
-                        }
+                        self.watchers.documents[docId][watcherId].applyBuffer.forEach(function (op) {
+                            self.watchers.documents[docId][watcherId].otClient.applyServer(op);
+                        });
 
-                        if (awaiting === null) {
-                            // We had no outstanding operations - apply all from the server.
+                        self.watchers.documents[docId][watcherId].applyBuffer = [];
+                    }
+
+                    if (awaiting === null) {
+                        // We had no outstanding operations - apply all from the server.
+                        applyFromServer();
+                        deferred.resolve();
+                    } else {
+                        // We were awaiting an acknowledgement, did it make it to the server?
+                        if (joinData.operations.length > 0 &&
+                            joinData.operations[0].metadata.sessionId === self.watchers.sessionId &&
+                            joinData.operations[0].metadata.watcherId === watcherId) {
+                            // It made it to the server - so send the acknowledgement to the otClient.
+                            self.watchers.documents[docId][watcherId].awaitingAck = null;
+                            self.watchers.documents[docId][watcherId].otClient.serverAck(awaiting.revision);
+
+                            // Remove it from the operations and apply the other
+                            joinData.operations.shift();
                             applyFromServer();
+                            deferred.resolve();
                         } else {
-                            // We were awaiting an acknowledgement, did it make it to the server?
-                            if (joinData.operations.length > 0 &&
-                                joinData.operations[0].metadata.sessionId === self.watchers.sessionId) {
-                                // It made it to the server - so send the acknowledgement to the otClient.
-                                self.watchers.documents[docId][watcherId].awaitingAck = null;
-                                self.watchers.documents[docId][watcherId].otClient.serverAck(awaiting.revision);
+                            applyFromServer();
+                            sendData = {
+                                docId: docId,
+                                projectId: rejoinData.projectId,
+                                branchName: rejoinData.branchName,
+                                revision: awaiting.revision,
+                                operation: awaiting.operation,
+                                sessionId: self.watchers.sessionId,
+                                watcherId: watcherId
+                            };
 
-                                // Remove it from the operations and apply the other
-                                joinData.operations.shift();
-                                applyFromServer();
-                            } else {
-                                applyFromServer();
-                                sendData = {
-                                    docId: docId,
-                                    projectId: rejoinData.projectId,
-                                    branchName: rejoinData.branchName,
-                                    revision: awaiting.revision,
-                                    operation: awaiting.operation,
-                                    sessionId: self.watchers.sessionId,
-                                    watcherId: watcherId
-                                };
+                            self.webSocket.sendDocumentOperation(sendData, function (err) {
+                                if (err) {
+                                    deferred.reject(err);
+                                    return;
+                                }
 
-                                self.webSocket.sendDocumentOperation(sendData, function (err) {
-                                    if (err) {
-                                        self.logger.error('Failed to sendDocument', err);
-                                        return;
-                                    }
+                                if (self.watchers.documents.hasOwnProperty(docId) &&
+                                    self.watchers.documents[docId].hasOwnProperty(watcherId)) {
+                                    self.watchers.documents[docId][watcherId].awaitingAck = null;
+                                    self.watchers.documents[docId][watcherId].otClient.serverAck(sendData.revision);
+                                } else {
+                                    self.logger.error(new Error('Received document acknowledgement ' +
+                                        'after leaving document ' + docId));
+                                }
 
-                                    if (self.watchers.documents.hasOwnProperty(docId) &&
-                                        self.watchers.documents[docId].hasOwnProperty(watcherId)) {
-                                        self.watchers.documents[docId][watcherId].awaitingAck = null;
-                                        self.watchers.documents[docId][watcherId].otClient.serverAck(sendData.revision);
-                                    } else {
-                                        self.logger.error(new Error('Received document acknowledgement ' +
-                                            'after leaving document ' + docId));
-                                    }
-                                });
-                            }
+                                deferred.resolve();
+                            });
                         }
-                    }));
-            });
+                    }
+
+                    return deferred.promise;
+                })
+                .then(function () {
+                    if (watcherIds.length > 0) {
+                        rejoinWatchers(docId, watcherIds);
+                    }
+                });
+        }
+
+        Object.keys(this.watchers.documents).forEach(function (docId) {
+            promises.push(rejoinWatchers(docId, Object.keys(self.watchers.documents[docId])));
         });
 
         return Q.all(promises).nodeify(callback);
