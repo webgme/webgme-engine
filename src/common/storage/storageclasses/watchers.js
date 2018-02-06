@@ -415,7 +415,7 @@ define([
                 var rejoinData = _splitDocId(docId);
                 rejoinData.docId = docId;
                 rejoinData.rejoin = true;
-                rejoinData.revision = self.watchers.documents[docId].otClient.revision;
+                rejoinData.revision = self.watchers.documents[docId][watcherId].otClient.revision;
                 rejoinData.sessionId = self.watchers.sessionId;
                 rejoinData.watcherId = watcherId;
 

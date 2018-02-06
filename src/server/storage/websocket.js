@@ -299,7 +299,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 });
 
                                 document.disconnectedUsers[document.users[socket.id].sessionId] =
-                                    document.users[socket.id].watcherId;
+                                    document.users[socket.id].watchers;
 
                                 delete document.users[socket.id];
 
