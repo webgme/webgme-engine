@@ -1073,7 +1073,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 };
 
                                 if (documents[docId].users[socket.id].watchers.length > 1) {
-                                    socket.emit.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                                    webSocket.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
                                 } else {
                                     socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
                                 }
@@ -1135,7 +1135,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     };
                     // and then broadcast or emit the operation.
                     if (documents[data.docId].users[socket.id].watchers.length > 1) {
-                        socket.emit.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
+                        webSocket.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
                     } else {
                         socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
                     }
@@ -1177,7 +1177,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     };
 
                     if (documents[data.docId].users[socket.id].watchers.length > 1) {
-                        socket.emit.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                        webSocket.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
                     } else {
                         socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
                     }

@@ -593,6 +593,147 @@ describe('watchers documents', function () {
             .catch(done);
     });
 
+    // Multiple users on same socket
+    it('should allow two watchers of a document from same connection', function (done) {
+        var storage,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                storage = res;
+                docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
+                    .substring(CONSTANTS.DOCUMENT_OPERATION.length);
+
+                return storage.watchDocument(testFixture.copy(initParams), noop, noop);
+            })
+            .then(function (res) {
+                users['user1'].docId = res.docId;
+                users['user1'].watchers = [res.watcherId];
+                return storage.watchDocument(testFixture.copy(initParams), noop, noop);
+            })
+            .then(function (res) {
+                users['user1'].watchers = [res.watcherId];
+                expect(Object.keys(storage.watchers.documents[docId]).length).to.equal(2);
+            })
+            .nodeify(done);
+    });
+
+    it('should broadcast operation to watcher at same connection', function (done) {
+        var docId,
+            user1,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                user1 = res;
+
+                return Q.allDone([
+                    user1.watchDocument(testFixture.copy(initParams), function atOp2(op) {
+                        done(new Error('Operation should only have been broadcast!'));
+                    }, noop),
+                    user1.watchDocument(testFixture.copy(initParams),
+                        function atOp2(op) {
+                            try {
+                                expect(op.apply(initParams.attrValue)).to.equal('hello there');
+                                setTimeout(done, 50); // Wait in case other watcher gets operation..
+                            } catch (e) {
+                                done(e);
+                            }
+                        }, noop)
+                ]);
+            })
+            .then(function (res) {
+                docId = res[0].docId;
+                users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId, res[1].watcherId];
+
+                expect(res[0].document).to.equal(res[1].document);
+                expect(res[0].document).to.equal('hello');
+                expect(res[0].revision).to.equal(res[1].revision);
+                expect(res[0].revision).to.equal(0);
+                // user ends up with "hello there"
+                user1.sendDocumentOperation({
+                    docId: docId,
+                    watcherId: res[0].watcherId,
+                    operation: new ot.TextOperation().retain('hello'.length).insert(' there')
+                });
+            })
+            .catch(done);
+    });
+
+    it('should broadcast selection to watcher at same connection', function (done) {
+        var docId,
+            user1,
+            cnt = 0,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                user1 = res;
+
+                return Q.allDone([
+                    user1.watchDocument(testFixture.copy(initParams), noop, function atSel(op) {
+                        if (cnt > 1) {
+                            return;
+                        }
+                        done(new Error('Selection should only have been broadcast!'));
+                    }),
+                    user1.watchDocument(testFixture.copy(initParams), noop, function atSel2(data) {
+                        cnt += 1;
+                        if (cnt > 1) {
+                            return;
+                        }
+                        try {
+                            expect(data.selection.ranges[0].anchor).to.equal(data.selection.ranges[0].head);
+                            expect(data.selection.ranges[0].anchor).to.equal(1 + 'well, '.length);
+                            expect(data.userId).to.equal('user1');
+                            setTimeout(done, 50); // Wait in case other watcher gets selection..
+                        } catch (e) {
+                            done(e);
+                        }
+                    })
+                ]);
+            })
+            .then(function (res) {
+                docId = res[0].docId;
+                users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId, res[1].watcherId];
+
+                // user ends up with "hello there!"
+                user1.sendDocumentOperation({
+                    docId: docId,
+                    watcherId: res[1].watcherId,
+                    operation: new ot.TextOperation().insert('well, ').retain('hello'.length)
+                });
+
+                user1.sendDocumentSelection({
+                    docId: docId,
+                    watcherId: res[0].watcherId,
+                    selection: new ot.Selection({anchor: 1, head: 1})
+                });
+            })
+            .catch(done);
+    });
+
     // Read/write access...
     it('should only allow user with read access to receive operations', function (done) {
         var user1,
@@ -745,38 +886,6 @@ describe('watchers documents', function () {
             })
             .catch(function (err) {
                 expect(err.message).to.include('Document not being watched ' + docId);
-            })
-            .nodeify(done);
-    });
-
-    it.skip('should resolve with error when trying to watch same document twice', function (done) {
-        var storage,
-            docId,
-            initParams = {
-                projectId: projectId,
-                branchName: 'master',
-                nodeId: '/1',
-                attrName: 'doc',
-                attrValue: 'hello'
-            };
-
-        getNewStorage('user1', 'pass')
-            .then(function (res) {
-                storage = res;
-                docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
-                    .substring(CONSTANTS.DOCUMENT_OPERATION.length);
-
-                return storage.watchDocument(testFixture.copy(initParams), noop, noop);
-            })
-            .then(function (res) {
-                users['user1'].docId = res.docId;
-                return storage.watchDocument(testFixture.copy(initParams), noop, noop);
-            })
-            .then(function (res) {
-                throw new Error('Should not succeed!');
-            })
-            .catch(function (err) {
-                expect(err.message).to.include('Document is already being watched ' + docId);
             })
             .nodeify(done);
     });

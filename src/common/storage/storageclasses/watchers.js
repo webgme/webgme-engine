@@ -177,12 +177,10 @@ define([
             eventHandler: function (_ws, eData) {
                 var otClient = self.watchers.documents[eData.docId][watcherId].otClient;
                 self.logger.debug('eventHandler for document', {metadata: eData});
-                if (eData.sessionId === self.watchers.sessionId) {
-                    self.logger.info('event from same client');
-                    if (eData.watcherId === watcherId) {
-                        self.logger.info('event from same watcher, skipping...');
-                        return;
-                    }
+
+                if (eData.watcherId === watcherId) {
+                    self.logger.info('event from same watcher, skipping...');
+                    return;
                 }
 
                 if (eData.operation) {
