@@ -615,11 +615,11 @@ describe('watchers documents', function () {
             })
             .then(function (res) {
                 users['user1'].docId = res.docId;
-                users['user1'].watchers = [res.watcherId];
+                users['user1'].watchers.push(res.watcherId);
                 return storage.watchDocument(testFixture.copy(initParams), noop, noop);
             })
             .then(function (res) {
-                users['user1'].watchers = [res.watcherId];
+                users['user1'].watchers.push(res.watcherId);
                 expect(Object.keys(storage.watchers.documents[docId]).length).to.equal(2);
             })
             .nodeify(done);
