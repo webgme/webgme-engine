@@ -88,6 +88,7 @@ describe('watchers documents', function () {
             .then(function (storage) {
                 users[userId] = {
                     storage: storage,
+                    watchers: []
                 };
 
                 return storage;
@@ -97,15 +98,15 @@ describe('watchers documents', function () {
     afterEach(function (done) {
         Q.allDone(Object.keys(users).map(function (userId) {
             var uData = users[userId],
-                unwatchDeferred = Q.defer();
+                promises = [];
 
             if (uData.docId) {
-                unwatchDeferred.promise = uData.storage.unwatchDocument({docId: uData.docId});
-            } else {
-                unwatchDeferred.resolve();
+                uData.watchers.forEach(function (watcherId) {
+                    promises.push(uData.storage.unwatchDocument({docId: uData.docId, watcherId: watcherId}));
+                });
             }
 
-            return unwatchDeferred.promise
+            return Q.allDone(promises)
                 .then(function () {
                     return Q.ninvoke(uData.storage, 'close');
                 });
@@ -174,7 +175,9 @@ describe('watchers documents', function () {
             .then(function (res) {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId];
                 users['user2'].docId = docId;
+                users['user2'].watchers = [res[1].watcherId];
                 expect(res[0].document).to.equal(res[1].document);
                 expect(res[0].document).to.equal('hello');
                 expect(res[0].revision).to.equal(res[1].revision);
@@ -182,6 +185,7 @@ describe('watchers documents', function () {
                 // user ends up with "hello there"
                 user1.sendDocumentOperation({
                     docId: docId,
+                    watcherId: res[0].watcherId,
                     operation: new ot.TextOperation().retain('hello'.length).insert(' there')
                 });
             })
@@ -231,16 +235,19 @@ describe('watchers documents', function () {
             .then(function (res) {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId];
                 users['user2'].docId = docId;
-
+                users['user2'].watchers = [res[1].watcherId];
                 // user ends up with "hello there!"
                 user1.sendDocumentOperation({
                     docId: docId,
+                    watcherId: res[0].watcherId,
                     operation: new ot.TextOperation().retain('hello'.length).insert(' there')
                 });
 
                 user1.sendDocumentOperation({
                     docId: docId,
+                    watcherId: res[0].watcherId,
                     operation: new ot.TextOperation().retain('hello there'.length).insert('!')
                 });
             })
@@ -290,21 +297,26 @@ describe('watchers documents', function () {
             .then(function (res) {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId];
                 users['user2'].docId = docId;
+                users['user2'].watchers = [res[1].watcherId];
 
                 // user ends up with "hello there!"
                 user1.sendDocumentOperation({
                     docId: docId,
+                    watcherId: users['user1'].watchers[0],
                     operation: new ot.TextOperation().retain('hello'.length).insert(' there')
                 });
 
                 user1.sendDocumentOperation({
                     docId: docId,
+                    watcherId: users['user1'].watchers[0],
                     operation: new ot.TextOperation().retain('hello there'.length).insert('!')
                 });
 
                 user1.sendDocumentOperation({
                     docId: docId,
+                    watcherId: users['user1'].watchers[0],
                     operation: new ot.TextOperation().insert('well, ').retain('hello there!'.length)
                 });
             })
@@ -364,16 +376,20 @@ describe('watchers documents', function () {
             .then(function (res) {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId];
                 users['user2'].docId = docId;
+                users['user2'].watchers = [res[1].watcherId];
 
                 // user ends up with "hello there!"
                 user1.sendDocumentOperation({
                     docId: docId,
+                    watcherId: users['user1'].watchers[0],
                     operation: new ot.TextOperation().retain('hello'.length).insert(' there')
                 });
 
                 user2.sendDocumentOperation({
                     docId: docId,
+                    watcherId: users['user2'].watchers[0],
                     operation: new ot.TextOperation().insert('well, ').retain('hello'.length)
                 });
             })
@@ -425,16 +441,20 @@ describe('watchers documents', function () {
             .then(function (res) {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId];
                 users['user2'].docId = docId;
+                users['user2'].watchers = [res[1].watcherId];
 
                 // user ends up with "hello there!"
                 user2.sendDocumentOperation({
                     docId: docId,
+                    watcherId: users['user2'].watchers[0],
                     operation: new ot.TextOperation().insert('well, ').retain('hello'.length)
                 });
 
                 user1.sendDocumentSelection({
                     docId: docId,
+                    watcherId: users['user1'].watchers[0],
                     selection: new ot.Selection({anchor: 1, head: 1})
                 });
             })
@@ -498,15 +518,19 @@ describe('watchers documents', function () {
             .then(function (res) {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId];
                 users['user2'].docId = docId;
+                users['user2'].watchers = [res[1].watcherId];
                 // user ends up with "hel there lo"
                 user2.sendDocumentOperation({
                     docId: docId,
+                    watcherId: users['user2'].watchers[0],
                     operation: new ot.TextOperation().retain('hel'.length).insert(' there ').retain('lo'.length)
                 });
 
                 user1.sendDocumentSelection({
                     docId: docId,
+                    watcherId: users['user1'].watchers[0],
                     selection: new ot.Selection({anchor: 0, head: 'hello'.length - 1})
                 });
             })
@@ -556,8 +580,9 @@ describe('watchers documents', function () {
             .then(function (res) {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId];
 
-                return user2.unwatchDocument({docId: docId});
+                return user2.unwatchDocument({docId: docId, watcherId: res[1].watcherId});
             })
             .then(function () {
                 cnt += 1;
@@ -601,6 +626,7 @@ describe('watchers documents', function () {
                                 expect(op.apply(initParams.attrValue)).to.equal('hello there');
                                 userRead.sendDocumentOperation({
                                     docId: docId,
+                                    watcherId: users['userRead'].watchers[0],
                                     operation: new ot.TextOperation()
                                         .retain('hello there'.length)
                                         .insert(' never makes it!')
@@ -618,11 +644,14 @@ describe('watchers documents', function () {
             .then(function (res) {
                 docId = res[0].docId;
                 users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId];
                 users['userRead'].docId = docId;
+                users['userRead'].watchers = [res[1].watcherId];
 
                 // user ends up with "hello there"
                 user1.sendDocumentOperation({
                     docId: docId,
+                    watcherId: users['user1'].watchers[0],
                     operation: new ot.TextOperation().retain('hello'.length).insert(' there')
                 });
             })
@@ -675,6 +704,7 @@ describe('watchers documents', function () {
 
                 storage.sendDocumentOperation({
                     docId: docId,
+                    watcherId: 'random-guid',
                     operation: new ot.TextOperation().retain('hel'.length).insert(' there ').retain('lo'.length)
                 });
             })
@@ -706,6 +736,7 @@ describe('watchers documents', function () {
 
                 storage.sendDocumentSelection({
                     docId: docId,
+                    watcherId: 'random-guid',
                     selection: new ot.Selection({anchor: 0, head: 'hello'.length - 1})
                 });
             })
@@ -718,7 +749,7 @@ describe('watchers documents', function () {
             .nodeify(done);
     });
 
-    it('should resolve with error when trying to watch same document twice', function (done) {
+    it.skip('should resolve with error when trying to watch same document twice', function (done) {
         var storage,
             docId,
             initParams = {
@@ -758,7 +789,8 @@ describe('watchers documents', function () {
                 branchName: 'master',
                 nodeId: '/1',
                 attrName: 'doc',
-                attrValue: 'hello'
+                attrValue: 'hello',
+                watcherId: 'random-str'
             };
 
         getNewStorage('user1', 'pass')

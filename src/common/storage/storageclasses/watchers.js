@@ -168,20 +168,27 @@ define([
         var self = this,
             docUpdateEventName = this.webSocket.getDocumentUpdatedEventName(data),
             docSelectionEventName = this.webSocket.getDocumentSelectionEventName(data),
-            docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length);
-        if (this.watchers.documents.hasOwnProperty(docId)) {
-            return Q.reject(new Error('Document is already being watched ' + docId)).nodeify(callback);
-        }
+            docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length),
+            watcherId = GUID();
 
         this.logger.debug('watchDocument - handler added for project', data);
-        this.watchers.documents[docId] = {
+        this.watchers.documents[docId] = this.watchers.documents[docId] || {};
+        this.watchers.documents[docId][watcherId] = {
             eventHandler: function (_ws, eData) {
-                var otClient = self.watchers.documents[eData.docId].otClient;
+                var otClient = self.watchers.documents[eData.docId][watcherId].otClient;
                 self.logger.debug('eventHandler for document', {metadata: eData});
+                if (eData.sessionId === self.watchers.sessionId) {
+                    self.logger.info('event from same client');
+                    if (eData.watcherId === watcherId) {
+                        self.logger.info('event from same watcher, skipping...');
+                        return;
+                    }
+                }
+
                 if (eData.operation) {
                     if (self.reconnecting) {
                         // We are reconnecting.. Put these on the queue.
-                        self.watchers.documents[docId].applyBuffer.push(eData);
+                        self.watchers.documents[docId][watcherId].applyBuffer.push(eData);
                     } else {
                         otClient.applyServer(ot.TextOperation.fromJSON(eData.operation));
                     }
@@ -200,48 +207,53 @@ define([
             awaitingAck: null
         };
 
-        this.webSocket.addEventListener(docUpdateEventName, this.watchers.documents[docId].eventHandler);
-        this.webSocket.addEventListener(docSelectionEventName, this.watchers.documents[docId].eventHandler);
+        this.webSocket.addEventListener(docUpdateEventName, this.watchers.documents[docId][watcherId].eventHandler);
+        this.webSocket.addEventListener(docSelectionEventName, this.watchers.documents[docId][watcherId].eventHandler);
 
         data.join = true;
         data.sessionId = this.watchers.sessionId;
+        data.watcherId = watcherId;
+
         return this.webSocket.watchDocument(data)
             .then(function (initData) {
-                self.watchers.documents[initData.docId].otClient = new ot.Client(initData.revision);
+                self.watchers.documents[initData.docId][watcherId].otClient = new ot.Client(initData.revision);
 
-                self.watchers.documents[initData.docId].otClient.sendOperation = function (revision, operation) {
-                    var sendData = {
-                        docId: initData.docId,
-                        projectId: initData.projectId,
-                        branchName: initData.branchName,
-                        revision: revision,
-                        operation: operation,
-                        selection: self.watchers.documents[initData.docId].selection,
-                        sessionId: self.watchers.sessionId
+                self.watchers.documents[initData.docId][watcherId].otClient.sendOperation =
+                    function (revision, operation) {
+                        var sendData = {
+                            docId: initData.docId,
+                            projectId: initData.projectId,
+                            branchName: initData.branchName,
+                            revision: revision,
+                            operation: operation,
+                            selection: self.watchers.documents[initData.docId][watcherId].selection,
+                            sessionId: self.watchers.sessionId,
+                            watcherId: watcherId
+                        };
+
+                        self.watchers.documents[initData.docId][watcherId].awaitingAck = {
+                            revision: revision,
+                            operation: operation
+                        };
+
+                        self.webSocket.sendDocumentOperation(sendData, function (err) {
+                            if (err) {
+                                self.logger.error('Failed to sendDocument', err);
+                                return;
+                            }
+
+                            if (self.watchers.documents.hasOwnProperty(initData.docId) &&
+                                self.watchers.documents[initData.docId].hasOwnProperty(watcherId)) {
+                                self.watchers.documents[initData.docId][watcherId].awaitingAck = null;
+                                self.watchers.documents[initData.docId][watcherId].otClient.serverAck(revision);
+                            } else {
+                                self.logger.error(new Error('Received document acknowledgement ' +
+                                    'after watcher left document ' + initData.docId));
+                            }
+                        });
                     };
 
-                    self.watchers.documents[initData.docId].awaitingAck = {
-                        revision: revision,
-                        operation: operation
-                    };
-
-                    self.webSocket.sendDocumentOperation(sendData, function (err) {
-                        if (err) {
-                            self.logger.error('Failed to sendDocument', err);
-                            return;
-                        }
-
-                        if (self.watchers.documents.hasOwnProperty(initData.docId)) {
-                            self.watchers.documents[initData.docId].awaitingAck = null;
-                            self.watchers.documents[initData.docId].otClient.serverAck(revision);
-                        } else {
-                            self.logger.error(new Error('Received document acknowledgement ' +
-                                'after leaving document ' + initData.docId));
-                        }
-                    });
-                };
-
-                self.watchers.documents[initData.docId].otClient.applyOperation = atOperation;
+                self.watchers.documents[initData.docId][watcherId].otClient.applyOperation = atOperation;
 
                 return initData;
             })
@@ -252,6 +264,7 @@ define([
      * Stop watching the document.
      * @param {object} data
      * @param {string} data.docId - document id, if not provided projectId, branchName, nodeId, attrName must be.
+     * @param {string} data.watcherId
      * @param {string} [data.projectId]
      * @param {string} [data.branchName]
      * @param {string} [data.nodeId]
@@ -276,19 +289,29 @@ define([
             data.docId = docUpdateEventName.substring(CONSTANTS.DOCUMENT_OPERATION.length);
         }
 
-        if (this.watchers.documents.hasOwnProperty(data.docId) === false) {
-            deferred.reject(new Error('Document is not being watched ' + data.docId));
+        if (typeof data.watcherId !== 'string') {
+            deferred.reject(new Error('data.watcherId not provided - use the one given at watchDocument.'));
+        } else if (this.watchers.documents.hasOwnProperty(data.docId) === false ||
+            this.watchers.documents[data.docId].hasOwnProperty(data.watcherId) === false) {
+            deferred.reject(new Error('Document is not being watched ' + data.docId +
+                ' by watcherId [' + data.watcherId + ']'));
         } else {
             // Remove handler from web-socket module.
-            this.webSocket.removeEventListener(docUpdateEventName, this.watchers.documents[data.docId].eventHandler);
-            this.webSocket.removeEventListener(docSelectionEventName, this.watchers.documents[data.docId].eventHandler);
+            this.webSocket.removeEventListener(docUpdateEventName,
+                this.watchers.documents[data.docId][data.watcherId].eventHandler);
+            this.webSocket.removeEventListener(docSelectionEventName,
+                this.watchers.documents[data.docId][data.watcherId].eventHandler);
 
             // "Remove" handlers attached to the otClient.
-            this.watchers.documents[data.docId].otClient.sendOperation =
-                this.watchers.documents[data.docId].otClient.applyOperation = function () {
+            this.watchers.documents[data.docId][data.watcherId].otClient.sendOperation =
+                this.watchers.documents[data.docId][data.watcherId].otClient.applyOperation = function () {
                 };
 
-            delete this.watchers.documents[data.docId];
+            delete this.watchers.documents[data.docId][data.watcherId];
+
+            if (Object.keys(this.watchers.documents[data.docId]).length === 0) {
+                delete this.watchers.documents[data.docId];
+            }
 
             // Finally exit socket.io room on server if connected.
             if (this.connected) {
@@ -308,16 +331,20 @@ define([
      * Send operation made, and optionally selection, on document at docId.
      * @param {object} data
      * @param {string} data.docId
+     * @param {string} data.watcherId
      * @param {ot.TextOperation} data.operation
      * @param {ot.Selection} [data.selection]
      */
     StorageWatcher.prototype.sendDocumentOperation = function (data) {
         // TODO: Do we need to add a callback for confirmation here?
-        if (this.watchers.documents.hasOwnProperty(data.docId) &&
-            this.watchers.documents[data.docId].otClient instanceof ot.Client) {
+        if (typeof data.watcherId !== 'string') {
+            throw new Error('data.watcherId not provided - use the one given at watchDocument.');
+        } else if (this.watchers.documents.hasOwnProperty(data.docId) &&
+            this.watchers.documents[data.docId].hasOwnProperty(data.watcherId) &&
+            this.watchers.documents[data.docId][data.watcherId].otClient instanceof ot.Client) {
 
-            this.watchers.documents[data.docId].selection = data.selection;
-            this.watchers.documents[data.docId].otClient.applyClient(data.operation);
+            this.watchers.documents[data.docId][data.watcherId].selection = data.selection;
+            this.watchers.documents[data.docId][data.watcherId].otClient.applyClient(data.operation);
         } else {
             throw new Error('Document not being watched ' + data.docId +
                 '. (If "watchDocument" was initiated make sure to wait for the callback.)');
@@ -328,20 +355,26 @@ define([
      * Send selection on document at docId. (Will only be transmitted if client is Synchronized.)
      * @param {object} data
      * @param {string} data.docId
+     * @param {string} data.watcherId
      * @param {ot.Selection} data.selection
      */
     StorageWatcher.prototype.sendDocumentSelection = function (data) {
         var self = this,
             otClient;
-        if (this.watchers.documents.hasOwnProperty(data.docId) &&
-            this.watchers.documents[data.docId].otClient instanceof ot.Client) {
 
-            otClient = this.watchers.documents[data.docId].otClient;
+        if (typeof data.watcherId !== 'string') {
+            throw new Error('data.watcherId not provided - use the one given at watchDocument.');
+        } else if (this.watchers.documents.hasOwnProperty(data.docId) &&
+            this.watchers.documents[data.docId].hasOwnProperty(data.watcherId) &&
+            this.watchers.documents[data.docId][data.watcherId].otClient instanceof ot.Client) {
+
+            otClient = this.watchers.documents[data.docId][data.watcherId].otClient;
 
             if (otClient.state instanceof ot.Client.Synchronized) {
                 // Only broadcast the selection when synchronized
                 this.webSocket.sendDocumentSelection({
                     docId: data.docId,
+                    watcherId: data.watcherId,
                     revision: otClient.revision,
                     selection: data.selection
                 }, function (err) {
@@ -377,29 +410,30 @@ define([
             }
         }
 
-        promises = Object.keys(this.watchers.documents)
-            .map(function (docId) {
+        Object.keys(this.watchers.documents).forEach(function (docId) {
+            Object.keys(self.watchers.documents[docId]).forEach(function (watcherId) {
                 var rejoinData = _splitDocId(docId);
                 rejoinData.docId = docId;
                 rejoinData.rejoin = true;
                 rejoinData.revision = self.watchers.documents[docId].otClient.revision;
                 rejoinData.sessionId = self.watchers.sessionId;
+                rejoinData.watcherId = watcherId;
 
-                return self.webSocket.watchDocument(rejoinData)
+                promises.push(self.webSocket.watchDocument(rejoinData)
                     .then(function (joinData) {
-                        var awaiting = self.watchers.documents[docId].awaitingAck,
+                        var awaiting = self.watchers.documents[docId][watcherId].awaitingAck,
                             sendData;
 
                         function applyFromServer() {
                             joinData.operations.forEach(function (op) {
-                                self.watchers.documents[docId].otClient.applyServer(op.wrapped);
+                                self.watchers.documents[docId][watcherId].otClient.applyServer(op.wrapped);
                             });
 
-                            self.watchers.documents[docId].applyBuffer.forEach(function (op) {
-                                self.watchers.documents[docId].otClient.applyServer(op);
+                            self.watchers.documents[docId][watcherId].applyBuffer.forEach(function (op) {
+                                self.watchers.documents[docId][watcherId].otClient.applyServer(op);
                             });
 
-                            self.watchers.documents[docId].applyBuffer = [];
+                            self.watchers.documents[docId][watcherId].applyBuffer = [];
                         }
 
                         if (awaiting === null) {
@@ -410,8 +444,8 @@ define([
                             if (joinData.operations.length > 0 &&
                                 joinData.operations[0].metadata.sessionId === self.watchers.sessionId) {
                                 // It made it to the server - so send the acknowledgement to the otClient.
-                                self.watchers.documents[docId].awaitingAck = null;
-                                self.watchers.documents[docId].otClient.serverAck(awaiting.revision);
+                                self.watchers.documents[docId][watcherId].awaitingAck = null;
+                                self.watchers.documents[docId][watcherId].otClient.serverAck(awaiting.revision);
 
                                 // Remove it from the operations and apply the other
                                 joinData.operations.shift();
@@ -424,7 +458,8 @@ define([
                                     branchName: rejoinData.branchName,
                                     revision: awaiting.revision,
                                     operation: awaiting.operation,
-                                    sessionId: self.watchers.sessionId
+                                    sessionId: self.watchers.sessionId,
+                                    watcherId: watcherId
                                 };
 
                                 self.webSocket.sendDocumentOperation(sendData, function (err) {
@@ -433,9 +468,10 @@ define([
                                         return;
                                     }
 
-                                    if (self.watchers.documents.hasOwnProperty(docId)) {
-                                        self.watchers.documents[docId].awaitingAck = null;
-                                        self.watchers.documents[docId].otClient.serverAck(sendData.revision);
+                                    if (self.watchers.documents.hasOwnProperty(docId) &&
+                                        self.watchers.documents[docId].hasOwnProperty(watcherId)) {
+                                        self.watchers.documents[docId][watcherId].awaitingAck = null;
+                                        self.watchers.documents[docId][watcherId].otClient.serverAck(sendData.revision);
                                     } else {
                                         self.logger.error(new Error('Received document acknowledgement ' +
                                             'after leaving document ' + docId));
@@ -443,9 +479,9 @@ define([
                                 });
                             }
                         }
-                    });
-            })
-            .concat(promises);
+                    }));
+            });
+        });
 
         return Q.all(promises).nodeify(callback);
     };
