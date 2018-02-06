@@ -2719,6 +2719,35 @@ describe('Simple worker', function () {
             .nodeify(done);
     });
 
+    it('should make a commit to a project from a seed', function (done) {
+        var worker = getSimpleWorker(),
+            projectId = testFixture.projectName2Id(libraryProjectContext.name);
+
+        worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.initialized);
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.updateProjectFromFile,
+                    projectId: projectId,
+                    commitHash: libraryProjectContext.commitHash,
+                    seedName: 'EmptyProject'
+                });
+            })
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.result);
+                expect(msg.error).equal(null);
+
+                expect(msg.result).not.to.equal(undefined);
+                expect(msg.result).not.to.equal(null);
+                expect(msg.result.hash).not.to.equal(libraryProjectContext.commitHash);
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
     it('should fail to update nonexistent branch of project from a file', function (done) {
         var worker = getSimpleWorker(),
             blobHash,
@@ -2772,6 +2801,31 @@ describe('Simple worker', function () {
             })
             .catch(function (err) {
                 expect(err.message).not.to.contains('test failed');
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
+    it('should fail to update project if blobHash nor seedName provided', function (done) {
+        var worker = getSimpleWorker(),
+            projectId = testFixture.projectName2Id(libraryProjectContext.name);
+
+        worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.initialized);
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.updateProjectFromFile,
+                    projectId: projectId,
+                    branchName: 'master'
+                });
+            })
+            .then(function () {
+                throw new Error('test failed -- missing error handling');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('blobHash or seedName must be provided');
             })
             .finally(restoreProcessFunctions)
             .nodeify(done);

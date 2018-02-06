@@ -353,11 +353,16 @@ define([], function () {
                 }
 
                 // By default the position will be {100, 100}
+
                 desc = desc || {};
                 desc.registry = desc.registry || {};
                 desc.registry.position = desc.registry.position || {};
-                desc.registry.position.x = desc.registry.position.x || 100;
-                desc.registry.position.y = desc.registry.position.y || 100;
+                desc.registry.position.x = (typeof desc.registry.position.x === 'number' ||
+                Number(desc.registry.position.x) + '' === desc.registry.position.x) ?
+                    Number(desc.registry.position.x) : 100;
+                desc.registry.position.y = (typeof desc.registry.position.y === 'number' ||
+                    Number(desc.registry.position.y) + '' === desc.registry.position.y) ?
+                    Number(desc.registry.position.y) : 100;
 
                 _setAttrAndRegistry(newNode, desc);
 

@@ -783,6 +783,18 @@ define([
             });
         }
 
+        /**
+         * Closes the currently open project.
+         * @param {function} callback
+         */
+        this.closeProject = function (callback) {
+            if (state.project && state.project.projectId) {
+                closeProject(state.project.projectId, callback);
+            } else {
+                callback(new Error('There is no open project.'));
+            }
+        };
+
         this.connectToDatabase = function (callback) {
             if (self.isConnected()) {
                 logger.warn('connectToDatabase - already connected');

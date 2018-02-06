@@ -392,34 +392,31 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
     }
 
     function _createProjectFromRawJson(storage, projectName, ownerId, branchName, projectJson, msg, callback) {
-        var projectId,
+        var result = {
+                projectId: null,
+                branchName: branchName,
+                commitHash: null
+            },
             project;
 
         return Q.ninvoke(storage, 'createProject', projectName, ownerId, projectJson.kind)
-            .then(function (projectId_) {
-                var deferred = Q.defer();
+            .then(function (projectId) {
+                result.projectId = projectId;
 
-                projectId = projectId_;
-                storage.openProject(projectId, function (err, project_/*, branches*/) {
-                    if (err) {
-                        deferred.reject(err);
-                    } else {
-                        project = project_;
-                        deferred.resolve();
-                    }
-                });
-                return deferred.promise;
+                return storage.openProject(projectId);
             })
-            .then(function () {
+            .then(function (res) {
+                project = res[0];
                 return storageUtils.insertProjectJson(project, projectJson, {
                     commitMessage: msg
                 });
             })
             .then(function (commitResult) {
+                result.commitHash = commitResult.hash;
                 return project.createBranch(branchName, commitResult.hash);
             })
             .then(function () {
-                return projectId;
+                return result;
             })
             .nodeify(callback);
     }
@@ -434,16 +431,17 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} parameters.type - 'db', 'file' or 'blob'
      * @param {string} [parameters.seedBranch='master'] - If type === db, optional name of branch.
      * @param {string} [parameters.seedCommit] - If type === db, optional commit-hash to seed from
+     * @param {string} [parameters.branchName] - If type === db, optional commit-hash to seed from
      * if given branchName will not be used.
      * @param {string} [parameters.kind]
-     * @param [function} callback
+     * @param {function} callback
+     * @param {string} callback.projectId
+     * @param {string} callback.branchName
+     * @param {string} callback.commitHash
      */
     function seedProject(webgmeToken, projectName, ownerId, parameters, callback) {
         var storage,
             finish = function (err, result) {
-                result = {
-                    projectId: result
-                };
                 if (err) {
                     err = err instanceof Error ? err : new Error(err);
                     logger.error('seeding [' + parameters.seedName + '] failed with error', err);
@@ -891,9 +889,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 }
 
                 closureInformation = context.core.getClosureInformation(baseNodes);
-                if (closureInformation instanceof Error) {
-                    throw closureInformation;
-                }
 
                 for (i = 0; i < baseNodes.length; i += 1) {
                     promises.push(
@@ -911,6 +906,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                         projectId: parameters.projectId,
                         commitHash: parameters.commitHash,
                         selectionInfo: closureInformation,
+                        kind: rawJsons[0].kind,
                         objects: [],
                         hashes: {objects: [], assets: []}
                     },
@@ -1266,9 +1262,17 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
     /**
      *
-     * @param webgmeToken
-     * @param parameters
-     * @param callback
+     * @param {string} webgmeToken
+     * @param {object} parameters
+     * @param {string} parameters.projectId
+     *
+     * @param {string} [parameters.commitHash] - Specific commit to update from
+     * @param {string} [parameters.branchName] - Branch to update from and update the branch hash
+     * @param {string} [parameters.tagName] - Specific tag to update from
+     *
+     * @param {string} [parameters.blobHash] - Provide if webgmex file is in blob storage
+     * @param {string} [parameters.seedName] - Provide if webgmex is a seed.
+     * @param {function} callback
      */
     function updateProjectFromFile(webgmeToken, parameters, callback) {
         var projectJson,
@@ -1304,7 +1308,13 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             })
             .then(function (context_) {
                 context = context_;
-                return _getProjectJsonFromBlob(blobClient, parameters.blobHash, true);
+                if (parameters.blobHash) {
+                    return _getProjectJsonFromBlob(blobClient, parameters.blobHash, true);
+                } else if (parameters.seedName) {
+                    return _getProjectJsonFromFileSeed(parameters.seedName, webgmeToken);
+                } else {
+                    throw new Error('blobHash or seedName must be provided');
+                }
             })
             .then(function (res) {
                 projectJson = res.projectJson;

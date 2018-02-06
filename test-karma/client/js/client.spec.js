@@ -67,6 +67,7 @@ describe('GME client', function () {
                 'disconnectFromDatabase',
 
                 'selectProject',
+                'closeProject',
                 'selectBranch',
                 'selectCommit',
 
@@ -529,7 +530,6 @@ describe('GME client', function () {
             });
         });
 
-
         //it('should fail to make a commit', function (done) {
         //    var commitOptions = {message: 'any message'};
         //
@@ -685,6 +685,32 @@ describe('GME client', function () {
             });
         });
 
+        it('should close a project', function (done) {
+            client.selectProject(projectId, null, function (err) {
+                expect(err).to.equal(null);
+
+                expect(client.getActiveProjectId()).to.equal(projectId);
+                client.closeProject(function (err) {
+                    expect(err).to.equal(null);
+                    done();
+                });
+            });
+        });
+
+        it('should fail to close a project if none is open', function (done) {
+            client.selectProject(projectId, null, function (err) {
+                expect(err).to.equal(null);
+
+                expect(client.getActiveProjectId()).to.equal(projectId);
+                client.closeProject(function (err) {
+                    expect(err).to.equal(null);
+                    client.closeProject(function (err) {
+                        expect(err).not.to.equal(null);
+                        done();
+                    });
+                });
+            });
+        });
         it('should fail to create an already existing project', function (done) {
             var projectName = 'alreadyExists';
             client.createProject(projectName, function (err) {
