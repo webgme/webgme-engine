@@ -751,7 +751,8 @@ describe('WebSocket', function () {
             var socket,
                 data = {
                     docId: 'guest+SomeProject%someBranch%someNodeId%someAttrName',
-                    watcherId: 'some-random-id'
+                    watcherId: 'some-random-id',
+                    webgmeToken: webgmeToken
                 };
 
             openSocketIo()
@@ -759,13 +760,18 @@ describe('WebSocket', function () {
                     socket = socket_;
                     return Q.allSettled([
                         Q.ninvoke(socket, 'emit', CONSTANTS.DOCUMENT_OPERATION, data),
-                        Q.ninvoke(socket, 'emit', CONSTANTS.DOCUMENT_SELECTION, data)
+                        Q.ninvoke(socket, 'emit', CONSTANTS.DOCUMENT_SELECTION, data),
+                        Q.ninvoke(socket, 'emit', 'watchDocument', data)
                     ]);
                 })
                 .then(function (result) {
                     result.forEach(function (res, i) {
-                        expect(res.state).to.equal('rejected', i);
-                        expect(res.reason).to.include('Client not watching document');
+                        if (i === 2) {
+                            expect(res.state).to.equal('fulfilled', i);
+                        } else {
+                            expect(res.state).to.equal('rejected', i);
+                            expect(res.reason).to.include('Client not watching document');
+                        }
                     });
 
                     // Check that we can still e.g. openProject.

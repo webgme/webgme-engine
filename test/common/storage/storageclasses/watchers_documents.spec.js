@@ -734,6 +734,66 @@ describe('watchers documents', function () {
             .catch(done);
     });
 
+    it('should keep connection when one watcher leaves room', function (done) {
+        var docId,
+            user1,
+            user2,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        Q.allDone([
+            getNewStorage('user1', 'pass'),
+            getNewStorage('user2', 'pass')
+        ])
+            .then(function (res) {
+                user1 = res[0];
+                user2 = res[1];
+
+                return Q.allDone([
+                    user1.watchDocument(testFixture.copy(initParams), function atOp1(op) {
+                        try {
+                            expect(op.apply(initParams.attrValue)).to.equal('hello there');
+                            setTimeout(done, 50); // Wait in case other watcher gets operation..
+                        } catch (e) {
+                            done(e);
+                        }
+                    }, noop),
+                    user1.watchDocument(testFixture.copy(initParams), function atOp2(op) {
+                        done(new Error('Should have unwatched document!'));
+                    }, noop),
+                    user2.watchDocument(testFixture.copy(initParams), noop, noop)
+                ]);
+            })
+            .then(function (res) {
+                docId = res[0].docId;
+                users['user1'].docId = docId;
+                users['user1'].watchers = [res[0].watcherId];
+                users['user2'].docId = docId;
+                users['user2'].watchers = [res[2].watcherId];
+
+                expect(res[0].document).to.equal(res[1].document);
+                expect(res[0].document).to.equal('hello');
+                expect(res[0].revision).to.equal(res[1].revision);
+                expect(res[0].revision).to.equal(0);
+
+                return user1.unwatchDocument({docId: docId, watcherId: res[1].watcherId});
+            })
+            .then(function (res) {
+                // user ends up with "hello there"
+                user2.sendDocumentOperation({
+                    docId: docId,
+                    watcherId: users['user2'].watchers[0],
+                    operation: new ot.TextOperation().retain('hello'.length).insert(' there')
+                });
+            })
+            .catch(done);
+    });
+
     // Read/write access...
     it('should only allow user with read access to receive operations', function (done) {
         var user1,
@@ -858,6 +918,37 @@ describe('watchers documents', function () {
             .nodeify(done);
     });
 
+    it('should throw error at DOCUMENT_OPERATION if no watcherId provided', function (done) {
+        var storage,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                storage = res;
+                docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
+                    .substring(CONSTANTS.DOCUMENT_OPERATION.length);
+
+                storage.sendDocumentOperation({
+                    docId: docId,
+                    operation: new ot.TextOperation().retain('hel'.length).insert(' there ').retain('lo'.length)
+                });
+            })
+            .then(function (res) {
+                throw new Error('Should not succeed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('data.watcherId not provided');
+            })
+            .nodeify(done);
+    });
+
     it('should throw error at DOCUMENT_SELECTION if not watching doc', function (done) {
         var storage,
             docId,
@@ -890,6 +981,37 @@ describe('watchers documents', function () {
             .nodeify(done);
     });
 
+    it('should throw error at DOCUMENT_SELECTION if no watcherId provided', function (done) {
+        var storage,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                storage = res;
+                docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
+                    .substring(CONSTANTS.DOCUMENT_OPERATION.length);
+
+                storage.sendDocumentSelection({
+                    docId: docId,
+                    selection: new ot.Selection({anchor: 0, head: 'hello'.length - 1})
+                });
+            })
+            .then(function (res) {
+                throw new Error('Should not succeed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('data.watcherId not provided');
+            })
+            .nodeify(done);
+    });
+
     it('should resolve with error when unwatching unwatched document', function (done) {
         var storage,
             docId,
@@ -915,6 +1037,34 @@ describe('watchers documents', function () {
             })
             .catch(function (err) {
                 expect(err.message).to.include('Document is not being watched ' + docId);
+            })
+            .nodeify(done);
+    });
+
+    it('should resolve with error when unwatching and no watcherId provided', function (done) {
+        var storage,
+            docId,
+            initParams = {
+                projectId: projectId,
+                branchName: 'master',
+                nodeId: '/1',
+                attrName: 'doc',
+                attrValue: 'hello'
+            };
+
+        getNewStorage('user1', 'pass')
+            .then(function (res) {
+                storage = res;
+                docId = storage.webSocket.getDocumentUpdatedEventName(initParams)
+                    .substring(CONSTANTS.DOCUMENT_OPERATION.length);
+
+                return storage.unwatchDocument(testFixture.copy(initParams));
+            })
+            .then(function (res) {
+                throw new Error('Should not succeed!');
+            })
+            .catch(function (err) {
+                expect(err.message).to.include('data.watcherId not provided');
             })
             .nodeify(done);
     });
