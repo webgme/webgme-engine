@@ -65,6 +65,7 @@
     "jsdoc": "3.5.5",
     "jsonwebtoken": "8.1.0",
     "jszip": "2.5.0",
+    "marked": "^0.3.12",
     "method-override": "2.3.10",
     "mime": "1.4.1",
     "minimatch": "3.0.4",
