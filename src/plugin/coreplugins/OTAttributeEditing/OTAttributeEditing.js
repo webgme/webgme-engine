@@ -51,7 +51,7 @@ define([
      * - Do NOT put any user interaction logic UI, etc. inside this method.
      * - callback always has to be called even if error happened.
      *
-     * @param {function(string, plugin.PluginResult)} callback - the result callback
+     * @param {function(Error|null, plugin.PluginResult)} callback - the result callback
      */
     OTAttributeEditing.prototype.main = function (callback) {
         // Use self to access core, project, result, logger etc from PluginBase.
@@ -61,6 +61,7 @@ define([
             n = cfg.cycles,
             interval = cfg.interval,
             fco = self.core.getFCO(self.rootNode),
+            watcherId,
             document;
 
         function atOperation(operation) {
@@ -76,10 +77,10 @@ define([
         }
 
         if (!this.branchName) {
-            callback(new Error('Plugin must be invoked from a branch!'));
+            callback(new Error('Plugin must be invoked from a branch!'), this.result);
             return;
         } else if (typeof self.project.watchDocument !== 'function') {
-            callback(new Error('Plugin cannot run from bin script. A webgme server must be running!'));
+            callback(new Error('Plugin cannot run from bin script. A webgme server must be running!'), this.result);
             return;
         }
 
@@ -94,6 +95,7 @@ define([
                     cnt = 1;
 
                 document = initData.document;
+                watcherId = initData.watcherId;
 
                 function addOutput() {
                     try {
@@ -102,7 +104,7 @@ define([
 
                         if (cnt > n) {
                             // All cycles have passed - it's important to unwatch the document.
-                            self.project.unwatchDocument({docId: initData.docId})
+                            self.project.unwatchDocument({docId: initData.docId, watcherId: watcherId})
                                 .then(deferred.resolve)
                                 .catch(deferred.reject);
                         } else {
@@ -117,6 +119,7 @@ define([
 
                             self.project.sendDocumentOperation({
                                 docId: initData.docId,
+                                watcherId: watcherId,
                                 operation: newOperation,
                                 selection: new ot.Selection({
                                     anchor: document.length - 1, // Selection starts at the end of the new document

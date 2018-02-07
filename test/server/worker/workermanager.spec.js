@@ -231,7 +231,7 @@ describe('ServerWorkerManager - SimpleWorkers', function () {
         });
     });
 
-    describe.only('maximum queued requests', function () {
+    describe('maximum queued requests', function () {
         var swm;
 
         afterEach(function (done) {

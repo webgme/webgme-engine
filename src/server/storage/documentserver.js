@@ -58,7 +58,7 @@ DocumentServer.prototype.onOperation = function (data) {
     wrapped = new WrappedOperation(
         TextOperation.fromJSON(data.operation),
         data.selection && Selection.fromJSON(data.selection),
-        {userId: data.userId, sessionId: data.sessionId});
+        {userId: data.userId, sessionId: data.sessionId, watcherId: data.watcherId});
 
 
     return this.receiveOperation(data.revision, wrapped);

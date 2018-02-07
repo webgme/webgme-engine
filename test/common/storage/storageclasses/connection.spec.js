@@ -742,6 +742,7 @@ describe('storage-connection', function () {
                 },
                 docId,
                 res,
+                watcherId,
                 storage;
 
             server = WebGME.standaloneServer(gmeConfig);
@@ -759,14 +760,16 @@ describe('storage-connection', function () {
                             storage.watchDocument(docData, testFixture.noop, testFixture.noop)
                                 .then(function (result) {
                                     docId = result.docId;
+                                    watcherId = result.watcherId;
                                     res.socket.disconnect();
 
                                     storage.sendDocumentOperation({
                                         docId: docId,
+                                        watcherId: watcherId,
                                         operation: new ot.TextOperation().insert('yello')
                                     });
 
-                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                    expect(storage.watchers.documents[docId][watcherId].otClient.state instanceof
                                         ot.Client.AwaitingConfirm).to.equal(true);
                                 })
                                 .catch(deferred.reject);
@@ -779,12 +782,9 @@ describe('storage-connection', function () {
                         } else if (networkState === STORAGE_CONSTANTS.RECONNECTED) {
                             if (disconnected === true) {
                                 try {
-                                    // Reconnected should come before the ack of the sent documentation
-                                    // (the document never reached the server since we disconnected before
-                                    // sending it)
-                                    expect(storage.watchers.documents[docId].otClient.state instanceof
-                                        ot.Client.AwaitingConfirm).to.equal(true);
-                                    storage.unwatchDocument({docId: docId})
+                                    expect(storage.watchers.documents[docId][watcherId].otClient.state instanceof
+                                        ot.Client.Synchronized).to.equal(true);
+                                    storage.unwatchDocument({docId: docId, watcherId: watcherId})
                                         .then(function () {
                                             deferred.resolve();
                                         })
@@ -825,6 +825,7 @@ describe('storage-connection', function () {
                     attrValue: ''
                 },
                 docId,
+                watcherId,
                 res,
                 storage;
 
@@ -843,9 +844,11 @@ describe('storage-connection', function () {
                             storage.watchDocument(docData, testFixture.noop, testFixture.noop)
                                 .then(function (result) {
                                     docId = result.docId;
+                                    watcherId = result.watcherId;
 
                                     storage.sendDocumentOperation({
                                         docId: docId,
+                                        watcherId: watcherId,
                                         operation: new ot.TextOperation().insert('yello')
                                     });
 
@@ -855,7 +858,7 @@ describe('storage-connection', function () {
                                         res.socket.disconnect();
                                     };
 
-                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                    expect(storage.watchers.documents[docId][watcherId].otClient.state instanceof
                                         ot.Client.AwaitingConfirm).to.equal(true);
                                 })
                                 .catch(deferred.reject);
@@ -869,9 +872,9 @@ describe('storage-connection', function () {
                             if (disconnected === true) {
                                 try {
                                     // In should be synchronized since the sent document did indeed reach the server.
-                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                    expect(storage.watchers.documents[docId][watcherId].otClient.state instanceof
                                         ot.Client.Synchronized).to.equal(true);
-                                    storage.unwatchDocument({docId: docId})
+                                    storage.unwatchDocument({docId: docId, watcherId: watcherId})
                                         .then(function () {
                                             deferred.resolve();
                                         })
@@ -917,6 +920,8 @@ describe('storage-connection', function () {
                 res2,
                 storage,
                 storage2,
+                watcherId1,
+                watcherId2,
                 revision,
                 server = WebGME.standaloneServer(gmeConfig);
 
@@ -944,12 +949,15 @@ describe('storage-connection', function () {
                                     ])
                                         .then(function (result) {
                                             docId = result[0].docId;
+                                            watcherId1 = result[0].watcherId;
+                                            watcherId2 = result[1].watcherId;
                                             storage2.sendDocumentOperation({
                                                 docId: docId,
+                                                watcherId: watcherId2,
                                                 operation: new ot.TextOperation().insert('yello')
                                             });
 
-                                            revision = storage.watchers.documents[docId].otClient.revision;
+                                            revision = storage.watchers.documents[docId][watcherId1].otClient.revision;
 
                                             res.socket.disconnect();
                                         })
@@ -967,14 +975,14 @@ describe('storage-connection', function () {
                                 try {
                                     // In should be synchronized since the operation from the other client
                                     // should be retrieved at rejoin.
-                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                    expect(storage.watchers.documents[docId][watcherId1].otClient.state instanceof
                                         ot.Client.Synchronized).to.equal(true);
 
-                                    expect(storage.watchers.documents[docId].otClient.revision).to.equal(revision + 1,
-                                        'Other clients change was not retrieved after rejoin.');
+                                    expect(storage.watchers.documents[docId][watcherId1].otClient.revision)
+                                        .to.equal(revision + 1, 'Other clients change was not retrieved after rejoin.');
                                     Q.allDone([
-                                        storage.unwatchDocument({docId: docId}),
-                                        storage2.unwatchDocument({docId: docId})
+                                        storage.unwatchDocument({docId: docId, watcherId: watcherId1}),
+                                        storage2.unwatchDocument({docId: docId, watcherId: watcherId2})
                                     ])
                                         .then(function () {
                                             if (opHandlerCalled) {
@@ -1025,6 +1033,7 @@ describe('storage-connection', function () {
                 docId,
                 res,
                 storage,
+                watcherId,
                 modifiedConfig = JSON.parse(JSON.stringify(gmeConfig));
 
             modifiedConfig.socketIO.clientOptions.autoConnect = false;
@@ -1045,15 +1054,17 @@ describe('storage-connection', function () {
                             storage.watchDocument(docData, testFixture.noop, testFixture.noop)
                                 .then(function (result) {
                                     docId = result.docId;
+                                    watcherId = result.watcherId;
 
                                     res.socket.disconnect();
 
                                     storage.sendDocumentOperation({
                                         docId: docId,
+                                        watcherId: watcherId,
                                         operation: new ot.TextOperation().insert('yello')
                                     });
 
-                                    expect(storage.watchers.documents[docId].otClient.state instanceof
+                                    expect(storage.watchers.documents[docId][watcherId].otClient.state instanceof
                                         ot.Client.AwaitingConfirm).to.equal(true);
                                 })
                                 .catch(deferred.reject);
@@ -1103,6 +1114,7 @@ describe('storage-connection', function () {
                 res2,
                 storage,
                 storage2,
+                watcherId2,
                 server,
                 modifiedConfig = JSON.parse(JSON.stringify(gmeConfig));
 
@@ -1132,6 +1144,7 @@ describe('storage-connection', function () {
                                     storage.watchDocument(docData, testFixture.noop, testFixture.noop)
                                         .then(function (result) {
                                             docId = result.docId;
+                                            // watcherId1 = result.watcherId;
                                             // 2. Client 1 gets disconnected and removal triggered on server.
                                             res.socket.disconnect();
                                         })
@@ -1146,7 +1159,10 @@ describe('storage-connection', function () {
                                 // 3. Wait till the document has been closed (100 > 10 ms)
                                 // and open it with Client 2
                                 setTimeout(function () {
-                                    storage2.watchDocument(docData, testFixture.noop, testFixture.noop);
+                                    storage2.watchDocument(docData, testFixture.noop, testFixture.noop)
+                                        .then(function (initData) {
+                                            watcherId2 = initData.watcherId;
+                                        });
                                 }, 100);
                             } else {
                                 deferred.reject(new Error('Was not connected before reconnected'));
@@ -1154,7 +1170,7 @@ describe('storage-connection', function () {
                         } else if (networkState === STORAGE_CONSTANTS.CONNECTION_ERROR) {
                             // 4. Client 1 should get an error at reconnect.
                             if (disconnected === true) {
-                                storage2.unwatchDocument({docId: docId})
+                                storage2.unwatchDocument({docId: docId, watcherId: watcherId2})
                                     .then(deferred.resolve)
                                     .catch(deferred.reject);
                             } else {
@@ -1179,6 +1195,99 @@ describe('storage-connection', function () {
                                 });
                         });
                 });
+        });
+
+        function genReconnectSameConnTest1(reverse, done) {
+            var connected = false,
+                disconnected = false,
+                docData = {
+                    projectId: ir.project.projectId,
+                    branchName: 'master',
+                    nodeId: '/1',
+                    attrName: 'name',
+                    attrValue: ''
+                },
+                docId,
+                res,
+                watcherId1,
+                watcherId2,
+                storage;
+
+            server = WebGME.standaloneServer(gmeConfig);
+            Q.ninvoke(server, 'start')
+                .then(function () {
+                    var deferred = Q.defer();
+                    res = createStorage(null, null, logger, gmeConfig);
+                    function atOp1() {
+                        setTimeout(deferred.resolve, 50);
+                    }
+
+                    function atOp2() {
+                        deferred.reject(new Error('Got own operation!'));
+                    }
+
+                    storage = res.storage;
+
+                    storage.open(function (networkState) {
+                        if (networkState === STORAGE_CONSTANTS.CONNECTED) {
+                            connected = true;
+
+                            Q.allDone([
+                                storage.watchDocument(docData, reverse ? atOp2 : atOp1, testFixture.noop),
+                                storage.watchDocument(docData, reverse ? atOp1 : atOp2, testFixture.noop)
+                            ])
+                                .then(function (result) {
+                                    docId = result[0].docId;
+                                    watcherId1 = result[0].watcherId;
+                                    watcherId2 = result[1].watcherId;
+                                    res.socket.disconnect();
+
+                                    storage.sendDocumentOperation({
+                                        docId: docId,
+                                        watcherId: reverse ? watcherId1 : watcherId2,
+                                        operation: new ot.TextOperation().insert('yello')
+                                    });
+
+                                    expect(storage.watchers.documents[docId][reverse ? watcherId1 : watcherId2]
+                                        .otClient.state instanceof ot.Client.AwaitingConfirm).to.equal(true);
+                                })
+                                .catch(deferred.reject);
+                        } else if (networkState === STORAGE_CONSTANTS.DISCONNECTED) {
+                            if (connected === true) {
+                                disconnected = true;
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else if (networkState === STORAGE_CONSTANTS.RECONNECTED) {
+                            if (disconnected === true) {
+                                // Now we wait for the operation handler of watcher1
+                            } else {
+                                deferred.reject(new Error('Was not connected before reconnected'));
+                            }
+                        } else {
+                            deferred.reject(new Error('Unexpected network state: ' + networkState));
+                        }
+                    });
+
+                    return deferred.promise;
+                })
+                .nodeify(function (err) {
+                    Q.ninvoke(storage, 'close')
+                        .finally(function (err2) {
+                            Q.ninvoke(server, 'stop')
+                                .finally(function (err3) {
+                                    done(err || err2 || err3);
+                                });
+                        });
+                });
+        }
+
+        it('should reconnect both watchers after disconnect and send operation that was queued', function (done) {
+            genReconnectSameConnTest1(false, done);
+        });
+
+        it('should reconnect both watchers after disconnect and send operation that was queued 2', function (done) {
+            genReconnectSameConnTest1(true, done);
         });
 
         it('should fail to watch document when disabled', function (done) {

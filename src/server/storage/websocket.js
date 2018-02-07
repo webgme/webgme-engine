@@ -298,7 +298,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                     selection: null
                                 });
 
-                                document.disconnectedUsers[document.users[socket.id].sessionId] = true;
+                                document.disconnectedUsers[document.users[socket.id].sessionId] =
+                                    document.users[socket.id].watchers;
 
                                 delete document.users[socket.id];
 
@@ -953,14 +954,16 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('watchDocument', function (data, callback) {
                 projectAccess(socket, data && data.webgmeToken, data && data.projectId)
                     .then(function (access) {
-                        var docId = data.join ? [
-                            data.projectId,
-                            data.branchName,
-                            data.nodeId,
-                            data.attrName].join(CONSTANTS.ROOM_DIVIDER) : data.docId;
+                        var docId = data.join ? [data.projectId, data.branchName, data.nodeId, data.attrName]
+                                .join(CONSTANTS.ROOM_DIVIDER) : data.docId,
+                            eventData;
 
                         if (!gmeConfig.documentEditing.enable) {
                             throw new Error('Document editing is disabled from gmeConfig!');
+                        }
+
+                        if (typeof data.watcherId !== 'string') {
+                            throw new Error('data.watcherId was not provided!');
                         }
 
                         logger.debug('watchDocument', docId, 'join?', data.join, 'rejoin?', data.rejoin);
@@ -988,16 +991,19 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                     socketId: socket.id,
                                     sessionId: data.sessionId,
                                     userId: socket.userId,
-                                    access: access
+                                    access: access,
+                                    watchers: [data.watcherId]
                                 };
 
                                 socket.join(docId);
                             } else {
-                                logger.warn('socket trying to join same document again..', docId);
+                                logger.info('socket joining the same document again', docId);
+                                documents[docId].users[socket.id].watchers.push(data.watcherId);
                             }
 
                             callback(null, {
                                 docId: docId,
+                                watcherId: data.watcherId,
                                 document: documents[docId].otServer.document,
                                 revision: documents[docId].otServer.operations.length,
                                 clients: documents[docId].users
@@ -1017,42 +1023,74 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 throw new Error('Document room was closed ' + docId);
                             } else if (documents[docId].disconnectedUsers.hasOwnProperty(data.sessionId) === false) {
                                 throw new Error('Document room was closed ' + docId + ' and then reopened.');
+                            } else if (documents[docId].disconnectedUsers[data.sessionId].indexOf(
+                                data.watcherId) === -1) {
+                                throw new Error('Document room to rejoin ' + docId + ' did not have current watcher.');
                             }
 
                             documents[docId].otServer.getOperationsSince(data.revision);
 
-                            delete documents[docId].disconnectedUsers[data.sessionId];
+                            documents[docId].disconnectedUsers[data.sessionId].splice(
+                                documents[docId].disconnectedUsers[data.sessionId].indexOf(data.watcherId), 1);
+
                             clearTimeout(documents[docId].timeoutId);
 
-                            documents[docId].users[socket.id] = {
-                                socketId: socket.id,
-                                userId: socket.userId,
-                                sessionId: data.sessionId,
-                                access: access
-                            };
+                            if (documents[docId].disconnectedUsers[data.sessionId].length === 0) {
+                                delete documents[docId].disconnectedUsers[data.sessionId];
+                            }
 
-                            socket.join(docId);
+                            if (documents[docId].users.hasOwnProperty(socket.id) === false) {
+                                documents[docId].users[socket.id] = {
+                                    socketId: socket.id,
+                                    userId: socket.userId,
+                                    sessionId: data.sessionId,
+                                    access: access,
+                                    watchers: [data.watcherId]
+                                };
+
+                                socket.join(docId);
+                            } else {
+                                documents[docId].users[socket.id].watchers.push(data.watcherId);
+                            }
 
                             callback(null, {
                                 docId: docId,
+                                watcherId: data.watcherId,
                                 str: documents[docId].otServer.document,
                                 revision: documents[docId].otServer.operations.length,
                                 operations: documents[docId].otServer.getOperationsSince(data.revision),
                                 clients: documents[docId].users
                             });
                         } else {
-                            if (documents.hasOwnProperty(docId) && documents[docId].users.hasOwnProperty(socket.id)) {
-                                socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, {
+                            if (documents.hasOwnProperty(docId) &&
+                                documents[docId].users.hasOwnProperty(socket.id) &&
+                                documents[docId].users[socket.id].watchers.indexOf(data.watcherId) > -1) {
+
+                                eventData = {
                                     docId: data.docId,
                                     socketId: socket.id,
                                     userId: socket.userId,
+                                    watcherId: data.watcherId,
                                     selection: null
-                                });
+                                };
 
-                                delete documents[docId].users[socket.id];
-                                socket.leave(docId);
-                                logger.debug('Client left document', docId);
-                                triggerDocumentRemoval(docId);
+                                if (documents[docId].users[socket.id].watchers.length > 1) {
+                                    webSocket.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                                } else {
+                                    socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                                }
+
+                                // Remove the watcherId
+                                documents[docId].users[socket.id].watchers.splice(
+                                    documents[docId].users[socket.id].watchers.indexOf(data.watcherId), 1);
+
+                                if (documents[docId].users[socket.id].watchers.length === 0) {
+                                    // Last watcher from this socket - leave the room and clean-up.
+                                    delete documents[docId].users[socket.id];
+                                    socket.leave(docId);
+                                    logger.debug('Client left document', docId);
+                                    triggerDocumentRemoval(docId);
+                                }
 
                                 callback();
                             } else {
@@ -1068,28 +1106,40 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             });
 
             socket.on(CONSTANTS.DOCUMENT_OPERATION, function (data, callback) {
-                var wrappedOperation;
+                var wrappedOperation,
+                    eventData;
 
                 try {
-                    if (documents.hasOwnProperty(data.docId) && documents[data.docId].users.hasOwnProperty(socket.id)) {
-                        if (documents[data.docId].users[socket.id].access.write === true) {
-                            data.userId = documents[data.docId].users[socket.id].userId;
-                            wrappedOperation = documents[data.docId].otServer.onOperation(data);
-                            // Acknowledge,
-                            callback();
-                            // and then broadcast the operation.
-                            socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, {
-                                docId: data.docId,
-                                socketId: socket.id,
-                                userId: socket.userId,
-                                operation: wrappedOperation.wrapped.toJSON(),
-                                selection: wrappedOperation.selection
-                            });
-                        } else {
-                            throw new Error('Does not have write access to document');
-                        }
-                    } else {
+                    if (typeof data.watcherId !== 'string') {
+                        throw new Error('data.watcherId not provided!');
+                    }
+
+                    if (documents.hasOwnProperty(data.docId) === false ||
+                        documents[data.docId].users.hasOwnProperty(socket.id) === false) {
                         throw new Error('Client not watching document - cannot send operation!');
+                    }
+
+                    if (documents[data.docId].users[socket.id].access.write !== true) {
+                        throw new Error('Does not have write access to document');
+                    }
+
+                    data.userId = documents[data.docId].users[socket.id].userId;
+                    wrappedOperation = documents[data.docId].otServer.onOperation(data);
+                    // Acknowledge,
+                    callback();
+                    eventData = {
+                        docId: data.docId,
+                        watcherId: data.watcherId,
+                        socketId: socket.id,
+                        userId: socket.userId,
+                        operation: wrappedOperation.wrapped.toJSON(),
+                        selection: wrappedOperation.selection
+                    };
+                    // and then broadcast or emit the operation.
+                    if (documents[data.docId].users[socket.id].watchers.length > 1) {
+                        webSocket.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
+                    } else {
+                        socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
                     }
                 } catch (err) {
                     logger.error(err.stack, '\n', (new Error('Caught by')).stack);
@@ -1098,7 +1148,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             });
 
             socket.on(CONSTANTS.DOCUMENT_SELECTION, function (data, callback) {
-                var transformedSelection;
+                var transformedSelection,
+                    eventData;
 
                 function done(err) {
                     if (callback) {
@@ -1107,22 +1158,33 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 }
 
                 try {
-                    if (documents.hasOwnProperty(data.docId) && documents[data.docId].users.hasOwnProperty(socket.id)) {
+                    if (typeof data.watcherId !== 'string') {
+                        throw new Error('data.watcherId not provided!');
+                    }
 
-                        transformedSelection = documents[data.docId].otServer.onSelection(
-                            data.revision, data.selection);
-
-                        socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, {
-                            docId: data.docId,
-                            socketId: socket.id,
-                            userId: socket.userId,
-                            selection: transformedSelection
-                        });
-                        done();
-
-                    } else {
+                    if (documents.hasOwnProperty(data.docId) === false ||
+                        documents[data.docId].users.hasOwnProperty(socket.id) === false) {
                         throw new Error('Client not watching document - cannot send selection!');
                     }
+
+
+                    transformedSelection = documents[data.docId].otServer.onSelection(data.revision, data.selection);
+
+                    eventData = {
+                        docId: data.docId,
+                        socketId: socket.id,
+                        userId: socket.userId,
+                        watcherId: data.watcherId,
+                        selection: transformedSelection
+                    };
+
+                    if (documents[data.docId].users[socket.id].watchers.length > 1) {
+                        webSocket.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                    } else {
+                        socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                    }
+
+                    done();
                 } catch (err) {
                     logger.error(err.stack, '\n', (new Error('Caught by')).stack);
                     done(err);

@@ -102,6 +102,7 @@ describe('OTAttributeEditing Plugin', function () {
             storage = testFixture.getConnectedStorage(gmeConfig, logger),
             connProject,
             docId,
+            watcherId,
             doc;
 
         function atOperation(op) {
@@ -127,6 +128,7 @@ describe('OTAttributeEditing Plugin', function () {
             .then(function (res) {
                 doc = res.document;
                 docId = res.docId;
+                watcherId = res.watcherId;
                 return Q.ninvoke(wr, 'executePlugin', null, null, 'OTAttributeEditing', context);
             })
             .then(function (res) {
@@ -142,7 +144,7 @@ describe('OTAttributeEditing Plugin', function () {
                 expect(attr).to.equal(doc);
                 expect((attr.match(/This is output nr/g) || []).length).to.equal(context.pluginConfig.cycles);
 
-                return connProject.unwatchDocument({docId: docId});
+                return connProject.unwatchDocument({docId: docId, watcherId: watcherId});
             })
             .then(function () {
                 return Q.ninvoke(storage, 'close');
@@ -165,6 +167,7 @@ describe('OTAttributeEditing Plugin', function () {
             cnt = 0,
             connProject,
             docId,
+            watcherId,
             doc;
 
         function atOperation(op) {
@@ -184,6 +187,7 @@ describe('OTAttributeEditing Plugin', function () {
             setTimeout(function () {
                 connProject.sendDocumentOperation({
                     docId: docId,
+                    watcherId: watcherId,
                     operation: newOperation
                 });
             });
@@ -208,6 +212,7 @@ describe('OTAttributeEditing Plugin', function () {
             .then(function (res) {
                 doc = res.document;
                 docId = res.docId;
+                watcherId = res.watcherId;
                 return Q.ninvoke(wr, 'executePlugin', null, null, 'OTAttributeEditing', context);
             })
             .then(function (res) {
@@ -224,7 +229,7 @@ describe('OTAttributeEditing Plugin', function () {
                 expect((attr.match(/This is output nr/g) || []).length).to.equal(context.pluginConfig.cycles);
                 expect((attr.match(/Added by test watcher/g) || []).length).to.equal(cnt);
 
-                return connProject.unwatchDocument({docId: docId});
+                return connProject.unwatchDocument({docId: docId, watcherId: watcherId});
             })
             .then(function () {
                 return Q.ninvoke(storage, 'close');
