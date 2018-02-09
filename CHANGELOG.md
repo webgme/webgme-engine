@@ -1,5 +1,22 @@
 # Change Log
 
+## [v2.19.5](https://github.com/webgme/webgme-engine/tree/v2.19.5) (2018-02-09)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.4...v2.19.5)
+
+**Implemented enhancements:**
+
+- Client API should have a method to close project [\#43](https://github.com/webgme/webgme-engine/issues/43)
+- Depend on marked explicitly to avoid unsecure version [\#46](https://github.com/webgme/webgme-engine/pull/46) ([pmeijer](https://github.com/pmeijer))
+- Closes \#42 Closes \#43 Various improvements to client API and SWM [\#45](https://github.com/webgme/webgme-engine/pull/45) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Setting new position to 0 will assign 100 in client api [\#42](https://github.com/webgme/webgme-engine/issues/42)
+
+**Merged pull requests:**
+
+- Allow multiple watchers of documents sharing the same socket connection [\#47](https://github.com/webgme/webgme-engine/pull/47) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.19.4](https://github.com/webgme/webgme-engine/tree/v2.19.4) (2018-01-29)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.3...v2.19.4)
 
