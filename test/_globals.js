@@ -443,10 +443,10 @@ function importProject(storage, parameters, callback) {
             })
             .catch(extractDeferred.reject);
     } else if (typeof parameters.projectSeed === 'object') {
-        extractDeferred.reject(new Error('json file:', parameters.projectSeed));
         extractDeferred.resolve(parameters.projectSeed);
     } else {
-        extractDeferred.reject('parameters.projectSeed must be filePath to a webgmex file');
+        extractDeferred.reject(new Error('parameters.projectSeed must be filePath to a webgmex file ' +
+            'or a json of the project content.'));
     }
     branchName = parameters.branchName || 'master';
     // Parameters check end.

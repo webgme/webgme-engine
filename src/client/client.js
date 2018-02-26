@@ -55,7 +55,7 @@ define([
                 projectInfo: null,
                 core: null,
                 branchName: null,
-                branchStatus: null, //CONSTANTS.BRANCH_STATUS. SYNC/AHEAD_SYNC/AHEAD_FORKED/PULLING/ERROR or null
+                branchStatus: null, //CONSTANTS.BRANCH_STATUS. SYNC/AHEAD_SYNC/AHEAD_NOT_SYNC/PULLING/ERROR or null
                 readOnlyProject: false,
                 viewer: false, // This means that a specific commit is selected w/o regards to any branch.
 

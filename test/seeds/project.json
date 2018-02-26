@@ -1,0 +1,166 @@
+{
+  "rootHash": "#4649fd96b7356499351a6e37abbc6321b95ebc5e",
+  "projectId": "guest+EmptyProject",
+  "commitHash": "#0fe7dc4b9953956fc53a5b861d150fa5decc345b",
+  "hashes": {
+    "objects": [
+      "#4649fd96b7356499351a6e37abbc6321b95ebc5e",
+      "#d51484d046f593d83a9e9663346a3c93f80d9018"
+    ],
+    "assets": []
+  },
+  "objects": [
+    {
+      "1": "#d51484d046f593d83a9e9663346a3c93f80d9018",
+      "_id": "#4649fd96b7356499351a6e37abbc6321b95ebc5e",
+      "_nullptr": {
+        "atr": {
+          "name": "_null_pointer"
+        }
+      },
+      "ovr": {
+        "": {
+          "base": "/_nullptr"
+        },
+        "/_sets/MetaAspectSet/1133782405": {
+          "member": "/1"
+        },
+        "/_sets/MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d/125899614": {
+          "member": "/1"
+        },
+        "/_meta/children/_sets/items/302362349": {
+          "member": "/1"
+        }
+      },
+      "atr": {
+        "_relguid": "03d360729e097866cb4ed0a36ff825f6",
+        "name": "ROOT"
+      },
+      "reg": {
+        "MetaSheets": [
+          {
+            "SetID": "MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d",
+            "order": 0,
+            "title": "META"
+          }
+        ],
+        "ProjectRegistry": {
+          "FCO_ID": "/1"
+        },
+        "_sets_": 8
+      },
+      "_sets": {
+        "MetaAspectSet": {
+          "1133782405": {
+            "reg": {
+              "_": "_",
+              "position": {
+                "x": 100,
+                "y": 100
+              }
+            }
+          },
+          "reg": {
+            "_": "_"
+          }
+        },
+        "_nullptr": {
+          "atr": {
+            "name": "_null_pointer"
+          }
+        },
+        "ovr": {
+          "": {
+            "MetaAspectSet": "/_nullptr",
+            "MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d": "/_nullptr"
+          }
+        },
+        "MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d": {
+          "125899614": {
+            "reg": {
+              "_": "_",
+              "position": {
+                "x": 100,
+                "y": 100
+              }
+            }
+          },
+          "reg": {
+            "_": "_"
+          }
+        }
+      },
+      "_meta": {
+        "atr": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "children": {
+          "_sets": {
+            "items": {
+              "302362349": {
+                "reg": {
+                  "_": "_"
+                },
+                "atr": {
+                  "min": -1,
+                  "max": -1
+                }
+              },
+              "reg": {
+                "_": "_"
+              }
+            },
+            "_nullptr": {
+              "atr": {
+                "name": "_null_pointer"
+              }
+            },
+            "ovr": {
+              "": {
+                "items": "/_nullptr"
+              }
+            }
+          },
+          "reg": {
+            "_sets_": 4
+          }
+        }
+      },
+      "__v": "1.1.0"
+    },
+    {
+      "_id": "#d51484d046f593d83a9e9663346a3c93f80d9018",
+      "_nullptr": {
+        "atr": {
+          "name": "_null_pointer"
+        }
+      },
+      "ovr": {
+        "": {
+          "base": "/_nullptr"
+        }
+      },
+      "atr": {
+        "_relguid": "de5a7e097ce3914f3d834f0c20e7e5b3",
+        "name": "FCO"
+      },
+      "reg": {
+        "DisplayFormat": "$name",
+        "position": {
+          "x": 80,
+          "y": 70
+        }
+      },
+      "_meta": {
+        "atr": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "__v": "1.1.0"
+    }
+  ]
+}
