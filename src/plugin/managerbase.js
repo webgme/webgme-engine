@@ -39,27 +39,27 @@ define([
         this.notificationHandlers = [];
 
         function getPluginInstance(pluginIdOrClass, callback) {
-            if (typeof pluginIdOrClass === 'function') {
-                return Q(pluginIdOrClass);
+            var deferred = Q.defer(),
+                pluginPath;
+
+            function instantiatePlugin(PluginClass) {
+                var plugin = new PluginClass();
+                if (self.serverSide && plugin.pluginMetadata.disableServerSideExecution) {
+                    deferred.reject(new Error(pluginIdOrClass + ' cannot be invoked on server.'));
+                } else if (self.browserSide && plugin.pluginMetadata.disableBrowserSideExecution) {
+                    deferred.reject(new Error(pluginIdOrClass + ' cannot be invoked in browser.'));
+                } else {
+                    deferred.resolve(plugin);
+                }
             }
 
-            var deferred = Q.defer(),
-                rejected = false,
+            if (typeof pluginIdOrClass === 'function') {
+                self.logger.debug('plugin class was passed wont load it with requirejs');
+                instantiatePlugin(pluginIdOrClass);
+            } else {
                 pluginPath = 'plugin/' + pluginIdOrClass + '/' + pluginIdOrClass + '/' + pluginIdOrClass;
-
-            if (rejected === false) {
-                requirejs([pluginPath],
-                    function (PluginClass) {
-                        var plugin = new PluginClass();
-                        self.logger.debug('requirejs plugin from path: ' + pluginPath);
-                        if (self.serverSide && plugin.pluginMetadata.disableServerSideExecution) {
-                            deferred.reject(new Error(pluginIdOrClass + ' cannot be invoked on server.'));
-                        } else if (self.browserSide && plugin.pluginMetadata.disableBrowserSideExecution) {
-                            deferred.reject(new Error(pluginIdOrClass + ' cannot be invoked in browser.'));
-                        } else {
-                            deferred.resolve(plugin);
-                        }
-                    },
+                self.logger.debug('requirejs plugin from path: ' + pluginPath);
+                requirejs([pluginPath], instantiatePlugin,
                     function (err) {
                         deferred.reject(err);
                     }
