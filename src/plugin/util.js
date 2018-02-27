@@ -5,7 +5,13 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-define(['q'], function (Q) {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['q'], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(require('q'));
+    }
+}(function (Q) {
     'use strict';
 
     /**
@@ -114,4 +120,4 @@ define(['q'], function (Q) {
     return {
         loadNodesAtCommitHash: loadNodesAtCommitHash
     };
-});
+}));

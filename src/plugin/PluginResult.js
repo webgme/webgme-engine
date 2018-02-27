@@ -7,7 +7,13 @@
  * @author lattmann / https://github.com/lattmann
  */
 
-define(['plugin/PluginMessage', 'plugin/PluginResultBase'], function (PluginMessage, PluginResultBase) {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['plugin/PluginMessage', 'plugin/PluginResultBase'], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(require('./PluginMessage'), require('./PluginResultBase'));
+    }
+}(function (PluginMessage, PluginResultBase) {
     'use strict';
 
     /**
@@ -188,4 +194,4 @@ define(['plugin/PluginMessage', 'plugin/PluginResultBase'], function (PluginMess
     };
 
     return PluginResult;
-});
+}));

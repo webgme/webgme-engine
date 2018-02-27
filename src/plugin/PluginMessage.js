@@ -8,7 +8,13 @@
  */
 
 
-define(['plugin/PluginNodeDescription'], function (PluginNodeDescription) {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['plugin/PluginNodeDescription'], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(require('./PluginNodeDescription'));
+    }
+}(function (PluginNodeDescription) {
     'use strict';
 
     /**
@@ -60,4 +66,4 @@ define(['plugin/PluginNodeDescription'], function (PluginNodeDescription) {
     };
 
     return PluginMessage;
-});
+}));

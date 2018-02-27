@@ -6,7 +6,13 @@
  * @author pmeijer / https://github.com/meijer
  */
 
-define([], function () {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define([], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory();
+    }
+}(function () {
     'use strict';
 
     /**
@@ -86,4 +92,4 @@ define([], function () {
     };
 
     return PluginResultBase;
-});
+}));

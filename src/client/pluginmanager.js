@@ -80,7 +80,7 @@ define([
 
         /**
          * Run the plugin in the browser.
-         * @param {string} pluginId - id of plugin.
+         * @param {string|function} pluginIdOrClass - id or class for plugin.
          * @param {object} context
          * @param {object} context.managerConfig - where the plugin should execute.
          * @param {ProjectInterface} context.managerConfig.project - project (e.g. client.getProjectObject()).
@@ -92,7 +92,7 @@ define([
          * @param {object} [context.pluginConfig=%defaultForPlugin%] - specific configuration for the plugin.
          * @param {function(err, PluginResult)} callback
          */
-        this.runBrowserPlugin = function (pluginId, context, callback) {
+        this.runBrowserPlugin = function (pluginIdOrClass, context, callback) {
             var blobClient = new BlobClient({logger: logger.fork('BlobClient')}),
                 pluginManager = new PluginManagerBase(blobClient, null, mainLogger, gmeConfig);
 
@@ -105,12 +105,12 @@ define([
 
             pluginManager.projectAccess = client.getProjectAccess();
 
-            pluginManager.executePlugin(pluginId, context.pluginConfig, context.managerConfig, callback);
+            pluginManager.executePlugin(pluginIdOrClass, context.pluginConfig, context.managerConfig, callback);
         };
 
         /**
          * Run the plugin on the server inside a worker process.
-         * @param {string} pluginId - id of plugin.
+         * @param {string|function} pluginIdOrClass - id or class for plugin.
          * @param {object} context
          * @param {object} context.managerConfig - where the plugin should execute.
          * @param {ProjectInterface|string} context.managerConfig.project - project or id of project.
@@ -122,8 +122,8 @@ define([
          * @param {object} [context.pluginConfig=%defaultForPlugin%] - specific configuration for the plugin.
          * @param {function} callback
          */
-        this.runServerPlugin = function (pluginId, context, callback) {
-
+        this.runServerPlugin = function (pluginIdOrClass, context, callback) {
+            var pluginId = typeof pluginIdOrClass === 'string' ? pluginIdOrClass : pluginIdOrClass.metadata.id;
             if (context.managerConfig.project instanceof Project) {
                 context.managerConfig.project = context.managerConfig.project.projectId;
             }

@@ -64,8 +64,13 @@
  *   patch: [{op: 'add', path: '/atr/new', value: 'value'}]
  * }
  */
-
-define([], function () {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define([], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory();
+    }
+}(function () {
     'use strict';
 
     return {
@@ -140,4 +145,4 @@ define([], function () {
         ADD_ON_NOTIFICATION: 'ADD_ON_NOTIFICATION',
         CLIENT_STATE_NOTIFICATION: 'CLIENT_STATE_NOTIFICATION'
     };
-});
+}));
