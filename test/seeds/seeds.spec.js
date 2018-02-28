@@ -76,6 +76,20 @@ describe('Seeds', function () {
         });
     });
 
+    it('testFixture createProject should accept json structure', function (done) {
+        testFixture.importProject(safeStorage, {
+            projectSeed: require('./project.json'),
+            projectName: 'createFromJson',
+            branchName: 'master',
+            gmeConfig: gmeConfig,
+            logger: logger
+        })
+            .then(function (ir) {
+                expect(ir.rootHash).to.equal(require('./project.json').rootHash);
+            })
+            .nodeify(done);
+    });
+
     // get seed designs 'files' and make sure all of them are getting tested
     it('should get all seed project names', function (done) {
         var agent = superagent.agent();
