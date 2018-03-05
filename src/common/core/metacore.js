@@ -265,6 +265,11 @@ define([
             }
             var meta = self.getAttribute(getMetaNode(node), name);
 
+            //issue #51 - readonly should be taken into account
+            if(meta.readonly && self.isMetaNode(node) === false){
+                return false;
+            }
+
             if (meta.enum && meta.enum instanceof Array) {
                 return meta.enum.indexOf(value) !== -1; //TODO should we check type beforehand?
             }
