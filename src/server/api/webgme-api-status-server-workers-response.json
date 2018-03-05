@@ -1,0 +1,21 @@
+{
+  "waitingRequests": [],
+  "workers": [
+    {
+      "pid": "3668",
+      "state": "working",
+      "request": {
+        "command": "exportProjectToFile",
+        "projectId": "guest+ANewProject",
+        "commitHash": "#0a1b4a3c4f1a4e4efcb4914192f227e801f421a3",
+        "withAssets": true,
+        "userId": "hans",
+        "socketId": "A2Vo2ji9PAxNCqaFAAAG"
+      }
+    },
+    {
+      "pid": "4692",
+      "state": "free"
+    }
+  ]
+}
