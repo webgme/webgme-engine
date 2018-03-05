@@ -52,8 +52,35 @@ describe('ADDON REST API', function () {
                     });
             });
 
+            it('should list all available addOns on hyphenated path /api/add-ons', function (done) {
+                agent.get(server.getUrl() + '/api/v1/add-ons/')
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(res.body instanceof Array).to.equal(true);
+                            expect(res.body).to.include('TestAddOn', 'ConstraintAddOn');
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
             it('should give empty object at /api/addOnStatus', function (done) {
                 agent.get(server.getUrl() + '/api/v1/addOnStatus/')
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(res.body).to.deep.equal({});
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            it('should give empty object at /api/status/add-ons', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status/add-ons/')
                     .end(function (err, res) {
                         try {
                             expect(res.status).equal(200, err);

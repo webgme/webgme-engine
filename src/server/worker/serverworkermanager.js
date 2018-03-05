@@ -126,7 +126,8 @@ function ServerWorkerManager(parameters) {
                 }
                 logger.debug('workerPid closed: ' + workerPid + ', nbr left', len - 1);
                 // Reset the handler since both error and close may be triggered.
-                closeHandlers[workerPid].closeHandler = function () {};
+                closeHandlers[workerPid].closeHandler = function () {
+                };
 
                 len -= 1;
                 if (len === 0) {
@@ -157,6 +158,7 @@ function ServerWorkerManager(parameters) {
                 logger.debug('Request will be handled, request left in queue: ', _waitingRequests.length);
                 logger.debug('Worker "' + workerPid + '" will handle request: ', {metadata: request});
                 worker.state = CONSTANTS.workerStates.working;
+                worker.request = request.request;
                 worker.cb = request.cb;
                 worker.resid = null;
                 worker.childProcess.send(request.request);
@@ -182,6 +184,7 @@ function ServerWorkerManager(parameters) {
                             delete _idToPid[worker.resid];
                         }
                         worker.resid = null;
+                        delete worker.request;
                     } else {
                         logger.error('ConnectedWorker returned result!');
                         freeWorker(msg.pid);
@@ -299,6 +302,32 @@ function ServerWorkerManager(parameters) {
         _managerId = null;
 
         return Q.nfcall(freeAllWorkers).nodeify(callback);
+    };
+
+    function copyAndSanitizeRequest(request) {
+        var result = request;
+
+        if (request) {
+            result = JSON.parse(JSON.stringify(request));
+            delete result.webgmeToken;
+        }
+
+        return result;
+    }
+
+    this.getStatus = function (callback) {
+        callback(null, {
+            waitingRequests: _waitingRequests.map(function (request) {
+                return copyAndSanitizeRequest(request.request);
+            }),
+            workers: Object.keys(_workers).map(function (pid) {
+                return {
+                    pid: pid,
+                    state: _workers[pid].state,
+                    request: copyAndSanitizeRequest(_workers[pid].request)
+                };
+            })
+        });
     };
 
     this.CONSTANTS = CONSTANTS;

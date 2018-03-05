@@ -10,6 +10,17 @@
  */
 
 'use strict';
+var express = require('express'),
+    Q = require('q'),
+    path = require('path'),
+    fs = require('fs'),
+    webgme = require('../../../index'),
+    StorageUtil = webgme.requirejs('common/storage/util'),
+    webgmeUtils = require('../../utils'),
+    GUID = webgme.requirejs('common/util/guid'),
+
+    CONSTANTS = webgme.requirejs('common/Constants');
+
 
 /**
  * Mounts the API functions to a given express app.
@@ -19,14 +30,8 @@
  * @param middlewareOpts
  */
 function createAPI(app, mountPath, middlewareOpts) {
-    var express = require('express'),
-        router = express.Router(),
-
-        Q = require('q'),
-        path = require('path'),
-        fs = require('fs'),
+    var router = express.Router(),
         apiDocumentationMountPoint = '/developer/api',
-
         logger = middlewareOpts.logger.fork('api'),
         gmeAuth = middlewareOpts.gmeAuth,
         metadataStorage = gmeAuth.metadataStorage,
@@ -35,16 +40,9 @@ function createAPI(app, mountPath, middlewareOpts) {
         ensureAuthenticated = middlewareOpts.ensureAuthenticated,
         gmeConfig = middlewareOpts.gmeConfig,
         getUserId = middlewareOpts.getUserId,
-        webgme = require('../../../index'),
-        StorageUtil = webgme.requirejs('common/storage/util'),
-        webgmeUtils = require('../../utils'),
-        GUID = webgme.requirejs('common/util/guid'),
-
-        CONSTANTS = webgme.requirejs('common/Constants'),
         STORAGE_CONSTANTS = CONSTANTS.STORAGE,
         CORE_CONSTANTS = CONSTANTS.CORE,
         versionedAPIPath = mountPath + '/v1',
-
         latestAPIPath = mountPath,
         registerEndPoint = typeof gmeConfig.authentication.allowUserRegistration === 'string' ?
             require(gmeConfig.authentication.allowUserRegistration)(middlewareOpts) :
@@ -2178,34 +2176,10 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     // AddOns
-    router.get('/addOns', ensureAuthenticated, function (req, res) {
+    router.get(['/add-ons', '/addOns'], ensureAuthenticated, function (req, res) {
         var result = webgmeUtils.getComponentNames(gmeConfig.addOn.basePaths);
         logger.debug('/addOns', {metadata: result});
         res.send(result);
-    });
-
-    // FIXME: This might not be the best path
-    // TODO: Extend on this and collect worker info in general.. (keeping this outside of the doc for now)
-    router.get('/addOnStatus', ensureAuthenticated, function (req, res, next) {
-        var userId = getUserId(req);
-
-        if (gmeConfig.addOn.enable) {
-            gmeAuth.getUser(userId)
-                .then(function (userData) {
-                    if (gmeConfig.authentication.enable && !userData.siteAdmin) {
-                        res.status(403);
-                        throw new Error('site admin role is required for this operation');
-                    }
-
-                    return middlewareOpts.addOnEventPropagator.getStatus({});
-                })
-                .then(function (status) {
-                    res.json(status);
-                })
-                .catch(next);
-        } else {
-            res.sendStatus(404);
-        }
     });
 
     //router.get('/addOns/:addOnId/queryParams', ensureAuthenticated, function (req, res) {});
@@ -2279,6 +2253,97 @@ function createAPI(app, mountPath, middlewareOpts) {
         var result = getVisualizersDescriptor();
         logger.debug('/visualizers', {metadata: result});
         res.send(result);
+    });
+
+    router.get('/status', ensureAuthenticated, function (req, res, next) {
+        var userId = getUserId(req),
+            result = {
+                addOns: null,
+                serverWorkers: null,
+                webSockets: null
+            };
+
+        gmeAuth.getUser(userId)
+            .then(function (userData) {
+                if (gmeConfig.authentication.enable && !userData.siteAdmin) {
+                    res.status(403);
+                    throw new Error('site admin role is required for this operation');
+                }
+
+                result.webSockets = middlewareOpts.webSocket.getStatus();
+
+                if (gmeConfig.addOn.enable) {
+                    return middlewareOpts.addOnEventPropagator.getStatus({});
+                } else {
+                    return null;
+                }
+            })
+            .then(function (addOnStatus) {
+                result.addOns = addOnStatus;
+
+                return Q.ninvoke(middlewareOpts.workerManager, 'getStatus');
+            })
+            .then(function (serverWorkersStatus) {
+                result.serverWorkers = serverWorkersStatus;
+
+                res.json(result);
+            })
+            .catch(next);
+    });
+
+    router.get(['/status/add-ons', '/addOnStatus'], ensureAuthenticated, function (req, res, next) {
+        var userId = getUserId(req);
+
+        if (gmeConfig.addOn.enable) {
+            gmeAuth.getUser(userId)
+                .then(function (userData) {
+                    if (gmeConfig.authentication.enable && !userData.siteAdmin) {
+                        res.status(403);
+                        throw new Error('site admin role is required for this operation');
+                    }
+
+                    return middlewareOpts.addOnEventPropagator.getStatus({});
+                })
+                .then(function (status) {
+                    res.json(status);
+                })
+                .catch(next);
+        } else {
+            res.sendStatus(404);
+        }
+    });
+
+    router.get('/status/server-workers', ensureAuthenticated, function (req, res, next) {
+        var userId = getUserId(req);
+
+        gmeAuth.getUser(userId)
+            .then(function (userData) {
+                if (gmeConfig.authentication.enable && !userData.siteAdmin) {
+                    res.status(403);
+                    throw new Error('site admin role is required for this operation');
+                }
+
+                return Q.ninvoke(middlewareOpts.workerManager, 'getStatus');
+            })
+            .then(function (status) {
+                res.json(status);
+            })
+            .catch(next);
+    });
+
+    router.get('/status/web-sockets', ensureAuthenticated, function (req, res, next) {
+        var userId = getUserId(req);
+
+        gmeAuth.getUser(userId)
+            .then(function (userData) {
+                if (gmeConfig.authentication.enable && !userData.siteAdmin) {
+                    res.status(403);
+                    throw new Error('site admin role is required for this operation');
+                }
+
+                res.json(middlewareOpts.webSocket.getStatus());
+            })
+            .catch(next);
     });
 
     router.use('*', function (req, res, next) {

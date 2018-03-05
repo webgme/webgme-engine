@@ -46,4 +46,15 @@ WorkerManagerBase.prototype.request = function (parameters, callback) {
     callback(new Error('WorkerManagerBase.request - Not Implemented!'));
 };
 
+/**
+ * Should return a JSON serializable status object (for siteAdmins).
+ * @param {function} callback
+ */
+WorkerManagerBase.prototype.getStatus = function (callback) {
+    callback(null, {
+        msg: 'getStatus not implemented for current worker-manager'
+    });
+};
+
+
 module.exports = WorkerManagerBase;

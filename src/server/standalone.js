@@ -629,7 +629,8 @@ function StandAloneServer(gmeConfig) {
         gmeAuth: __gmeAuth,
         safeStorage: __storage,
         workerManager: __workerManager,
-        addOnEventPropagator: __addOnEventPropagator
+        addOnEventPropagator: __addOnEventPropagator,
+        webSocket: __webSocket
     };
 
     //__app.configure(function () {

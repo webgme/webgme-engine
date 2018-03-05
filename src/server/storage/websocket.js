@@ -1213,6 +1213,18 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             webSocket = null;
         }
     };
+
+    this.getStatus = function () {
+        return Object.keys(webSocket.sockets.sockets)
+            .map(function (socketId) {
+                var socket = webSocket.sockets.sockets[socketId];
+                return {
+                    socketId: socketId,
+                    userId: socket.userId,
+                    connectedSince: socket.handshake && socket.handshake.time
+                };
+            });
+    };
 }
 
 module.exports = WebSocket;
