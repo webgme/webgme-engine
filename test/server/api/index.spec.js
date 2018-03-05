@@ -911,7 +911,7 @@ describe('ORGANIZATION REST API', function () {
         });
     });
 
-    describe.only('STATUS SPECIFIC API', function () {
+    describe('STATUS SPECIFIC API', function () {
         var gmeAuth;
 
         before(function (done) {
