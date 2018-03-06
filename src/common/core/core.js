@@ -287,6 +287,29 @@ define([
         }
     }
 
+    function ensureMongoCompatibleKey(input, nameOfInput, hiddenIsFine, isAsync) {
+        var error = null,
+            realInput = input;
+
+        if (hiddenIsFine === true && input[0] === '_') {
+            realInput = input.substr(1);
+        }
+
+        if (REGEXP.DOCUMENT_KEY.test(realInput) === false) {
+            error = new CoreIllegalArgumentError('Parameter ' + nameOfInput +
+                ' is not a valid key (cannot contain "." or "$"' +
+                (hiddenIsFine ? '' : 'and starts with "_"') + ').');
+        }
+
+        if (error) {
+            if (isAsync) {
+                return error;
+            } else {
+                throw error;
+            }
+        }
+    }
+
     /**
      * @param {ProjectInterface} project - project connected to storage
      * @param {object} options - contains logging information
@@ -955,6 +978,7 @@ define([
         this.setAttribute = function (node, name, value) {
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
+            ensureMongoCompatibleKey(name, 'name', true);
             ensureValue(value, 'value');
 
             return core.setAttribute(node, name, value);
@@ -1026,6 +1050,7 @@ define([
         this.setRegistry = function (node, name, value) {
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
+            ensureMongoCompatibleKey(name, 'name', true);
             ensureValue(value, 'value');
 
             return core.setRegistry(node, name, value);
@@ -1123,6 +1148,7 @@ define([
         this.setPointer = function (node, name, target) {
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
+            ensureMongoCompatibleKey(name, 'name', true);
             if (target !== null) {
                 ensureNode(target, 'target');
             }
@@ -1411,7 +1437,7 @@ define([
         this.createSet = function (node, name) {
             ensureNode(node, 'node');
             ensureRelationName(name, 'name');
-
+            ensureMongoCompatibleKey(name, 'name', false);
             core.createSet(node, name);
         };
 
@@ -1552,6 +1578,7 @@ define([
             ensureNode(node, 'node');
             ensureType(setName, 'setName', 'string');
             ensureType(attrName, 'attrName', 'string');
+            ensureMongoCompatibleKey(attrName, 'attrName', true);
             ensureValue(value, 'value');
             var names = core.getSetNames(node);
             if (names.indexOf(setName) === -1) {
@@ -1693,6 +1720,7 @@ define([
             ensureNode(node, 'node');
             ensureType(setName, 'setName', 'string');
             ensureType(regName, 'regName', 'string');
+            ensureMongoCompatibleKey(regName, 'regName', true);
             ensureValue(value, 'value');
             var names = core.getSetNames(node);
             if (names.indexOf(setName) === -1) {
@@ -1806,6 +1834,8 @@ define([
         this.addMember = function (node, name, member) {
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
+            ensureRelationName(name, 'name');
+            ensureMongoCompatibleKey(name, 'name');
             ensureNode(member, 'member');
 
             core.addMember(node, name, member);
@@ -1946,6 +1976,7 @@ define([
             ensureType(setName, 'setName', 'string');
             ensurePath(path, 'path');
             ensureType(attrName, 'attrName', 'string');
+            ensureMongoCompatibleKey(attrName, 'attrName', true);
             ensureValue(value, 'value');
             var names = core.getSetNames(node);
             if (names.indexOf(setName) === -1) {
@@ -2125,6 +2156,7 @@ define([
             ensureType(setName, 'setName', 'string');
             ensurePath(path, 'path');
             ensureType(regName, 'regName', 'string');
+            ensureMongoCompatibleKey(regName, 'regName', true);
             ensureValue(value, 'value');
             var names = core.getSetNames(node);
             if (names.indexOf(setName) === -1) {
@@ -2263,6 +2295,7 @@ define([
         this.setConstraint = function (node, name, constraint) {
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
+            ensureMongoCompatibleKey(name, 'name', false);
             ensureType(constraint, 'constraint', 'object');
 
             core.setConstraint(node, name, constraint);
@@ -2651,6 +2684,7 @@ define([
         this.setAttributeMeta = function (node, name, rule) {
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
+            ensureMongoCompatibleKey(name, 'name', false);
             ensureType(rule, 'rule', 'object');
             ensureType(rule.type, 'rule.type', 'string');
 
@@ -2851,6 +2885,7 @@ define([
         this.setPointerMetaTarget = function (node, name, target, min, max) {
             ensureNode(node, 'node');
             ensureRelationName(name, 'name');
+            ensureMongoCompatibleKey(name, 'name', false);
             ensureNode(target, 'target');
             ensureMinMax(min, 'min');
             ensureMinMax(max, 'max');
@@ -2967,6 +3002,7 @@ define([
         this.setAspectMetaTarget = function (node, name, target) {
             ensureNode(node, 'node');
             ensureRelationName(name, 'name');
+            ensureMongoCompatibleKey(name, 'name', false);
             ensureNode(target, 'target');
 
             core.setAspectMetaTarget(node, name, target);
@@ -3488,7 +3524,8 @@ define([
         this.addLibrary = function (node, name, libraryRootHash, libraryInfo, callback) {
             ensureType(callback, 'callback', 'function');
             var error = ensureNode(node, 'node', true);
-            error = error || ensureType(name, 'name', 'string');
+            error = error || ensureType(name, 'name', 'string', true);
+            error = error || ensureMongoCompatibleKey(name, 'name', false, true);
             error = error || ensureHash(libraryRootHash, 'libraryRootHash', true);
             if (libraryInfo) {
                 error = error || ensureType(libraryInfo, 'libraryInfo', 'object', true);
@@ -3532,7 +3569,7 @@ define([
         this.updateLibrary = function (node, name, libraryRootHash, libraryInfo, updateInstructions, callback) {
             ensureType(callback, 'callback', 'function');
             var error = ensureNode(node, 'node', true);
-            error = error || ensureType(name, 'name', 'string');
+            error = error || ensureType(name, 'name', 'string', true);
             error = error || ensureHash(libraryRootHash, 'libraryRootHash', true);
             if (libraryInfo) {
                 error = error || ensureType(libraryInfo, 'libraryInfo', 'object', true);
@@ -3719,6 +3756,7 @@ define([
             ensureNode(node, 'node');
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
+            ensureMongoCompatibleKey(newName, 'newName', false);
 
             core.renameLibrary(node, oldName, newName);
         };
@@ -3983,6 +4021,7 @@ define([
             ensureNode(node, 'node');
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
+            ensureMongoCompatibleKey(newName, 'newName', true);
 
             if (core.getOwnPointerPath(node, oldName) === undefined) {
                 throw new CoreIllegalOperationError('Only pointers with values can be renamed.');
@@ -4005,6 +4044,7 @@ define([
             ensureNode(node, 'node');
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
+            ensureMongoCompatibleKey(newName, 'newName', true);
 
             if (core.getOwnAttribute(node, oldName) === undefined) {
                 throw new CoreIllegalOperationError('Only attributes with own values can be renamed.');
@@ -4027,6 +4067,7 @@ define([
             ensureNode(node, 'node');
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
+            ensureMongoCompatibleKey(newName, 'newName', true);
 
             if (core.getOwnRegistry(node, oldName) === undefined) {
                 throw new CoreIllegalOperationError('Only registry entries with own values can be renamed.');
@@ -4049,6 +4090,7 @@ define([
             ensureNode(node, 'node');
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
+            ensureMongoCompatibleKey(newName, 'newName', true);
 
             if (core.getOwnSetNames(node).indexOf(oldName) === -1) {
                 throw new CoreIllegalOperationError('Cannot rename nonexistent/inherited set [' + oldName + ']');
@@ -4274,6 +4316,7 @@ define([
             ensurePath(memberPath, 'memberPath');
             ensureType(oldSetName, 'oldSetName', 'string');
             ensureType(newSetName, 'newSetName', 'string');
+            ensureMongoCompatibleKey(newSetName, 'newSetName', true);
 
             if (core.getSetNames(node).indexOf(oldSetName) === -1) {
                 throw new CoreIllegalOperationError('Source set [' + oldSetName + '] does not exists.');
@@ -4302,6 +4345,7 @@ define([
             ensureNode(node, 'node');
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
+            ensureMongoCompatibleKey(newName, 'newName', true);
 
             if (core.getValidAttributeNames(node).indexOf(oldName) === -1) {
                 throw new CoreIllegalOperationError('Unknown definition [' + oldName + '] cannot be renamed.');
@@ -4327,6 +4371,7 @@ define([
             ensureNode(target, 'target');
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
+            ensureMongoCompatibleKey(newName, 'newName', true);
 
             if (core.getOwnValidPointerNames(node).indexOf(oldName) === -1 &&
                 core.getOwnValidSetNames(node).indexOf(oldName) === -1) {
@@ -4358,6 +4403,7 @@ define([
             ensureNode(target, 'target');
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
+            ensureMongoCompatibleKey(newName, 'newName', true);
 
             if (core.getOwnValidAspectNames(node).indexOf(oldName) === -1) {
                 throw new CoreIllegalOperationError('Aspect [' + oldName + '] doesn\'t exists for the node.');
