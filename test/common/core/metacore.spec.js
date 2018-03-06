@@ -70,7 +70,6 @@ describe('meta core', function () {
                 core.setAttribute(attrNode, 'name', 'attr');
                 core.setAttributeMeta(attrNode, 'boolean', {type: 'boolean'});
                 core.setAttributeMeta(attrNode, 'string', {type: 'string'});
-                core.setAttributeMeta(attrNode, 'string-readonly', {type: 'string', readonly:true});
                 core.setAttributeMeta(attrNode, 'stringReg', {type: 'string', regexp: '^win'});
                 core.setAttributeMeta(attrNode, 'stringEnum', {type: 'string', regexp: '^win', enum: ['one', 'two']});
                 core.setAttributeMeta(attrNode, 'integer', {type: 'integer'});

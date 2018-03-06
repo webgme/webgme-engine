@@ -108,7 +108,7 @@ describe('gmeNodeSetter', function () {
         var metaNodes = context.core.getAllMetaNodes(context.rootNode),
             path;
 
-        basicState.nodes = { '': {node: context.rootNode}};
+        basicState.nodes = {'': {node: context.rootNode}};
 
         for (path in metaNodes) {
             basicState.nodes[path] = {node: metaNodes[path]};
@@ -213,9 +213,9 @@ describe('gmeNodeSetter', function () {
 
     it('should move a node', function () {
         var newId = setNode.createNode({
-                parentId: '',
-                baseId: '/1'
-            }), newPath;
+            parentId: '',
+            baseId: '/1'
+        }), newPath;
         expect(basicState.nodes['/1303043463' + newId]).to.eql(undefined);
         newPath = setNode.moveNode(newId, '/1303043463');
         expect(newPath).to.eql('/1303043463' + newId);
@@ -519,22 +519,22 @@ describe('gmeNodeSetter', function () {
 
         expect(context.core.getOwnJsonMeta(basicState.nodes[nodeId].node))
             .to.deep.equal({
-                pointers: {
-                    setPtr: {
-                        items: [
-                            '/175547009/871430202'
-                        ],
-                        max: undefined,
-                        maxItems: [
-                            -1
-                        ],
-                        min: undefined,
-                        minItems: [
-                            -1
-                        ]
-                    }
+            pointers: {
+                setPtr: {
+                    items: [
+                        '/175547009/871430202'
+                    ],
+                    max: undefined,
+                    maxItems: [
+                        -1
+                    ],
+                    min: undefined,
+                    minItems: [
+                        -1
+                    ]
                 }
-            });
+            }
+        });
 
         setNode.clearMetaRules(nodeId);
 
@@ -563,5 +563,15 @@ describe('gmeNodeSetter', function () {
         newId = setNode.createNode({parentId: '', baseId: '/1'}, {registry: {position: {x: '0', y: '0'}}});
         expect(context.core.getRegistry(basicState.nodes[newId].node, 'position')).to.eql({x: 0, y: 0});
         setNode.deleteNode(newId);
+    });
+
+    it('should rename the name of the meta attribute', function () {
+        var newId = setNode.createNode({parentId: '', baseId: '/1'}, {});
+
+        setNode.setAttributeMeta(newId, 'first', {type: 'string'});
+        expect(context.core.getValidAttributeNames(basicState.nodes[newId].node)).to.have.members(['name', 'first']);
+
+        setNode.renameAttributeMeta(newId, 'first', 'second');
+        expect(context.core.getValidAttributeNames(basicState.nodes[newId].node)).to.have.members(['name', 'second']);
     });
 });
