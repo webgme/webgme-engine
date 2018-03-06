@@ -4484,7 +4484,7 @@ describe('core', function () {
         }
 
         try {
-            core.renameLibrary(setNode, 'old','not.cool.new');
+            core.renameLibrary(setNode, 'old', 'not.cool.new');
         } catch (e) {
             myError = e;
         } finally {

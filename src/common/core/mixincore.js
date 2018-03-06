@@ -418,11 +418,11 @@ define([
             }
 
             var ruleHolder = getFirstMatchingRuleHolder(node, name, innerCore.getOwnValidAttributeNames, {}),
-                attributeDescriptor = self.getAttributeMeta(ruleHolder,name);
+                attributeDescriptor = self.getAttributeMeta(ruleHolder, name);
 
 
             //issue #51 - readonly should be taken into account
-            if(attributeDescriptor.readonly && self.isMetaNode(node) === false){
+            if (attributeDescriptor.readonly && self.isMetaNode(node) === false) {
                 return false;
             }
 

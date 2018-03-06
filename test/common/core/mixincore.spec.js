@@ -526,7 +526,7 @@ describe('mixin core', function () {
 
         });
 
-        it('should return false for isValidAttributeValueOf if attribute is read-only and node is not meta', function () {
+        it('should return false for isValidAttributeValueOf if read-only and node is not meta', function () {
             var originalAttributeMeta = core.getAttributeMeta(A, 'conflicting'),
                 readOnlyMeta = JSON.parse(JSON.stringify(originalAttributeMeta)),
                 instance = core.createNode({base: A, parent: rootNode});
