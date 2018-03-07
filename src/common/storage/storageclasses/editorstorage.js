@@ -700,7 +700,7 @@ define([
                     root: rootHash,
                     parents: parents,
                     updater: [self.userId],
-                    time: (new Date()).getTime(),
+                    time: Date.now(),
                     message: msg,
                     type: CONSTANTS.COMMIT_TYPE,
                     __v: CONSTANTS.VERSION

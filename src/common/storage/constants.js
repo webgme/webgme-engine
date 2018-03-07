@@ -32,7 +32,7 @@
  * @prop {module:Storage~CommitHash} _id - Hash of the commit object, a.k.a commitHash.
  * @prop {module:Core~ObjectHash} root - Hash of the associated root object, a.k.a. rootHash.
  * @prop {module:Storage~CommitHash[]} parents - Commits from where this commit evolved.
- * @prop {number} time - When the commit object was created (new Date()).getTime().
+ * @prop {number} time - When the commit object was created Date.now().
  * @prop {string} message - Commit message.
  * @prop {string[]} updater - Commit message.
  * @prop {string} type - 'commit'

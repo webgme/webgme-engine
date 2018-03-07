@@ -385,7 +385,7 @@ describe('Meta Rules', function () {
                 expect(result.hasViolation).to.equal(true, result.message);
                 expect(result.message).to.include('Invalid regular expression');
                 ir.core.delAttributeMeta(node, 'withInvalidRegEx');
-                ir.core.delAttribute(node, 'withInvalidRegEx', 'hej');
+                ir.core.delAttribute(node, 'withInvalidRegEx');
 
                 // Make sure that other tests could broke.
                 return checkNode(ir.core, node);
