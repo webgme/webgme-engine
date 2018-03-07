@@ -4482,15 +4482,6 @@ describe('core', function () {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
             myError = null;
         }
-
-        try {
-            core.renameLibrary(setNode, 'old', 'not.cool.new');
-        } catch (e) {
-            myError = e;
-        } finally {
-            expect(myError.name).to.eql('CoreIllegalArgumentError');
-            myError = null;
-        }
     });
 
     it('should throw @getLibraryInfo if not valid parameters are given', function () {

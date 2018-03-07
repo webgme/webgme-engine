@@ -298,7 +298,7 @@ define([
         if (REGEXP.DOCUMENT_KEY.test(realInput) === false) {
             error = new CoreIllegalArgumentError('Parameter ' + nameOfInput +
                 ' is not a valid key (cannot contain "." or "$"' +
-                (hiddenIsFine ? '' : ', or starts with "_"') + ').');
+                (hiddenIsFine ? '' : ', or start with "_"') + ').');
         }
 
         if (error) {
@@ -3525,7 +3525,6 @@ define([
             ensureType(callback, 'callback', 'function');
             var error = ensureNode(node, 'node', true);
             error = error || ensureType(name, 'name', 'string', true);
-            error = error || ensureMongoCompatibleKey(name, 'name', false, true);
             error = error || ensureHash(libraryRootHash, 'libraryRootHash', true);
             if (libraryInfo) {
                 error = error || ensureType(libraryInfo, 'libraryInfo', 'object', true);
@@ -3756,7 +3755,6 @@ define([
             ensureNode(node, 'node');
             ensureType(oldName, 'oldName', 'string');
             ensureType(newName, 'newName', 'string');
-            ensureMongoCompatibleKey(newName, 'newName', false);
 
             core.renameLibrary(node, oldName, newName);
         };
