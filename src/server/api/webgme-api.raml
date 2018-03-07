@@ -664,6 +664,45 @@ resourceTypes:
                     "message":"feature 'A' squashed into a single commit"
                 }
            
+/status:
+  description: End points for server status. These paths are only available for siteAdmins when auth is turned on.
+  get:
+    description: Returns a combined object of all different statuses (if add-ons are disabled addOns will be null).
+    securedBy: [ basic, bearer ]
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include webgme-api-status-response.json
+  /add-ons:
+    get:
+      description: Returns status about running addons (404 if add-ons are disabled)
+      securedBy: [ basic, bearer ]
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include webgme-api-status-add-ons-response.json
+  /server-workers:
+    get:
+      description: Returns status about running server workers and request queue
+      securedBy: [ basic, bearer ]
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include webgme-api-status-server-workers-response.json
+  /web-sockets:
+    get:
+      description: Returns a list of all currently connected web-sockets
+      securedBy: [ basic, bearer ]
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include webgme-api-status-web-sockets-response.json
+
+
 /decorators:
   get:
     description: Returns with all available decorators

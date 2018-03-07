@@ -1,0 +1,34 @@
+{
+  "guest+ANewProject": {
+    "initRequested": true,
+    "closeRequested": false,
+    "renewingToken": false,
+    "inStoppedAndStarted": 0,
+    "branchMonitors": {
+      "master": {
+        "startRequested": true,
+        "stopRequested": false,
+        "branchIsOpen": true,
+        "commitHash": "#0a1b4a3c4f1a4e4efcb4914192f227e801f421a3",
+        "runningAddOns": [],
+        "lastActivity": 1520290354966
+      }
+    }
+  },
+  "guest+LogicGates": {
+    "initRequested": true,
+    "closeRequested": false,
+    "renewingToken": false,
+    "inStoppedAndStarted": 0,
+    "branchMonitors": {
+      "master": {
+        "startRequested": true,
+        "stopRequested": false,
+        "branchIsOpen": true,
+        "commitHash": "#980a3e12e6c77efe51163989222b7f703026bcff",
+        "runningAddOns": [],
+        "lastActivity": 1520290366899
+      }
+    }
+  }
+}

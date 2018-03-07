@@ -910,4 +910,207 @@ describe('ORGANIZATION REST API', function () {
             });
         });
     });
+
+    describe('STATUS SPECIFIC API', function () {
+        var gmeAuth;
+
+        before(function (done) {
+            this.timeout(4000);
+            testFixture.clearDBAndGetGMEAuth(gmeConfig)
+                .then(function (gmeAuth_) {
+                    gmeAuth = gmeAuth_;
+                    return Q.allDone([
+                        gmeAuth.addUser('admin', 'admin@example.com', 'admin', true, {
+                            overwrite: true,
+                            siteAdmin: true
+                        })
+                    ]);
+                })
+                .nodeify(done);
+        });
+
+        after(function (done) {
+            gmeAuth.unload()
+                .nodeify(done);
+        });
+
+        describe('auth disabled', function () {
+            var server,
+                agent;
+
+            before(function (done) {
+                var gmeConfig = testFixture.getGmeConfig();
+
+                server = WebGME.standaloneServer(gmeConfig);
+                server.start(done);
+            });
+
+            after(function (done) {
+                server.stop(done);
+            });
+
+            beforeEach(function () {
+                agent = superagent.agent();
+            });
+
+            it('should get combined /status', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status')
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(typeof res.body).to.equal('object');
+                            expect(res.body.addOns).to.equal(null);
+                            expect(typeof res.body.serverWorkers).to.equal('object');
+                            expect(res.body.webSockets instanceof Array).to.equal(true);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            it('should get /status/server-workers', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status/server-workers')
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(res.body).to.not.equal(null);
+                            expect(typeof res.body).to.equal('object');
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            it('should get /status/web-sockets', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status/web-sockets')
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(res.body instanceof Array).to.equal(true);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            // Not that addon.enabled is tested under /addon
+            it('should 404 get /status/add-ons', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status/add-ons')
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(404, err);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+        });
+
+        describe('auth enabled', function () {
+            var server,
+                agent;
+
+            before(function (done) {
+                var gmeConfig = testFixture.getGmeConfig();
+                gmeConfig.authentication.enable = true;
+
+                server = WebGME.standaloneServer(gmeConfig);
+                server.start(done);
+            });
+
+            after(function (done) {
+                server.stop(done);
+            });
+
+            beforeEach(function () {
+                agent = superagent.agent();
+            });
+
+            it('should get combined /status as admin', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status')
+                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(typeof res.body).to.equal('object');
+                            expect(res.body.addOns).to.equal(null);
+                            expect(typeof res.body.serverWorkers).to.equal('object');
+                            expect(res.body.webSockets instanceof Array).to.equal(true);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            it('should get /status/server-workers as admin', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status/server-workers')
+                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(res.body).to.not.equal(null);
+                            expect(typeof res.body).to.equal('object');
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            it('should get /status/web-sockets as admin', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status/web-sockets')
+                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(res.body instanceof Array).to.equal(true);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            it('should get 403 /status as non-admin', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status')
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(403, err);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            it('should get 403 /status/server-workers as non-admin', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status/server-workers')
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(403, err);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            it('should get 403 /status/web-sockets as non-admin', function (done) {
+                agent.get(server.getUrl() + '/api/v1/status/web-sockets')
+                    .end(function (err, res) {
+                        try {
+                            expect(res.status).equal(403, err);
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+        });
+    });
 });
