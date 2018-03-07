@@ -526,6 +526,23 @@ describe('mixin core', function () {
 
         });
 
+        it('should return false for isValidAttributeValueOf if read-only and node is not meta', function () {
+            var originalAttributeMeta = core.getAttributeMeta(A, 'conflicting'),
+                readOnlyMeta = JSON.parse(JSON.stringify(originalAttributeMeta)),
+                instance = core.createNode({base: A, parent: rootNode});
+
+            readOnlyMeta.readonly = true;
+            core.setAttributeMeta(A, 'conflicting', readOnlyMeta);
+
+            expect(core.isValidAttributeValueOf(A, 'conflicting', 'string')).to.equal(false);
+            expect(core.isValidAttributeValueOf(A, 'conflicting', 1)).to.equal(true);
+            expect(core.isValidAttributeValueOf(instance, 'conflicting', 'string')).to.equal(false);
+            expect(core.isValidAttributeValueOf(instance, 'conflicting', 1)).to.equal(false);
+
+            core.setAttributeMeta(A, 'conflicting', originalAttributeMeta);
+            core.deleteNode(instance);
+        });
+
         it('should check if a node is really a type of the other', function () {
             expect(core.isTypeOf(FCO, FCO)).to.equal(true);
             expect(core.isTypeOf(FCO, A)).to.equal(false);

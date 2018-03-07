@@ -720,6 +720,15 @@ describe('core', function () {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
             myError = null;
         }
+
+        try {
+            core.setAttribute(rootNode, 'name.not.good', 'goodName');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
     });
 
     it('should throw @delAttribute if not valid node is given', function () {
@@ -807,6 +816,15 @@ describe('core', function () {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
             myError = null;
         }
+
+        try {
+            core.setRegistry(rootNode, 'nam.e', 'cool');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
     });
 
     it('should throw @delRegistry if not valid node is given', function () {
@@ -888,6 +906,15 @@ describe('core', function () {
 
         try {
             core.setPointer(rootNode, 'name', {});
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
+
+        try {
+            core.setPointer(rootNode, 'nam.e', null);
         } catch (e) {
             myError = e;
         } finally {
@@ -1397,6 +1424,14 @@ describe('core', function () {
         } finally {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
         }
+
+        try {
+            core.setSetAttribute(rootNode, 'MetaAspectSet', 'an.y', 'cool');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
     });
 
     it('should throw @delSetAttribute if not valid parameters are given', function () {
@@ -1617,6 +1652,14 @@ describe('core', function () {
 
         try {
             core.setSetRegistry(rootNode, 'MetaAspectSet', 'any', undefined);
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
+
+        try {
+            core.setSetRegistry(rootNode, 'MetaAspectSet', 'a.ny', 'cool');
         } catch (e) {
             myError = e;
         } finally {
@@ -2075,6 +2118,15 @@ describe('core', function () {
         } finally {
             expect(myError.name).to.eql('CoreIllegalOperationError');
         }
+
+        try {
+            core.setMemberAttribute(rootNode, 'MetaAspectSet', '/1/2', 'at.tr', 'value');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
     });
 
     it('should throw @delMemberAttribute if not valid parameters are given', function () {
@@ -2410,6 +2462,14 @@ describe('core', function () {
         } finally {
             expect(myError.name).to.eql('CoreIllegalOperationError');
         }
+
+        try {
+            core.setMemberRegistry(rootNode, 'MetaAspectSet', '/1', 'at.tr', 'value');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
     });
 
     it('should throw @delMemberRegistry if not valid parameters are given', function () {
@@ -2577,6 +2637,14 @@ describe('core', function () {
 
         try {
             core.setConstraint(rootNode, 'newConstraint', 'notObject');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
+
+        try {
+            core.setConstraint(rootNode, 'new.Constraint', {});
         } catch (e) {
             myError = e;
         } finally {
@@ -2988,6 +3056,14 @@ describe('core', function () {
         } finally {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
         }
+
+        try {
+            core.setAttributeMeta(rootNode, 'rule.not.good', {type: 'string'});
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
     });
 
     it('should throw @delAttributeMeta if not valid parameters are given', function () {
@@ -3264,6 +3340,14 @@ describe('core', function () {
         } finally {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
         }
+
+        try {
+            core.setPointerMetaTarget(rootNode, 'myname.not.good', rootNode, 0, 1);
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
     });
 
     it('should throw @delPointerMetaTarget if not valid parameters are given', function () {
@@ -3475,6 +3559,15 @@ describe('core', function () {
 
         try {
             core.setAspectMetaTarget(rootNode, 'aspecto', {});
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
+
+        try {
+            core.setAspectMetaTarget(rootNode, 'asp.ect.o', rootNode);
         } catch (e) {
             myError = e;
         } finally {
@@ -4595,18 +4688,6 @@ describe('core', function () {
         }
     });
 
-    it('should throw @renamePointer if node is invalid', function () {
-        var myError;
-
-        try {
-            core.renamePointer('string');
-        } catch (e) {
-            myError = e;
-        } finally {
-            expect(myError.name).to.eql('CoreIllegalArgumentError');
-        }
-    });
-
     it('should throw @renamePointer if oldName is invalid', function () {
         var myError;
 
@@ -4624,6 +4705,14 @@ describe('core', function () {
 
         try {
             core.renamePointer(rootNode, 'OldName', {not: 'string'});
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
+
+        try {
+            core.renamePointer(rootNode, 'OldName', 'not.cool.new');
         } catch (e) {
             myError = e;
         } finally {
@@ -4665,6 +4754,14 @@ describe('core', function () {
         } finally {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
         }
+
+        try {
+            core.renameAttribute(rootNode, 'OldName', 'not.cool.new');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
     });
 
     it('should throw @renameRegistry if node is invalid', function () {
@@ -4701,6 +4798,14 @@ describe('core', function () {
         } finally {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
         }
+
+        try {
+            core.renameRegistry(rootNode, 'OldName', 'new.not.cool');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
     });
 
     it('should throw @renameSet if node is invalid', function () {
@@ -4732,6 +4837,14 @@ describe('core', function () {
 
         try {
             core.renameSet(rootNode, 'OldName', {not: 'string'});
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+        }
+
+        try {
+            core.renameSet(rootNode, 'OldName', 'new.not.cool');
         } catch (e) {
             myError = e;
         } finally {

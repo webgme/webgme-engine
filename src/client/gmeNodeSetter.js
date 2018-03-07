@@ -358,7 +358,7 @@ define([], function () {
                 desc.registry = desc.registry || {};
                 desc.registry.position = desc.registry.position || {};
                 desc.registry.position.x = (typeof desc.registry.position.x === 'number' ||
-                Number(desc.registry.position.x) + '' === desc.registry.position.x) ?
+                    Number(desc.registry.position.x) + '' === desc.registry.position.x) ?
                     Number(desc.registry.position.x) : 100;
                 desc.registry.position.y = (typeof desc.registry.position.y === 'number' ||
                     Number(desc.registry.position.y) + '' === desc.registry.position.y) ?
@@ -1463,6 +1463,21 @@ define([], function () {
             }
         }
 
+        function renameAttributeMeta(path, oldName, newName, msg) {
+            var node = _getNode(path);
+
+            if (node) {
+                try {
+                    state.core.renameAttributeMeta(node, oldName, newName);
+                } catch (e) {
+                    printCoreError(e);
+                    return;
+                }
+                saveRoot(typeof msg === 'string' ? msg : 'renameAttributeMeta(' + path + ', ' + oldName + ',' +
+                    newName + ')');
+            }
+        }
+
         return {
             setAttribute: setAttribute,
             setAttributes: function () {
@@ -1557,6 +1572,7 @@ define([], function () {
                 _logDeprecated('removeAttributeSchema', 'delAttributeMeta');
                 delAttributeMeta.apply(null, arguments);
             },
+            renameAttributeMeta: renameAttributeMeta,
 
             // pointer
             setPointerMeta: setPointerMeta,
