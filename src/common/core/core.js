@@ -298,7 +298,7 @@ define([
         if (REGEXP.DOCUMENT_KEY.test(realInput) === false) {
             error = new CoreIllegalArgumentError('Parameter ' + nameOfInput +
                 ' is not a valid key (cannot contain "." or "$"' +
-                (hiddenIsFine ? '' : 'and starts with "_"') + ').');
+                (hiddenIsFine ? '' : ', or starts with "_"') + ').');
         }
 
         if (error) {
@@ -1835,7 +1835,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
             ensureRelationName(name, 'name');
-            ensureMongoCompatibleKey(name, 'name');
+            ensureMongoCompatibleKey(name, 'name', false);
             ensureNode(member, 'member');
 
             core.addMember(node, name, member);
