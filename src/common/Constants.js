@@ -4,9 +4,17 @@
 /**
  * STRING CONSTANT DEFINITIONS USED IN BOTH CLIENT AND SERVER JAVASCRIPT
  * @author rkereskenyi / https://github.com/rkereskenyi
+ * @author pmeijer / https://github.com/pmeijer
  */
 
-define(['common/core/constants', 'common/storage/constants'], function (CORE, STORAGE) {
+
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['common/core/constants', 'common/storage/constants'], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(require('./core/constants'), require('./storage/constants'));
+    }
+}(function (CORE, STORAGE) {
     'use strict';
     //return string constants
     return {
@@ -110,4 +118,4 @@ define(['common/core/constants', 'common/storage/constants'], function (CORE, ST
         }
 
     };
-});
+}));

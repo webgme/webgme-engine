@@ -226,6 +226,25 @@ describe('climanager', function () {
         });
     });
 
+    it('should executePlugin when passing in Plugin Class (required with common-js)', function (done) {
+        var manager = new PluginCliManager(null, logger, gmeConfig),
+            pluginConfig = {
+                save: false
+            },
+            context = {
+                project: project,
+                commitHash: commitHash,
+                branchName: branchName
+            },
+            PluginClass = require('../../src/plugin/coreplugins/MinimalWorkingExample/MinimalWorkingExample');
+
+        manager.executePlugin(PluginClass, pluginConfig, context, function (err, pluginResult) {
+            expect(err).to.equal(null);
+            expect(pluginResult.success).to.equal(true);
+            done();
+        });
+    });
+
     it('should executePlugin without specified commitHash', function (done) {
         var manager = new PluginCliManager(null, logger, gmeConfig),
             pluginConfig = {

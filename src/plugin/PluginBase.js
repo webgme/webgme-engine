@@ -9,25 +9,41 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-define([
-    'q',
-    'plugin/PluginConfig',
-    'plugin/PluginResultBase',
-    'plugin/PluginResult',
-    'plugin/InterPluginResult',
-    'plugin/PluginMessage',
-    'plugin/PluginNodeDescription',
-    'plugin/util',
-    'common/storage/constants'
-], function (Q,
-             PluginConfig,
-             PluginResultBase,
-             PluginResult,
-             InterPluginResult,
-             PluginMessage,
-             PluginNodeDescription,
-             pluginUtil,
-             STORAGE_CONSTANTS) {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define([
+            'q',
+            'plugin/PluginConfig',
+            'plugin/PluginResultBase',
+            'plugin/PluginResult',
+            'plugin/InterPluginResult',
+            'plugin/PluginMessage',
+            'plugin/PluginNodeDescription',
+            'plugin/util',
+            'common/storage/constants'
+        ], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(
+            require('q'),
+            require('./PluginConfig'),
+            require('./PluginResultBase'),
+            require('./PluginResult'),
+            require('./InterPluginResult'),
+            require('./PluginMessage'),
+            require('./PluginNodeDescription'),
+            require('./util'),
+            require('../common/storage/constants')
+        );
+    }
+}(function (Q,
+            PluginConfig,
+            PluginResultBase,
+            PluginResult,
+            InterPluginResult,
+            PluginMessage,
+            PluginNodeDescription,
+            pluginUtil,
+            STORAGE_CONSTANTS) {
     'use strict';
 
     /**
@@ -890,4 +906,4 @@ define([
     //</editor-fold>
 
     return PluginBase;
-});
+}));

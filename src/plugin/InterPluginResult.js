@@ -6,7 +6,13 @@
  * @author pmeijer / https://github.com/meijer
  */
 
-define(['plugin/PluginResultBase'], function (PluginResultBase) {
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['plugin/PluginResultBase'], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(require('./PluginResultBase'));
+    }
+}(function (PluginResultBase) {
     'use strict';
 
     /**
@@ -46,4 +52,4 @@ define(['plugin/PluginResultBase'], function (PluginResultBase) {
     };
 
     return InterPluginResult;
-});
+}));

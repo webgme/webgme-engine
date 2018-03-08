@@ -7,14 +7,25 @@
  * @module CorePlugins:MinimalWorkingExample
  */
 
-define([
-    'plugin/PluginConfig',
-    'plugin/PluginBase',
-    'text!./metadata.json'
-], function (PluginConfig, PluginBase, pluginMetadata) {
+
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define([
+            'plugin/PluginConfig',
+            'plugin/PluginBase',
+            'text!./metadata.json'
+        ], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory(
+            require('../../PluginConfig'),
+            require('../../PluginBase'),
+            require('./metadata.json')
+        );
+    }
+}(function (PluginConfig, PluginBase, pluginMetadata) {
     'use strict';
 
-    pluginMetadata = JSON.parse(pluginMetadata);
+    pluginMetadata = typeof pluginMetadata === 'string' ? JSON.parse(pluginMetadata) : pluginMetadata;
 
     /**
      * Initializes a new instance of MinimalWorkingExample.
@@ -98,4 +109,4 @@ define([
     };
 
     return MinimalWorkingExample;
-});
+}));

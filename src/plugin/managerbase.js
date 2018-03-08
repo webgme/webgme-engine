@@ -38,24 +38,28 @@ define([
         this.logger = mainLogger.fork('PluginManagerBase');
         this.notificationHandlers = [];
 
-        function getPluginInstance(pluginId, callback) {
+        function getPluginInstance(pluginIdOrClass, callback) {
             var deferred = Q.defer(),
-                rejected = false,
-                pluginPath = 'plugin/' + pluginId + '/' + pluginId + '/' + pluginId;
+                pluginPath;
 
-            if (rejected === false) {
-                requirejs([pluginPath],
-                    function (PluginClass) {
-                        var plugin = new PluginClass();
-                        self.logger.debug('requirejs plugin from path: ' + pluginPath);
-                        if (self.serverSide && plugin.pluginMetadata.disableServerSideExecution) {
-                            deferred.reject(new Error(pluginId + ' cannot be invoked on server.'));
-                        } else if (self.browserSide && plugin.pluginMetadata.disableBrowserSideExecution) {
-                            deferred.reject(new Error(pluginId + ' cannot be invoked in browser.'));
-                        } else {
-                            deferred.resolve(plugin);
-                        }
-                    },
+            function instantiatePlugin(PluginClass) {
+                var plugin = new PluginClass();
+                if (self.serverSide && plugin.pluginMetadata.disableServerSideExecution) {
+                    deferred.reject(new Error(pluginIdOrClass + ' cannot be invoked on server.'));
+                } else if (self.browserSide && plugin.pluginMetadata.disableBrowserSideExecution) {
+                    deferred.reject(new Error(pluginIdOrClass + ' cannot be invoked in browser.'));
+                } else {
+                    deferred.resolve(plugin);
+                }
+            }
+
+            if (typeof pluginIdOrClass === 'function') {
+                self.logger.debug('plugin class was passed wont load it with requirejs');
+                instantiatePlugin(pluginIdOrClass);
+            } else {
+                pluginPath = 'plugin/' + pluginIdOrClass + '/' + pluginIdOrClass + '/' + pluginIdOrClass;
+                self.logger.debug('requirejs plugin from path: ' + pluginPath);
+                requirejs([pluginPath], instantiatePlugin,
                     function (err) {
                         deferred.reject(err);
                     }
@@ -104,7 +108,7 @@ define([
 
         /**
          *
-         * @param {string} pluginId
+         * @param {string} pluginIdOrClass
          * @param {object} pluginConfig - configuration for the plugin.
          * @param {object} context
          * @param {string} [context.branchName] - name of branch that should be updated
@@ -115,9 +119,11 @@ define([
          * @param {string} [context.namespace=''] - used namespace during execution ('' represents all namespaces).
          * @param {function} callback
          */
-        this.executePlugin = function (pluginId, pluginConfig, context, callback) {
-            var plugin;
-            self.initializePlugin(pluginId)
+        this.executePlugin = function (pluginIdOrClass, pluginConfig, context, callback) {
+            var pluginId = typeof pluginIdOrClass === 'string' ? pluginIdOrClass : pluginIdOrClass.metadata.id,
+                plugin;
+
+            self.initializePlugin(pluginIdOrClass)
                 .then(function (plugin_) {
                     plugin = plugin_;
                     return self.configurePlugin(plugin, pluginConfig, context);

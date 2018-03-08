@@ -3,7 +3,14 @@
 /**
  * @author kecso / https://github.com/kecso
  */
-define([], function () {
+
+(function (factory) {
+    if (typeof define === 'function' && define.amd) {
+        define([], factory);
+    } else if (typeof module === 'object' && module.exports) {
+        module.exports = factory();
+    }
+}(function () {
     'use strict';
     //return string constants
     return {
@@ -78,4 +85,4 @@ define([], function () {
 
         OVERLAY_SHARD_INDICATOR: 'sharded'
     };
-});
+}));
