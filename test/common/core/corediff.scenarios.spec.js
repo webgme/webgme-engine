@@ -879,4 +879,98 @@ describe('corediff scenarios', function () {
             })
             .nodeify(done);
     });
+
+    // Multiple moving
+    it('should be able to merge multiple not conflicting but cascading moves', function (done) {
+        var originRoot,
+            paths = [];
+
+        loadRootAndFCO(context.rootHash)
+            .then(function (r) {
+
+                for (var i = 0; i < 4; i += 1) {
+                    paths.push(core.getPath(core.createNode({parent: r.root, base: r.fco, relid: 'r' + i})));
+                }
+                originRoot = r.root;
+
+                return save(r.root);
+            })
+            .then(function (rootHash) {
+                return Q.all([
+                    loadRootAndFCO(rootHash, paths),
+                    loadRootAndFCO(rootHash, paths),
+                ]);
+            })
+            .then(function (trees) {
+
+                //move 0 under 1
+                core.moveNode(trees[0][paths[0]], trees[0][paths[1]]);
+                //move 1 under 2
+                core.moveNode(trees[1][paths[1]], trees[1][paths[2]]);
+
+                // Save to ensure the added nodes are persisted.
+                return Q.all([
+                    save(trees[0].root),
+                    save(trees[1].root)
+                ])
+                    .then(function () {
+                        return Q.all([
+                            core.generateTreeDiff(originRoot, trees[0].root),
+                            core.generateTreeDiff(originRoot, trees[1].root),
+                        ]);
+                    });
+            })
+            .then(function (diffs) {
+                var merge = core.tryToConcatChanges(diffs[0], diffs[1]);
+
+                expect(merge.items).to.have.length(0);
+            })
+            .nodeify(done);
+    });
+
+    // Complex inheritance collisions
+    it('should be able to merge multiple colliding creations', function (done) {
+        var originRoot;
+
+        loadRootAndFCO(context.rootHash)
+            .then(function (r) {
+                var base;
+
+                base = core.createNode({parent: r.root, base: r.fco, relid: 'b'});
+                core.createNode({parent: r.root, base: base, relid: 'i'});
+
+                originRoot = r.root;
+
+                return save(r.root);
+            })
+            .then(function (rootHash) {
+                return Q.all([
+                    loadRootAndFCO(rootHash, ['/b']),
+                    loadRootAndFCO(rootHash, ['/i']),
+                ]);
+            })
+            .then(function (trees) {
+
+                //create child for base
+                core.createNode({parent: trees[0]['/b'], base: trees[0].fco, relid: 'c'});
+                //create child for instance
+                core.createNode({parent: trees[1]['/i'], base: trees[1].fco, relid: 'c'});
+                // Save to ensure the added nodes are persisted.
+                return Q.all([
+                    save(trees[0].root),
+                    save(trees[1].root)
+                ])
+                    .then(function () {
+                        return Q.all([
+                            core.generateTreeDiff(originRoot, trees[0].root),
+                            core.generateTreeDiff(originRoot, trees[1].root),
+                        ]);
+                    });
+            })
+            .then(function (diffs) {
+                var merge = core.tryToConcatChanges(diffs[0], diffs[1]);
+                expect(merge.items).to.have.length(0);
+            })
+            .nodeify(done);
+    });
 });

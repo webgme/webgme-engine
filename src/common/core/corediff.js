@@ -932,24 +932,18 @@ define([
                 parent,
                 src2dst,
                 dst2src,
-                checkContainer = function (containerGuid, relativePath, dataKnownInExtension) {
-                    var diff, path, containerDiff, baseGuids, i, baseDiff;
+                checkContainer = function (containerGuid, relativePath) {
+                    var usedDiff, path, containerDiff, baseGuids, i, baseDiff, dataKnownInExtension;
 
-                    if (dataKnownInExtension) {
-                        diff = diffExtension;
-                        path = getPathOfGuid(diff, containerGuid);
+                    containerDiff = getNodeByGuid(diffExtension, containerGuid);
+                    if (containerDiff === null) {
                         containerDiff = getNodeByGuid(diffBase, containerGuid);
+                        usedDiff = diffBase;
+                        path = getPathOfGuid(usedDiff, containerGuid);
                     } else {
-                        containerDiff = getNodeByGuid(diffExtension, containerGuid);
-                        if (containerDiff === null) {
-                            containerDiff = getNodeByGuid(diffBase, containerGuid);
-                            diff = diffBase;
-                            path = getPathOfGuid(diff, containerGuid);
-                        } else {
-                            dataKnownInExtension = true;
-                            diff = diffExtension;
-                            path = getPathOfGuid(diff, containerGuid);
-                        }
+                        dataKnownInExtension = true;
+                        usedDiff = diffExtension;
+                        path = getPathOfGuid(usedDiff, containerGuid);
                     }
 
                     baseGuids = Object.keys(containerDiff.oBaseGuids || {})
@@ -966,14 +960,14 @@ define([
                     if (dataKnownInExtension &&
                         containerDiff.pointer &&
                         typeof containerDiff.pointer.base === 'string') {
-                        // the base changed its base
+                        // the container changed its base
                         return true;
                     }
                     //this parent was fine, so let's go to the next one - except the root, that we do not have to check
                     relativePath = CONSTANTS.PATH_SEP + getRelidFromPath(path) + relativePath;
                     if (getParentPath(path)) {
                         // we should stop before the ROOT
-                        return checkContainer(getParentGuid(diff, path), relativePath, dataKnownInExtension);
+                        return checkContainer(getParentGuid(diffExtension, path), relativePath);
                     }
 
                     return false;
@@ -981,7 +975,7 @@ define([
 
             if (diff.removed === false || typeof diff.movedFrom === 'string') {
                 // this is a new node at the given place, so let's check for base collisions
-                if (checkContainer(getParentGuid(diffBase, path), CONSTANTS.PATH_SEP + getRelidFromPath(path), '')) {
+                if (checkContainer(getParentGuid(diffBase, path), CONSTANTS.PATH_SEP + getRelidFromPath(path), false)) {
                     // we have to move the node
                     if (moveBase === true) {
                         dst2src = _concatMoves.getBaseSourceFromDestination;
