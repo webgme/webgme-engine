@@ -372,9 +372,14 @@ describe('Meta Rules', function () {
                 node = node_;
                 ir.core.setAttributeMeta(node, 'withInvalidRegEx', {
                     type: 'string',
-                    regexp: '/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$' +
-                    '&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0' +
-                    '-9\\.\\-_~:/\\?#\\[\\]@!\\$&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/'
+                    // In node v8.10.0 the v8 seems to support regexps constructed from strings where the
+                    // leading and trailing forward slashes are included..
+                    //
+                    // regexp: '/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$' +
+                    // '&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0' +
+                    // '-9\\.\\-_~:/\\?#\\[\\]@!\\$&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/',
+
+                    regexp: '*****'
                 });
 
                 ir.core.setAttribute(node, 'withInvalidRegEx', 'hej');
