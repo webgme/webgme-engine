@@ -975,7 +975,7 @@ define([
 
             if (diff.removed === false || typeof diff.movedFrom === 'string') {
                 // this is a new node at the given place, so let's check for base collisions
-                if (checkContainer(getParentGuid(diffBase, path), CONSTANTS.PATH_SEP + getRelidFromPath(path), false)) {
+                if (checkContainer(getParentGuid(diffBase, path), CONSTANTS.PATH_SEP + getRelidFromPath(path))) {
                     // we have to move the node
                     if (moveBase === true) {
                         dst2src = _concatMoves.getBaseSourceFromDestination;

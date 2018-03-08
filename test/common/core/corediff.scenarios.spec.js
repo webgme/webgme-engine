@@ -924,6 +924,7 @@ describe('corediff scenarios', function () {
                 var merge = core.tryToConcatChanges(diffs[0], diffs[1]);
 
                 expect(merge.items).to.have.length(0);
+                expect(merge.merge.r2.r1).to.include.key('r0');
             })
             .nodeify(done);
     });
@@ -970,6 +971,7 @@ describe('corediff scenarios', function () {
             .then(function (diffs) {
                 var merge = core.tryToConcatChanges(diffs[0], diffs[1]);
                 expect(merge.items).to.have.length(0);
+                expect(merge.merge.i).not.to.include.key('c');
             })
             .nodeify(done);
     });
