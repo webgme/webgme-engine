@@ -96,7 +96,7 @@ function ExecutorServer(options) {
         }
         query = {
             lastSeen: {
-                $lt: (new Date()).getTime() / 1000 - workerRefreshInterval / 1000 * 5
+                $lt: Date.now() / 1000 - workerRefreshInterval / 1000 * 5
             }
         };
 

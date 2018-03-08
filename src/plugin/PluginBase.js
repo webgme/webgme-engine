@@ -505,7 +505,7 @@ define([
         // User can set self.forkName, but must make sure it is unique.
         var self = this,
             oldBranchName = self.branchName,
-            forkName = self.forkName || self.branchName + '_' + (new Date()).getTime();
+            forkName = self.forkName || self.branchName + '_' + Date.now();
         self.logger.warn('Plugin got forked from "' + self.branchName + '". ' +
             'Trying to create a new branch "' + forkName + '".');
 

@@ -973,7 +973,7 @@ define([
                         });
                     } else {
                         logger.warn('No branches available in project, will attempt to select latest commit.');
-                        self.getCommits(projectId, (new Date()).getTime(), 1, function (err, commitObjects) {
+                        self.getCommits(projectId, Date.now(), 1, function (err, commitObjects) {
                             if (err || commitObjects.length === 0) {
                                 logger.error(err);
                                 closeProject(projectId, function (err) {
@@ -1287,7 +1287,7 @@ define([
                 callback('Cannot fork without an open branch!');
                 return;
             }
-            forkName = newName || activeBranchName + '_' + (new Date()).getTime();
+            forkName = newName || activeBranchName + '_' + Date.now();
             storage.forkBranch(activeProjectId, activeBranchName, forkName, commitHash,
                 function (err, forkHash) {
                     if (err) {

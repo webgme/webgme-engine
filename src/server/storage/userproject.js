@@ -69,7 +69,7 @@ function UserProject(dbProject, storage, mainLogger, gmeConfig) {
                 root: rootHash,
                 parents: parents,
                 updater: [user],
-                time: (new Date()).getTime(),
+                time: Date.now(),
                 message: msg,
                 type: CONSTANTS.COMMIT_TYPE,
                 __v: CONSTANTS.VERSION

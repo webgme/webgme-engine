@@ -436,14 +436,13 @@ Storage.prototype.squashCommits = function (data, callback) {
                     root: rootHash,
                     parents: [fromCommit],
                     updater: [data.username],
-                    time: (new Date()).getTime(),
+                    time: Date.now(),
                     message: data.message || msg,
                     type: CONSTANTS.COMMIT_TYPE,
                     __v: CONSTANTS.VERSION
-                },
-                commitHash = '#' + generateKey(commitObj, self.gmeConfig);
+                };
 
-            commitObj[CONSTANTS.MONGO_ID] = commitHash;
+            commitObj[CONSTANTS.MONGO_ID] = '#' + generateKey(commitObj, self.gmeConfig);
 
             makeCommitData.commitObject = commitObj;
 

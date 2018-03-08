@@ -372,9 +372,14 @@ describe('Meta Rules', function () {
                 node = node_;
                 ir.core.setAttributeMeta(node, 'withInvalidRegEx', {
                     type: 'string',
-                    regexp: '/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$' +
-                    '&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0' +
-                    '-9\\.\\-_~:/\\?#\\[\\]@!\\$&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/'
+                    // In node v8.10.0 the v8 seems to support regexps constructed from strings where the
+                    // leading and trailing forward slashes are included..
+                    //
+                    // regexp: '/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$' +
+                    // '&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0' +
+                    // '-9\\.\\-_~:/\\?#\\[\\]@!\\$&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/',
+
+                    regexp: '*****'
                 });
 
                 ir.core.setAttribute(node, 'withInvalidRegEx', 'hej');
@@ -385,7 +390,7 @@ describe('Meta Rules', function () {
                 expect(result.hasViolation).to.equal(true, result.message);
                 expect(result.message).to.include('Invalid regular expression');
                 ir.core.delAttributeMeta(node, 'withInvalidRegEx');
-                ir.core.delAttribute(node, 'withInvalidRegEx', 'hej');
+                ir.core.delAttribute(node, 'withInvalidRegEx');
 
                 // Make sure that other tests could broke.
                 return checkNode(ir.core, node);
@@ -654,9 +659,14 @@ describe('Meta Rules', function () {
                     var result;
                     c.core.setAttributeMeta(c.fco, 'InvalidRegexp', {
                         type: 'string',
-                        regexp: '/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$' +
-                        '&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z' +
-                        '0-9\\.\\-_~:/\\?#\\[\\]@!\\$&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/'
+                        // In node v8.10.0 the v8 seems to support regexps constructed from strings where the
+                        // leading and trailing forward slashes are included..
+                        //
+                        // regexp: '/((?<=\\()[A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0-9\\.\\-_~:/\\?#\\[\\]@!\\$' +
+                        // '&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+(?=\\)))|([A-Za-z][A-Za-z0-9\\+\\.\\-]*:([A-Za-z0' +
+                        // '-9\\.\\-_~:/\\?#\\[\\]@!\\$&\'\\(\\)\\*\\+,;=]|%[A-Fa-f0-9]{2})+)/',
+
+                        regexp: '*****'
                     });
 
                     result = checkMetaConsistency(c.core, c.root);

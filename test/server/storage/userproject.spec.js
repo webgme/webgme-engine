@@ -113,7 +113,7 @@ describe('UserProject', function () {
     it('should makeCommit', function (done) {
         var numCommitsBefore;
 
-        project.getCommits((new Date()).getTime(), 100)
+        project.getCommits(Date.now(), 100)
             .then(function (commits) {
                 numCommitsBefore = commits.length;
                 return project.createBranch('makeCommit_name', importResult.commitHash);
@@ -124,7 +124,7 @@ describe('UserProject', function () {
                     importResult.rootHash, [], 'new commit');
             })
             .then(function () {
-                return project.getCommits((new Date()).getTime(), 100);
+                return project.getCommits(Date.now() + 100, 100);
             })
             .then(function (commits) {
                 expect(numCommitsBefore).to.equal(commits.length - 1);

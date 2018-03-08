@@ -1417,7 +1417,7 @@ function createAPI(app, mountPath, middlewareOpts) {
                 username: userId,
                 projectId: StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
                     req.params.projectName),
-                before: (new Date()).getTime(), // current time
+                before: Date.now(), // current time
                 number: parseInt(req.query.n, 10) || 100 // asks for the last 100 commits from the time specified above
             };
 
