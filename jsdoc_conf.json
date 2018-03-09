@@ -18,6 +18,7 @@
       "src/plugin/PluginResult.js",
       "src/plugin/InterPluginResult.js",
       "src/common/executor",
+      "src/common/util/serialization.js",
       "src/common/core/core.js",
       "src/server/middleware/auth/gmeauth.js",
       "src/common/storage/project/project.js",

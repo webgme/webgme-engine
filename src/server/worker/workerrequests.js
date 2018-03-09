@@ -16,8 +16,8 @@ var Core = requireJS('common/core/coreQ'),
     metaRules = requireJS('common/core/users/metarules'),
     webgmeUtils = require('../../utils'),
     storageUtils = requireJS('common/storage/util'),
-    commonUtils = requireJS('common/util/util'),
     metaRename = requireJS('common/core/users/metarename'),
+    serialization = requireJS('common/util/serialization'),
     _ = require('underscore'),
 
     // JsZip can't for some reason extract the exported files..
@@ -755,7 +755,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} [parameters.rootHash] - The hash of the tree root.
      * @param {string} [parameters.commitHash] - The tree associated with the commitHash.
      * @param {string} [parameters.branchName] - The tree at the given branch.
-     * @param {string} [parameters.withAssets=false] - Bundle the encountered assets linked from attributes.
+     * @param {string} [parameters.tagName] - The tree at the given tag.
+     * @param {boolean} [parameters.withAssets=false] - Bundle the encountered assets linked from attributes.
      * @param {string} [parameters.kind] - If not given will use the one defined in project (if any).
      * @param {function} callback
      */
@@ -786,39 +787,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
 
-                return storageUtils.getProjectJson(res.project, {
-                    branchName: parameters.branchName,
-                    commitHash: parameters.commitHash,
-                    rootHash: parameters.rootHash,
-                    tagName: parameters.tagName,
-                    kind: parameters.kind
-                });
-            })
-            .then(function (rawJson) {
-                var output = rawJson,
-                    blobClient = getBlobClient(webgmeToken),
-                    deferred = Q.defer(),
-                    filename = output.projectId + '_' + (output.commitHash || '').substr(1, 6) + '.webgmex';
-
-                blobUtil.buildProjectPackage(logger.fork('blobUtil'),
-                    blobClient,
-                    output,
-                    parameters.withAssets,
-                    filename,
-                    function (err, hash) {
-                        if (err) {
-                            deferred.reject(err);
-                        } else {
-                            deferred.resolve({
-                                downloadUrl: blobClient.getRelativeDownloadURL(hash),
-                                hash: hash,
-                                fileName: filename
-                            });
-                        }
-                    }
-                );
-
-                return deferred.promise;
+                return serialization.exportProjectToFile(res.project, getBlobClient(webgmeToken), parameters);
             })
             .nodeify(finish);
     }
@@ -834,9 +803,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {function} callback
      */
     function exportSelectionToFile(webgmeToken, parameters, callback) {
-        var context,
-            storage,
-            closureInformation,
+        var storage,
             finish = function (err, result) {
                 if (err) {
                     err = err instanceof Error ? err : new Error(err);
@@ -856,98 +823,15 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
         logger.debug('exportSelectionToFile', {metadata: parameters});
 
-        getConnectedStorage(webgmeToken)
-            .then(function (storage_) {
-                storage = storage_;
+        getConnectedStorage(webgmeToken, parameters.projectId)
+            .then(function (res) {
+                storage = res.storage;
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
-                return _getCoreAndRootNode(storage,
-                    parameters.projectId, parameters.commitHash, parameters.branchName, parameters.tagName);
-            })
-            .then(function (context_) {
-                var promises = [],
-                    i;
-                context = context_;
-                if (parameters.paths && parameters.paths.length > 0) {
-                    for (i = 0; i < parameters.paths.length; i += 1) {
-                        promises.push(context.core.loadByPath(context.rootNode, parameters.paths[i]));
-                    }
-                    return Q.all(promises);
-                }
 
-                throw new Error('No paths given to export! parameters: ' +
-                    JSON.stringify(parameters));
-            })
-            .then(function (baseNodes) {
-                var promises = [],
-                    i;
-
-                for (i = 0; i < baseNodes.length; i += 1) {
-                    if (baseNodes[i] === null) {
-                        throw new Error('Given path does not exist [' + parameters.paths[i] + '].');
-                    }
-                }
-
-                closureInformation = context.core.getClosureInformation(baseNodes);
-
-                for (i = 0; i < baseNodes.length; i += 1) {
-                    promises.push(
-                        storageUtils.getProjectJson(
-                            context.project,
-                            {rootHash: context.core.getHash(baseNodes[i])}
-                        )
-                    );
-                }
-
-                return Q.all(promises);
-            })
-            .then(function (rawJsons) {
-                var output = {
-                        projectId: parameters.projectId,
-                        commitHash: parameters.commitHash,
-                        selectionInfo: closureInformation,
-                        kind: rawJsons[0].kind,
-                        objects: [],
-                        hashes: {objects: [], assets: []}
-                    },
-                    blobClient = getBlobClient(webgmeToken),
-                    deferred = Q.defer(),
-                    filename = output.projectId + '_' + (output.commitHash || '').substr(1, 6) + '.webgmexm',
-                    i;
-
-                for (i = 0; i < rawJsons.length; i += 1) {
-                    commonUtils.extendArrayUnique(output.hashes.objects, rawJsons[i].hashes.objects);
-                    commonUtils.extendArrayUnique(output.hashes.assets, rawJsons[i].hashes.assets);
-                    commonUtils.extendObjectArrayUnique(
-                        output.objects,
-                        rawJsons[i].objects,
-                        STORAGE_CONSTANTS.MONGO_ID
-                    );
-                }
-
-                blobUtil.buildProjectPackage(logger.fork('blobUtil'),
-                    blobClient,
-                    output,
-                    parameters.withAssets,
-                    filename,
-                    function (err, hash) {
-                        if (err) {
-                            deferred.reject(err);
-                        } else {
-                            deferred.resolve({
-                                downloadUrl: blobClient.getRelativeDownloadURL(hash),
-                                hash: hash,
-                                // FIXME: Now this needs to be insync with the name in blobUtil..
-                                fileName: filename
-                            });
-                        }
-                    }
-                );
-
-                return deferred.promise;
+                return serialization.exportModelsToFile(res.project, getBlobClient(webgmeToken), parameters);
             })
             .nodeify(finish);
-
     }
 
     /**
