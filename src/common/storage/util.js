@@ -13,7 +13,17 @@ define([
 ], function (CONSTANTS, jsonPatcher, Q, REGEXP, generateKey) {
     'use strict';
 
-    function _getRootHash(project, parameters) {
+    /**
+     * @param {ProjectInterface} project
+     * @param {object} parameters - Specifies which project tree should be serialized:
+     * @param {string} [parameters.rootHash] - The hash of the tree root.
+     * @param {string} [parameters.commitHash] - The tree associated with the commitHash.
+     * @param {string} [parameters.tagName] - The tree at the given tag.
+     * @param {string} [parameters.branchName] - The tree at the given branch.
+     * @param {function} [callback]
+     * @returns {Promise}
+     */
+    function getRootHash(project, parameters, callback) {
         var deferred = Q.defer();
 
         if (parameters.branchName) {
@@ -55,7 +65,7 @@ define([
             deferred.reject(new Error('No valid input was given to search for rootHash'));
         }
 
-        return deferred.promise;
+        return deferred.promise.nodeify(callback);
     }
 
     function _collectObjects(project, objectHashArray) {
@@ -246,7 +256,7 @@ define([
             var deferred = Q.defer(),
                 rawJson;
 
-            _getRootHash(project, parameters || {})
+            getRootHash(project, parameters || {})
                 .then(function (rootHash) {
                     return Q.all([
                         _collectObjectAndAssetHashes(project, rootHash),
@@ -313,6 +323,7 @@ define([
                 .catch(deferred.reject);
 
             return deferred.promise.nodeify(callback);
-        }
+        },
+        getRootHash: getRootHash
     };
 });

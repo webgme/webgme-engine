@@ -39,6 +39,15 @@ define([
         this.CONSTANTS = CONSTANTS;
 
         this.ID_NAME = CONSTANTS.MONGO_ID;
+
+        /**
+         * @type {GmeConfig}
+         */
+        this.gmeConfig = gmeConfig;
+
+        /**
+         * @type {GmeLogger}
+         */
         this.logger = mainLogger.fork('Project:' + this.projectId);
 
         this.logger.debug('ctor', projectId);
