@@ -6,7 +6,7 @@
 
 define([
     'blob/util',
-    'common/util',
+    'common/util/util',
     'common/storage/utils',
     'common/core/coreQ'
 ], function (blobUtil, commonUtils, storageUtils, Core) {
