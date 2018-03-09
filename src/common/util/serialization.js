@@ -5,11 +5,12 @@
 
 
 define([
+    'q',
     'blob/util',
     'common/util/util',
     'common/storage/util',
     'common/core/coreQ'
-], function (blobUtil, commonUtils, storageUtils, Core) {
+], function (Q, blobUtil, commonUtils, storageUtils, Core) {
 
     /**
      * Functions for serializing a webgme project or models. These will work both on the client and server. <br>
@@ -114,9 +115,9 @@ define([
                 return core.loadRoot(rootHash);
             })
             .then(function (rootNode) {
-                return parameters.paths.map(function (path) {
+                return Q.all(parameters.paths.map(function (path) {
                     return core.loadByPath(rootNode, path);
-                });
+                }));
             })
             .then(function (nodes) {
                 nodes.forEach(function (node, idx) {
@@ -128,9 +129,9 @@ define([
                 // All nodes exist - get the closure info from the core.
                 closureInfo = core.getClosureInformation(nodes);
 
-                return nodes.map(function (node) {
+                return Q.all(nodes.map(function (node) {
                     return storageUtils.getProjectJson(project, {rootHash: core.getHash(node)});
-                });
+                }));
             })
             .then(function (rawJsons) {
                 var output = {
