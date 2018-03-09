@@ -28,6 +28,7 @@ define([
      * @param {ProjectInterface} project
      * @param {BlobClient} blobClient
      * @param {object} parameters - One of rootHash, commitHash and branchName and tagName must be given.
+     * If more than one is given, the order of precedence is: branchName, commitHash, tagName and rootHash.
      * @param {string} [parameters.rootHash] - The hash of the tree root.
      * @param {string} [parameters.commitHash] - The tree associated with the commitHash.
      * @param {string} [parameters.branchName] - The tree at the given branch.
@@ -81,6 +82,7 @@ define([
      * @param {ProjectInterface} project
      * @param {BlobClient} blobClient
      * @param {object} parameters - One of rootHash, commitHash and branchName and tagName must be given.
+     * If more than one is given, the order of precedence is: branchName, commitHash, tagName and rootHash.
      * @param {string[]} parameters.paths - Paths to node to export.
      * @param {string} [parameters.rootHash] - The hash of the tree root.
      * @param {string} [parameters.commitHash] - The tree associated with the commitHash.

@@ -15,7 +15,8 @@ define([
 
     /**
      * @param {ProjectInterface} project
-     * @param {object} parameters - Specifies which project tree should be serialized:
+     * @param {object} parameters - If more than one is given, the order of precedence is:
+     * branchName, commitHash, tagName and rootHash.
      * @param {string} [parameters.rootHash] - The hash of the tree root.
      * @param {string} [parameters.commitHash] - The tree associated with the commitHash.
      * @param {string} [parameters.tagName] - The tree at the given tag.
