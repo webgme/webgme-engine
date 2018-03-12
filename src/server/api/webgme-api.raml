@@ -720,6 +720,17 @@ resourceTypes:
         body:
           application/json:
             example: !include webgme-api-seeds.json
+  /{seedName}:
+    get:
+      description: Returns info about specific seed. Currently only the blobHash of the seed is returned.
+      securedBy: [ basic, bearer ]
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include webgme-api-seeds-seedName.json
+        404:
+          description: Seed does not exist
 
 /visualizers:
   get:
