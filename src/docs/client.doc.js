@@ -285,11 +285,12 @@
  * @function addLibrary
  * @memberOf Client
  * @param {string} name - Name of new library (cannot contain dots or exist already)
- * @param {string|object} blobHashOrLibraryInfo - If string given will import library from blob otherwise project
- * at info (will also be added to info at library).
- * @param {string} blobHashOrLibraryInfo.projectId - The projectId of your library.
- * @param {string} [blobHashOrLibraryInfo.branchName] - The branch that your library follows in the origin project.
- * @param {string} [blobHashOrLibraryInfo.commitHash] - The commit-hash of your library.
+ * @param {string|object} blobHashLibraryInfoOrSeedName - If blobHash string given will import library from blob,
+ * if string will import from seed, otherwise project at info (will also be added to info at library).
+ * @param {string} blobHashLibraryInfoOrSeedName.projectId - The projectId of your library.
+ * @param {string} [blobHashLibraryInfoOrSeedName.branchName] - The branch that your library follows in the
+ * origin project.
+ * @param {string} [blobHashLibraryInfoOrSeedName.commitHash] - The commit-hash of your library.
  * @param {function} callback - Invoked when request completed.
  * @param {null|Error} callback.err - If request failed.
  * @param {module:Storage~CommitResult} callback.result - Result from the commit made.
@@ -301,8 +302,8 @@
  * @function updateLibrary
  * @memberOf Client
  * @param {string} name - Name of library to update.
- * @param {string|object} blobHashOrLibraryInfo - If string given will import library from blob otherwise project
- * at info (will also be added to info at library).
+ * @param {string|object} blobHashLibraryInfoOrSeedName - If blobHash string given will update library from blob,
+ * if string will update from seed, otherwise project at info (will also be added to info at library).
  * @param {string} blobHashOrLibraryInfo.projectId - The projectId of your library.
  * @param {string} [blobHashOrLibraryInfo.branchName] - The branch that your library follows in the origin project.
  * @param {string} [blobHashOrLibraryInfo.commitHash] - The commit-hash of your library.
@@ -327,6 +328,20 @@
  * @instance
  * @param {string} oldName - Name of library to rename.
  * @param {string} newName - New name of library.
+ */
+
+/**
+ * @description Updates the given project and branch name with the provided context.
+ * @function updateProjectFromFile
+ * @memberOf Client
+ * @param {string} projectId - Id of project to update.
+ * @param {string} branchName - Branch that should be updated.
+ * @param {string} blobHashOrSeedName - If blobHash string will update from the webgmex at the blob,
+ * if string will update from the webgmex seed.
+ * @param {function} callback - Invoked when request completed.
+ * @param {null|Error} callback.err - If request failed.
+ * @param {module:Storage~CommitResult} callback.result - Result from the commit made.
+ * @instance
  */
 
 /**
@@ -415,7 +430,6 @@
  "_removeAllUIs",
 
  "importProjectFromFile",
- "updateProjectFromFile",
  "checkMetaRules",
  "checkCustomConstraints",
  "seedProject",
