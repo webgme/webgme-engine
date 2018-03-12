@@ -1,7 +1,7 @@
 # Change Log
 
-## [v2.17.6](https://github.com/webgme/webgme-engine/tree/v2.17.6) (2018-03-12)
-[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.5...v2.17.6)
+## [v2.19.6](https://github.com/webgme/webgme-engine/tree/v2.19.6) (2018-03-12)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.5...v2.19.6)
 
 **Implemented enhancements:**
 
