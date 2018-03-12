@@ -45,7 +45,7 @@ var testFixture = require('./test/_globals.js'),
         {
             name: 'ServerWorkerRequests',
             path: './seeds/EmptyProject.webgmex',
-            branches: ['b1', 'b2']
+            branches: ['b1', 'b2', 'updateProjectFromFile']
         }
     ];
 
