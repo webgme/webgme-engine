@@ -1113,4 +1113,110 @@ describe('ORGANIZATION REST API', function () {
             });
         });
     });
+
+    describe('SEED SPECIFIC API', function () {
+        var gmeAuth,
+            server,
+            agent;
+
+        before(function (done) {
+            this.timeout(4000);
+            testFixture.clearDBAndGetGMEAuth(gmeConfig)
+                .then(function (gmeAuth_) {
+                    gmeAuth = gmeAuth_;
+                    return Q.allDone([
+                        gmeAuth.addUser('admin', 'admin@example.com', 'admin', true, {
+                            overwrite: true,
+                            siteAdmin: true
+                        })
+                    ]);
+                })
+                .then(function () {
+                    var gmeConfig = testFixture.getGmeConfig();
+                    gmeConfig.authentication.enable = true;
+                    gmeConfig.authentication.allowGuests = true;
+
+                    server = WebGME.standaloneServer(gmeConfig);
+                    server.start(done);
+                })
+                .catch(done);
+        });
+
+        beforeEach(function () {
+            agent = superagent.agent();
+        });
+
+        after(function (done) {
+            server.stop(function () {
+                gmeAuth.unload()
+                    .nodeify(done);
+            });
+        });
+
+        it('should list all seeds /seeds', function (done) {
+            agent.get(server.getUrl() + '/api/v1/seeds')
+                .end(function (err, res) {
+                    try {
+                        expect(res.status).equal(200, err);
+                        expect(typeof res.body).to.equal('object');
+                        expect(res.body.length).to.equal(3);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+        });
+
+        it('should 404 /seeds/doesNotExist', function (done) {
+            agent.get(server.getUrl() + '/api/v1/seeds/doesNotExist')
+                .end(function (err, res) {
+                    try {
+                        expect(res.status).equal(404, err);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+        });
+
+        it('should return blobHash /seeds/EmptyProject', function (done) {
+            agent.get(server.getUrl() + '/api/v1/seeds/EmptyProject')
+                .end(function (err, res) {
+                    try {
+                        expect(res.status).equal(200, err);
+                        expect(typeof res.body).equal('object', err);
+                        expect(typeof res.body.blobHash).equal('string', err);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+        });
+
+        it('should return blobHash /seeds/EmptyProject twice (and use the cache)', function (done) {
+            agent.get(server.getUrl() + '/api/v1/seeds/EmptyProject')
+                .end(function (err, res) {
+                    var bHash;
+
+                    try {
+                        expect(res.status).equal(200, err);
+                        expect(typeof res.body).equal('object', err);
+                        expect(typeof res.body.blobHash).equal('string', err);
+                        bHash = res.body.blobHash;
+                        agent.get(server.getUrl() + '/api/v1/seeds/EmptyProject')
+                            .end(function (err, res) {
+                                try {
+                                    expect(res.status).equal(200, err);
+                                    expect(res.body.blobHash).equal(bHash, err);
+                                    done();
+                                } catch (e) {
+                                    done(e);
+                                }
+                            });
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+        });
+    });
 });

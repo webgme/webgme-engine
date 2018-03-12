@@ -5,7 +5,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-define(['common/Constants'], function (CONSTANTS) {
+define(['common/Constants', 'common/regexp'], function (CONSTANTS, REGEXP) {
     'use strict';
 
     function gmeServerRequest(client, logger, state, storage) {
@@ -30,36 +30,19 @@ define(['common/Constants'], function (CONSTANTS) {
             });
         }
 
-        function updateProjectFromFile(projectId, branchName, blobHash, callback) {
+        function updateProjectFromFile(projectId, branchName, blobHashOrSeedName, callback) {
             var parameters = {
                 command: CONSTANTS.SERVER_WORKER_REQUESTS.UPDATE_PROJECT_FROM_FILE,
-                blobHash: blobHash,
                 projectId: projectId,
                 branchName: branchName
             };
 
             logger.debug('updating project from package', parameters);
 
-            storage.simpleRequest(parameters, function (err, result) {
-                if (err) {
-                    logger.error(err);
-                }
-                callback(err, result);
-            });
-        }
-
-        function addLibrary(name, blobHashOrLibraryInfo, callback) {
-            var parameters = {
-                command: CONSTANTS.SERVER_WORKER_REQUESTS.ADD_LIBRARY,
-                projectId: state.project.projectId,
-                libraryName: name,
-                branchName: state.branchName
-            };
-
-            if (typeof blobHashOrLibraryInfo === 'string') {
-                parameters.blobHash = blobHashOrLibraryInfo;
+            if (REGEXP.BLOB_HASH.test(blobHashOrSeedName)) {
+                parameters.blobHash = blobHashOrSeedName;
             } else {
-                parameters.libraryInfo = blobHashOrLibraryInfo;
+                parameters.seedName = blobHashOrSeedName;
             }
 
             storage.simpleRequest(parameters, function (err, result) {
@@ -70,7 +53,33 @@ define(['common/Constants'], function (CONSTANTS) {
             });
         }
 
-        function updateLibrary(name, blobHashOrLibraryInfo, callback) {
+        function addLibrary(name, blobHashLibraryInfoOrSeedName, callback) {
+            var parameters = {
+                command: CONSTANTS.SERVER_WORKER_REQUESTS.ADD_LIBRARY,
+                projectId: state.project.projectId,
+                libraryName: name,
+                branchName: state.branchName
+            };
+
+            if (typeof blobHashLibraryInfoOrSeedName === 'string') {
+                if (REGEXP.BLOB_HASH.test(blobHashLibraryInfoOrSeedName)) {
+                    parameters.blobHash = blobHashLibraryInfoOrSeedName;
+                } else {
+                    parameters.seed = blobHashLibraryInfoOrSeedName;
+                }
+            } else {
+                parameters.libraryInfo = blobHashLibraryInfoOrSeedName;
+            }
+
+            storage.simpleRequest(parameters, function (err, result) {
+                if (err) {
+                    logger.error(err);
+                }
+                callback(err, result);
+            });
+        }
+
+        function updateLibrary(name, blobHashLibraryInfoOrSeedName, callback) {
             var parameters = {
                 command: CONSTANTS.SERVER_WORKER_REQUESTS.UPDATE_LIBRARY,
                 projectId: state.project.projectId,
@@ -78,10 +87,14 @@ define(['common/Constants'], function (CONSTANTS) {
                 branchName: state.branchName
             };
 
-            if (typeof blobHashOrLibraryInfo === 'string') {
-                parameters.blobHash = blobHashOrLibraryInfo;
-            } else if (blobHashOrLibraryInfo) {
-                parameters.libraryInfo = blobHashOrLibraryInfo;
+            if (typeof blobHashLibraryInfoOrSeedName === 'string') {
+                if (REGEXP.BLOB_HASH.test(blobHashLibraryInfoOrSeedName)) {
+                    parameters.blobHash = blobHashLibraryInfoOrSeedName;
+                } else {
+                    parameters.seed = blobHashLibraryInfoOrSeedName;
+                }
+            } else {
+                parameters.libraryInfo = blobHashLibraryInfoOrSeedName;
             }
 
             storage.simpleRequest(parameters, function (err, result) {

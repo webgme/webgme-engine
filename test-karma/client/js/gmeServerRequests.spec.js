@@ -53,4 +53,32 @@ describe('Server worker requests', function () {
             })
             .done();
     });
+
+    it('should addLibrary from seed', function (done) {
+        Q.ninvoke(client.workerRequests, 'addLibrary', 'myLib', 'EmptyProject')
+            .then(function (result) {
+                expect(result.status).to.equal('SYNCED');
+            })
+            .nodeify(done);
+    });
+
+    it('should updateLibrary from seed', function (done) {
+        Q.ninvoke(client.workerRequests, 'updateLibrary', 'myLib', 'ActivePanels')
+            .then(function (result) {
+                expect(result.status).to.equal('SYNCED');
+            })
+            .nodeify(done);
+    });
+
+    it('should updateProject from seed', function (done) {
+        Q.ninvoke(client.workerRequests, 'updateProjectFromFile',
+            projectName2Id('ServerWorkerRequests', gmeConfig, client),
+            'updateProjectFromFile',
+            'ActivePanels'
+        )
+            .then(function (result) {
+                expect(result.status).to.equal('SYNCED');
+            })
+            .nodeify(done);
+    });
 });

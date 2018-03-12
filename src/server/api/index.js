@@ -18,6 +18,7 @@ var express = require('express'),
     StorageUtil = webgme.requirejs('common/storage/util'),
     webgmeUtils = require('../../utils'),
     GUID = webgme.requirejs('common/util/guid'),
+    BlobClientClass = webgme.requirejs('blob/BlobClient'),
 
     CONSTANTS = webgme.requirejs('common/Constants');
 
@@ -46,7 +47,8 @@ function createAPI(app, mountPath, middlewareOpts) {
         latestAPIPath = mountPath,
         registerEndPoint = typeof gmeConfig.authentication.allowUserRegistration === 'string' ?
             require(gmeConfig.authentication.allowUserRegistration)(middlewareOpts) :
-            require('./defaultRegisterEndPoint')(middlewareOpts);
+            require('./defaultRegisterEndPoint')(middlewareOpts),
+        seedToBlobHash = {};
 
     app.get(apiDocumentationMountPoint, function (req, res) {
         res.sendFile(path.join(__dirname, '..', '..', '..', 'docs', 'REST', 'index.html'));
@@ -2191,6 +2193,50 @@ function createAPI(app, mountPath, middlewareOpts) {
             .then(function (seedDictionary) {
                 logger.debug('/seeds', {metadata: seedDictionary});
                 res.send(Object.keys(seedDictionary));
+            })
+            .catch(next);
+    });
+
+    router.get('/seeds/:seedName', ensureAuthenticated, function (req, res, next) {
+        var seedName = req.params.seedName,
+            userId = getUserId(req),
+            webgmeToken;
+
+        webgmeUtils.getSeedDictionary(gmeConfig)
+            .then(function (seedDictionary) {
+                if (seedDictionary.hasOwnProperty(seedName) === false) {
+                    res.status(404);
+                    throw new Error('Requested seed [' + seedName + '], does not exist among: '
+                        + Object.keys(seedDictionary));
+                } else if (seedToBlobHash.hasOwnProperty(seedName)) {
+                    // It was already requested and exists on the blob-storage.
+                    return seedToBlobHash[seedName];
+                } else {
+                    // Seed exists but hasn't been uploaded to blob-storage.
+                    return getNewJWToken(userId)
+                        .then(function (token) {
+                            webgmeToken = token;
+
+                            return Q.ninvoke(fs, 'readFile', seedDictionary[seedName], 'utf-8');
+                        })
+                        .then(function (content) {
+                            var blobClient = new BlobClientClass({
+                                serverPort: gmeConfig.server.port,
+                                httpsecure: false,
+                                server: '127.0.0.1',
+                                webgmeToken: webgmeToken,
+                                logger: logger.fork('BlobClient')
+                            });
+
+                            return blobClient.putFile(seedName + '.webgmex', content);
+                        });
+                }
+            })
+            .then(function (blobHash) {
+                // TODO: Consider supporting metadata of seeds and parse and return it here..
+                res.json({
+                    blobHash: blobHash
+                });
             })
             .catch(next);
     });
