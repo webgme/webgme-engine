@@ -1,5 +1,32 @@
 # Change Log
 
+## [v2.17.6](https://github.com/webgme/webgme-engine/tree/v2.17.6) (2018-03-12)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.5...v2.17.6)
+
+**Implemented enhancements:**
+
+- Adding a seed as a library [\#63](https://github.com/webgme/webgme-engine/issues/63)
+- Add API for generating webgmexm \(export of subset\(s\) of project\) [\#57](https://github.com/webgme/webgme-engine/issues/57)
+- Add REST endpoint for statistics about connected users etc. [\#54](https://github.com/webgme/webgme-engine/issues/54)
+-  Cannot call setFinishTime of undefined [\#52](https://github.com/webgme/webgme-engine/issues/52)
+- Core should check for valid attribute, pointer, aspects and set names. [\#49](https://github.com/webgme/webgme-engine/issues/49)
+- renameAttributeMeta does not exist on client API [\#48](https://github.com/webgme/webgme-engine/issues/48)
+- Fixes \#63 Expose usage of seed in addLibrary/updateLibrary/updateProjectFromFile from client [\#64](https://github.com/webgme/webgme-engine/pull/64) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#57 expose serialization functions [\#62](https://github.com/webgme/webgme-engine/pull/62) ([pmeijer](https://github.com/pmeijer))
+- Enable plugins to be required without requirejs and passed to manager as "class" [\#59](https://github.com/webgme/webgme-engine/pull/59) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#48 renameAttributeMeta does not exist on client API [\#56](https://github.com/webgme/webgme-engine/pull/56) ([kecso](https://github.com/kecso))
+- Fixes \#54 add rest status end points [\#55](https://github.com/webgme/webgme-engine/pull/55) ([pmeijer](https://github.com/pmeijer))
+- Use the plugin.result as default result value. Fixes \#52 [\#53](https://github.com/webgme/webgme-engine/pull/53) ([brollb](https://github.com/brollb))
+- Support creation of test projects from "json" objects [\#50](https://github.com/webgme/webgme-engine/pull/50) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Cascading moves cause crash during merge [\#60](https://github.com/webgme/webgme-engine/issues/60)
+- Core.isValidAttributeValueOf should return false if attribute is readonly and value holder not a metanode [\#51](https://github.com/webgme/webgme-engine/issues/51)
+- Fixes \#60 Cascading moves cause crash during merge [\#61](https://github.com/webgme/webgme-engine/pull/61) ([kecso](https://github.com/kecso))
+- Fix tests checking for invalid regular expressions which changed around node v8.10.0 [\#58](https://github.com/webgme/webgme-engine/pull/58) ([pmeijer](https://github.com/pmeijer))
+- Fixes \\#48 renameAttributeMeta does not exist on client API [\#56](https://github.com/webgme/webgme-engine/pull/56) ([kecso](https://github.com/kecso))
+
 ## [v2.19.5](https://github.com/webgme/webgme-engine/tree/v2.19.5) (2018-02-09)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.4...v2.19.5)
 
