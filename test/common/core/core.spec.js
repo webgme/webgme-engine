@@ -2889,7 +2889,16 @@ describe('core', function () {
         }
 
         try {
-            core.isValidAttributeValueOf(rootNode, 'attr', undefined);
+            core.isValidAttributeValueOf(rootNode, 'name', undefined);
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
+
+        try {
+            core.isValidAttributeValueOf(rootNode, 'nonexisting', undefined);
         } catch (e) {
             myError = e;
         } finally {
