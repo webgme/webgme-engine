@@ -41,7 +41,7 @@ define([
         this.ID_NAME = CONSTANTS.MONGO_ID;
 
         /**
-         * @type {GmeConfig}
+         * @type {string}
          */
         this.gmeConfig = gmeConfig;
 
@@ -360,6 +360,14 @@ define([
          */
         this.getCommonAncestorCommit = function (commitA, commitB, callback) {
             throw new Error('getCommonAncestorCommit must be overridden in derived class');
+        };
+
+        /**
+         * Retrieves the userId of the current user of this project.
+         * @return {string} The current user.
+         */
+        this.getUserId = function () {
+            throw new Error('getUserId must be overridden in derived class');
         };
     }
 

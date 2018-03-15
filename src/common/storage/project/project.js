@@ -105,6 +105,10 @@ define([
                 .nodeify(callback);
         };
 
+        this.getUserId = function () {
+            return storage.userId;
+        };
+
         /**
          * Start watching the document at the provided context.
          * @param {object} data

@@ -272,6 +272,10 @@ function UserProject(dbProject, storage, mainLogger, gmeConfig) {
         return storage.squashCommits(data)
             .nodeify(callback);
     };
+
+    this.getUserId = function () {
+        return this.userName;
+    };
 }
 
 UserProject.prototype = Object.create(ProjectInterface.prototype);

@@ -670,6 +670,14 @@
     };
 
     /**
+     * Retrieves the userId of the current user of the opened project (the user who invoked the plugin).
+     * @return {string} The current user.
+     */
+    PluginBase.prototype.getUserId = function () {
+        return this.project.getUserId();
+    };
+
+    /**
      * Initializes and invokes the given plugin (at pluginId).
      * Things to note:
      *  1. If the invoked plugin calls save - it will not persist nor make a commit. The message will be recorded in
