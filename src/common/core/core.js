@@ -2519,6 +2519,10 @@ define([
             ensureType(name, 'name', 'string');
             ensureValue(value, 'value');
 
+            if (core.getValidAttributeNames(node).indexOf(name) === -1) {
+                throw new CoreIllegalOperationError('Not a valid attribute name [' + name + '] of the node.');
+            }
+
             return core.isValidAttributeValueOf(node, name, value);
         };
 
@@ -4113,7 +4117,7 @@ define([
             ensureNode(node, 'node');
             ensureType(name, 'name', 'string');
 
-            if ((core.getValidAttributeNames(node) || []).indexOf(name) === -1) {
+            if (core.getValidAttributeNames(node).indexOf(name) === -1) {
                 throw new CoreIllegalOperationError('Not a valid attribute name [' + name + '] of the node.');
             }
 
