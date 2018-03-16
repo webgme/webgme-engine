@@ -45,7 +45,7 @@ var path = require('path'),
 
     mainLogger;
 
-process.on('SIGINT', function () {
+function shutdown() {
     var i,
         error = false,
         numStops = 0;
@@ -87,7 +87,10 @@ process.on('SIGINT', function () {
     if (numStops === 0) {
         exit(0);
     }
-});
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 function StandAloneServer(gmeConfig) {
     var self = this,
