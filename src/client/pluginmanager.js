@@ -48,7 +48,8 @@ define([
             if (typeof WebGMEGlobal !== 'undefined') {
                 /* eslint-disable no-undef*/
                 context.managerConfig.activeSelection = WebGMEGlobal.State.getActiveSelection();
-                context.managerConfig.activeNode = WebGMEGlobal.State.getActiveObject();
+                activeNodeId = WebGMEGlobal.State.getActiveObject();
+                context.managerConfig.activeNode = activeNodeId;
                 /* eslint-enable no-undef*/
             }
 
