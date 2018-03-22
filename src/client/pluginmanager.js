@@ -48,8 +48,7 @@ define([
             if (typeof WebGMEGlobal !== 'undefined') {
                 /* eslint-disable no-undef*/
                 context.managerConfig.activeSelection = WebGMEGlobal.State.getActiveSelection();
-                activeNodeId = WebGMEGlobal.State.getActiveObject();
-                context.managerConfig.activeNode = activeNodeId;
+                context.managerConfig.activeNode = WebGMEGlobal.State.getActiveObject();
                 /* eslint-enable no-undef*/
             }
 
@@ -62,6 +61,7 @@ define([
             }
 
             // Given the active-node we infer the namespace (user may still select another one).
+            activeNodeId = context.managerConfig.activeNode;
             if (activeNodeId && pluginId) {
                 activeNode = client.getNode(activeNodeId);
                 do {
