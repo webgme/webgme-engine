@@ -61,6 +61,7 @@ define([
             }
 
             // Given the active-node we infer the namespace (user may still select another one).
+            activeNodeId = context.managerConfig.activeNode;
             if (activeNodeId && pluginId) {
                 activeNode = client.getNode(activeNodeId);
                 do {
