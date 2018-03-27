@@ -762,6 +762,27 @@ define([
             return node;
         };
 
+        this.isValidNewChild = function (parentNode, baseNode) {
+            ASSERT(!parentNode || self.isValidNode(parentNode));
+            ASSERT(!baseNode || self.isValidNode(baseNode));
+            // When we look for a loop, we see relationship parent and instance as edges
+            // The intended new node would make a path base->parent, if the node would cause a loop,
+            // then there should already be a path parent->base
+
+            if (!parentNode || !baseNode) {
+                return true;
+            }
+
+            while (parentNode) {
+                if (self.isInstanceOf(baseNode, parentNode)) {
+                    return false;
+                }
+                parentNode = self.getParent(parentNode);
+            }
+
+            return true;
+        };
+
         this.isValidNewParent = function (node, parent) {
             ASSERT(self.isValidNode(node) && self.isValidNode(parent));
             var visited = {

@@ -300,6 +300,26 @@
  * @return {bool} Returns true if the base is on the inheritance chain of node. A node is considered to be an 
  * instance of itself here.
  */
+
+/**
+ * @description Checks if the node can have a child of the given type without causing containment inheritance loop.
+ * @function isValidNewChild
+ * @memberOf GMENode
+ * @instance
+ * @param {string} baseId - Id to the base node that would be the type of the child.
+ *
+ * @return {bool} Returns true if a child of the given type can be created.
+ */
+
+/**
+ * @description Checks if base can be the new base of node.
+ * @function isValidNewBase
+ * @memberOf GMENode
+ * @param {string | null | undefined} base - the new base.
+ *
+ * @return {boolean} True if the supplied base is a valid base for the node.
+ */
+
 // expect(typeof node.getRegistryNames).to.equal('function');
 // expect(typeof node.getOwnRegistryNames).to.equal('function');
 // expect(typeof node.getMemberIds).to.equal('function');

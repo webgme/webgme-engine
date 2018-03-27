@@ -735,6 +735,26 @@ describe('coretype', function () {
         }, core.loadChildren(node, '/n'));
     });
 
+    // Child
+    it('isValidNewChild should return true if no potential loop', function () {
+        var fco = core.createNode({parent: root});
+
+        expect(core.isValidNewChild(null, root)).to.equal(true);
+        expect(core.isValidNewChild(root, null)).to.equal(true);
+        expect(core.isValidNewChild(root, fco)).to.equal(true);
+    });
+
+    it('isValidNewChild should return false if potential loop is found', function () {
+        var fco = core.createNode({parent: root, relid: 'FCO'}),
+            container = core.createNode({parent: root, base: fco, relid: 'C'}),
+            element = core.createNode({parent: root, base: fco, relid: 'E'}),
+            model = core.createNode({parent: root, base: container, relid: 'M'}),
+            node = core.createNode({parent: model, base: element, relid: 'N'});
+
+        expect(core.isValidNewChild(node, fco)).to.equal(true);
+        expect(core.isValidNewChild(fco, node)).to.equal(false);
+    });
+
     it('new node should have relidLength when createNode with relidLength', function () {
         var newNode = core.createNode({parent: root}, 7);
         expect(core.getRelid(newNode)).to.have.length(7);

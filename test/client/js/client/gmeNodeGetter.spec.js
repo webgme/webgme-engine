@@ -100,6 +100,7 @@ describe('gmeNodeGetter', function () {
         expect(typeof node.getBaseId).to.equal('function');
         expect(typeof node.isValidNewBase).to.equal('function');
         expect(typeof node.isValidNewParent).to.equal('function');
+        expect(typeof node.isValidNewChild).to.equal('function');
         expect(typeof node.getInheritorIds).to.equal('function');
         expect(typeof node.getAttribute).to.equal('function');
         expect(typeof node.getOwnAttribute).to.equal('function');
@@ -271,6 +272,15 @@ describe('gmeNodeGetter', function () {
         expect(node.isValidNewParent(null)).to.equal(false);
         expect(node.isValidNewParent('/1')).to.equal(false);
         expect(node.isValidNewParent('unknown')).to.equal(false);
+    });
+
+    it('should return whether a new child of a given type could be created under the parent', function () {
+        var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode);
+
+        expect(node.isValidNewChild(null)).to.equal(true);
+        expect(node.isValidNewChild('/1')).to.equal(true);
+        expect(node.isValidNewChild('/175547009/871430202')).to.equal(false);
+        expect(node.isValidNewChild({})).to.equal(false);
     });
 
     it('should return the paths of instance', function () {

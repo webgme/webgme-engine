@@ -4470,6 +4470,30 @@ define([
 
             return core.getValidTargetPaths(node, name);
         };
+
+        /**
+         * Checks if a node of the given type can be created under the parent. It does not check for meta consistency.
+         * It only validates if the proposed creation would cause any loops in the combined containment
+         * inheritance trees.
+         * @param {module:Core~Node | null } parentNode - the parent in question.
+         * @param {module:Core~Node | null } baseNode - the intended type of the node.
+         *
+         * @return {boolean} True if a child of the type can be created.
+         *
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
+         * @throws {CoreAssertError} If some internal error took place inside the core layers.
+         */
+        this.isValidNewChild = function (parentNode, baseNode) {
+            if (parentNode !== null) {
+                ensureNode(parentNode, 'parentNode');
+            }
+
+            if (baseNode !== null) {
+                ensureNode(baseNode, 'baseNode');
+            }
+
+            return core.isValidNewChild(parentNode, baseNode);
+        };
     }
 
     return Core;
