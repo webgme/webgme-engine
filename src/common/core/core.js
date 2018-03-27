@@ -803,7 +803,7 @@ define([
 
         /**
          * Creates a node according to the given parameters.
-         * @param {object} parameters - the details of the creation.
+         * @param {object} [parameters] - the details of the creation.
          * @param {module:Core~Node | null} [parameters.parent] - the parent of the node to be created.
          * @param {module:Core~Node | null} [parameters.base] - the base of the node to be created.
          * @param {string} [parameters.relid] - the relative id of the node to be created (if reserved, the function
@@ -4481,9 +4481,9 @@ define([
         };
 
         /**
-         * Checks if a node of the given type can be created under the parent. It does not check for meta consistency.
-         * It only validates if the proposed creation would cause any loops in the combined containment
-         * inheritance trees.
+         * Checks if an instance of the given base can be created under the parent. It does not check for
+         * meta consistency. It only validates if the proposed creation would cause any loops in the
+         * combined containment inheritance trees.
          * @param {module:Core~Node | null } parentNode - the parent in question.
          * @param {module:Core~Node | null } baseNode - the intended type of the node.
          *
