@@ -832,6 +832,15 @@ define([
                 if (parameters.hasOwnProperty('guid') && parameters.guid !== undefined) {
                     ensureGuid(parameters.guid, 'parameters.guid');
                 }
+
+                if (parameters.hasOwnProperty('parent') &&
+                    parameters.parent !== null && parameters.parent !== undefined &&
+                    parameters.hasOwnProperty('base') &&
+                    parameters.base !== null && parameters.base !== undefined &&
+                    core.isValidNewChild(parameters.parent, parameters.base) === false) {
+                    throw new CoreIllegalOperationError('Not allowed to create node that would cause loop in the ' +
+                        'combined containment inheritance graph.');
+                }
             }
             return core.createNode(parameters);
         };

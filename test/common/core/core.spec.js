@@ -542,6 +542,15 @@ describe('core', function () {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
             myError = null;
         }
+
+        try {
+            core.createNode({parent: rootNode, base: rootNode});
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalOperationError');
+            myError = null;
+        }
     });
 
     it('should throw @deleteNode if not valid node is given', function () {
