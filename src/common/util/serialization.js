@@ -57,7 +57,7 @@ define([
             .then(function (rawJson) {
                 fileName = typeof parameters.outName === 'string' ?
                     parameters.outName :
-                    rawJson.projectId + '_' + (rawJson.commitHash || '').substr(1, 6) + '.webgmex';
+                    rawJson.projectId + '_' + (rawJson.commitHash || '').substr(1, 6);
 
                 fileName += '.webgmex';
 
