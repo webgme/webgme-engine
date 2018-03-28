@@ -8,8 +8,9 @@
 define([
     'common/core/CoreAssert',
     'common/core/tasync',
-    'common/core/constants'
-], function (ASSERT, TASYNC, CONSTANTS) {
+    'common/core/constants',
+    'common/core/CoreIllegalOperationError'
+], function (ASSERT, TASYNC, CONSTANTS, CoreIllegalOperationError) {
     'use strict';
 
     var CoreType = function (innerCore, options) {
@@ -739,7 +740,12 @@ define([
 
             ASSERT(!parent || self.isValidNode(parent));
             ASSERT(!base || self.isValidNode(base));
-            ASSERT(!base || self.getPath(base) !== self.getPath(parent));
+
+            if (self.isValidNewChild(parent, base) === false) {
+                throw new CoreIllegalOperationError('Not allowed to create node that would cause loop in the ' +
+                    'combined containment inheritance graph.');
+            }
+
 
             if (parent) {
                 takenRelids = self.getChildrenRelids(parent, true);
@@ -762,6 +768,27 @@ define([
             return node;
         };
 
+        this.isValidNewChild = function (parentNode, baseNode) {
+            ASSERT(!parentNode || self.isValidNode(parentNode));
+            ASSERT(!baseNode || self.isValidNode(baseNode));
+            // When we look for a loop, we see relationship parent and instance as edges
+            // The intended new node would make a path base->parent, if the node would cause a loop,
+            // then there should already be a path parent->base
+
+            if (!parentNode || !baseNode) {
+                return true;
+            }
+
+            while (parentNode) {
+                if (self.isInstanceOf(baseNode, parentNode)) {
+                    return false;
+                }
+                parentNode = self.getParent(parentNode);
+            }
+
+            return true;
+        };
+
         this.isValidNewParent = function (node, parent) {
             ASSERT(self.isValidNode(node) && self.isValidNode(parent));
             var visited = {
@@ -782,14 +809,15 @@ define([
         };
 
         this.moveNode = function (node, parent, relidLength, newRelid) {
-            ASSERT(self.isValidNewParent(node, parent),
-                'New parent would create loop in containment/inheritance tree.');
             var minRelidLength = innerCore.getProperty(parent, CONSTANTS.MINIMAL_RELID_LENGTH_PROPERTY),
                 takenRelids = self.getChildrenRelids(parent, true),
                 currRelid = this.getRelid(node),
                 base = node.base,
                 moved;
 
+            if (self.isValidNewParent(node, parent) === false) {
+                throw new CoreIllegalOperationError('New parent would create loop in containment/inheritance tree.');
+            }
             if (typeof minRelidLength === 'number' && currRelid.length < minRelidLength) {
                 takenRelids[currRelid] = true;
             } else if (typeof relidLength === 'number' && currRelid.length < relidLength) {
@@ -810,27 +838,32 @@ define([
         };
 
         this.copyNode = function (node, parent, relidLength) {
-            ASSERT(!node.base || self.getPath(node.base) !== self.getPath(parent));
-            var newnode;
+            var newNode,
+                base = self.getBase(node);
+
+            if (base !== null && self.isValidNewChild(parent, base) === false) {
+                throw new CoreIllegalOperationError('Not allowed to copy the node under a parent that would ' +
+                    'cause loop in the combined containment inheritance graph.');
+            }
 
             relidLength = relidLength || innerCore.getProperty(parent, CONSTANTS.MINIMAL_RELID_LENGTH_PROPERTY);
-            newnode = innerCore.copyNode(node, parent, self.getChildrenRelids(parent, true), relidLength);
-            newnode.base = node.base;
+            newNode = innerCore.copyNode(node, parent, self.getChildrenRelids(parent, true), relidLength);
+            newNode.base = node.base;
             if (typeof self.getPointerPath(node, CONSTANTS.BASE_POINTER) === 'string') {
-                innerCore.setPointer(newnode, CONSTANTS.BASE_POINTER, node.base);
+                innerCore.setPointer(newNode, CONSTANTS.BASE_POINTER, node.base);
             }
 
             // The copy does not have any instances at this point -> reset the property.
-            innerCore.deleteProperty(newnode, CONSTANTS.MINIMAL_RELID_LENGTH_PROPERTY);
+            innerCore.deleteProperty(newNode, CONSTANTS.MINIMAL_RELID_LENGTH_PROPERTY);
 
-            this.processRelidReservation(parent, this.getRelid(newnode));
+            this.processRelidReservation(parent, this.getRelid(newNode));
 
             // Addition to #1232
             if (isInheritedChild(parent)) {
                 self.processRelidReservation(self.getParent(parent), self.getRelid(parent));
             }
 
-            return newnode;
+            return newNode;
         };
 
         this.copyNodes = function (nodes, parent, relidLength) {
@@ -861,6 +894,13 @@ define([
                 tempParent, tempSrc,
                 i, j, k;
 
+            // check for loop
+            for (i = 0; i < nodes.length; i += 1) {
+                if (self.isValidNewChild(parent, self.getBase(nodes[i])) === false) {
+                    throw new CoreIllegalOperationError('Not allowed to copy the node under a parent that would ' +
+                        'cause loop in the combined containment inheritance graph.');
+                }
+            }
             // This collects 1 and 3
             for (i = 0; i < nodes.length; i += 1) {
                 node = nodes[i];
@@ -1171,8 +1211,10 @@ define([
         };
 
         this.setBase = function (node, base) {
-            ASSERT(self.isValidNewBase(node, base),
-                'New base would create loop in containment/inheritance tree.');
+
+            if (self.isValidNewBase(node, base) === false) {
+                throw new CoreIllegalOperationError('New base would create loop in containment/inheritance tree.');
+            }
 
             if (base) {
                 //TODO maybe this is not the best way, needs to be double checked

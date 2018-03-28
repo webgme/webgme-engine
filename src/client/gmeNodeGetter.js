@@ -93,6 +93,22 @@ define([], function () {
         }
     };
 
+    GMENode.prototype.isValidNewChild = function (basePath) {
+        var base;
+        if (typeof basePath === 'string') {
+            base = _getNode(this._state.nodes, basePath);
+            if (base) {
+                return this._state.core.isValidNewChild(this._state.nodes[this._id].node, base);
+            } else {
+                return false;
+            }
+        } else if (basePath === undefined || basePath === null) {
+            return true;
+        }
+
+        return false;
+    };
+
     GMENode.prototype.getInheritorIds = function () {
         return this._state.core.getInstancePaths(this._state.nodes[this._id].node);
     };

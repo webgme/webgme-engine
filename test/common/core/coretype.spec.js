@@ -735,6 +735,26 @@ describe('coretype', function () {
         }, core.loadChildren(node, '/n'));
     });
 
+    // Child
+    it('isValidNewChild should return true if no potential loop', function () {
+        var fco = core.createNode({parent: root});
+
+        expect(core.isValidNewChild(null, root)).to.equal(true);
+        expect(core.isValidNewChild(root, null)).to.equal(true);
+        expect(core.isValidNewChild(root, fco)).to.equal(true);
+    });
+
+    it('isValidNewChild should return false if potential loop is found', function () {
+        var fco = core.createNode({parent: root, relid: 'FCO'}),
+            container = core.createNode({parent: root, base: fco, relid: 'C'}),
+            element = core.createNode({parent: root, base: fco, relid: 'E'}),
+            model = core.createNode({parent: root, base: container, relid: 'M'}),
+            node = core.createNode({parent: model, base: element, relid: 'N'});
+
+        expect(core.isValidNewChild(node, fco)).to.equal(true);
+        expect(core.isValidNewChild(fco, node)).to.equal(false);
+    });
+
     it('new node should have relidLength when createNode with relidLength', function () {
         var newNode = core.createNode({parent: root}, 7);
         expect(core.getRelid(newNode)).to.have.length(7);
@@ -1532,5 +1552,70 @@ describe('coretype', function () {
         expect(copiedNodes).to.have.length(2);
         expect(core.getPointerNames(copiedNodes[0])).to.have.members(['base', 'ref']);
         expect(core.getPointerPath(copiedNodes[0], 'ref')).to.eql(core.getPath(copiedNodes[1]));
+    });
+
+    // causing loops during operations
+    it('should createNode throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root});
+
+        try {
+            core.createNode({parent: base, base: base});
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
+    });
+
+    it('should copyNode throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root}),
+            instance = core.createNode({parent: root, base: base});
+
+        try {
+            core.copyNode(instance, base);
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
+    });
+
+    it('should copyNodes throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root}),
+            instance = core.createNode({parent: root, base: base});
+
+        try {
+            core.copyNodes([instance], base);
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
+    });
+
+    it('should moveNode throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root}),
+            instance = core.createNode({parent: root, base: base});
+
+        try {
+            core.moveNode(instance, base);
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
+    });
+
+    it('should setBase throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root}),
+            other = core.createNode({parent: base});
+
+        try {
+            core.setBase(other, base);
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
     });
 });

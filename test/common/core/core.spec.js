@@ -127,7 +127,7 @@ describe('core', function () {
                 'getChildDefinitionInfo', 'getValidTargetPaths', 'getOwnValidTargetPaths',
                 'isValidAspectMemberOf', 'moveAspectMetaTarget', 'movePointerMetaTarget',
                 'renameAttributeMeta', 'moveMember', 'getOwnValidPointerNames', 'getOwnValidSetNames',
-                'getValidAspectTargetPaths', 'getOwnValidAspectTargetPaths'
+                'getValidAspectTargetPaths', 'getOwnValidAspectTargetPaths', 'isValidNewChild'
             ];
 
         //console.log(_.difference(functions, Matches));
@@ -540,6 +540,15 @@ describe('core', function () {
             myError = e;
         } finally {
             expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
+
+        try {
+            core.createNode({parent: rootNode, base: rootNode});
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalOperationError');
             myError = null;
         }
     });
@@ -4942,6 +4951,28 @@ describe('core', function () {
             myError = e;
         } finally {
             expect(myError.name).to.eql('CoreIllegalOperationError');
+        }
+    });
+
+    it('should throw @isValidNewChild if parameters are bad', function () {
+        var myError;
+
+        try {
+            core.isValidNewChild('string');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
+
+        try {
+            core.isValidNewChild(rootNode, {});
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
         }
     });
 
