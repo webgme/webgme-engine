@@ -1553,4 +1553,69 @@ describe('coretype', function () {
         expect(core.getPointerNames(copiedNodes[0])).to.have.members(['base', 'ref']);
         expect(core.getPointerPath(copiedNodes[0], 'ref')).to.eql(core.getPath(copiedNodes[1]));
     });
+
+    // causing loops during operations
+    it('should createNode throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root});
+
+        try {
+            core.createNode({parent: base, base: base});
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
+    });
+
+    it('should copyNode throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root}),
+            instance = core.createNode({parent: root, base: base});
+
+        try {
+            core.copyNode(instance, base);
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
+    });
+
+    it('should copyNodes throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root}),
+            instance = core.createNode({parent: root, base: base});
+
+        try {
+            core.copyNodes([instance], base);
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
+    });
+
+    it('should moveNode throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root}),
+            instance = core.createNode({parent: root, base: base});
+
+        try {
+            core.moveNode(instance, base);
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
+    });
+
+    it('should setBase throw if it would cause inheritance containment loop', function () {
+        var root = core.createNode(),
+            base = core.createNode({parent: root}),
+            other = core.createNode({parent: base});
+
+        try {
+            core.setBase(other, base);
+            expect(true).to.equal(false);
+        } catch (e) {
+            expect(e.name).to.eql('CoreIllegalOperationError');
+        }
+    });
 });

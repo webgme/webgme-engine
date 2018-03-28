@@ -838,31 +838,32 @@ define([
         };
 
         this.copyNode = function (node, parent, relidLength) {
-            var newnode;
+            var newNode,
+                base = self.getBase(node);
 
-            if (self.isValidNewChild(parent, self.getBase(node)) === false) {
+            if (base !== null && self.isValidNewChild(parent, base) === false) {
                 throw new CoreIllegalOperationError('Not allowed to copy the node under a parent that would ' +
                     'cause loop in the combined containment inheritance graph.');
             }
 
             relidLength = relidLength || innerCore.getProperty(parent, CONSTANTS.MINIMAL_RELID_LENGTH_PROPERTY);
-            newnode = innerCore.copyNode(node, parent, self.getChildrenRelids(parent, true), relidLength);
-            newnode.base = node.base;
+            newNode = innerCore.copyNode(node, parent, self.getChildrenRelids(parent, true), relidLength);
+            newNode.base = node.base;
             if (typeof self.getPointerPath(node, CONSTANTS.BASE_POINTER) === 'string') {
-                innerCore.setPointer(newnode, CONSTANTS.BASE_POINTER, node.base);
+                innerCore.setPointer(newNode, CONSTANTS.BASE_POINTER, node.base);
             }
 
             // The copy does not have any instances at this point -> reset the property.
-            innerCore.deleteProperty(newnode, CONSTANTS.MINIMAL_RELID_LENGTH_PROPERTY);
+            innerCore.deleteProperty(newNode, CONSTANTS.MINIMAL_RELID_LENGTH_PROPERTY);
 
-            this.processRelidReservation(parent, this.getRelid(newnode));
+            this.processRelidReservation(parent, this.getRelid(newNode));
 
             // Addition to #1232
             if (isInheritedChild(parent)) {
                 self.processRelidReservation(self.getParent(parent), self.getRelid(parent));
             }
 
-            return newnode;
+            return newNode;
         };
 
         this.copyNodes = function (nodes, parent, relidLength) {
@@ -1214,7 +1215,7 @@ define([
             if (self.isValidNewBase(node, base) === false) {
                 throw new CoreIllegalOperationError('New base would create loop in containment/inheritance tree.');
             }
-            
+
             if (base) {
                 //TODO maybe this is not the best way, needs to be double checked
                 var parent = self.getParent(node),
