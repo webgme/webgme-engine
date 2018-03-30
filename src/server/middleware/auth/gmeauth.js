@@ -15,12 +15,14 @@ var Mongodb = require('mongodb'),
     //bcrypt = require('bcrypt'), include bcrypt and uncomment this line for faster encryption/decryption.
     bcrypt = require('bcryptjs'),
     jwt = require('jsonwebtoken'),
+    Chance = require('chance'),
     MetadataStorage = require('../../storage/metadatastorage'),
     UTIL = requireJS('common/util/util'),
     EventDispatcher = requireJS('common/EventDispatcher'),
     Logger = require('../../logger'),
 
-    CONSTANTS = require('./constants');
+    CONSTANTS = require('./constants'),
+    chance = new Chance();
 
 /**
  *
@@ -131,18 +133,18 @@ function GMEAuth(session, gmeConfig) {
     }
 
     function _prepareGuestAccount(callback) {
-        var guestAcc = gmeConfig.authentication.guestAccount;
+        var guestAcc = gmeConfig.authentication.guestAccount,
+            canCreate = gmeConfig.authentication.guestCanCreate;
+
         return collection.findOne({_id: guestAcc})
             .then(function (userData) {
                 if (userData) {
                     logger.debug('Guest user exists');
-                    return Q(null);
                 } else {
                     logger.warn('User "' + guestAcc + '" was not found. ' +
                         'We will attempt to create it automatically.');
 
-                    // TODO: maybe the canCreate can come from gmeConfig
-                    return addUser(guestAcc, guestAcc, guestAcc, true, {overwrite: true});
+                    return addUser(guestAcc, guestAcc, guestAcc, canCreate, {overwrite: true, guestOrAdmin: true});
                 }
             })
             .then(function () {
@@ -154,9 +156,6 @@ function GMEAuth(session, gmeConfig) {
                 // TODO: maybe guest's project authorization can come from gmeConfig
                 // TODO: check if guest user has access to the default project or not.
                 // TODO: grant access to guest account for default project
-                return Q(null);
-            })
-            .then(function () {
                 return getUser(guestAcc);
             })
             .then(function (guestAccount) {
@@ -164,6 +163,72 @@ function GMEAuth(session, gmeConfig) {
                 logger.debug('Guest account full-data: ', {metadata: guestAccount});
                 return Q.resolve(guestAccount);
             })
+            .nodeify(callback);
+    }
+
+    function _prepareAdminAccount(callback) {
+        var admin = gmeConfig.authentication.admin,
+            pieces,
+            adminId,
+            password;
+
+        if (!admin) {
+            return Q();
+        }
+
+        if (!gmeConfig.authentication.enable) {
+            logger.warn('gmeConfig.authentication.admin is specified but auth is disabled - will not create account!');
+            return Q();
+        }
+
+        pieces = admin.split(':');
+        adminId = pieces[0];
+        password = pieces[1];
+
+        return collection.findOne({_id: adminId})
+            .then(function (userData) {
+                if (userData) {
+                    logger.debug('Admin user exists [' + adminId + ']');
+                } else {
+                    password = password || (chance.word({syllables: 4}) + chance.natural({min: 1, max: 999}));
+                    logger.warn('Creating admin "' + adminId + '" with password: ' + password);
+                    logger.warn('To change password login at the profile page or use ' +
+                        'webgme-engine/src/bin/usermanager.js');
+
+                    return addUser(adminId, admin, password, true, {
+                        overwrite: true,
+                        siteAdmin: true,
+                        guestOrAdmin: true
+                    });
+                }
+            })
+            .nodeify(callback);
+    }
+
+    function _preparePublicOrganizations(callback) {
+        var publicOrgs = gmeConfig.authentication.publicOrganizations;
+
+        if (publicOrgs.length === 0) {
+            return Q();
+        }
+
+        if (!gmeConfig.authentication.enable) {
+            logger.warn('gmeConfig.authentication.publicOrgs is specified but auth is disabled - ' +
+                'will not create organizations');
+            return Q();
+        }
+
+        return Q.all(publicOrgs.map(function (orgId) {
+            return collection.findOne({_id: orgId})
+                .then(function (userData) {
+                    if (userData) {
+                        logger.debug('Public organization exists [' + orgId + ']');
+                    } else {
+                        logger.info('Creating public organization "' + orgId + '"');
+                        return addOrganization(orgId);
+                    }
+                });
+        }))
             .nodeify(callback);
     }
 
@@ -196,6 +261,12 @@ function GMEAuth(session, gmeConfig) {
             .then(function (projectCollection_) {
                 projectCollectionDeferred.resolve(projectCollection_);
                 return _prepareGuestAccount();
+            })
+            .then(function () {
+                return _prepareAdminAccount();
+            })
+            .then(function () {
+                return _preparePublicOrganizations();
             })
             .then(function () {
                 return Q.all([
@@ -620,11 +691,25 @@ function GMEAuth(session, gmeConfig) {
                     }
                 })
                 .then(function (res) {
+                    var publicOrgs = gmeConfig.authentication.publicOrganizations.slice();
+
+                    function addUserToPublicOrgs() {
+                        var orgId = publicOrgs.pop();
+                        if (orgId) {
+                            return addUserToOrganization(userId, orgId)
+                                .then(addUserToPublicOrgs);
+                        }
+                    }
+
                     // Do not dispatch if disabled user or existing user was overwritten.
                     if (!data.disabled && !(options.overwrite && res.matchedCount !== 0)) {
                         self.dispatchEvent(CONSTANTS.USER_CREATED, {userId: userId});
+                        if (!options.guestOrAdmin && gmeConfig.authentication.enable) {
+                            return addUserToPublicOrgs();
+                        }
                     }
-
+                })
+                .then(function () {
                     return collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}});
                 })
                 .then(function (userData) {
