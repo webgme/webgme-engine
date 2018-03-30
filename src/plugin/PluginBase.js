@@ -670,8 +670,8 @@
     };
 
     /**
-     * Retrieves the userId of the current user of the opened project (the user who invoked the plugin).
-     * @return {string} The current user.
+     * Retrieves the identity of the current user of the opened project (the user who invoked the plugin).
+     * @return {string} the userId
      */
     PluginBase.prototype.getUserId = function () {
         return this.project.getUserId();

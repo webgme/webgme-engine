@@ -363,8 +363,8 @@ define([
         };
 
         /**
-         * Retrieves the userId of the current user of this project.
-         * @return {string} The current user.
+         * Return the identity of the current user of this project.
+         * @return {string} the userId
          */
         this.getUserId = function () {
             throw new Error('getUserId must be overridden in derived class');
