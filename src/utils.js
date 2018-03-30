@@ -13,6 +13,7 @@ var fs = require('fs'),
     Q = require('q'),
     path = require('path'),
     requireUncached = require('require-uncached'),
+    storageUtils = requireJS('common/storage/util'),
     SVGMapDeffered;
 
 function walkDir(dir, done) {
@@ -416,6 +417,35 @@ function getComponentsJson(logger, callback) {
     return deferred.promise.nodeify(callback);
 }
 
+function createStartUpProjects(gmeConfig, gmeAuth, storage, logger) {
+    var deferred = Q.defer(),
+        existingProjectIds = [],
+        projectsToCreate = [];
+
+
+    Q.ninvoke(storage, 'getProjects', {})
+        .then(function (projectList) {
+            projectList.forEach(function (projectInfo) {
+                existingProjectIds.push(projectInfo._id);
+            });
+
+            (gmeConfig.seedProjects.createAtStartUp || []).forEach(function (projectInfo) {
+                var ownerId = projectInfo.ownerId || projectInfo.creatorId || gmeConfig.auth.admin,
+                    id = storageUtils.getProjectIdFromOwnerIdAndProjectName(ownerId, projectInfo.projectName);
+                if (existingProjectIds.indexOf(id) === -1) {
+                    projectsToCreate.push({
+                        seedId: projectInfo.seedId,
+                        projectName: projectInfo.projectName,
+                        ownerId: ownerId,
+                        rights: JSON.parse(JSON.stringify(projectInfo.rights)),
+                    });
+                }
+            });
+        })
+        .catch(deferred.reject);
+    return deferred.promise;
+}
+
 module.exports = {
     isGoodExtraAsset: isGoodExtraAsset,
     getComponentNames: getComponentNames,
@@ -430,5 +460,6 @@ module.exports = {
     getRedirectUrlParameter: getRedirectUrlParameter,
     getSeedDictionary: getSeedDictionary,
     getSeedDictionarySync: getSeedDictionarySync,
-    getComponentsJson: getComponentsJson
+    getComponentsJson: getComponentsJson,
+    createStartUpProjects: createStartUpProjects,
 };

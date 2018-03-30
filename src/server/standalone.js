@@ -225,6 +225,9 @@ function StandAloneServer(gmeConfig) {
                 return Q.all(promises);
             })
             .then(function () {
+                return webgmeUtils.createStartUpProjects(gmeConfig, __gmeAuth, __storage, logger);
+            })
+            .then(function () {
                 var promises = [];
                 __webSocket.start(__httpServer);
 
