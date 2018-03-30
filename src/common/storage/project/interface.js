@@ -41,7 +41,7 @@ define([
         this.ID_NAME = CONSTANTS.MONGO_ID;
 
         /**
-         * @type {string}
+         * @type {GmeConfig}
          */
         this.gmeConfig = gmeConfig;
 

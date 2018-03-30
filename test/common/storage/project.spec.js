@@ -157,6 +157,17 @@ describe('common storage project', function () {
             .nodeify(done);
     });
 
+    it('should getUserId', function (done) {
+        var project;
+
+        Q.nfcall(storage.openProject, projectName2Id(projectName))
+            .then(function (result) {
+                project = result[0];
+                expect(project.getUserId()).to.equal(gmeConfig.authentication.guestAccount);
+            })
+            .nodeify(done);
+    });
+
     it('should getBranches', function (done) {
         var project;
 

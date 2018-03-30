@@ -128,12 +128,16 @@ describe('watchers documents', function () {
                 expect(res[1].userId).to.equal('user2');
                 return Q.allDone([
                     Q.ninvoke(res[0], 'getProjectInfo', projectId),
-                    Q.ninvoke(res[1], 'getProjectInfo', projectId)
+                    Q.ninvoke(res[1], 'getProjectInfo', projectId),
+                    Q.ninvoke(res[0], 'openProject', projectId),
+                    Q.ninvoke(res[1], 'openProject', projectId),
                 ]);
             })
             .then(function (res) {
                 expect(res[0].rights).to.deep.equal({read: true, write: true, delete: true});
                 expect(res[1].rights).to.deep.equal({read: true, write: true, delete: true});
+                expect(res[2][0].getUserId()).to.equal('user1');
+                expect(res[3][0].getUserId()).to.equal('user2');
             })
             .nodeify(done);
     });
