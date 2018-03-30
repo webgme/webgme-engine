@@ -361,6 +361,14 @@ define([
         this.getCommonAncestorCommit = function (commitA, commitB, callback) {
             throw new Error('getCommonAncestorCommit must be overridden in derived class');
         };
+
+        /**
+         * Return the identity of the current user of this project.
+         * @return {string} the userId
+         */
+        this.getUserId = function () {
+            throw new Error('getUserId must be overridden in derived class');
+        };
     }
 
     return ProjectInterface;

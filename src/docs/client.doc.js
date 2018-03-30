@@ -345,6 +345,14 @@
  */
 
 /**
+ * @description Get the identity of the current user of the client/storage.
+ * @function getUserId
+ * @memberOf Client
+ * @instance
+ * @returns {string} the userId
+ */
+
+/**
  [
  __"_eventList",
  "CONSTANTS",
@@ -447,7 +455,6 @@
  "dispatchConnectedUsersChanged",
  "registerUIStateGetter",
  "gmeConfig",
- "getUserId",
  "uiStateGetter",
  "decoratorManager"
  ]

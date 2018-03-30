@@ -261,4 +261,15 @@ describe('UserProject', function () {
             })
             .nodeify(done);
     });
+
+    it('should getUserId and return guestAccount by default', function () {
+        expect(project.getUserId()).to.equal(gmeConfig.authentication.guestAccount);
+    });
+
+    it('should setUserId and return it a getUserId', function () {
+        project.setUser('someUser');
+        expect(project.getUserId()).to.equal('someUser');
+        project.setUser(gmeConfig.authentication.guestAccount);
+        expect(project.getUserId()).to.equal(gmeConfig.authentication.guestAccount);
+    });
 });

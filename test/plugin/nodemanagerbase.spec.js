@@ -124,6 +124,7 @@ describe('climanager', function () {
             .then(function () {
                 expect(plugin.isConfigured).to.equal(true);
                 expect(plugin.project).to.equal(project);
+                expect(plugin.getUserId()).to.equal(gmeConfig.authentication.guestAccount);
             })
             .nodeify(done);
     });
