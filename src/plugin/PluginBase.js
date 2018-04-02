@@ -779,7 +779,7 @@
                 return Q.ninvoke(pluginInstance, 'main');
             })
             .then(function (res) {
-                deferred.resolve(res);
+                deferred.resolve(res || pluginInstance.result);
             })
             .catch(function (err) {
                 deferred.reject(err);
