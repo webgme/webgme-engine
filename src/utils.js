@@ -417,30 +417,91 @@ function getComponentsJson(logger, callback) {
     return deferred.promise.nodeify(callback);
 }
 
-function createStartUpProjects(gmeConfig, gmeAuth, storage, logger) {
+function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
     var deferred = Q.defer(),
         existingProjectIds = [],
+        worker = new require('./server/worker/workerrequests')(logger.fork('worker'), gmeConfig, url),
         projectsToCreate = [];
 
 
     Q.ninvoke(storage, 'getProjects', {})
         .then(function (projectList) {
+
             projectList.forEach(function (projectInfo) {
                 existingProjectIds.push(projectInfo._id);
             });
 
-            (gmeConfig.seedProjects.createAtStartUp || []).forEach(function (projectInfo) {
-                var ownerId = projectInfo.ownerId || projectInfo.creatorId || gmeConfig.auth.admin,
+            (gmeConfig.seedProjects.createAtStartup || []).forEach(function (projectInfo) {
+                var creatorId = projectInfo.creatorId || gmeConfig.authentication.admin,
+                    ownerId = projectInfo.ownerId || creatorId,
                     id = storageUtils.getProjectIdFromOwnerIdAndProjectName(ownerId, projectInfo.projectName);
+
                 if (existingProjectIds.indexOf(id) === -1) {
                     projectsToCreate.push({
+                        id: id,
                         seedId: projectInfo.seedId,
                         projectName: projectInfo.projectName,
                         ownerId: ownerId,
+                        creatorId: creatorId,
                         rights: JSON.parse(JSON.stringify(projectInfo.rights)),
                     });
                 }
             });
+
+            if (projectsToCreate.length === 0) {
+                return;
+            }
+
+
+            return Q.ninvoke(gmeAuth, 'listUsers', null);
+        })
+        .then(function (users) {
+            var promises = [];
+
+            if (projectsToCreate.length === 0) {
+                return;
+            }
+            projectsToCreate.forEach(function (projectInfo) {
+                var existingCreator = false,
+                    i;
+
+                for (i = 0; i < users.length; i += 1) {
+                    if (users[i]._id === projectInfo.creatorId) {
+                        existingCreator = true;
+                        break;
+                    }
+                }
+
+                if (existingCreator === false) {
+                    logger.error('Cannot create project [' + projectInfo.id + '] as creator [' +
+                        projectInfo.creatorId + '] is missing!');
+                    projectInfo.failed = true;
+                    promises.push(null);
+                } else {
+                    promises.push(gmeAuth.generateJWTokenForAuthenticatedUser(projectInfo.creatorId));
+                }
+
+            });
+            return Q.all(promises);
+        })
+        .then(function (webTokens) {
+            var promises = [];
+
+            if (projectsToCreate.length === 0) {
+                return;
+            }
+
+            projectsToCreate.forEach(function (projectInfo, index) {
+                if (projectInfo.failed) {
+                    return;
+                }
+                promises.push(Q.ninvoke(worker, 'seedProject', webTokens[index], projectInfo.projectName,
+                    projectInfo.ownerId, {seedName: projectInfo.seedId, type: 'file'}));
+            });
+            return Q.all(promises);
+        })
+        .then(function () {
+            deferred.resolve(null);
         })
         .catch(deferred.reject);
     return deferred.promise;

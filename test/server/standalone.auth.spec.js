@@ -124,7 +124,6 @@ describe('standalone http server with authentication turned on', function () {
         });
     });
 
-
     it('should log in', function (done) {
         logIn(function (err) {
             if (err) {
@@ -196,7 +195,6 @@ describe('standalone http server with authentication turned on', function () {
             });
     });
 
-
     it('should be able to export an authorized project /worker/simpleResult/:id/exported_branch', function (done) {
         var projectName = 'project',
             projectId = testFixture.projectName2Id(projectName),
@@ -245,7 +243,6 @@ describe('standalone http server with authentication turned on', function () {
             })
             .nodeify(done);
     });
-
 
     it('should return a readable error', function (done) {
         var projectName = 'DoesntExist';
