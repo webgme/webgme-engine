@@ -103,43 +103,6 @@ describe('standalone startup with authentication turned on', function () {
             .nodeify(done);
     });
 
-    it('should not create startup projects that has bad creator assigned to it', function (done) {
-        var _gmeConfig = JSON.parse(JSON.stringify(gmeConfig)),
-            serverBaseUrl;
-
-        _gmeConfig.seedProjects.createAtStartup = [
-            {
-                seedId: 'EmptyProject',
-                projectName: 'DefaultOne',
-                creatorId: 'bad',
-                ownerId: 'admin',
-                rights: {
-                    admin: {read: true, write: true}
-                }
-            }
-        ];
-
-        server = WebGME.standaloneServer(_gmeConfig);
-        serverBaseUrl = server.getUrl();
-
-        Q.ninvoke(server, 'start')
-            .then(function () {
-                return testFixture.logIn(server, agent, 'admin', 'plaintext');
-            })
-            .then(function () {
-                var deferred = Q.defer();
-                agent.get(serverBaseUrl + '/api/projects')
-                    .end(function (err, res) {
-                        expect(res.status).to.equal(200);
-                        expect(res.body).to.have.length(0);
-                        deferred.resolve();
-                    });
-
-                return deferred.promise;
-            })
-            .nodeify(done);
-    });
-
     it('should create startup projects and fallback owner to creator', function (done) {
         var _gmeConfig = JSON.parse(JSON.stringify(gmeConfig)),
             serverBaseUrl;
@@ -214,6 +177,37 @@ describe('standalone startup with authentication turned on', function () {
                 return deferred.promise;
             })
             .nodeify(done);
+    });
+
+    it('should fail to create startup projects if creator is bad', function (done) {
+        var _gmeConfig = JSON.parse(JSON.stringify(gmeConfig));
+
+        _gmeConfig.seedProjects.createAtStartup = [
+            {
+                seedId: 'EmptyProject',
+                projectName: 'DefaultOne',
+                creatorId: 'bad',
+                ownerId: 'admin',
+                rights: {
+                    admin: {read: true, write: true}
+                }
+            }
+        ];
+
+        server = WebGME.standaloneServer(_gmeConfig);
+
+        Q.ninvoke(server, 'start')
+            .then(function () {
+                done(new Error('shoud have failed'));
+            })
+            .catch(function (err) {
+                expect(err).not.to.equal(null);
+                expect(err.message).to.contain('bad');
+                done();
+            })
+            .finally(function () {
+
+            });
     });
 
     it('should fail to create startup projects with bad owner', function (done) {

@@ -419,88 +419,52 @@ function getComponentsJson(logger, callback) {
 
 function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
     var deferred = Q.defer(),
-        existingProjectIds = [],
         WorkerRequest = require('./server/worker/workerrequests'),
         worker = new WorkerRequest(logger.fork('worker'), gmeConfig, url),
-        projectsToCreate = [];
+        configArray = JSON.parse(JSON.stringify(gmeConfig.seedProjects.createAtStartup)),
+        promises = [],
+        creators = [],
+        tokens = [],
+        createdProjects = [];
 
 
-    Q.ninvoke(storage, 'getProjects', {})
-        .then(function (projectList) {
+    configArray.forEach(function (projectInfo) {
+        projectInfo.creatorId = projectInfo.creatorId || gmeConfig.authentication.admin;
+        projectInfo.ownerId = projectInfo.ownerId || projectInfo.creatorId;
 
-            projectList.forEach(function (projectInfo) {
-                existingProjectIds.push(projectInfo._id);
-            });
+        if (creators.indexOf(projectInfo.creatorId) === -1) {
+            creators.push(projectInfo.creatorId);
+            promises.push(gmeAuth.generateJWTokenForAuthenticatedUser(projectInfo.creatorId));
+        }
+    });
 
-            (gmeConfig.seedProjects.createAtStartup || []).forEach(function (projectInfo) {
-                var creatorId = projectInfo.creatorId || gmeConfig.authentication.admin,
-                    ownerId = projectInfo.ownerId || creatorId,
-                    id = storageUtils.getProjectIdFromOwnerIdAndProjectName(ownerId, projectInfo.projectName);
-
-                if (existingProjectIds.indexOf(id) === -1) {
-                    projectsToCreate.push({
-                        id: id,
-                        seedId: projectInfo.seedId,
-                        projectName: projectInfo.projectName,
-                        ownerId: ownerId,
-                        creatorId: creatorId,
-                        rights: JSON.parse(JSON.stringify(projectInfo.rights)),
-                    });
-                }
-            });
-
-            if (projectsToCreate.length === 0) {
-                return;
-            }
-
-
-            return Q.ninvoke(gmeAuth, 'listUsers', null);
-        })
-        .then(function (users) {
+    Q.all(promises)
+        .then(function (tokens_) {
             var promises = [];
 
-            if (projectsToCreate.length === 0) {
-                return;
-            }
-            projectsToCreate.forEach(function (projectInfo) {
-                var existingCreator = false,
-                    i;
-
-                for (i = 0; i < users.length; i += 1) {
-                    if (users[i]._id === projectInfo.creatorId) {
-                        existingCreator = true;
-                        break;
-                    }
-                }
-
-                if (existingCreator === false) {
-                    logger.error('Cannot create project [' + projectInfo.id + '] as creator [' +
-                        projectInfo.creatorId + '] is missing!');
-                    projectInfo.failed = true;
-                    promises.push(null);
-                } else {
-                    promises.push(gmeAuth.generateJWTokenForAuthenticatedUser(projectInfo.creatorId));
-                }
-
+            tokens = tokens_;
+            creators.forEach(function (owner) {
+                promises.push(storage.getProjects({user: owner}));
             });
+
             return Q.all(promises);
         })
-        .then(function (webTokens) {
-            var promises = [];
+        .then(function (projectLists) {
+            promises = [];
+            configArray.forEach(function (projectInfo) {
+                var index = creators.indexOf(projectInfo.creatorId),
+                    id = storageUtils.getProjectIdFromOwnerIdAndProjectName(projectInfo.ownerId,
+                        projectInfo.projectName);
 
-            if (projectsToCreate.length === 0) {
-                return;
-            }
-
-            projectsToCreate.forEach(function (projectInfo, index) {
-                if (projectInfo.failed) {
-                    return;
+                if (projectLists[index].indexOf(id) === -1) {
+                    createdProjects.push(projectInfo);
+                    logger.info('Creating \'' + projectInfo.projectName + '\' for \'' + projectInfo.ownerId +
+                        '\' from seed[' + projectInfo.seedId + '].');
+                    promises.push(Q.ninvoke(worker, 'seedProject', tokens[index], projectInfo.projectName,
+                        projectInfo.ownerId, {seedName: projectInfo.seedId, type: 'file'}));
                 }
-                logger.info('Creating \'' + projectInfo.projectName + '\' for \'' + projectInfo.ownerId +
-                    '\' from seed[' + projectInfo.seedId + '].');
-                promises.push(Q.ninvoke(worker, 'seedProject', webTokens[index], projectInfo.projectName,
-                    projectInfo.ownerId, {seedName: projectInfo.seedId, type: 'file'}));
             });
+
             return Q.all(promises);
         })
         .then(function () {
@@ -509,14 +473,10 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
                     entityType: gmeAuth.authorizer.ENTITY_TYPES.PROJECT
                 };
 
-            projectsToCreate.forEach(function (projectInfo) {
+            createdProjects.forEach(function (projectInfo) {
                 var userOrOrg,
                     id = storageUtils.getProjectIdFromOwnerIdAndProjectName(projectInfo.ownerId,
                         projectInfo.projectName);
-
-                if (projectInfo.failed) {
-                    return;
-                }
 
                 for (userOrOrg in projectInfo.rights) {
                     logger.info('Authorizing \'' + userOrOrg + '\' to use \'' + projectInfo.projectName +
@@ -525,6 +485,7 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
                         id, projectInfo.rights[userOrOrg], projectAuthParams));
                 }
             });
+
             return Q.all(authorizationRequests);
         })
         .then(deferred.resolve)
