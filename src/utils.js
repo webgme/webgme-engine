@@ -496,6 +496,8 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
                 if (projectInfo.failed) {
                     return;
                 }
+                logger.info('Creating \'' + projectInfo.projectName + '\' for \'' + projectInfo.ownerId +
+                    '\' from seed[' + projectInfo.seedId + '].');
                 promises.push(Q.ninvoke(worker, 'seedProject', webTokens[index], projectInfo.projectName,
                     projectInfo.ownerId, {seedName: projectInfo.seedId, type: 'file'}));
             });
@@ -517,6 +519,8 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
                 }
 
                 for (userOrOrg in projectInfo.rights) {
+                    logger.info('Authorizing \'' + userOrOrg + '\' to use \'' + projectInfo.projectName +
+                        '\' of \'' + projectInfo.ownerId + '.');
                     authorizationRequests.push(gmeAuth.authorizer.setAccessRights(userOrOrg,
                         id, projectInfo.rights[userOrOrg], projectAuthParams));
                 }
