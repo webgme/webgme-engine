@@ -148,7 +148,8 @@ var path = require('path'),
             enable: true,
             allowDuplication: true, //requires mongodb >= 2.6
             defaultProject: 'EmptyProject',
-            basePaths: [path.join(__dirname, '../seeds')]
+            basePaths: [path.join(__dirname, '../seeds')],
+            createAtStartup: []
         },
 
         server: {
