@@ -425,7 +425,17 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
         promises = [],
         creators = [],
         tokens = [],
-        createdProjects = [];
+        createdProjects = [],
+        isProjectExists = function (projectId, list) {
+            var exists = false;
+
+            list.forEach(function (projectInfo) {
+                if (projectInfo._id === projectId) {
+                    exists = true;
+                }
+            });
+            return exists;
+        };
 
 
     configArray.forEach(function (projectInfo) {
@@ -444,7 +454,7 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
 
             tokens = tokens_;
             creators.forEach(function (owner) {
-                promises.push(storage.getProjects({user: owner}));
+                promises.push(storage.getProjects({username: owner}));
             });
 
             return Q.all(promises);
@@ -456,7 +466,8 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
                     id = storageUtils.getProjectIdFromOwnerIdAndProjectName(projectInfo.ownerId,
                         projectInfo.projectName);
 
-                if (projectLists[index].indexOf(id) === -1) {
+                console.log(projectLists[index], id);
+                if (isProjectExists(id, projectLists[index]) === false) {
                     createdProjects.push(projectInfo);
                     logger.info('Creating \'' + projectInfo.projectName + '\' for \'' + projectInfo.ownerId +
                         '\' from seed[' + projectInfo.seedId + '].');

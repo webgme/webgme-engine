@@ -103,6 +103,54 @@ describe('standalone startup with authentication turned on', function () {
             .nodeify(done);
     });
 
+    it('should create startup projects once', function (done) {
+        var _gmeConfig = JSON.parse(JSON.stringify(gmeConfig)),
+            serverBaseUrl;
+
+        _gmeConfig.seedProjects.createAtStartup = [
+            {
+                seedId: 'EmptyProject',
+                projectName: 'DefaultOne',
+                creatorId: 'admin',
+                ownerId: 'admin',
+                rights: {}
+            }
+        ];
+
+        server = WebGME.standaloneServer(_gmeConfig);
+        serverBaseUrl = server.getUrl();
+
+        Q.ninvoke(server, 'start')
+            .then(function () {
+                return Q.ninvoke(server, 'stop');
+            })
+            .then(function () {
+                return Q.ninvoke(server, 'start');
+            })
+            .then(function () {
+                return testFixture.logIn(server, agent, 'admin', 'plaintext');
+            })
+            .then(function () {
+                var deferred = Q.defer();
+                agent.get(serverBaseUrl + '/api/users')
+                    .end(function (err, res) {
+                        expect(res.status).to.equal(200);
+                        var matches = 0;
+                        for (var i = 0; i < res.body.length; i += 1) {
+                            if (res.body[i]._id === 'admin') {
+                                matches += 1;
+                                expect(res.body[i].projects['admin+DefaultOne'].write).to.equal(true);
+                            }
+                        }
+                        expect(matches === 1).to.equal(true);
+                        deferred.resolve();
+                    });
+
+                return deferred.promise;
+            })
+            .nodeify(done);
+    });
+
     it('should create startup projects and fallback owner to creator', function (done) {
         var _gmeConfig = JSON.parse(JSON.stringify(gmeConfig)),
             serverBaseUrl;
