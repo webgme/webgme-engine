@@ -231,6 +231,23 @@ function validateConfig(configOrFileName) {
     assertBoolean('config.seedProjects.enable', config.seedProjects.enable);
     assertString('config.seedProjects.defaultProject', config.seedProjects.defaultProject);
     assertArray('config.seedProjects.basePaths', config.seedProjects.basePaths);
+    assertArray('config.seedProjects.createAtStartup', config.seedProjects.createAtStartup);
+    config.seedProjects.createAtStartup.forEach(function (seedInfo, index) {
+        assertObject('config.seedProjects.createAtStartup[' + index + ']', config.seedProjects.createAtStartup[index]);
+        assertString('config.seedProjects.createAtStartup[' + index + '].seedId',
+            config.seedProjects.createAtStartup[index].seedId);
+        assertString('config.seedProjects.createAtStartup[' + index + '].projectName', seedInfo.projectName);
+        assertObject('config.seedProjects.createAtStartup[' + index + '].rights', seedInfo.rights);
+        if (seedInfo.creatorId) {
+            assertString('config.seedProjects.createAtStartup[' + index + '].creatorId', seedInfo.creatorId);
+        } else if (typeof config.authentication.adminAccount !== 'string') {
+            throw new Error('Either config.seedProjects.createAtStartup[' + index +
+                '].creatorId or config.authentication.adminAccount should exists!');
+        }
+        if (seedInfo.ownerId) {
+            assertString('config.seedProjects.createAtStartup[' + index + '].ownerId', seedInfo.ownerId);
+        }
+    });
 
     // server configuration
     expectedKeys.push('server');

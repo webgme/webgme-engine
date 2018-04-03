@@ -1,4 +1,4 @@
-/*globals*/
+/*globals requireJS*/
 /*eslint-env node*/
 
 /**
@@ -13,6 +13,7 @@ var fs = require('fs'),
     Q = require('q'),
     path = require('path'),
     requireUncached = require('require-uncached'),
+    storageUtils = requireJS('common/storage/util'),
     SVGMapDeffered;
 
 function walkDir(dir, done) {
@@ -416,6 +417,92 @@ function getComponentsJson(logger, callback) {
     return deferred.promise.nodeify(callback);
 }
 
+function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
+    var deferred = Q.defer(),
+        WorkerRequest = require('./server/worker/workerrequests'),
+        worker = new WorkerRequest(logger.fork('worker'), gmeConfig, url),
+        configArray = JSON.parse(JSON.stringify(gmeConfig.seedProjects.createAtStartup)),
+        promises = [],
+        creators = [],
+        tokens = [],
+        createdProjects = [],
+        isProjectExists = function (projectId, list) {
+            var exists = false;
+
+            list.forEach(function (projectInfo) {
+                if (projectInfo._id === projectId) {
+                    exists = true;
+                }
+            });
+            return exists;
+        };
+
+
+    configArray.forEach(function (projectInfo) {
+        projectInfo.creatorId = projectInfo.creatorId || gmeConfig.authentication.admin;
+        projectInfo.ownerId = projectInfo.ownerId || projectInfo.creatorId;
+
+        if (creators.indexOf(projectInfo.creatorId) === -1) {
+            creators.push(projectInfo.creatorId);
+            promises.push(gmeAuth.generateJWTokenForAuthenticatedUser(projectInfo.creatorId));
+        }
+    });
+
+    Q.all(promises)
+        .then(function (tokens_) {
+            var promises = [];
+
+            tokens = tokens_;
+            creators.forEach(function (owner) {
+                promises.push(storage.getProjects({username: owner}));
+            });
+
+            return Q.all(promises);
+        })
+        .then(function (projectLists) {
+            promises = [];
+            configArray.forEach(function (projectInfo) {
+                var index = creators.indexOf(projectInfo.creatorId),
+                    id = storageUtils.getProjectIdFromOwnerIdAndProjectName(projectInfo.ownerId,
+                        projectInfo.projectName);
+
+                if (isProjectExists(id, projectLists[index]) === false) {
+                    createdProjects.push(projectInfo);
+                    logger.info('Creating \'' + projectInfo.projectName + '\' for \'' + projectInfo.ownerId +
+                        '\' from seed[' + projectInfo.seedId + '].');
+                    promises.push(Q.ninvoke(worker, 'seedProject', tokens[index], projectInfo.projectName,
+                        projectInfo.ownerId, {seedName: projectInfo.seedId, type: 'file'}));
+                }
+            });
+
+            return Q.all(promises);
+        })
+        .then(function () {
+            var authorizationRequests = [],
+                projectAuthParams = {
+                    entityType: gmeAuth.authorizer.ENTITY_TYPES.PROJECT
+                };
+
+            createdProjects.forEach(function (projectInfo) {
+                var userOrOrg,
+                    id = storageUtils.getProjectIdFromOwnerIdAndProjectName(projectInfo.ownerId,
+                        projectInfo.projectName);
+
+                for (userOrOrg in projectInfo.rights) {
+                    logger.info('Authorizing \'' + userOrOrg + '\' to use \'' + projectInfo.projectName +
+                        '\' of \'' + projectInfo.ownerId + '.');
+                    authorizationRequests.push(gmeAuth.authorizer.setAccessRights(userOrOrg,
+                        id, projectInfo.rights[userOrOrg], projectAuthParams));
+                }
+            });
+
+            return Q.all(authorizationRequests);
+        })
+        .then(deferred.resolve)
+        .catch(deferred.reject);
+    return deferred.promise;
+}
+
 module.exports = {
     isGoodExtraAsset: isGoodExtraAsset,
     getComponentNames: getComponentNames,
@@ -430,5 +517,6 @@ module.exports = {
     getRedirectUrlParameter: getRedirectUrlParameter,
     getSeedDictionary: getSeedDictionary,
     getSeedDictionarySync: getSeedDictionarySync,
-    getComponentsJson: getComponentsJson
+    getComponentsJson: getComponentsJson,
+    createStartUpProjects: createStartUpProjects,
 };

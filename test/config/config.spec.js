@@ -128,6 +128,55 @@ describe('configuration and components', function () {
         }
     });
 
+    it('should throw if projectSeeds.createAtStartup is malformed',
+        function () {
+            var config;
+            process.env.NODE_ENV = 'test';
+            config = require('../../config');
+            unloadConfigs();
+            validateConfig = require('../../config/validator').validateConfig;
+
+            (function () {
+                var myConf = JSON.parse(JSON.stringify(config));
+                myConf.seedProjects.createAtStartup = [{seedId: 'EmptyProjecct', projectName: 'One', rights: {}}];
+                validateConfig(myConf);
+            }).should.throw(Error);
+            (function () {
+                var myConf = JSON.parse(JSON.stringify(config));
+                myConf.seedProjects.createAtStartup = 'fault';
+                validateConfig(myConf);
+            }).should.throw(Error);
+
+            (function () {
+                var myConf = JSON.parse(JSON.stringify(config));
+                myConf.seedProjects.createAtStartup = [{projectName: 'One', ownerId: 'admin', rights: {}}];
+                validateConfig(myConf);
+            }).should.throw(Error);
+
+            (function () {
+                var myConf = JSON.parse(JSON.stringify(config));
+                myConf.seedProjects.createAtStartup = [{
+                    seedId: 'EmptyProjecct',
+                    projectName: 'One',
+                    creatorId: 'admin',
+                    rights: {}
+                }];
+                validateConfig(myConf);
+            }).should.not.throw(Error);
+
+            (function () {
+                var myConf = JSON.parse(JSON.stringify(config));
+                myConf.authentication.adminAccount = 'admin';
+                myConf.seedProjects.createAtStartup = [{
+                    seedId: 'EmptyProjecct',
+                    projectName: 'One',
+                    rights: {}
+                }];
+                validateConfig(myConf);
+            }).should.not.throw(Error);
+        }
+    );
+
     it('clientconfig should not expose mongo', function () {
         var config,
             clientConfig;

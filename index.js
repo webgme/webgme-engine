@@ -10,7 +10,7 @@ var requirejs = require('requirejs'),
     path = require('path'),
     requireJsBase = path.join(__dirname, 'src'),
     fs = require('fs'),
-    webgmeUtils = require('./src/utils'),
+    webgmeUtils,
     _core,
     _canon,
     _Logger,
@@ -35,6 +35,8 @@ requirejs.config({
         executor: 'common/executor'
     }
 });
+
+webgmeUtils = require('./src/utils');
 
 function addToRequireJsPaths(gmeConfig) {
 

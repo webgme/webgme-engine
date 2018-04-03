@@ -245,6 +245,9 @@ function StandAloneServer(gmeConfig) {
 
                 return serverDeferred.promise;
             })
+            .then(function () {
+                return webgmeUtils.createStartUpProjects(gmeConfig, __gmeAuth, __storage, logger, getUrl());
+            })
             .nodeify(function (err) {
                 self.isRunning = true;
                 if (err) {
