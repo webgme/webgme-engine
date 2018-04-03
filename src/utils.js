@@ -466,7 +466,6 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
                     id = storageUtils.getProjectIdFromOwnerIdAndProjectName(projectInfo.ownerId,
                         projectInfo.projectName);
 
-                console.log(projectLists[index], id);
                 if (isProjectExists(id, projectLists[index]) === false) {
                     createdProjects.push(projectInfo);
                     logger.info('Creating \'' + projectInfo.projectName + '\' for \'' + projectInfo.ownerId +
