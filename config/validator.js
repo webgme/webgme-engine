@@ -115,6 +115,7 @@ function validateConfig(configOrFileName) {
     assertBooleanOrString('config.authentication.allowUserRegistration', config.authentication.allowUserRegistration);
     assertBoolean('config.authentication.registeredUsersCanCreate', config.authentication.registeredUsersCanCreate);
     assertBoolean('config.authentication.inferredUsersCanCreate', config.authentication.inferredUsersCanCreate);
+    assertBoolean('config.authentication.guestCanCreate', config.authentication.guestCanCreate);
     assertString('config.authentication.guestAccount', config.authentication.guestAccount);
     assertString('config.authentication.logOutUrl', config.authentication.logOutUrl);
     assertNumber('config.authentication.salts', config.authentication.salts);
@@ -122,6 +123,14 @@ function validateConfig(configOrFileName) {
     assertNumber('config.authentication.jwt.expiresIn', config.authentication.jwt.expiresIn);
     assertString('config.authentication.jwt.privateKey', config.authentication.jwt.privateKey);
     assertString('config.authentication.jwt.publicKey', config.authentication.jwt.publicKey);
+    assertArray('config.authentication.publicOrganizations', config.authentication.publicOrganizations);
+    config.authentication.publicOrganizations.forEach(function (publicOrg, idx) {
+        assertString('config.authentication.publicOrganizations[' + idx, ']', publicOrg);
+    });
+
+    if (config.authentication.adminAccount) {
+        assertString('config.authentication.adminAccount', config.authentication.adminAccount);
+    }
 
     // bin scripts
     expectedKeys.push('bin');
