@@ -1,4 +1,4 @@
-/*globals*/
+/*globals requireJS*/
 /*eslint-env node*/
 
 /**
@@ -420,7 +420,8 @@ function getComponentsJson(logger, callback) {
 function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
     var deferred = Q.defer(),
         existingProjectIds = [],
-        worker = new require('./server/worker/workerrequests')(logger.fork('worker'), gmeConfig, url),
+        WorkerRequest = require('./server/worker/workerrequests'),
+        worker = new WorkerRequest(logger.fork('worker'), gmeConfig, url),
         projectsToCreate = [];
 
 
@@ -501,8 +502,28 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
             return Q.all(promises);
         })
         .then(function () {
-            deferred.resolve(null);
+            var authorizationRequests = [],
+                projectAuthParams = {
+                    entityType: gmeAuth.authorizer.ENTITY_TYPES.PROJECT
+                };
+
+            projectsToCreate.forEach(function (projectInfo) {
+                var userOrOrg,
+                    id = storageUtils.getProjectIdFromOwnerIdAndProjectName(projectInfo.ownerId,
+                        projectInfo.projectName);
+
+                if (projectInfo.failed) {
+                    return;
+                }
+
+                for (userOrOrg in projectInfo.rights) {
+                    authorizationRequests.push(gmeAuth.authorizer.setAccessRights(userOrOrg,
+                        id, projectInfo.rights[userOrOrg], projectAuthParams));
+                }
+            });
+            return Q.all(authorizationRequests);
         })
+        .then(deferred.resolve)
         .catch(deferred.reject);
     return deferred.promise;
 }
