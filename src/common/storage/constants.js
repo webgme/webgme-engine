@@ -80,7 +80,17 @@
         MONGO_ID: '_id',
         COMMIT_TYPE: 'commit',
         OVERLAY_SHARD_TYPE: 'shard',
-        PROJECT_INFO_KEYS: ['createdAt', 'creator', 'viewedAt', 'viewer', 'modifiedAt', 'modifier', 'kind'],
+        PROJECT_INFO_KEYS: [
+            'createdAt',
+            'creator',
+            'viewedAt',
+            'viewer',
+            'modifiedAt',
+            'modifier',
+            'kind',
+            'description',
+            'icon'
+        ],
         EMPTY_PROJECT_DATA: 'empty',
         PROJECT_ID_SEP: '+',
         PROJECT_DISPLAYED_NAME_SEP: '/',

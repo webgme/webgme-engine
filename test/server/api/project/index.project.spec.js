@@ -456,6 +456,19 @@ describe('PROJECT REST API', function () {
                     });
             });
 
+            it('should patch description info for project /projects/:ownerId/:projectId', function (done) {
+                agent.patch(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName))
+                    .send({description: 'this is a nice project'})
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body).to.have.property('info');
+                        expect(res.body.info).to.include.keys('creator', 'viewer', 'modifier',
+                            'createdAt', 'viewedAt', 'modifiedAt', 'description', 'icon');
+                        expect(res.body.info.description).to.equal('this is a nice project');
+                        done();
+                    });
+            });
+
             it('should not patch info for project if no write access /projects/:ownerId/:projectId', function (done) {
                 agent.patch(server.getUrl() + '/api/projects/' + projectName2APIPath(unauthorizedProjectName))
                     .send({creator: 'PerAlbinHansson'})

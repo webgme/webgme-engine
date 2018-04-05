@@ -8,7 +8,7 @@
 var testFixture = require('../../../_globals.js');
 
 
-describe.only('USERS REST API', function () {
+describe('USERS REST API', function () {
     'use strict';
 
     var gmeConfig = testFixture.getGmeConfig(),
