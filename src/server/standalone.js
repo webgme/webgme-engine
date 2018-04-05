@@ -431,7 +431,8 @@ function StandAloneServer(gmeConfig) {
                                 req.userData = {
                                     token: newToken,
                                     newToken: true,
-                                    userId: result.content.userId
+                                    userId: result.content.userId,
+                                    displayName: result.content.displayName
                                 };
                                 logger.debug('generated new token for user', result.content.userId);
                                 res.cookie(gmeConfig.authentication.jwt.cookieId, newToken);
@@ -442,7 +443,8 @@ function StandAloneServer(gmeConfig) {
                     } else {
                         req.userData = {
                             token: token,
-                            userId: result.content.userId
+                            userId: result.content.userId,
+                            displayName: result.content.displayName
                         };
 
                         res.cookie(gmeConfig.authentication.jwt.cookieId, token);

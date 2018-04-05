@@ -228,7 +228,10 @@ function createAPI(app, mountPath, middlewareOpts) {
                 if (err.message.indexOf('no such user') === 0) {
                     logger.info('Authenticated user did not exist in db, adding:', userId);
                     gmeAuth.addUser(userId, 'em@il', GUID(),
-                        gmeConfig.authentication.inferredUsersCanCreate, {overwrite: false})
+                        gmeConfig.authentication.inferredUsersCanCreate, {
+                            overwrite: false,
+                            displayName: req.userData.displayName
+                        })
                         .then(function (/*userData*/) {
                             return gmeAuth.getUser(userId);
                         })

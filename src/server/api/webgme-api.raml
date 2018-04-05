@@ -223,6 +223,12 @@ resourceTypes:
       description: If true and <b>user.siteAdmin</b> disabled users will be included in response.
       example: true
       required: false
+     displayName:
+      displayName: displayName
+      type: boolean
+      description: If true users with display name will be listed (only id and displayName will be in the response).
+      example: true
+      required: false
     responses:
       200:
         body:
