@@ -16,6 +16,10 @@ describe('USER REST API', function () {
         WebGME = testFixture.WebGME,
         expect = testFixture.expect,
         Q = testFixture.Q,
+        fs = require('fs'),
+        jwt = require('jsonwebtoken'),
+        privateKey,
+
 
         superagent = testFixture.superagent;
 
@@ -577,6 +581,8 @@ describe('USER REST API', function () {
                 gmeConfig.authentication.registeredUsersCanCreate = true;
 
                 server = WebGME.standaloneServer(gmeConfig);
+                privateKey = fs.readFileSync(gmeConfig.authentication.jwt.privateKey, 'utf8');
+
                 server.start(done);
             });
 
@@ -731,6 +737,60 @@ describe('USER REST API', function () {
                             });
                     })
                     .catch(done);
+            });
+
+            it('should create user when token in query has displayName', function (done) {
+                var userId = 'user_with_displayName',
+                    dName = 'My Name';
+
+                Q.ninvoke(jwt, 'sign', {userId: userId, displayName: dName}, privateKey, {
+                    algorithm: gmeConfig.authentication.jwt.algorithm,
+                    expiresIn: gmeConfig.authentication.jwt.expiresIn
+                })
+                    .then(function (token) {
+                        agent.get(server.getUrl() + '/api/v1/user')
+                            .query({token: token})
+                            .end(function (err, res) {
+                                try {
+                                    expect(res.status).equal(200, err);
+                                    expect(res.body._id).equal(userId);
+                                    expect(res.body.displayName).equal(dName);
+                                    expect(res.body.canCreate).equal(false);
+                                    expect(res.body.settings).to.deep.equal({});
+                                } catch (e) {
+                                    err = e;
+                                }
+
+                                done(err);
+                            });
+                    });
+            });
+
+            it('should create user when token in bearer has displayName', function (done) {
+                var userId = 'user_with_displayName',
+                    dName = 'My Name';
+
+                Q.ninvoke(jwt, 'sign', {userId: userId, displayName: dName}, privateKey, {
+                    algorithm: gmeConfig.authentication.jwt.algorithm,
+                    expiresIn: gmeConfig.authentication.jwt.expiresIn
+                })
+                    .then(function (token) {
+                        agent.get(server.getUrl() + '/api/v1/user')
+                            .set('Authorization', 'Bearer ' + token)
+                            .end(function (err, res) {
+                                try {
+                                    expect(res.status).equal(200, err);
+                                    expect(res.body._id).equal(userId);
+                                    expect(res.body.displayName).equal(dName);
+                                    expect(res.body.canCreate).equal(false);
+                                    expect(res.body.settings).to.deep.equal({});
+                                } catch (e) {
+                                    err = e;
+                                }
+
+                                done(err);
+                            });
+                    });
             });
 
             it('should 401 when user identified via token but user is disabled', function (done) {

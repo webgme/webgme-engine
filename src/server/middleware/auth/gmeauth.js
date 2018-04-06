@@ -496,9 +496,12 @@ function GMEAuth(session, gmeConfig) {
                 if (userData.hasOwnProperty('canCreate')) {
                     oldUserData.canCreate = userData.canCreate === 'true' || userData.canCreate === true;
                 }
+
                 if (userData.hasOwnProperty('siteAdmin')) {
                     oldUserData.siteAdmin = userData.siteAdmin === 'true' || userData.siteAdmin === true;
                 }
+
+                oldUserData.displayName = userData.displayName || oldUserData.displayName;
 
                 if (userData.password) {
                     return Q.ninvoke(bcrypt, 'hash', userData.password, gmeConfig.authentication.salts)
@@ -655,7 +658,8 @@ function GMEAuth(session, gmeConfig) {
                 projects: {},
                 type: CONSTANTS.USER,
                 orgs: [],
-                siteAdmin: options.siteAdmin
+                siteAdmin: options.siteAdmin,
+                displayName: options.displayName,
             };
 
         if (options.hasOwnProperty('data')) {

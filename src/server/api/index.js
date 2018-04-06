@@ -48,7 +48,8 @@ function createAPI(app, mountPath, middlewareOpts) {
         registerEndPoint = typeof gmeConfig.authentication.allowUserRegistration === 'string' ?
             require(gmeConfig.authentication.allowUserRegistration)(middlewareOpts) :
             require('./defaultRegisterEndPoint')(middlewareOpts),
-        seedToBlobHash = {};
+        seedToBlobHash = {},
+        paths;
 
     app.get(apiDocumentationMountPoint, function (req, res) {
         res.sendFile(path.join(__dirname, '..', '..', '..', 'docs', 'REST', 'index.html'));
@@ -227,7 +228,10 @@ function createAPI(app, mountPath, middlewareOpts) {
                 if (err.message.indexOf('no such user') === 0) {
                     logger.info('Authenticated user did not exist in db, adding:', userId);
                     gmeAuth.addUser(userId, 'em@il', GUID(),
-                        gmeConfig.authentication.inferredUsersCanCreate, {overwrite: false})
+                        gmeConfig.authentication.inferredUsersCanCreate, {
+                            overwrite: false,
+                            displayName: req.userData.displayName
+                        })
                         .then(function (/*userData*/) {
                             return gmeAuth.getUser(userId);
                         })
@@ -512,35 +516,43 @@ function createAPI(app, mountPath, middlewareOpts) {
             query,
             projection;
 
-        gmeAuth.getUser(userId)
-            .then(function (userData_) {
-                var doGetProjects = userId !== gmeConfig.authentication.guestAccount && !userData_.siteAdmin;
-                userData = userData_;
+        if (req.query.displayName) {
+            gmeAuth.listUsers({displayName: {$type: 'string'}}, {displayName: 1})
+                .then(function (result) {
+                    res.json(result);
+                })
+                .catch(next);
+        } else {
+            gmeAuth.getUser(userId)
+                .then(function (userData_) {
+                    var doGetProjects = userId !== gmeConfig.authentication.guestAccount && !userData_.siteAdmin;
+                    userData = userData_;
 
-                if (req.query.includeDisabled && userData.siteAdmin) {
-                    query = {disabled: undefined};
-                }
+                    if (req.query.includeDisabled && userData.siteAdmin) {
+                        query = {disabled: undefined};
+                    }
 
-                if (userId === gmeConfig.authentication.guestAccount) {
-                    query = {_id: userId};
-                } else if (!userData.siteAdmin) {
-                    projection = {
-                        data: 0,
-                        settings: 0,
-                        email: 0,
-                        password: 0
-                    };
-                }
+                    if (userId === gmeConfig.authentication.guestAccount) {
+                        query = {_id: userId};
+                    } else if (!userData.siteAdmin) {
+                        projection = {
+                            data: 0,
+                            settings: 0,
+                            email: 0,
+                            password: 0
+                        };
+                    }
 
-                return Q.all([
-                    doGetProjects ? safeStorage.getProjects({username: userId}) : Q.resolve([]),
-                    gmeAuth.listUsers(query, projection)
-                ]);
-            })
-            .then(function (results) {
-                res.json(filterUsersOrOrgs(userData, results[0], results[1]));
-            })
-            .catch(next);
+                    return Q.all([
+                        doGetProjects ? safeStorage.getProjects({username: userId}) : Q.resolve([]),
+                        gmeAuth.listUsers(query, projection)
+                    ]);
+                })
+                .then(function (results) {
+                    res.json(filterUsersOrOrgs(userData, results[0], results[1]));
+                })
+                .catch(next);
+        }
     });
 
     router.put('/users', function (req, res, next) {
@@ -1455,20 +1467,19 @@ function createAPI(app, mountPath, middlewareOpts) {
             });
     });
 
-    router.get(['/projects/:ownerId/:projectName/commits/:commitHash/export',
-        '/projects/:ownerId/:projectName/commits/:commitHash/export/*'], ensureAuthenticated,
-    function (req, res, next) {
+    paths = ['/projects/:ownerId/:projectName/commits/:commitHash/export',
+        '/projects/:ownerId/:projectName/commits/:commitHash/export/*'];
+    router.get(paths, ensureAuthenticated, function (req, res, next) {
         if (req.params[0] === undefined || req.params[0] === '') {
             exportProject(req, res, next);
         } else {
             exportModel(req, res, next);
         }
-    }
-    );
+    });
 
-    router.get(['/projects/:ownerId/:projectName/commits/:commitHash/tree',
-        '/projects/:ownerId/:projectName/commits/:commitHash/tree/*'], ensureAuthenticated,
-    function (req, res, next) {
+    paths = ['/projects/:ownerId/:projectName/commits/:commitHash/tree',
+        '/projects/:ownerId/:projectName/commits/:commitHash/tree/*'];
+    router.get(paths, ensureAuthenticated, function (req, res, next) {
         var userId = getUserId(req),
             projectId = StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
                 req.params.projectName),
@@ -1485,8 +1496,7 @@ function createAPI(app, mountPath, middlewareOpts) {
                 }
                 next(err);
             });
-    }
-    );
+    });
 
     router.get('/projects/:ownerId/:projectName/compare/:branchOrCommitA...:branchOrCommitB',
         ensureAuthenticated,
@@ -1551,16 +1561,15 @@ function createAPI(app, mountPath, middlewareOpts) {
             });
     });
 
-    router.get(['/projects/:ownerId/:projectName/branches/:branchId/export',
-        '/projects/:ownerId/:projectName/branches/:branchId/export/*'], ensureAuthenticated,
-    function (req, res, next) {
+    paths = ['/projects/:ownerId/:projectName/branches/:branchId/export',
+        '/projects/:ownerId/:projectName/branches/:branchId/export/*'];
+    router.get(paths, ensureAuthenticated, function (req, res, next) {
         if (req.params[0] === undefined || req.params[0] === '') {
             exportProject(req, res, next);
         } else {
             exportModel(req, res, next);
         }
-    }
-    );
+    });
 
     router.patch('/projects/:ownerId/:projectName/branches/:branchId', function (req, res, next) {
         var userId = getUserId(req),
@@ -1643,9 +1652,9 @@ function createAPI(app, mountPath, middlewareOpts) {
         }
     );
 
-    router.get(['/projects/:ownerId/:projectName/branches/:branchId/tree',
-        '/projects/:ownerId/:projectName/branches/:branchId/tree/*'], ensureAuthenticated,
-    function (req, res, next) {
+    paths = ['/projects/:ownerId/:projectName/branches/:branchId/tree',
+        '/projects/:ownerId/:projectName/branches/:branchId/tree/*'];
+    router.get(paths, ensureAuthenticated, function (req, res, next) {
         var userId = getUserId(req),
             projectId = StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
                 req.params.projectName),
@@ -1672,8 +1681,7 @@ function createAPI(app, mountPath, middlewareOpts) {
                 }
                 next(err);
             });
-    }
-    );
+    });
 
     router.get('/projects/:ownerId/:projectName/tags', ensureAuthenticated, function (req, res, next) {
         var userId = getUserId(req),
@@ -1712,20 +1720,20 @@ function createAPI(app, mountPath, middlewareOpts) {
             });
     });
 
-    router.get(['/projects/:ownerId/:projectName/tags/:tagId/export',
-        '/projects/:ownerId/:projectName/tags/:tagId/export/*'], ensureAuthenticated,
-    function (req, res, next) {
+    paths = ['/projects/:ownerId/:projectName/tags/:tagId/export',
+        '/projects/:ownerId/:projectName/tags/:tagId/export/*'];
+
+    router.get(paths, ensureAuthenticated, function (req, res, next) {
         if (req.params[0] === undefined || req.params[0] === '') {
             exportProject(req, res, next);
         } else {
             exportModel(req, res, next);
         }
-    }
-    );
+    });
 
-    router.get(['/projects/:ownerId/:projectName/tags/:tagId/tree',
-        '/projects/:ownerId/:projectName/tags/:tagId/tree/*'], ensureAuthenticated,
-    function (req, res, next) {
+    paths = ['/projects/:ownerId/:projectName/tags/:tagId/tree',
+        '/projects/:ownerId/:projectName/tags/:tagId/tree/*'];
+    router.get(paths, ensureAuthenticated, function (req, res, next) {
         var userId = getUserId(req),
             projectId = StorageUtil.getProjectIdFromOwnerIdAndProjectName(req.params.ownerId,
                 req.params.projectName),
@@ -1751,8 +1759,7 @@ function createAPI(app, mountPath, middlewareOpts) {
                 }
                 next(err);
             });
-    }
-    );
+    });
 
     router.put('/projects/:ownerId/:projectName/tags/:tagId', function (req, res, next) {
         var userId = getUserId(req),

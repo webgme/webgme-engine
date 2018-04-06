@@ -102,7 +102,8 @@ describe('metadatastorage', function () {
             .then(function (data) {
                 expect(data.info).to.deep.equal({
                     createdAt: 'aBitLater', modifiedAt: null, viewedAt: null,
-                    viewer: null, modifier: null, creator: null, kind: null
+                    viewer: null, modifier: null, creator: null, kind: null,
+                    description: null, icon: null
                 });
             })
             .nodeify(done);
@@ -120,7 +121,8 @@ describe('metadatastorage', function () {
             .then(function (data) {
                 expect(data.info).to.deep.equal({
                     createdAt: 'justNow', modifiedAt: null, viewedAt: null,
-                    viewer: null, modifier: null, creator: null, kind: null
+                    viewer: null, modifier: null, creator: null, kind: null,
+                    description: null, icon: null
                 });
             })
             .nodeify(done);
@@ -138,7 +140,8 @@ describe('metadatastorage', function () {
             .then(function (data) {
                 expect(data.info).to.deep.equal({
                     createdAt: 'justNow', modifiedAt: null, viewedAt: null,
-                    viewer: null, modifier: null, creator: null, kind: null
+                    viewer: null, modifier: null, creator: null, kind: null,
+                    description: null, icon: null
                 });
             })
             .nodeify(done);
@@ -156,7 +159,9 @@ describe('metadatastorage', function () {
                 creator: 'user',
                 viewer: 'user',
                 modifier: 'user',
-                kind: 'someKindOfProject'
+                kind: 'someKindOfProject',
+                description: '',
+                icon: null
             };
         store.addProject(ownerName, projectName, info)
             .then(function (projectId) {
