@@ -1,8 +1,6 @@
 ## Binary Large Object Storage ##
 
 ### TODO ###
-
-- test file upload bigger than 1MB through UI
 - gracefully log soft link circular references
 - add object compare function - complex objects might have the same content even though the hashes are not the same.
 
@@ -36,12 +34,6 @@
 
 
 ### Limitations ###
-
-- `complex` artifact cannot be bigger than 1GB. Storage can store it, but jszip cannot create a zip package to download it.
- V8 max buffer size is 1GB (kMaxLength).
- We need a different implementation to generate the zip.
-
-
 
 ### Design ###
 

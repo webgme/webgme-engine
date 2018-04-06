@@ -427,6 +427,27 @@ define([
         return deferred.promise.nodeify(callback);
     };
 
+    /**
+     * If running under nodejs and getting large objects use this method to pipe the downloaded
+     * object to your provided writeStream.
+     * @example
+     * // Piping object to the filesystem..
+     * var writeStream = fs.createWriteStream('my.zip');
+     *
+     * writeStream.on('error', function (err) {
+     *   // handle error
+     * });
+     *
+     * writeStream.on('finish', function () {
+     *   // my.zip exists at this point
+     * });
+     *
+     * blobClient.getStreamObject(metadataHash, writeStream);
+     *
+     * @param {string} metadataHash - hash of metadata for object.
+     * @param {Writable Stream} writeStream - write stream the requested data will be piped to.
+     * @param {string} [subpath] - optional file-like path to sub-object if complex blob
+     */
     BlobClient.prototype.getStreamObject = function (metadataHash, writeStream, subpath) {
         this.logger.debug('getStreamObject', metadataHash, subpath);
 
