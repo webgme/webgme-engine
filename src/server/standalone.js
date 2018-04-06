@@ -390,7 +390,8 @@ function StandAloneServer(gmeConfig) {
                                 req.userData = {
                                     token: newToken,
                                     newToken: true,
-                                    userId: result.content.userId
+                                    userId: result.content.userId,
+                                    displayName: result.content.displayName
                                 };
 
                                 // TODO: Is this the correct way of doing it?
@@ -401,7 +402,8 @@ function StandAloneServer(gmeConfig) {
                     } else {
                         req.userData = {
                             token: token,
-                            userId: result.content.userId
+                            userId: result.content.userId,
+                            displayName: result.content.displayName
                         };
                         next();
                     }
