@@ -364,11 +364,8 @@ define([
         }
 
         if (typeof window === 'undefined') {
-            req.agent(this.keepaliveAgent);
-        }
-
-        if (typeof window === 'undefined') {
             // running on node
+            req.agent(this.keepaliveAgent);
             var Writable = require('stream').Writable;
             var BuffersWritable = function (options) {
                 Writable.call(this, options);
@@ -428,6 +425,24 @@ define([
         }
 
         return deferred.promise.nodeify(callback);
+    };
+
+    BlobClient.prototype.getStreamObject = function (metadataHash, writeStream, subpath) {
+        this.logger.debug('getStreamObject', metadataHash, subpath);
+
+        var req = superagent.get(this.getViewURL(metadataHash, subpath));
+
+        if (this.webgmeToken) {
+            req.set('Authorization', 'Bearer ' + this.webgmeToken);
+        }
+
+        if (typeof Buffer !== 'undefined') {
+            // running on node
+            req.agent(this.keepaliveAgent);
+            req.pipe(writeStream);
+        } else {
+            throw new Error('streamObject only supported under nodejs, use getObject instead.');
+        }
     };
 
     /**
