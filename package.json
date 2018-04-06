@@ -47,6 +47,7 @@
   "dependencies": {
     "adm-zip": "0.4.7",
     "agentkeepalive": "3.3.0",
+    "archiver": "^2.1.1",
     "aws-sdk": "2.142.0",
     "bcryptjs": "2.4.3",
     "body-parser": "1.18.2",
