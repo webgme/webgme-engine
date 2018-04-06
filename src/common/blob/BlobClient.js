@@ -445,7 +445,7 @@ define([
      * blobClient.getStreamObject(metadataHash, writeStream);
      *
      * @param {string} metadataHash - hash of metadata for object.
-     * @param {Writable Stream} writeStream - write stream the requested data will be piped to.
+     * @param {stream.Writable} writeStream - stream the requested data will be piped to.
      * @param {string} [subpath] - optional file-like path to sub-object if complex blob
      */
     BlobClient.prototype.getStreamObject = function (metadataHash, writeStream, subpath) {
