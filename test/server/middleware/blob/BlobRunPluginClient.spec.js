@@ -44,7 +44,7 @@ describe('BlobServer', function () {
         var bc = new BlobClient(blobBackend, logger.fork('blob'));
 
         bc.getObject('invalid', function (err /*, res*/) {
-            if (err === 'Blob hash is invalid') {
+            if (err.message === 'Blob hash is invalid') {
                 done();
                 return;
             } else if (err) {

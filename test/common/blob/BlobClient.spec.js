@@ -16,6 +16,8 @@ describe('BlobClient', function () {
         expect = testFixture.expect,
         BlobClient = testFixture.BlobClient,
         Artifact = testFixture.requirejs('blob/Artifact'),
+        fs = testFixture.fs,
+        Q = testFixture.Q,
         server,
         nodeTLSRejectUnauthorized,
         bcParam = {};
@@ -60,8 +62,7 @@ describe('BlobClient', function () {
             expect(typeof bc.getDownloadURL === 'function').to.equal(true);
             expect(bc.getDownloadURL()).to.contain('download');
             expect(bc.getDownloadURL('1234567890abcdef')).to.contain('1234567890abcdef');
-            expect(bc.getDownloadURL('1234567890abcdef', 'some/path/to/a/file.txt')).
-                to.contain('1234567890abcdef/some%2Fpath%2Fto%2Fa%2Ffile.txt');
+            expect(bc.getDownloadURL('1234567890abcdef', 'some/path/to/a/file.txt')).to.contain('1234567890abcdef/some%2Fpath%2Fto%2Fa%2Ffile.txt');
         });
 
         it('getMetaDataUrl should be concatenation of origin and getRelativeMetaDataUrl', function () {
@@ -289,9 +290,9 @@ describe('BlobClient', function () {
         if (typeof global !== 'undefined') {
             it('should create zip', function (done) {
                 var data = base64DecToArr('UEsDBAoAAAAAACNaNkWtbMPDBwAAAAcAAAAIAAAAZGF0YS5ia' +
-                                          'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
-                                          'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
-                                          'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
+                    'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
+                    'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
+                    'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
                 createZip(data, done);
             });
         }
@@ -300,9 +301,9 @@ describe('BlobClient', function () {
             // need this in package.json: "node-remote": "localhost"
             it('should create zip from Buffer', function (done) {
                 var data = base64DecToArr('UEsDBAoAAAAAACNaNkWtbMPDBwAAAAcAAAAIAAAAZGF0YS5ia' +
-                                          'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
-                                          'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
-                                          'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
+                    'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
+                    'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
+                    'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
                 createZip(new Buffer(data), done);
             });
         }
@@ -587,7 +588,7 @@ describe('BlobClient', function () {
                 process.env.NODE_TLS_REJECT_UNAUTHORIZED = nodeTLSRejectUnauthorized;
                 proxy.close(function (err1) {
                     done(err || err1);
-                });      
+                });
             });
         });
 
@@ -650,9 +651,9 @@ describe('BlobClient', function () {
         if (typeof global !== 'undefined') {
             it('should create zip', function (done) {
                 var data = base64DecToArr('UEsDBAoAAAAAACNaNkWtbMPDBwAAAAcAAAAIAAAAZGF0YS5ia' +
-                                          'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
-                                          'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
-                                          'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
+                    'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
+                    'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
+                    'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
                 createZip(data, done);
             });
         }
@@ -661,9 +662,9 @@ describe('BlobClient', function () {
             // need this in package.json: "node-remote": "localhost"
             it('should create zip from Buffer', function (done) {
                 var data = base64DecToArr('UEsDBAoAAAAAACNaNkWtbMPDBwAAAAcAAAAIAAAAZGF0YS5ia' +
-                                          'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
-                                          'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
-                                          'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
+                    'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
+                    'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
+                    'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
                 createZip(new Buffer(data), done);
             });
         }
@@ -818,6 +819,78 @@ describe('BlobClient', function () {
                     });
                 });
             });
+        });
+
+        it('streamObject to a file', function (done) {
+            var bc = new BlobClient(bcParam),
+                artie = bc.createArtifact('artie');
+
+            Q.allDone([
+                artie.addFile('1.txt', 'text 1'),
+                artie.addFile('2.txt', 'text 2'),
+                artie.addFile('3.txt', 'text 3')
+            ])
+                .then(function () {
+                    return artie.save();
+                })
+                .then(function (metadataHash) {
+                    var zipFile = testFixture.path.join('test-tmp', 'streamed.zip'),
+                        deferred = Q.defer(),
+                        writeStream = fs.createWriteStream(zipFile);
+
+                    writeStream.on('error', function (err) {
+                        deferred.reject(err);
+                    });
+
+                    writeStream.on('finish', function () {
+                        deferred.resolve(zipFile);
+                    });
+
+                    bc.getStreamObject(metadataHash, writeStream);
+
+                    return deferred.promise;
+                })
+                .then(function (zip) {
+                    // This throws if it does not exist
+                    return Q.ninvoke(fs, 'unlink', zip);
+                })
+                .nodeify(done);
+        });
+
+        it('streamObject with subpath to a file', function (done) {
+            var bc = new BlobClient(bcParam),
+                artie = bc.createArtifact('artie');
+
+            Q.allDone([
+                artie.addFile('1.txt', 'text 1'),
+                artie.addFile('2.txt', 'text 2'),
+                artie.addFile('3.txt', 'text 3')
+            ])
+                .then(function () {
+                    return artie.save();
+                })
+                .then(function (metadataHash) {
+                    var txtFile = testFixture.path.join('test-tmp', '1.txt'),
+                        deferred = Q.defer(),
+                        writeStream = fs.createWriteStream(txtFile);
+
+                    writeStream.on('error', function (err) {
+                        deferred.reject(err);
+                    });
+
+                    writeStream.on('finish', function () {
+                        deferred.resolve(txtFile);
+                    });
+
+                    bc.getStreamObject(metadataHash, writeStream, '1.txt');
+
+                    return deferred.promise;
+                })
+                .then(function (txtFile) {
+                    // This throws if it does not exist
+                    return Q.ninvoke(fs, 'unlink', txtFile);
+                })
+                .nodeify(done);
         });
     });
 

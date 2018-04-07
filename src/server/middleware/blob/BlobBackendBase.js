@@ -3,13 +3,15 @@
 
 /**
  * @author lattmann / https://github.com/lattmann
+ * @author pmeijer / https://github.com/pmeijer
  */
 
 'use strict';
 
 var fs = require('fs'),
-    JSZip = require('jszip'),
     mime = require('mime'),
+    archiver = require('archiver'),
+    Q = require('q'),
 
     GUID = requireJS('common/util/guid'),
     BlobMetadata = requireJS('blob/BlobMetadata'),
@@ -100,7 +102,7 @@ BlobBackendBase.prototype.putFile = function (name, readStream, callback) {
 
 BlobBackendBase.prototype.getFile = function (metadataHash, subpath, writeStream, callback) {
     if (BlobConfig.hashRegex.test(metadataHash) === false) {
-        callback('Blob hash is invalid');
+        callback(new Error('Blob hash is invalid'));
         return;
     }
     // TODO: get metadata
@@ -116,6 +118,43 @@ BlobBackendBase.prototype.getFile = function (metadataHash, subpath, writeStream
             return;
         }
 
+        var tempFiles = [],
+            contentKeys,
+            archive;
+
+        function addToZipRec() {
+            var subpartName = contentKeys.pop();
+            if (typeof subpartName === 'string') {
+                var subpartHash = metadata.content[subpartName].content,
+                    subpartType = metadata.content[subpartName].contentType,
+                    contentTemp = GUID() + '.tmp',
+                    writeStream2 = fs.createWriteStream(contentTemp),
+                    promise;
+
+                tempFiles.push(contentTemp);
+
+                if (subpartType === BlobMetadata.CONTENT_TYPES.OBJECT) {
+                    promise = Q.ninvoke(self, 'getObject', subpartHash, writeStream2, self.contentBucket);
+                } else if (subpartType === BlobMetadata.CONTENT_TYPES.SOFT_LINK) {
+                    promise = Q.ninvoke(self, 'getFile', subpartHash, '', writeStream2);
+                } else {
+                    // complex part within complex part is not supported
+                    promise = Q.reject(new Error('Subpart content type is not supported: '
+                        + subpartType + ' ' + subpartName + ' ' + subpartHash));
+                }
+
+                return promise.then(function () {
+                    archive.append(fs.createReadStream(contentTemp), {name: subpartName});
+                    addToZipRec();
+                }).catch(function (err) {
+                    callback(err);
+                });
+            } else {
+                // We've gone through all content
+                archive.finalize();
+            }
+        }
+
         if (metadata.contentType === BlobMetadata.CONTENT_TYPES.OBJECT) {
             self.getObject(metadata.content, writeStream, self.contentBucket, function (err) {
                 if (err) {
@@ -129,7 +168,7 @@ BlobBackendBase.prototype.getFile = function (metadataHash, subpath, writeStream
         } else if (metadata.contentType === BlobMetadata.CONTENT_TYPES.SOFT_LINK) {
             if (softLinkHashes.indexOf(metadataHash) > -1) {
                 // TODO: concat all soft link hashes
-                callback('Circular references in softLinks: ' + metadataHash);
+                callback(new Error('Circular references in softLinks: ' + metadataHash));
                 return;
             }
 
@@ -159,90 +198,39 @@ BlobBackendBase.prototype.getFile = function (metadataHash, subpath, writeStream
                     } else if (contentObj.contentType === BlobMetadata.CONTENT_TYPES.SOFT_LINK) {
                         self.getFile(contentObj.content, '', writeStream, callback);
                     } else {
-                        callback('subpath content type (' + contentObj.contentType +
-                            ') is not supported yet in content: ' + subpath);
+                        callback(new Error('subpath content type (' + contentObj.contentType +
+                            ') is not supported yet in content: ' + subpath));
                     }
                 } else {
-                    callback('subpath does not exist in content: ' + subpath);
+                    callback(new Error('subpath does not exist in content: ' + subpath));
                 }
             } else {
                 // return with the full content as a zip package
-                // FIXME: can we use zlib???
-                // TODO: this code MUST be reimplemented!!!
-                var zip = new JSZip();
+                contentKeys = Object.keys(metadata.content);
+                archive = archiver('zip', {
+                    zlib: {level: 0}
+                });
 
-                var keys = Object.keys(metadata.content);
-                var remaining = keys.length,
-                    subPartFunction = function (subpartHash, subpartType, subpartName) {
-                        // TODO: what if error?
-                        var contentTemp = GUID() + '.tmp';
-                        var writeStream2 = fs.createWriteStream(contentTemp);
+                archive.pipe(writeStream);
 
-                        var contentReadyCallback = function (/*err*/) {
+                archive.on('error', function (err) {
+                    callback(err);
+                });
 
-                            fs.readFile(contentTemp, function (err, data) {
-                                zip.file(subpartName, data);
+                archive.on('end', function () {
+                    writeStream.end();
+                    tempFiles.forEach(function (contentTemp) {
+                        fs.unlink(contentTemp, function () {
+                            // FIXME: Do we need to wait for this? And what about errors?
+                        });
+                    });
+                    callback(null, metadata);
+                });
 
-                                remaining -= 1;
-
-                                if (remaining === 0) {
-                                    var nodeBuffer = zip.generate({type: 'nodeBuffer'});
-                                    var tempFile = GUID() + '.zip';
-                                    fs.writeFile(tempFile, nodeBuffer, function (err) {
-                                        if (err) {
-                                            callback(err);
-                                            return;
-                                        }
-
-                                        var readStream = fs.createReadStream(tempFile);
-
-                                        // FIXME: is finish/end/close the right event?
-                                        writeStream.on('finish', function () {
-                                            callback(null, metadata);
-
-                                            fs.unlink(tempFile, function () {
-
-                                            });
-                                        });
-
-                                        readStream.pipe(writeStream);
-                                    });
-                                }
-
-                                fs.unlink(contentTemp, function () {
-
-                                });
-                            });
-                        };
-
-                        if (subpartType === BlobMetadata.CONTENT_TYPES.OBJECT) {
-                            self.getObject(subpartHash, writeStream2, self.contentBucket, contentReadyCallback);
-
-                        } else if (subpartType === BlobMetadata.CONTENT_TYPES.SOFT_LINK) {
-                            self.getFile(subpartHash, '', writeStream2, contentReadyCallback);
-
-                        } else {
-                            // complex part within complex part is not supported
-                            callback('Subpart content type is not supported: ' + subpartType + ' ' + subpartName +
-                            ' ' + subpartHash);
-                        }
-
-                    };
-
-                if (remaining === 0) {
-                    // empty zip no files contained
-                    // FIXME: this empty zip is not handled correctly.
-                    writeStream.end(); // pmeijer -> this seems to work
-                    callback(null, zip.generate({type: 'nodeBuffer'}), metadata.name);
-                    return;
-                }
-
-                for (var i = 0; i < keys.length; i += 1) {
-                    subPartFunction(metadata.content[keys[i]].content, metadata.content[keys[i]].contentType, keys[i]);
-                }
+                addToZipRec();
             }
         } else {
-            callback('not supported content type: ' + metadata.contentType);
+            callback(new Error('not supported content type: ' + metadata.contentType));
         }
     });
 };

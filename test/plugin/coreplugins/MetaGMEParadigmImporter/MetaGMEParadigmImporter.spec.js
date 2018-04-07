@@ -115,7 +115,7 @@ describe('Plugin MetaGMEParadigmImporter', function () {
             };
 
         pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
-            expect(err).to.equal('Blob hash is invalid');
+            expect(err.message).to.equal('Blob hash is invalid');
             expect(result.success).to.equal(false);
             done();
         });
@@ -131,7 +131,7 @@ describe('Plugin MetaGMEParadigmImporter', function () {
             };
 
         pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
-            expect(err).to.equal('Blob hash is invalid');
+            expect(err.message).to.equal('Blob hash is invalid');
             expect(result.success).to.equal(false);
             done();
         });
