@@ -185,6 +185,20 @@ ubuntu
  - Used by the GUI when highlighting/selecting the default project to seed from.
 - `config.seedProjects.basePaths = ['./seeds']`
  - List of directories where project seeds are stored.
+- `config.seedProjects.createAtStartup= []`
+ - Array of descriptions of projects to be created at server start up. The descriptions have the following form:
+```
+{
+  seedId: 'EmptyProject',
+  projectName: 'StartProject',
+  creatorId: 'siteAdminOrAnAdminInOwnerOrg', // If not given the creator will be the auth.admin
+  ownerId: 'MyPublicOrg' // If not given will be the creator
+  rights: {
+    MyPublicOrg: { read: true, write: false, delete: false }, // The owner will have full access by default
+    guest: { read: true }
+  }
+}
+```
 
 ##### server
 - `config.server.port = 8888`
