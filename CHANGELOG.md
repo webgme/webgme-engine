@@ -1,5 +1,37 @@
 # Change Log
 
+## [v2.19.7](https://github.com/webgme/webgme-engine/tree/v2.19.7) (2018-04-10)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.6...v2.19.7)
+
+**Implemented enhancements:**
+
+- Allow inferred users to have displayName [\#81](https://github.com/webgme/webgme-engine/issues/81)
+- Exception in mixin core when checking valid attribute of undefined attribute [\#65](https://github.com/webgme/webgme-engine/issues/65)
+- Remove restriction on zip file size of complex blob artifact [\#84](https://github.com/webgme/webgme-engine/pull/84) ([pmeijer](https://github.com/pmeijer))
+- Closes \#81 Allow inferred users to have displayName [\#83](https://github.com/webgme/webgme-engine/pull/83) ([kecso](https://github.com/kecso))
+- Closes \#78 Add support to specify seeds to be created at server start up [\#80](https://github.com/webgme/webgme-engine/pull/80) ([kecso](https://github.com/kecso))
+- Initiate graceful server shutdown on SIGTERM [\#69](https://github.com/webgme/webgme-engine/pull/69) ([pmeijer](https://github.com/pmeijer))
+- Add method getUserId on Project, Plugin and Client APIs [\#67](https://github.com/webgme/webgme-engine/pull/67) ([pmeijer](https://github.com/pmeijer))
+- Closes \#65 Exception in mixin core when checking valid attribute of undefined attribute. [\#66](https://github.com/webgme/webgme-engine/pull/66) ([kecso](https://github.com/kecso))
+
+**Fixed bugs:**
+
+- Exported project contains extra .webgmex [\#74](https://github.com/webgme/webgme-engine/issues/74)
+- Containment inheritance loop detection during node creation is missing [\#73](https://github.com/webgme/webgme-engine/issues/73)
+- "namespace" is not auto set when executing a plugin [\#71](https://github.com/webgme/webgme-engine/issues/71)
+- Fixes \#73 Containment inheritance loop detection during node creation is missing [\#76](https://github.com/webgme/webgme-engine/pull/76) ([kecso](https://github.com/kecso))
+- Fixes \#74 do not add extra webgmex at project export [\#75](https://github.com/webgme/webgme-engine/pull/75) ([pmeijer](https://github.com/pmeijer))
+- Use the activeObject for the nodeId on the client. Fixes \#71 [\#72](https://github.com/webgme/webgme-engine/pull/72) ([brollb](https://github.com/brollb))
+
+**Closed issues:**
+
+- Add support to specify seeds to be created at server start up [\#78](https://github.com/webgme/webgme-engine/issues/78)
+- Add support for public organizations and admin to be created at start up [\#77](https://github.com/webgme/webgme-engine/issues/77)
+
+**Merged pull requests:**
+
+- Fixes \#77 adds support for default admin account and public organization [\#79](https://github.com/webgme/webgme-engine/pull/79) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.19.6](https://github.com/webgme/webgme-engine/tree/v2.19.6) (2018-03-12)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.5...v2.19.6)
 
