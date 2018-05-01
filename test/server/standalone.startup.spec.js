@@ -193,7 +193,7 @@ describe('standalone startup with authentication turned on', function () {
         var _gmeConfig = JSON.parse(JSON.stringify(gmeConfig)),
             serverBaseUrl;
 
-        _gmeConfig.authentication.admin = 'admin';
+        _gmeConfig.authentication.adminAccount = 'admin';
         _gmeConfig.seedProjects.createAtStartup = [
             {
                 seedId: 'EmptyProject',
