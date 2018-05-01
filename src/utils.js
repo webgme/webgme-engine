@@ -440,13 +440,11 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
 
 
     configArray.forEach(function (projectInfo) {
-
-        projectInfo.creatorId = projectInfo.creatorId || gmeConfig.authentication.adminAccount;
-        projectInfo.ownerId = projectInfo.ownerId || projectInfo.creatorId;
-
         if (typeof admin === 'string' && !projectInfo.creatorId) {
             projectInfo.creatorId = admin.split(':')[0];
         }
+
+        projectInfo.ownerId = projectInfo.ownerId || projectInfo.creatorId;
 
         if (creators.indexOf(projectInfo.creatorId) === -1) {
             creators.push(projectInfo.creatorId);
