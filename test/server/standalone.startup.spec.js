@@ -193,7 +193,7 @@ describe('standalone startup with authentication turned on', function () {
         var _gmeConfig = JSON.parse(JSON.stringify(gmeConfig)),
             serverBaseUrl;
 
-        _gmeConfig.authentication.adminAccount = 'admin';
+        _gmeConfig.authentication.adminAccount = 'admin:pass';
         _gmeConfig.seedProjects.createAtStartup = [
             {
                 seedId: 'EmptyProject',
@@ -217,7 +217,7 @@ describe('standalone startup with authentication turned on', function () {
                     .end(function (err, res) {
                         expect(res.status).to.equal(200);
                         expect(res.body).to.have.length(1);
-                        expect(res.body[0].owner).to.equal(_gmeConfig.authentication.admin);
+                        expect(res.body[0].owner).to.equal('admin');
                         expect(res.body[0].info.kind).to.equal(_gmeConfig.seedProjects.createAtStartup[0].seedId);
                         deferred.resolve();
                     });
