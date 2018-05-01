@@ -439,7 +439,7 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
 
 
     configArray.forEach(function (projectInfo) {
-        projectInfo.creatorId = projectInfo.creatorId || gmeConfig.authentication.admin;
+        projectInfo.creatorId = projectInfo.creatorId || gmeConfig.authentication.adminAccount;
         projectInfo.ownerId = projectInfo.ownerId || projectInfo.creatorId;
 
         if (creators.indexOf(projectInfo.creatorId) === -1) {

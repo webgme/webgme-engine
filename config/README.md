@@ -50,6 +50,8 @@ ubuntu
  - Generate a guest account for non-authenticated connections.
 - `config.authentication.guestAccount = 'guest'`
  - User account which non-authenticated connections will access the storage.
+- `config.authentication.adminAccount = null`
+ - If specified, will create an admin account at the given username at server startup. By default a random password will be generated and logged in the terminal - to specify a password separate it with a `:`, e.g. `'admin:password'`. (Once the admin exists the password will not be updated at startup.)
 - `config.authentication.allowUserRegistration = true`
  - Allows user-creation via the REST api without being an authenticated site admin. Provide a path to a module if you want to add your own custom registration path (see [default register end-point](https://github.com/webgme/webgme/blob/master/src/server/api/defaultRegisterEndPoint.js) for structure).
 - `config.authentication.registeredUsersCanCreate = true`
