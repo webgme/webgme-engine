@@ -426,6 +426,7 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
         creators = [],
         tokens = [],
         createdProjects = [],
+        admin = gmeConfig.authentication.adminAccount,
         isProjectExists = function (projectId, list) {
             var exists = false;
 
@@ -439,8 +440,13 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
 
 
     configArray.forEach(function (projectInfo) {
+
         projectInfo.creatorId = projectInfo.creatorId || gmeConfig.authentication.adminAccount;
         projectInfo.ownerId = projectInfo.ownerId || projectInfo.creatorId;
+
+        if (typeof admin === 'string' && !projectInfo.creatorId) {
+            projectInfo.creatorId = admin.split(':')[0];
+        }
 
         if (creators.indexOf(projectInfo.creatorId) === -1) {
             creators.push(projectInfo.creatorId);
