@@ -15,6 +15,7 @@ describe('standalone http server with authentication turned on', function () {
         should = testFixture.should,
         superagent = testFixture.superagent,
         Q = testFixture.Q,
+        fs = testFixture.fs,
         logger,
         agent,
         server,
@@ -30,7 +31,8 @@ describe('standalone http server with authentication turned on', function () {
                     return result.socket;
                 })
                 .nodeify(callback);
-        };
+        },
+        gmeConfig;
 
     beforeEach(function () {
         agent = superagent.agent();
@@ -39,9 +41,9 @@ describe('standalone http server with authentication turned on', function () {
     before(function (done) {
         // we have to set the config here
         var project = 'project',
-            unauthorizedProject = 'unauthorized_project',
-            gmeConfig = testFixture.getGmeConfig();
+            unauthorizedProject = 'unauthorized_project';
 
+        gmeConfig = testFixture.getGmeConfig();
         logger = testFixture.logger.fork('standalone.auth.spec');
         gmeConfig.authentication.enable = true;
         gmeConfig.authentication.allowGuests = false;
@@ -74,7 +76,13 @@ describe('standalone http server with authentication turned on', function () {
                 ]);
             })
             .then(function () {
-                return gmeAuth.addUser('user', 'user@example.com', 'plaintext', true, {overwrite: true});
+                return Q.allDone([
+                    gmeAuth.addUser('user', 'user@example.com', 'plaintext', true, {overwrite: true}),
+                    gmeAuth.addUser('alreadyDisabled', 'user@example.com', 'plaintext', true, {
+                        overwrite: true,
+                        disabled: true,
+                    }),
+                ]);
             })
             .then(function () {
                 return gmeAuth.authorizeByUserId('user', testFixture.projectName2Id('project'),
@@ -261,4 +269,80 @@ describe('standalone http server with authentication turned on', function () {
                 done();
             });
     });
+
+    it('should infer a user with displayName landing on index.html with a token in the query', function (done) {
+        var jwt = require('jsonwebtoken');
+
+        return Q.nfcall(fs.readFile, gmeConfig.authentication.jwt.privateKey, 'utf8')
+            .then(function (privateKey) {
+                return Q.ninvoke(jwt, 'sign', {userId: '1801', displayName: 'A pretty name'}, privateKey, {
+                    algorithm: 'RS256',
+                    expiresIn: 30,
+                });
+            })
+            .then(function (token) {
+                var deferred = Q.defer();
+                agent.get(server.getUrl() + '/?token=' + token)
+                    .end(function (err, res) {
+                        if (err) {
+                            deferred.reject(err);
+                            return;
+                        }
+                        try {
+                            expect(res.status).to.equal(200);
+                        } catch (e) {
+                            deferred.reject(e);
+                        }
+
+                        deferred.resolve();
+                    });
+
+                return deferred.promise;
+            })
+            .then(function () {
+                return gmeAuth.getUser('1801');
+            })
+            .then(function (userData) {
+                expect(userData.displayName).to.equal('A pretty name');
+            })
+            .nodeify(done);
+    });
+
+    it('should not infer a user if one is there and disabled when landing on index.html with a token in the query',
+        function (done) {
+            var jwt = require('jsonwebtoken');
+
+            return Q.nfcall(fs.readFile, gmeConfig.authentication.jwt.privateKey, 'utf8')
+                .then(function (privateKey) {
+                    return Q.ninvoke(jwt, 'sign', {userId: 'alreadyDisabled', displayName: 'A pretty name'}, privateKey,
+                        {
+                            algorithm: 'RS256',
+                            expiresIn: 30,
+                        });
+                })
+                .then(function (token) {
+                    var deferred = Q.defer();
+                    agent.get(server.getUrl() + '/?token=' + token)
+                        .end(function (err, res) {
+                            try {
+                                expect(res.status).to.equal(401);
+                            } catch (e) {
+                                deferred.reject(e);
+                            }
+
+                            deferred.resolve();
+                        });
+
+                    return deferred.promise;
+                })
+                .then(function () {
+                    return gmeAuth.getUser('alreadyDisabled', {disabled: true});
+                })
+                .then(function (userData) {
+                    expect(userData.displayName).to.equal(null);
+                    expect(userData.disabled).to.equal(true);
+                })
+                .nodeify(done);
+        }
+    );
 });
