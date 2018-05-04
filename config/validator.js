@@ -128,8 +128,8 @@ function validateConfig(configOrFileName) {
         assertString('config.authentication.publicOrganizations[' + idx, ']', publicOrg);
     });
 
-    if (config.authentication.admin) {
-        assertString('config.authentication.admin', config.authentication.admin);
+    if (config.authentication.adminAccount) {
+        assertString('config.authentication.adminAccount', config.authentication.adminAccount);
     }
 
     // bin scripts

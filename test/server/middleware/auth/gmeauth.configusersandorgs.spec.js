@@ -27,7 +27,7 @@ describe('GME authentication config users and orgs', function () {
     it('Should create admin user with random password', function (done) {
         var gmeConfig = testFixture.getGmeConfig();
         gmeConfig.authentication.enable = true;
-        gmeConfig.authentication.admin = 'siteAdmin';
+        gmeConfig.authentication.adminAccount = 'siteAdmin';
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
             .then(function (gmeAuth_) {
@@ -45,7 +45,7 @@ describe('GME authentication config users and orgs', function () {
             gmeAuth;
 
         gmeConfig.authentication.enable = true;
-        gmeConfig.authentication.admin = 'siteAdmin:pass';
+        gmeConfig.authentication.adminAccount = 'siteAdmin:pass';
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
             .then(function (gmeAuth_) {
@@ -66,7 +66,7 @@ describe('GME authentication config users and orgs', function () {
         var gmeConfig = testFixture.getGmeConfig(),
             gmeAuth;
         gmeConfig.authentication.enable = false;
-        gmeConfig.authentication.admin = 'siteAdmin:pass';
+        gmeConfig.authentication.adminAccount = 'siteAdmin:pass';
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
             .then(function (gmeAuth_) {
@@ -88,7 +88,7 @@ describe('GME authentication config users and orgs', function () {
             gmeAuth;
 
         gmeConfig.authentication.enable = true;
-        gmeConfig.authentication.admin = 'siteAdmin:pass';
+        gmeConfig.authentication.adminAccount = 'siteAdmin:pass';
         gmeConfig.authentication.publicOrganizations = ['public'];
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
@@ -111,7 +111,7 @@ describe('GME authentication config users and orgs', function () {
             gmeAuth;
 
         gmeConfig.authentication.enable = true;
-        gmeConfig.authentication.admin = 'siteAdmin:pass';
+        gmeConfig.authentication.adminAccount = 'siteAdmin:pass';
         gmeConfig.authentication.publicOrganizations = ['public', 'public1', 'public2'];
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
@@ -180,7 +180,7 @@ describe('GME authentication config users and orgs', function () {
             gmeAuth;
 
         gmeConfig.authentication.enable = true;
-        gmeConfig.authentication.admin = 'siteAdmin:pass';
+        gmeConfig.authentication.adminAccount = 'siteAdmin:pass';
         gmeConfig.authentication.publicOrganizations = ['public'];
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)

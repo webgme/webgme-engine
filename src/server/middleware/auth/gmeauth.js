@@ -167,7 +167,7 @@ function GMEAuth(session, gmeConfig) {
     }
 
     function _prepareAdminAccount(callback) {
-        var admin = gmeConfig.authentication.admin,
+        var admin = gmeConfig.authentication.adminAccount,
             pieces,
             adminId,
             password;
@@ -177,7 +177,8 @@ function GMEAuth(session, gmeConfig) {
         }
 
         if (!gmeConfig.authentication.enable) {
-            logger.warn('gmeConfig.authentication.admin is specified but auth is disabled - will not create account!');
+            logger.warn('gmeConfig.authentication.adminAccount is specified but auth is disabled -' +
+                ' will not create account!');
             return Q();
         }
 
