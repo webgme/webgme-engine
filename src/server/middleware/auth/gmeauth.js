@@ -19,8 +19,8 @@ var Mongodb = require('mongodb'),
     MetadataStorage = require('../../storage/metadatastorage'),
     UTIL = requireJS('common/util/util'),
     EventDispatcher = requireJS('common/EventDispatcher'),
+    GUID = requireJS('common/util/guid'),
     Logger = require('../../logger'),
-
     CONSTANTS = require('./constants'),
     chance = new Chance();
 
@@ -365,9 +365,11 @@ function GMEAuth(session, gmeConfig) {
         return Q.ninvoke(jwt, 'verify', token, PUBLIC_KEY, {algorithms: [gmeConfig.authentication.jwt.algorithm]})
             .then(function (content) {
                 var result = {
-                    content: content,
-                    renew: false,
-                };
+                        content: content,
+                        renew: false,
+                    },
+                    query = {disabled: undefined},
+                    deferred = Q.defer();
 
                 logger.debug('Verified token!');
                 // Check if token is about to expire...
@@ -377,7 +379,34 @@ function GMEAuth(session, gmeConfig) {
                     result.renew = true;
                 }
 
-                return result;
+                // Make sure the user exists - if not create an entry for it.
+                // TODO: Could this be expensive, consider caching the existing users..
+                self.getUser(content.userId, query)
+                    .then(function (userData) {
+                        if (userData.disabled === true) {
+                            deferred.reject(new Error('user has been disabled [' + content.userId + ']'));
+                        } else {
+                            deferred.resolve(result);
+                        }
+                    })
+                    .catch(function (err) {
+                        if (err.message.indexOf('no such user') === 0) {
+                            logger.info('Authenticated user did not exist in db, adding:', content.userId);
+                            self.addUser(content.userId, 'em@il', GUID(),
+                                gmeConfig.authentication.inferredUsersCanCreate, {
+                                    overwrite: false,
+                                    displayName: content.displayName
+                                })
+                                .then(function () {
+                                    deferred.resolve(result);
+                                })
+                                .catch(deferred.reject);
+                        } else {
+                            deferred.reject(err);
+                        }
+                    });
+
+                return deferred.promise;
             })
             .nodeify(callback);
     }
