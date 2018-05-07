@@ -85,7 +85,7 @@ define([
 
         function getLibraryRoot(node) {
             while (node) {
-                if (self.isLibraryRoot(node) && !self.isLibraryElement(node)) {
+                if (self.isLibraryRoot(node)) {
                     return node;
                 }
                 node = self.getParent(node);
