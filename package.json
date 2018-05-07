@@ -107,6 +107,7 @@
     "msgpack-js": "^0.3.0",
     "pkginfo": "^0.4.1",
     "rimraf": "^2.6.2",
-    "ssl-root-cas": "^1.2.5"
+    "ssl-root-cas": "^1.2.5",
+    "webgme-executor-worker": "^3.0.1"
   }
 }
