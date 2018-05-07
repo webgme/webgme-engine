@@ -1,0 +1,300 @@
+{
+  "projectId": "guest+hfsm",
+  "commitHash": "#6bbee3b51fa34bdacfa41d5f4ad37e907a371ebc",
+  "selectionInfo": {
+    "selection": {
+      "b07cb0a2-058a-9a30-c7bb-25c95aa74743": "#982d63b19f73724a654261b746869aca6240c9e0"
+    },
+    "bases": {
+      "2e0e7ec9-a14a-646a-44a1-8bf54546e3ee": {
+        "originGuid": "1add1ebb-3f43-1c0c-8fef-5b562abec618",
+        "name": "State Machine",
+        "fullName": "HFSM.State Machine",
+        "namsespaces": {
+          "HFSM": {
+            "info": {
+              "projectId": "guest+meta2",
+              "commitHash": "#f4532cf6369fe3219acae6a4c0adb0c2fb0b4a28",
+              "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+            },
+            "guid": "1add1ebb-3f43-1c0c-8fef-5b562abec618",
+            "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+          }
+        }
+      },
+      "c917d7ab-4ba2-4f86-2870-7b6afb9cde50": {
+        "originGuid": "fdc4b7d9-d5ab-37e0-e33e-abc99464fba6",
+        "name": "End State",
+        "fullName": "HFSM.End State",
+        "namsespaces": {
+          "HFSM": {
+            "info": {
+              "projectId": "guest+meta2",
+              "commitHash": "#f4532cf6369fe3219acae6a4c0adb0c2fb0b4a28",
+              "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+            },
+            "guid": "fdc4b7d9-d5ab-37e0-e33e-abc99464fba6",
+            "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+          }
+        }
+      },
+      "cc2f7894-455d-4497-9aab-0f89196b4779": {
+        "originGuid": "f8fc18e6-db54-3cf1-51e5-df2a7693628f",
+        "name": "Initial",
+        "fullName": "HFSM.Initial",
+        "namsespaces": {
+          "HFSM": {
+            "info": {
+              "projectId": "guest+meta2",
+              "commitHash": "#f4532cf6369fe3219acae6a4c0adb0c2fb0b4a28",
+              "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+            },
+            "guid": "f8fc18e6-db54-3cf1-51e5-df2a7693628f",
+            "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+          }
+        }
+      },
+      "5cf8df9b-d6cf-e586-e10b-e3b6d35fe239": {
+        "originGuid": "682bbfe9-48c6-9de0-2a45-3315bca7c7cf",
+        "name": "State",
+        "fullName": "HFSM.State",
+        "namsespaces": {
+          "HFSM": {
+            "info": {
+              "projectId": "guest+meta2",
+              "commitHash": "#f4532cf6369fe3219acae6a4c0adb0c2fb0b4a28",
+              "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+            },
+            "guid": "682bbfe9-48c6-9de0-2a45-3315bca7c7cf",
+            "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+          }
+        }
+      },
+      "559186a9-b0d2-3bfb-c314-95e585982db8": {
+        "originGuid": "6142e6db-2edb-439d-085a-4546ea60084e",
+        "name": "External Transition",
+        "fullName": "HFSM.External Transition",
+        "namsespaces": {
+          "HFSM": {
+            "info": {
+              "projectId": "guest+meta2",
+              "commitHash": "#f4532cf6369fe3219acae6a4c0adb0c2fb0b4a28",
+              "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+            },
+            "guid": "6142e6db-2edb-439d-085a-4546ea60084e",
+            "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+          }
+        }
+      },
+      "1ed2da9d-074b-83a4-3780-409631373760": {
+        "originGuid": "2a01baef-9942-fbc2-fcce-90355ecf1296",
+        "name": "Local Transition",
+        "fullName": "HFSM.Local Transition",
+        "namsespaces": {
+          "HFSM": {
+            "info": {
+              "projectId": "guest+meta2",
+              "commitHash": "#f4532cf6369fe3219acae6a4c0adb0c2fb0b4a28",
+              "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+            },
+            "guid": "2a01baef-9942-fbc2-fcce-90355ecf1296",
+            "hash": "#7e83e7ea9fe1e61ce09a50eab586ace3ac01a65f"
+          }
+        }
+      }
+    },
+    "relations": {
+      "preserved": {
+        "#982d63b19f73724a654261b746869aca6240c9e0": {
+          "base": "2e0e7ec9-a14a-646a-44a1-8bf54546e3ee"
+        },
+        "#982d63b19f73724a654261b746869aca6240c9e0/O": {
+          "base": "c917d7ab-4ba2-4f86-2870-7b6afb9cde50"
+        },
+        "#982d63b19f73724a654261b746869aca6240c9e0/P": {
+          "base": "cc2f7894-455d-4497-9aab-0f89196b4779"
+        },
+        "#982d63b19f73724a654261b746869aca6240c9e0/8": {
+          "base": "5cf8df9b-d6cf-e586-e10b-e3b6d35fe239"
+        },
+        "#982d63b19f73724a654261b746869aca6240c9e0/p": {
+          "base": "5cf8df9b-d6cf-e586-e10b-e3b6d35fe239"
+        },
+        "#982d63b19f73724a654261b746869aca6240c9e0/M": {
+          "base": "559186a9-b0d2-3bfb-c314-95e585982db8"
+        },
+        "#982d63b19f73724a654261b746869aca6240c9e0/R": {
+          "base": "1ed2da9d-074b-83a4-3780-409631373760"
+        },
+        "#982d63b19f73724a654261b746869aca6240c9e0/K": {
+          "base": "559186a9-b0d2-3bfb-c314-95e585982db8"
+        },
+        "#982d63b19f73724a654261b746869aca6240c9e0/L": {
+          "base": "559186a9-b0d2-3bfb-c314-95e585982db8"
+        }
+      },
+      "lost": {}
+    }
+  },
+  "kind": "base",
+  "objects": [
+    {
+      "_id": "#b0885af8c5bb4570079bc9d582a5bb801e4efb8c",
+      "atr": {
+        "_relguid": "6859820141dad77a61b14b0dd7dde178"
+      },
+      "reg": {
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#b8d3a9849df3f8d84b4d34ccb880cfe320f928e8",
+      "atr": {
+        "_relguid": "dc67d9dfe24c491a92d2b771e5c51dc8"
+      },
+      "reg": {
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#5f97de56d73a16a819746869c69dab2a3876906c",
+      "atr": {
+        "_relguid": "058a213217068ec486c23844b516aa0f"
+      },
+      "reg": {
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#ff5ed927ad82da8c814fe3058e47d7a4fe2a3218",
+      "atr": {
+        "_relguid": "7ac434b2a584739a967162258c6321d0"
+      },
+      "reg": {
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#344c3461b448ab508a1cdb0023b53ba9fede8683",
+      "atr": {
+        "_relguid": "2c92c96ff297e156ca0332b6d9122bd1"
+      },
+      "reg": {
+        "position": {
+          "x": 607,
+          "y": 360
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#d13c068153f176df773664cb172e2db2372700a8",
+      "atr": {
+        "_relguid": "ed798d5ffa35fb978524d9f1aa346900"
+      },
+      "reg": {
+        "position": {
+          "x": 144,
+          "y": 166
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#c61912bdfe178839a63b6986e1e7edb6af9c376c",
+      "atr": {
+        "_relguid": "2eb0d52246df982014d0d289fc72182c"
+      },
+      "reg": {
+        "position": {
+          "x": 926,
+          "y": 254
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#e59de773b2c1021d18e89ed956853b31c7dc4628",
+      "atr": {
+        "_relguid": "de0a8871d678aa07bb7f2797fbfd95c4"
+      },
+      "reg": {
+        "position": {
+          "x": 428,
+          "y": 86
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "8": "#e59de773b2c1021d18e89ed956853b31c7dc4628",
+      "_id": "#982d63b19f73724a654261b746869aca6240c9e0",
+      "atr": {
+        "_relguid": "82afd0d09b83e2560cf5f56a355f62b5",
+        "name": "SM"
+      },
+      "reg": {
+        "position": {
+          "x": 656,
+          "y": 301
+        }
+      },
+      "__v": "1.2.0",
+      "O": "#c61912bdfe178839a63b6986e1e7edb6af9c376c",
+      "P": "#d13c068153f176df773664cb172e2db2372700a8",
+      "p": "#344c3461b448ab508a1cdb0023b53ba9fede8683",
+      "M": "#ff5ed927ad82da8c814fe3058e47d7a4fe2a3218",
+      "ovr": {
+        "/M": {
+          "src": "/P",
+          "dst": "/8"
+        },
+        "/R": {
+          "src": "/8",
+          "dst": "/p"
+        },
+        "/K": {
+          "src": "/8",
+          "dst": "/O"
+        },
+        "/L": {
+          "src": "/p",
+          "dst": "/O"
+        }
+      },
+      "R": "#5f97de56d73a16a819746869c69dab2a3876906c",
+      "K": "#b8d3a9849df3f8d84b4d34ccb880cfe320f928e8",
+      "L": "#b0885af8c5bb4570079bc9d582a5bb801e4efb8c"
+    }
+  ],
+  "hashes": {
+    "objects": [
+      "#b0885af8c5bb4570079bc9d582a5bb801e4efb8c",
+      "#b8d3a9849df3f8d84b4d34ccb880cfe320f928e8",
+      "#5f97de56d73a16a819746869c69dab2a3876906c",
+      "#ff5ed927ad82da8c814fe3058e47d7a4fe2a3218",
+      "#344c3461b448ab508a1cdb0023b53ba9fede8683",
+      "#d13c068153f176df773664cb172e2db2372700a8",
+      "#c61912bdfe178839a63b6986e1e7edb6af9c376c",
+      "#e59de773b2c1021d18e89ed956853b31c7dc4628",
+      "#982d63b19f73724a654261b746869aca6240c9e0"
+    ],
+    "assets": []
+  }
+}

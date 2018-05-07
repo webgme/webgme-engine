@@ -1,0 +1,267 @@
+{
+  "projectId": "guest+rosmod",
+  "commitHash": "#8cdc436838f4582782ec6edcbfee70f6b0b021c5",
+  "selectionInfo": {
+    "selection": {
+      "89b849a9-809c-c77e-a4e8-c2d0f27613bb": "#d4ae64f87c9a313b06c52e827eb6fe575d7b2b4f"
+    },
+    "bases": {
+      "cfdd1ebb-3f43-1c0c-8fef-5b562abec618": {
+        "originGuid": "1add1ebb-3f43-1c0c-8fef-5b562abec618",
+        "name": "State Machine",
+        "fullName": "ROSMOD.HFSM.State Machine",
+        "namsespaces": {
+          "ROSMOD.HFSM": {
+            "info": {
+              "projectId": "guest+base",
+              "commitHash": "#eb744916d29023b6205744df5e8c064e7db300ad",
+              "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+            },
+            "guid": "1add1ebb-3f43-1c0c-8fef-5b562abec618",
+            "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+          },
+          "ROSMOD": {
+            "info": {
+              "projectId": "emfinger+meta",
+              "commitHash": "#404e290b67e45c8d8054fca1af3a71a3736ba778",
+              "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+            },
+            "guid": "d90e7ec9-a14a-646a-44a1-8bf54546e3ee",
+            "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+          }
+        }
+      },
+      "2dfc18e6-db54-3cf1-51e5-df2a7693628f": {
+        "originGuid": "f8fc18e6-db54-3cf1-51e5-df2a7693628f",
+        "name": "Initial",
+        "fullName": "ROSMOD.HFSM.Initial",
+        "namsespaces": {
+          "ROSMOD.HFSM": {
+            "info": {
+              "projectId": "guest+base",
+              "commitHash": "#eb744916d29023b6205744df5e8c064e7db300ad",
+              "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+            },
+            "guid": "f8fc18e6-db54-3cf1-51e5-df2a7693628f",
+            "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+          },
+          "ROSMOD": {
+            "info": {
+              "projectId": "emfinger+meta",
+              "commitHash": "#404e290b67e45c8d8054fca1af3a71a3736ba778",
+              "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+            },
+            "guid": "3b2f7894-455d-4497-9aab-0f89196b4779",
+            "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+          }
+        }
+      },
+      "28c4b7d9-d5ab-37e0-e33e-abc99464fba6": {
+        "originGuid": "fdc4b7d9-d5ab-37e0-e33e-abc99464fba6",
+        "name": "End State",
+        "fullName": "ROSMOD.HFSM.End State",
+        "namsespaces": {
+          "ROSMOD.HFSM": {
+            "info": {
+              "projectId": "guest+base",
+              "commitHash": "#eb744916d29023b6205744df5e8c064e7db300ad",
+              "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+            },
+            "guid": "fdc4b7d9-d5ab-37e0-e33e-abc99464fba6",
+            "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+          },
+          "ROSMOD": {
+            "info": {
+              "projectId": "emfinger+meta",
+              "commitHash": "#404e290b67e45c8d8054fca1af3a71a3736ba778",
+              "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+            },
+            "guid": "3e17d7ab-4ba2-4f86-2870-7b6afb9cde50",
+            "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+          }
+        }
+      },
+      "bd2bbfe9-48c6-9de0-2a45-3315bca7c7cf": {
+        "originGuid": "682bbfe9-48c6-9de0-2a45-3315bca7c7cf",
+        "name": "State",
+        "fullName": "ROSMOD.HFSM.State",
+        "namsespaces": {
+          "ROSMOD.HFSM": {
+            "info": {
+              "projectId": "guest+base",
+              "commitHash": "#eb744916d29023b6205744df5e8c064e7db300ad",
+              "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+            },
+            "guid": "682bbfe9-48c6-9de0-2a45-3315bca7c7cf",
+            "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+          },
+          "ROSMOD": {
+            "info": {
+              "projectId": "emfinger+meta",
+              "commitHash": "#404e290b67e45c8d8054fca1af3a71a3736ba778",
+              "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+            },
+            "guid": "abf8df9b-d6cf-e586-e10b-e3b6d35fe239",
+            "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+          }
+        }
+      },
+      "b442e6db-2edb-439d-085a-4546ea60084e": {
+        "originGuid": "6142e6db-2edb-439d-085a-4546ea60084e",
+        "name": "External Transition",
+        "fullName": "ROSMOD.HFSM.External Transition",
+        "namsespaces": {
+          "ROSMOD.HFSM": {
+            "info": {
+              "projectId": "guest+base",
+              "commitHash": "#eb744916d29023b6205744df5e8c064e7db300ad",
+              "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+            },
+            "guid": "6142e6db-2edb-439d-085a-4546ea60084e",
+            "hash": "#6612fc72e91b1bee175201e5fc454e995b28c850"
+          },
+          "ROSMOD": {
+            "info": {
+              "projectId": "emfinger+meta",
+              "commitHash": "#404e290b67e45c8d8054fca1af3a71a3736ba778",
+              "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+            },
+            "guid": "a29186a9-b0d2-3bfb-c314-95e585982db8",
+            "hash": "#87236ac3d2686c76a6b89edabbbef9e2deee8b4b"
+          }
+        }
+      }
+    },
+    "relations": {
+      "preserved": {
+        "#d4ae64f87c9a313b06c52e827eb6fe575d7b2b4f": {
+          "base": "cfdd1ebb-3f43-1c0c-8fef-5b562abec618"
+        },
+        "#d4ae64f87c9a313b06c52e827eb6fe575d7b2b4f/p": {
+          "base": "2dfc18e6-db54-3cf1-51e5-df2a7693628f"
+        },
+        "#d4ae64f87c9a313b06c52e827eb6fe575d7b2b4f/P": {
+          "base": "28c4b7d9-d5ab-37e0-e33e-abc99464fba6"
+        },
+        "#d4ae64f87c9a313b06c52e827eb6fe575d7b2b4f/q": {
+          "base": "bd2bbfe9-48c6-9de0-2a45-3315bca7c7cf"
+        },
+        "#d4ae64f87c9a313b06c52e827eb6fe575d7b2b4f/h": {
+          "base": "b442e6db-2edb-439d-085a-4546ea60084e"
+        },
+        "#d4ae64f87c9a313b06c52e827eb6fe575d7b2b4f/a": {
+          "base": "b442e6db-2edb-439d-085a-4546ea60084e"
+        }
+      },
+      "lost": {}
+    }
+  },
+  "kind": "samples",
+  "objects": [
+    {
+      "_id": "#1a809cfef3d2a4f2e1b515fdd2b4f1c1a44aea15",
+      "atr": {
+        "_relguid": "f1c631b9f85138627379b586f0e231d4"
+      },
+      "reg": {
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#63339ff5ebd8fafc47a3df9700a71387d28fd778",
+      "atr": {
+        "_relguid": "531e0d94dfc36e81f86a1d5eb6e2208b"
+      },
+      "reg": {
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#ab2994ffac76a565369345a3390d1fcd6a509b27",
+      "atr": {
+        "_relguid": "46ae128e42cb17d2afb02d0c95c0d58c"
+      },
+      "reg": {
+        "position": {
+          "x": 405,
+          "y": 113
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#2739924b27c058ab93ffda8f5cc0e52a07452ff5",
+      "atr": {
+        "_relguid": "1e729aa09cc1f7823f1a20a33a640e90"
+      },
+      "reg": {
+        "position": {
+          "x": 593,
+          "y": 202
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#bd9201122b543a2d9ea0620ff4cffb296e8d6ce6",
+      "atr": {
+        "_relguid": "bc12352fab98e1b35860d616af3583d7"
+      },
+      "reg": {
+        "position": {
+          "x": 152,
+          "y": 201
+        }
+      },
+      "__v": "1.2.0"
+    },
+    {
+      "_id": "#d4ae64f87c9a313b06c52e827eb6fe575d7b2b4f",
+      "atr": {
+        "_relguid": "a06b29db1e95bf186fa612739d8e364d",
+        "name": "sm"
+      },
+      "reg": {
+        "position": {
+          "x": 374,
+          "y": 439
+        }
+      },
+      "__v": "1.2.0",
+      "p": "#bd9201122b543a2d9ea0620ff4cffb296e8d6ce6",
+      "P": "#2739924b27c058ab93ffda8f5cc0e52a07452ff5",
+      "q": "#ab2994ffac76a565369345a3390d1fcd6a509b27",
+      "h": "#63339ff5ebd8fafc47a3df9700a71387d28fd778",
+      "ovr": {
+        "/h": {
+          "src": "/p",
+          "dst": "/q"
+        },
+        "/a": {
+          "src": "/q",
+          "dst": "/P"
+        }
+      },
+      "a": "#1a809cfef3d2a4f2e1b515fdd2b4f1c1a44aea15"
+    }
+  ],
+  "hashes": {
+    "objects": [
+      "#1a809cfef3d2a4f2e1b515fdd2b4f1c1a44aea15",
+      "#63339ff5ebd8fafc47a3df9700a71387d28fd778",
+      "#ab2994ffac76a565369345a3390d1fcd6a509b27",
+      "#2739924b27c058ab93ffda8f5cc0e52a07452ff5",
+      "#bd9201122b543a2d9ea0620ff4cffb296e8d6ce6",
+      "#d4ae64f87c9a313b06c52e827eb6fe575d7b2b4f"
+    ],
+    "assets": []
+  }
+}
