@@ -202,14 +202,12 @@ function createAPI(app, mountPath, middlewareOpts) {
     }
 
     /**
-     * Should be called when user is already authenticated but does not exist in the gmeAuth db.
-     * Used mainly to store the settings of the user.
      * @param req
      * @param res
      * @param callback
      * @returns {*}
      */
-    function getOrAddUser(req, res, callback) {
+    function getUserEntry(req, res, callback) {
         var deferred = Q.defer(),
             userId = getUserId(req),
             query = {disabled: undefined};
@@ -223,7 +221,8 @@ function createAPI(app, mountPath, middlewareOpts) {
                 } else {
                     deferred.resolve(userData);
                 }
-            });
+            })
+            .catch(deferred.reject);
 
         return deferred.promise.nodeify(callback);
     }
@@ -287,7 +286,7 @@ function createAPI(app, mountPath, middlewareOpts) {
 
     // AUTHENTICATED
     router.get('/user', ensureAuthenticated, function (req, res, next) {
-        getOrAddUser(req, res)
+        getUserEntry(req, res)
             .then(function (data) {
                 res.json(data);
             })
@@ -412,7 +411,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.get('/user/settings', ensureAuthenticated, function (req, res, next) {
-        getOrAddUser(req, res)
+        getUserEntry(req, res)
             .then(function (userData) {
                 res.json(userData.settings || {});
             })
@@ -420,7 +419,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.put('/user/settings', function (req, res, next) {
-        getOrAddUser(req, res)
+        getUserEntry(req, res)
             .then(function (userData) {
                 return gmeAuth.updateUserSettings(userData._id, req.body, true);
             })
@@ -431,7 +430,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.patch('/user/settings', function (req, res, next) {
-        getOrAddUser(req, res)
+        getUserEntry(req, res)
             .then(function (userData) {
                 return gmeAuth.updateUserSettings(userData._id, req.body);
             })
@@ -442,7 +441,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.delete('/user/settings', function (req, res, next) {
-        getOrAddUser(req, res)
+        getUserEntry(req, res)
             .then(function (userData) {
                 return gmeAuth.updateUserSettings(userData._id, {}, true);
             })
@@ -453,7 +452,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.get('/user/settings/:componentId', ensureAuthenticated, function (req, res, next) {
-        getOrAddUser(req, res)
+        getUserEntry(req, res)
             .then(function (userData) {
                 res.json(userData.settings[req.params.componentId] || {});
             })
@@ -461,7 +460,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.put('/user/settings/:componentId', function (req, res, next) {
-        getOrAddUser(req, res)
+        getUserEntry(req, res)
             .then(function (userData) {
                 return gmeAuth.updateUserComponentSettings(userData._id, req.params.componentId, req.body, true);
             })
@@ -472,7 +471,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.patch('/user/settings/:componentId', function (req, res, next) {
-        getOrAddUser(req, res)
+        getUserEntry(req, res)
             .then(function (userData) {
                 return gmeAuth.updateUserComponentSettings(userData._id, req.params.componentId, req.body);
             })
@@ -483,7 +482,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.delete('/user/settings/:componentId', function (req, res, next) {
-        getOrAddUser(req, res)
+        getUserEntry(req, res)
             .then(function (userData) {
                 return gmeAuth.updateUserComponentSettings(userData._id, req.params.componentId, {}, true);
             })
