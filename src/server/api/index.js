@@ -499,7 +499,7 @@ function createAPI(app, mountPath, middlewareOpts) {
             projection;
 
         if (req.query.displayName) {
-            gmeAuth.listUsers({displayName: {$type: 'string'}}, {displayName: 1})
+            gmeAuth.listUsers({displayName: {$type: 2}}, {displayName: 1})
                 .then(function (result) {
                     res.json(result);
                 })
