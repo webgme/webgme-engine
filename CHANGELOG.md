@@ -1,5 +1,22 @@
 # Change Log
 
+## [v2.19.8](https://github.com/webgme/webgme-engine/tree/v2.19.8) (2018-05-07)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.7...v2.19.8)
+
+**Implemented enhancements:**
+
+- Minor fixes for release 2.19.8 [\#90](https://github.com/webgme/webgme-engine/pull/90) ([kecso](https://github.com/kecso))
+- Infer user at token verification instead at user api path [\#89](https://github.com/webgme/webgme-engine/pull/89) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Minor fixes for release 2.19.8 [\#90](https://github.com/webgme/webgme-engine/pull/90) ([kecso](https://github.com/kecso))
+- Fixes discrepancies in admin account and projects created at start up  [\#87](https://github.com/webgme/webgme-engine/pull/87) ([pmeijer](https://github.com/pmeijer))
+
+**Closed issues:**
+
+- Unable to import model if model's meta is a library and vice versa [\#86](https://github.com/webgme/webgme-engine/issues/86)
+
 ## [v2.19.7](https://github.com/webgme/webgme-engine/tree/v2.19.7) (2018-04-10)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.6...v2.19.7)
 
