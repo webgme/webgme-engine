@@ -15,10 +15,6 @@ describe('issue110 testing', function () {
         storage = null,
         storageUtils = testFixture.requirejs('common/storage/util'),
         projectNames = {rosmod: 'i86rosmod', hfsm: 'i86hfsm'},
-        projectIds = {
-            rosmod: testFixture.projectName2Id(projectNames.rosmod),
-            hfsm: testFixture.projectName2Id(projectNames.hfsm)
-        },
         cores = {rosmod: null, hfsm: null},
         roots = {rosmod: null, hfsm: null},
         projects = {rosmod: null, hfsm: null},
