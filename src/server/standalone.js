@@ -390,8 +390,7 @@ function StandAloneServer(gmeConfig) {
                                 req.userData = {
                                     token: newToken,
                                     newToken: true,
-                                    userId: result.content.userId,
-                                    displayName: result.content.displayName
+                                    userId: result.content.userId
                                 };
 
                                 // TODO: Is this the correct way of doing it?
@@ -402,8 +401,7 @@ function StandAloneServer(gmeConfig) {
                     } else {
                         req.userData = {
                             token: token,
-                            userId: result.content.userId,
-                            displayName: result.content.displayName
+                            userId: result.content.userId
                         };
                         next();
                     }
@@ -433,8 +431,7 @@ function StandAloneServer(gmeConfig) {
                                 req.userData = {
                                     token: newToken,
                                     newToken: true,
-                                    userId: result.content.userId,
-                                    displayName: result.content.displayName
+                                    userId: result.content.userId
                                 };
                                 logger.debug('generated new token for user', result.content.userId);
                                 res.cookie(gmeConfig.authentication.jwt.cookieId, newToken);
@@ -445,8 +442,7 @@ function StandAloneServer(gmeConfig) {
                     } else {
                         req.userData = {
                             token: token,
-                            userId: result.content.userId,
-                            displayName: result.content.displayName
+                            userId: result.content.userId
                         };
 
                         res.cookie(gmeConfig.authentication.jwt.cookieId, token);
