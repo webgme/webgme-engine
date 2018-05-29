@@ -20,6 +20,7 @@
       "src/common/executor",
       "src/common/util/serialization.js",
       "src/common/core/core.js",
+      "src/common/core/users/crosscuts.js",
       "src/server/middleware/auth/gmeauth.js",
       "src/common/storage/project/project.js",
       "src/common/storage/project/interface.js",
