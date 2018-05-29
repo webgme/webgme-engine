@@ -33,6 +33,16 @@
       "writeAccessRequired": true
     },
     {
+      "name": "gender",
+      "displayName": "Gender distribution",
+      "description": "What is the ratio between females and males?",
+      "value": 0.5,
+      "valueType": "number",
+      "minValue": 0,
+      "maxValue": 1,
+      "increment": 0.01
+    },
+    {
       "name": "carnivore",
       "displayName": "Carnivore",
       "description": "Does the animal eat other animals?",
