@@ -46,8 +46,8 @@ define([
 
         if (typeof memberPath === 'string') {
             // This ensure the crosscut exists.
-            exports.getMemberPaths(node, crosscutId).forEach(function (cId) {
-                if (crosscutId === cId) {
+            exports.getMemberPaths(node, crosscutId).forEach(function (mPath) {
+                if (memberPath === mPath) {
                     exists = true;
                 }
             });
@@ -69,15 +69,23 @@ define([
         }
     }
 
+    function _ensureInitialized() {
+        if (_core === null) {
+            throw new Error('Crosscut module has not been initialized!');
+        }
+    }
+
+    function _getPath(nodeOrPath) {
+        return typeof nodeOrPath === 'string' ? nodeOrPath : _core.getPath(nodeOrPath);
+    }
+
     /**
      * Returns the raw stored crosscut info at the provided node.
      * @param {module:Core~Node} node
      * @returns {object[]}
      */
     exports.getInfo = function (node) {
-        if (_core === null) {
-            throw new Error('Crosscut module has not been initialized!');
-        }
+        _ensureInitialized();
 
         return _core.getRegistry(node, CROSSCUT_REGISTRY_NAME) || [];
     };
@@ -139,7 +147,6 @@ define([
      */
     exports.getMemberPaths = function (node, crosscutId) {
         _ensureCrosscutExists(node, crosscutId);
-
         return _core.getMemberPaths(node, crosscutId);
     };
 
@@ -147,10 +154,12 @@ define([
      * Return the position at the cross-cuts for the member in the given crosscut at the provided node.
      * @param {module:Core~Node} node - Owner of the crosscut.
      * @param {string} crosscutId - Crosscut id to add member to.
-     * @param {string} memberPath - The member of which to get the position.
+     * @param {module:Core~Node|string} memberNodeOrPath - Node, or path of, member to get position of.
      * @returns {object} The position of the member inside the crosscut.
      */
-    exports.getMemberPosition = function (node, crosscutId, memberPath) {
+    exports.getMemberPosition = function (node, crosscutId, memberNodeOrPath) {
+        _ensureInitialized();
+        var memberPath = _getPath(memberNodeOrPath);
         _ensureCrosscutExists(node, crosscutId, memberPath);
         return _core.getMemberRegistry(node, crosscutId, memberPath, 'position') || {x: 100, y: 100};
     };
@@ -214,7 +223,8 @@ define([
      * @param {object} newPosition - Position of the member inside the crosscut.
      */
     exports.setMemberPosition = function (node, crosscutId, memberNodeOrPath, newPosition) {
-        var memberPath = typeof memberNodeOrPath === 'string' ? memberNodeOrPath : _core.getPath(memberNodeOrPath);
+        _ensureInitialized();
+        var memberPath = _getPath(memberNodeOrPath);
         _ensureCrosscutExists(node, crosscutId, memberPath);
         _core.setMemberRegistry(node, crosscutId, memberPath, 'position', newPosition);
     };
@@ -244,7 +254,7 @@ define([
         _ensureCrosscutExists(node, crosscutId);
 
         cInfo = cInfo.filter(function (entry) {
-            if (entry.id === crosscutId) {
+            if (entry.SetID === crosscutId) {
                 entryOrder = entry.order;
                 return false;
             }
@@ -277,7 +287,8 @@ define([
      * @param {module:Core~Node|string} memberNodeOrPath - Node, or path of, member to delete from crosscut.
      */
     exports.delMember = function (node, crosscutId, memberNodeOrPath) {
-        var memberPath = typeof memberNodeOrPath === 'string' ? memberNodeOrPath : _core.getPath(memberNodeOrPath);
+        _ensureInitialized();
+        var memberPath =  _getPath(memberNodeOrPath);
         _ensureCrosscutExists(node, crosscutId, memberPath);
         _core.delMember(node, crosscutId, memberPath);
     };
