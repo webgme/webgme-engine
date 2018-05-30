@@ -630,6 +630,7 @@ function StandAloneServer(gmeConfig) {
     middlewareOpts = {  //TODO: Pass this to every middleware They must not modify the options!
         gmeConfig: gmeConfig,
         logger: logger,
+        IPs: [],
         ensureAuthenticated: ensureAuthenticated,
         getUserId: getUserId,
         gmeAuth: __gmeAuth,
@@ -918,12 +919,10 @@ function StandAloneServer(gmeConfig) {
 
     logger.debug('gmeConfig of webgme server', {metadata: gmeConfig});
     var networkIfs = OS.networkInterfaces(),
-        addresses = 'Valid addresses of gme web server: ',
+        addresses = [],
         forEveryNetIf = function (netIf) {
             if (netIf.family === 'IPv4') {
-                var address = 'http' + '://' +
-                    netIf.address + ':' + gmeConfig.server.port;
-                addresses = addresses + '  ' + address;
+                addresses.push('http://' + netIf.address + ':' + gmeConfig.server.port);
             }
         };
 
@@ -931,7 +930,9 @@ function StandAloneServer(gmeConfig) {
         networkIfs[dev].forEach(forEveryNetIf);
     }
 
-    logger.info(addresses);
+    logger.info('Valid addresses of gme web server: ', addresses.join('  '));
+
+    middlewareOpts.addresses = addresses;
 
     logger.debug('standalone server initialization completed');
 
