@@ -127,7 +127,8 @@ describe('core', function () {
                 'getChildDefinitionInfo', 'getValidTargetPaths', 'getOwnValidTargetPaths',
                 'isValidAspectMemberOf', 'moveAspectMetaTarget', 'movePointerMetaTarget',
                 'renameAttributeMeta', 'moveMember', 'getOwnValidPointerNames', 'getOwnValidSetNames',
-                'getValidAspectTargetPaths', 'getOwnValidAspectTargetPaths', 'isValidNewChild'
+                'getValidAspectTargetPaths', 'getOwnValidAspectTargetPaths', 'isValidNewChild',
+                'getCommonBase', 'getCommonParent'
             ];
 
         //console.log(_.difference(functions, Matches));
@@ -5093,6 +5094,79 @@ describe('core', function () {
             })
             .catch(function (err) {
                 expect(err.message).to.include('Cannot load commit object');
+            })
+            .nodeify(done);
+    });
+
+    it('getCommonBase/Parent should return null with no arguments', function () {
+        expect(core.getCommonParent()).to.equal(null);
+        expect(core.getCommonBase()).to.equal(null);
+    });
+
+    it('getCommonBase should return same node if only one provided', function () {
+        expect(core.getCommonBase(ir.rootNode)).to.equal(ir.rootNode);
+        expect(core.getCommonBase(ir.FCO)).to.equal(ir.FCO);
+    });
+
+    it('getCommonParent should return same node if only one provided', function () {
+        expect(core.getCommonParent(ir.rootNode)).to.equal(ir.rootNode);
+        expect(core.getCommonParent(ir.FCO)).to.equal(ir.FCO);
+    });
+
+    it('getCommonBase should return null if ROOT provided', function () {
+        expect(core.getCommonBase(ir.rootNode, ir.FCO)).to.equal(null);
+    });
+
+    it('getCommonParent should return ROOT if ROOT provided', function () {
+        expect(core.getCommonParent(ir.rootNode, ir.FCO)).to.equal(ir.rootNode);
+    });
+
+    it('getCommonBase for more than two nodes', function (done) {
+        prepRootNode()
+            .then(function (rootNode) {
+                var fco = core.getFCO(rootNode);
+
+                var child1 = core.createNode({base: fco, parent: rootNode});
+                var child2 = core.createNode({base: child1, parent: rootNode});
+                var child3 = core.createNode({base: fco, parent: rootNode});
+                var child4 = core.createNode({base: child3, parent: rootNode});
+
+
+                expect(core.getCommonBase(child1, child2, fco)).to.equal(fco);
+                expect(core.getCommonBase(fco, child1, child2)).to.equal(fco);
+                expect(core.getCommonBase(child2, fco, child1)).to.equal(fco);
+
+                expect(core.getCommonBase(child4, child2)).to.equal(fco);
+
+                expect(core.getCommonBase(child4, child3)).to.equal(child3);
+
+                expect(core.getCommonBase(child2, fco, child1, rootNode)).to.equal(null);
+            })
+            .nodeify(done);
+    });
+
+    it('getCommonParent for more than two nodes', function (done) {
+        prepRootNode()
+            .then(function (rootNode) {
+                var fco = core.getFCO(rootNode);
+
+                var child1 = core.createNode({base: fco, parent: rootNode});
+                var child2 = core.createNode({base: fco, parent: child1});
+                var child3 = core.createNode({base: fco, parent: child2});
+
+                var child4 = core.createNode({base: fco, parent: rootNode});
+                var child5 = core.createNode({base: fco, parent: child4});
+
+
+                expect(core.getCommonParent(child1, child2, fco)).to.equal(rootNode);
+                expect(core.getCommonParent(fco, child1, child2)).to.equal(rootNode);
+                expect(core.getCommonParent(child2, fco, child1)).to.equal(rootNode);
+
+                expect(core.getCommonParent(child2, child3)).to.equal(child2);
+
+                expect(core.getCommonParent(child4, child5)).to.equal(child4);
+
+                expect(core.getCommonParent(child3, child5)).to.equal(rootNode);
             })
             .nodeify(done);
     });
