@@ -34,11 +34,6 @@ define([], function () {
         this._storeNode = storeNode;
     }
 
-    GMENode.prototype.getParentId = function () {
-        //just for sure, as it may missing from the cache
-        return this._storeNode(this._state.core.getParent(this._state.nodes[this._id].node));
-    };
-
     GMENode.prototype.getId = function () {
         return this._id;
     };
@@ -51,6 +46,22 @@ define([], function () {
         return this._state.core.getGuid(this._state.nodes[this._id].node);
     };
 
+    GMENode.prototype.getParentId = function () {
+        //just for sure, as it may missing from the cache
+        return this._storeNode(this._state.core.getParent(this._state.nodes[this._id].node));
+    };
+
+    GMENode.prototype.getCommonParentId = function (/*otherNodeIds*/) {
+        var nodesArr = (arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments)),
+            self = this;
+
+        nodesArr.push(this._id);
+
+        return this._storeNode(this._state.core.getCommonParent.apply(this._state.core, nodesArr.map(function (id) {
+            return _getNode(self._state.nodes, id);
+        })));
+    };
+
     GMENode.prototype.getChildrenIds = function () {
         return this._state.core.getChildrenPaths(this._state.nodes[this._id].node);
     };
@@ -61,6 +72,17 @@ define([], function () {
 
     GMENode.prototype.getBaseId = function () {
         return this._storeNode(this._state.core.getBase(this._state.nodes[this._id].node));
+    };
+
+    GMENode.prototype.getCommonBaseId = function (/*otherNodeIds*/) {
+        var nodesArr = (arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments)),
+            self = this;
+
+        nodesArr.push(this._id);
+
+        return this._storeNode(this._state.core.getCommonBase.apply(this._state.core, nodesArr.map(function (id) {
+            return _getNode(self._state.nodes, id);
+        })));
     };
 
     GMENode.prototype.isValidNewBase = function (basePath) {

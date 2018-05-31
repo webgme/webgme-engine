@@ -471,6 +471,7 @@ function importProject(storage, parameters, callback) {
                     core: core,
                     jsonProject: projectJson,
                     rootNode: null,
+                    FCO: null,
                     rootHash: null,
                     blobClient: blobClient
                 };
@@ -495,6 +496,7 @@ function importProject(storage, parameters, callback) {
                 })
                 .then(function (rootNode) {
                     result.rootNode = rootNode;
+                    result.FCO = result.core.getFCO(rootNode);
                     deferred.resolve(result);
                 })
                 .catch(deferred.reject);

@@ -17,8 +17,11 @@ describe('gmeNodeGetter', function () {
         context,
         basicState,
         basicStoreNode = function (node) {
+            var path;
+
             if (node) {
-                return context.core.getPath(node) || null;
+                path = context.core.getPath(node);
+                return typeof path === 'string' ? path : null;
             }
             return null;
         },
@@ -169,6 +172,8 @@ describe('gmeNodeGetter', function () {
         expect(typeof node.getMixinPaths).to.equal('function');
         expect(typeof node.canSetAsMixin).to.equal('function');
         expect(typeof node.isReadOnly).to.equal('function');
+        expect(typeof node.getCommonBaseId).to.equal('function');
+        expect(typeof node.getCommonParentId).to.equal('function');
     });
 
     it('should return the parentId', function () {
@@ -795,4 +800,81 @@ describe('gmeNodeGetter', function () {
         expect(node.isValidTargetOf('/1303043463/1448030591', 'setPtr')).to.eql(false);
     });
 
+
+    it('should return the common base', function () {
+        var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode);
+
+        // Ensure the node is loaded
+        getNode('/1303043463/2119137141', logger, basicState, basicStoreNode);
+
+        expect(node.getCommonBaseId('/1303043463/2119137141')).to.eql('/1');
+    });
+
+    it('should return the common base of multiple nodes', function () {
+        var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode);
+
+        // Ensure the nodes are loaded
+        getNode('/175547009/1817665259', logger, basicState, basicStoreNode);
+        getNode('/1303043463/2119137141', logger, basicState, basicStoreNode);
+
+        expect(node.getCommonBaseId('/1303043463/2119137141', '/175547009/1817665259')).to.eql('/1');
+    });
+
+    it('should return the common base null if root provided', function () {
+        var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode);
+
+        // Ensure the node are loaded
+        getNode('/1303043463/2119137141', logger, basicState, basicStoreNode);
+        getNode('', logger, basicState, basicStoreNode);
+
+        expect(node.getCommonBaseId('/1303043463/2119137141', '')).to.eql(null);
+    });
+
+    it('should throw at getCommonBaseId if compare-node not loaded/does not exist', function () {
+        var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode),
+            threw;
+
+        try {
+            expect(node.getCommonBaseId('/does/not/exist')).to.eql(null);
+        } catch (e) {
+            threw = e;
+        }
+
+        expect(!!threw).to.equal(true);
+        expect(threw.message).to.include('is not a valid node');
+    });
+
+    it('should return the common parent of two nodes', function () {
+        var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode);
+
+        // Ensure the node are loaded
+        getNode('/175547009/1817665259', logger, basicState, basicStoreNode);
+
+        expect(node.getCommonParentId('/175547009/1817665259')).to.eql('/175547009');
+    });
+
+    it('should return the common parent with multiple nodes', function () {
+        var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode);
+
+        // Ensure the node are loaded
+        getNode('/175547009/1817665259', logger, basicState, basicStoreNode);
+        getNode('/1303043463/2119137141', logger, basicState, basicStoreNode);
+        getNode('', logger, basicState, basicStoreNode);
+
+        expect(node.getCommonParentId('/175547009/1817665259', '/1303043463/2119137141', '')).to.eql('');
+    });
+
+    it('should throw at getCommonParentId if compare node not loaded/does not exist', function () {
+        var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode),
+            threw;
+
+        try {
+            expect(node.getCommonParentId('/does/not/exist')).to.eql(null);
+        } catch (e) {
+            threw = e;
+        }
+
+        expect(!!threw).to.equal(true);
+        expect(threw.message).to.include('is not a valid node');
+    });
 });

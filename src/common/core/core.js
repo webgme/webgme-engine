@@ -310,6 +310,34 @@ define([
         }
     }
 
+    function getCommonAncestor(node1, node2, getter) {
+        function getChain(node) {
+            var ancestors = [];
+
+            while (node) {
+                ancestors.push(node);
+                node = getter(node);
+            }
+
+            return ancestors;
+        }
+
+        var ancestors2 = getChain(node2),
+            i;
+
+        while (node1) {
+            for (i = 0; i < ancestors2.length; i += 1) {
+                if (node1 === ancestors2[i]) {
+                    return node1;
+                }
+            }
+
+            node1 = getter(node1);
+        }
+
+        return null;
+    }
+
     /**
      * @param {ProjectInterface} project - project connected to storage
      * @param {object} options - contains logging information
@@ -364,6 +392,34 @@ define([
             ensureNode(node, 'node');
 
             return core.getParent(node);
+        };
+
+        /**
+         * Returns the common parent node of all supplied nodes.
+         * @param {...module:Core~Node} nodes - a variable number of nodes to compare
+         *
+         * @return {module:Core~Node | null} The common base or null if no nodes were passed.
+         * @example
+         * core.getCommonParent(node1, node2, node3);
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
+         * @throws {CoreAssertError} If some internal error took place inside the core layers.
+         */
+        this.getCommonParent = function () {
+            var nodesArr = (arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments)),
+                result,
+                i;
+
+            nodesArr.forEach(function (node, idx) {
+                ensureNode(node, 'arguments[' + idx + ']');
+            });
+
+            result = nodesArr[0];
+
+            for (i = 1; i < nodesArr.length; i += 1) {
+                result = getCommonAncestor(result, nodesArr[i], core.getParent);
+            }
+
+            return result || null;
         };
 
         /**
@@ -1219,6 +1275,34 @@ define([
             ensureNode(node, 'node');
 
             return core.getBase(node);
+        };
+
+        /**
+         * Returns the common base node of all supplied nodes.
+         * @param {...module:Core~Node} nodes - a variable number of nodes to compare
+         *
+         * @return {module:Core~Node | null} The common base or null if e.g. the root node was passed.
+         * @example
+         * core.getCommonBase(node1, node2, node3);
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
+         * @throws {CoreAssertError} If some internal error took place inside the core layers.
+         */
+        this.getCommonBase = function () {
+            var nodesArr = (arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments)),
+                result,
+                i;
+
+            nodesArr.forEach(function (node, idx) {
+                ensureNode(node, 'arguments[' + idx + ']');
+            });
+
+            result = nodesArr[0];
+
+            for (i = 1; i < nodesArr.length; i += 1) {
+                result = getCommonAncestor(result, nodesArr[i], core.getBase);
+            }
+
+            return result || null;
         };
 
         /**
