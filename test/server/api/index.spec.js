@@ -959,6 +959,7 @@ describe('ORGANIZATION REST API', function () {
                         try {
                             expect(res.status).equal(200, err);
                             expect(typeof res.body).to.equal('object');
+                            expect(res.body.addresses instanceof Array).to.equal(true);
                             expect(res.body.addOns).to.equal(null);
                             expect(typeof res.body.serverWorkers).to.equal('object');
                             expect(res.body.webSockets instanceof Array).to.equal(true);
