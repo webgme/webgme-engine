@@ -2293,9 +2293,10 @@ function createAPI(app, mountPath, middlewareOpts) {
     router.get('/status', ensureAuthenticated, function (req, res, next) {
         var userId = getUserId(req),
             result = {
+                addresses: middlewareOpts.addresses,
                 addOns: null,
                 serverWorkers: null,
-                webSockets: null
+                webSockets: null,
             };
 
         gmeAuth.getUser(userId)

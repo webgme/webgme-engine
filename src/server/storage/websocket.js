@@ -123,6 +123,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         projectId: projectId,
                         branchName: branchName,
                         userId: userId,
+                        socketId: socket.id,
                         webgmeToken: token
                     };
 
@@ -163,15 +164,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.broadcast.to(roomName).emit(CONSTANTS.NOTIFICATION, notificationData);
             Q.ninvoke(socket, 'leave', roomName)
                 .then(function () {
-                    var eventData = {
-                        projectId: projectId,
-                        branchName: branchName,
-                        userId: userId
-                    };
-
                     logger.debug('socket left room', socket.id, notificationData.userId, roomName);
-
-                    storage.dispatchEvent(CONSTANTS.BRANCH_LEFT, eventData);
+                    storage.dispatchEvent(CONSTANTS.BRANCH_LEFT, notificationData);
                     deferred.resolve();
                 })
                 .catch(function (err) {
@@ -1217,11 +1211,25 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     this.getStatus = function () {
         return Object.keys(webSocket.sockets.sockets)
             .map(function (socketId) {
-                var socket = webSocket.sockets.sockets[socketId];
+                var socket = webSocket.sockets.sockets[socketId],
+                    branchRooms = [];
+
+                Object.keys(socket.rooms).forEach(function (roomName) {
+                    var pieces = roomName.split(CONSTANTS.ROOM_DIVIDER);
+
+                    if (pieces.length === 2) {
+                        branchRooms.push({
+                            projectId: pieces[0],
+                            branchName: pieces[1],
+                        });
+                    }
+                });
+
                 return {
                     socketId: socketId,
                     userId: socket.userId,
-                    connectedSince: socket.handshake && socket.handshake.time
+                    connectedSince: socket.handshake && socket.handshake.time,
+                    branchRooms: branchRooms
                 };
             });
     };
