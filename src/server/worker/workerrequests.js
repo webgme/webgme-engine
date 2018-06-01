@@ -1523,9 +1523,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             finish = function (err, result) {
                 if (err) {
                     err = err instanceof Error ? err : new Error(err);
-                    logger.error('changeAspectMeta failed with error', err);
+                    logger.error('removeMetaRule failed with error', err);
                 } else {
-                    logger.debug('changeAspectMeta completed');
+                    logger.debug('removeMetaRule completed');
                 }
 
                 if (storage) {
@@ -1551,12 +1551,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             })
             .then(function (node_) {
                 node = node_;
-
-                return metaRename.propagateMetaDefinitionRemove(context.core, node, parameters);
-            })
-            .then(function () {
-                var persisted;
-
                 switch (parameters.type) {
                     case 'attribute':
                         context.core.delAttributeMeta(node, parameters.name);
@@ -1580,6 +1574,11 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                             context.core.delAspectMeta(node, parameters.name);
                         }
                 }
+
+                return metaRename.propagateMetaDefinitionRemove(context.core, node, parameters);
+            })
+            .then(function () {
+                var persisted;
 
                 persisted = context.core.persist(context.rootNode);
 

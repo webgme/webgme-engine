@@ -378,37 +378,28 @@ define(['q'], function (Q) {
             visitFn;
 
         function visitForAttribute(visited, next) {
-            if (core.getValidAttributeNames(visited).indexOf(parameters.name) === -1 ||
-                core.getOwnAttributeNames(visited).indexOf(parameters.name) === -1) {
-                next(null);
-                return;
-            }
-
-            if (core.getPath(core.getAttributeDefinitionOwner(visited, parameters.name)) === nodePath) {
+            if (core.getOwnAttributeNames(visited).indexOf(parameters.name) !== -1 &&
+                core.getValidAttributeNames(visited).indexOf(parameters.name) === -1) {
                 core.delAttribute(visited, parameters.name);
             }
+
             next(null);
         }
 
         function visitForPointer(visited, next) {
-            var definitionInfo,
-                deferred = Q.defer();
+            var deferred = Q.defer();
+            if (core.getOwnPointerPath(visited, parameters.name) === undefined) {
+                return Q.resolve(null).nodeify(next);
+            }
 
-            if (core.getValidPointerNames(visited).indexOf(parameters.name) === -1 ||
-                core.getOwnPointerPath(visited, parameters.name) === undefined) {
+            if (core.getValidPointerNames(visited).indexOf(parameters.name) === -1) {
+                core.deletePointer(visited, parameters.name);
                 return Q.resolve(null).nodeify(next);
             }
 
             core.loadPointer(visited, parameters.name)
                 .then(function (target) {
-                    if (target !== null) {
-                        definitionInfo = core.getPointerDefinitionInfo(visited, parameters.name, target);
-
-                        if (definitionInfo.ownerPath === nodePath &&
-                            definitionInfo.targetPath === parameters.targetPath) {
-                            core.deletePointer(visited, parameters.name);
-                        }
-                    } else if (core.getPath(visited) === nodePath) {
+                    if (target !== null && core.isValidTargetOf(target, visited, parameters.name) === false) {
                         core.deletePointer(visited, parameters.name);
                     }
                     deferred.resolve(null);
@@ -419,26 +410,26 @@ define(['q'], function (Q) {
         }
 
         function visitForSet(visited, next) {
-            var definitionInfo,
-                deferred = Q.defer();
+            var deferred = Q.defer();
 
-            if (core.getValidSetNames(visited).indexOf(parameters.name) === -1 ||
-                core.getOwnSetNames(visited).indexOf(parameters.name) === -1) {
+            if (core.getOwnSetNames(visited).indexOf(parameters.name) === -1) {
+                return Q.resolve(null).nodeify(next);
+            }
+
+            if (core.getValidSetNames(visited).indexOf(parameters.name) === -1) {
+                core.deleteSet(visited, parameters.name);
                 return Q.resolve(null).nodeify(next);
             }
 
             core.loadOwnMembers(visited, parameters.name)
                 .then(function (members) {
-                    var i,
+                    var i, removed = 0,
                         ownMemberPaths = core.getOwnMemberPaths(visited, parameters.name);
 
                     for (i = 0; i < members.length; i += 1) {
-                        if (ownMemberPaths.indexOf(core.getPath(members[i])) !== -1) {
-                            definitionInfo = core.getSetDefinitionInfo(visited, parameters.name, members[i]);
-                            if (definitionInfo.ownerPath === nodePath &&
-                                definitionInfo.targetPath === parameters.targetPath) {
-                                core.delMember(visited, parameters.name, core.getPath(members[i]));
-                            }
+                        if (core.isValidTargetOf(members[i], visited, parameters.name) === false) {
+                            core.delMember(visited, parameters.name, core.getPath(members[i]));
+                            removed += 1;
                         }
                     }
 
@@ -447,7 +438,6 @@ define(['q'], function (Q) {
                     }
 
                     deferred.resolve(null);
-                    return;
                 })
                 .catch(deferred.reject);
 
@@ -455,50 +445,45 @@ define(['q'], function (Q) {
         }
 
         function visitForAspect(visited, next) {
-            var definitionInfo,
-                deferred = Q.defer();
+            var deferred = Q.defer();
 
-            if (core.getValidAspectNames(visited).indexOf(parameters.name) === -1 ||
-                core.getOwnSetNames(visited).indexOf(parameters.name) === -1) {
-                next(null);
-                return;
-            }
+            //isValidAspectMemberOf
+            if (core.getOwnSetNames(visited).indexOf(parameters.name) !== -1) {
+                if (core.getValidAspectNames(visited).indexOf(parameters.name) === -1) {
+                    core.delSet(visited, parameters.name);
+                    return Q.resolve(null).nodeify(next);
+                }
 
-            if (typeof parameters.targetPath !== 'string') {
-                core.delSet(visited, parameters.name);
-                next(null);
-                return;
-            }
+                core.loadMembers(visited, parameters.name)
+                    .then(function (members) {
+                        var i, removed = 0;
 
-            core.loadMembers(visited, parameters.name)
-                .then(function (members) {
-                    var i;
-
-                    for (i = 0; i < members.length; i += 1) {
-                        definitionInfo = core.getAspectDefinitionInfo(visited, parameters.name, members[i]);
-                        if (definitionInfo.ownerPath === nodePath &&
-                            definitionInfo.targetPath === parameters.targetPath) {
-                            core.delMember(visited, parameters.name, core.getPath(members[i]));
+                        for (i = 0; i < members.length; i += 1) {
+                            if (core.isValidAspectMemberOf(members[i], visited, parameters.name) === false) {
+                                core.delMember(visited, parameters.name, core.getPath(members[i]));
+                                removed += 1;
+                            }
                         }
-                    }
-                    deferred.resolve(null);
-                    return;
-                })
-                .catch(deferred.reject);
+
+                        if (members.length === removed) {
+                            core.deleteSet(visited, parameters.name);
+                        }
+
+                        deferred.resolve(null);
+                    })
+                    .catch(deferred.reject);
+            } else {
+                return Q.resolve(null).nodeify(next);
+            }
 
             return deferred.promise.nodeify(next);
         }
 
         function visitForContainment(visited, next) {
-            var definitionInfo,
-                parent = core.getParent(visited);
+            var parent = core.getParent(visited);
 
-            if (parent !== null) {
-                definitionInfo = core.getChildDefinitionInfo(parent, visited);
-                if (definitionInfo.ownerPath === nodePath &&
-                    definitionInfo.targetPath === parameters.targetPath) {
-                    core.deleteNode(visited);
-                }
+            if (parent !== null && core.isValidChildOf(visited, parent) === false) {
+                core.deleteNode(visited);
             }
             next(null);
         }
