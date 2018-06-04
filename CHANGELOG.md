@@ -1,5 +1,21 @@
 # Change Log
 
+## [v2.19.9](https://github.com/webgme/webgme-engine/tree/v2.19.9) (2018-06-04)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.8...v2.19.9)
+
+**Implemented enhancements:**
+
+- Add methods for getting common base and getting common parent for two or more nodes [\#82](https://github.com/webgme/webgme-engine/issues/82)
+- Changing meta rule removal propagation [\#97](https://github.com/webgme/webgme-engine/pull/97) ([kecso](https://github.com/kecso))
+- Fixes \#82 by adding core.getCommonBase and getCommonParent and equivalents on client API [\#96](https://github.com/webgme/webgme-engine/pull/96) ([pmeijer](https://github.com/pmeijer))
+- Add addresses field and more details for webSockets in /api/status endpoint [\#95](https://github.com/webgme/webgme-engine/pull/95) ([pmeijer](https://github.com/pmeijer))
+- Add module for handling crosscuts using the core \(e.g. from a plugin\) [\#94](https://github.com/webgme/webgme-engine/pull/94) ([pmeijer](https://github.com/pmeijer))
+- Node module updates [\#92](https://github.com/webgme/webgme-engine/pull/92) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Better handling of expired tokens in websocket [\#98](https://github.com/webgme/webgme-engine/pull/98) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.19.8](https://github.com/webgme/webgme-engine/tree/v2.19.8) (2018-05-07)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.7...v2.19.8)
 
@@ -10,12 +26,9 @@
 
 **Fixed bugs:**
 
+- Unable to import model if model's meta is a library and vice versa [\#86](https://github.com/webgme/webgme-engine/issues/86)
 - Minor fixes for release 2.19.8 [\#90](https://github.com/webgme/webgme-engine/pull/90) ([kecso](https://github.com/kecso))
 - Fixes discrepancies in admin account and projects created at start up  [\#87](https://github.com/webgme/webgme-engine/pull/87) ([pmeijer](https://github.com/pmeijer))
-
-**Closed issues:**
-
-- Unable to import model if model's meta is a library and vice versa [\#86](https://github.com/webgme/webgme-engine/issues/86)
 
 ## [v2.19.7](https://github.com/webgme/webgme-engine/tree/v2.19.7) (2018-04-10)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.6...v2.19.7)
