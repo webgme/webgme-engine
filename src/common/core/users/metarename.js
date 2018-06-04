@@ -374,7 +374,6 @@ define(['q'], function (Q) {
 
     function propagateMetaDefinitionRemove(core, node, parameters, callback) {
         var deferred = Q.defer(),
-            nodePath = core.getPath(node),
             visitFn;
 
         function visitForAttribute(visited, next) {
@@ -423,8 +422,7 @@ define(['q'], function (Q) {
 
             core.loadOwnMembers(visited, parameters.name)
                 .then(function (members) {
-                    var i, removed = 0,
-                        ownMemberPaths = core.getOwnMemberPaths(visited, parameters.name);
+                    var i, removed = 0;
 
                     for (i = 0; i < members.length; i += 1) {
                         if (core.isValidTargetOf(members[i], visited, parameters.name) === false) {
@@ -433,7 +431,7 @@ define(['q'], function (Q) {
                         }
                     }
 
-                    if (members.length === 0) {
+                    if (members.length === removed) {
                         core.deleteSet(visited, parameters.name);
                     }
 

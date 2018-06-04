@@ -20,10 +20,8 @@ describe('Meta change propagation', function () {
         renameProjectName = 'renameRules',
         renameRootHash,
         renameCore,
-        renameIR,
         removeProjectName = 'removeRules',
         removeRootHash,
-        removeIR,
         removeCore,
         gmeAuth;
 
@@ -46,7 +44,6 @@ describe('Meta change propagation', function () {
                 return testFixture.importProject(storage, importParam);
             })
             .then(function (importResult) {
-                renameIR = importResult;
                 renameRootHash = importResult.core.getHash(importResult.rootNode);
                 renameCore = importResult.core;
 
@@ -61,7 +58,6 @@ describe('Meta change propagation', function () {
                 return testFixture.importProject(storage, importParam);
             })
             .then(function (importResult) {
-                removeIR = importResult;
                 removeRootHash = importResult.core.getHash(importResult.rootNode);
                 removeCore = importResult.core;
             })
@@ -194,7 +190,8 @@ describe('Meta change propagation', function () {
         it('should change aspect concept throughout the project', function (done) {
             metaConceptRename(core, allMetaNodes['/X/w'], 'aspect', 'onsies', 'oneSet')
                 .then(function () {
-                    expect(core.getValidAspectNames(allMetaNodes['/X/w'])).to.have.members(['duetts', 'others', 'oneSet']);
+                    expect(core.getValidAspectNames(allMetaNodes['/X/w']))
+                        .to.have.members(['duetts', 'others', 'oneSet']);
                     return core.loadByPath(rootNode, '/i');
                 })
                 .then(function (node) {
@@ -262,7 +259,8 @@ describe('Meta change propagation', function () {
                 type: 'aspect', oldName: 'onsies', newName: 'oneSet', targetPath: '/X/m'
             })
                 .then(function () {
-                    expect(core.getValidAspectNames(allMetaNodes['/X/w'])).to.have.members(['duetts', 'others', 'oneSet']);
+                    expect(core.getValidAspectNames(allMetaNodes['/X/w']))
+                        .to.have.members(['duetts', 'others', 'oneSet']);
                     return core.loadByPath(rootNode, '/i');
                 })
                 .then(function (node) {
@@ -277,7 +275,6 @@ describe('Meta change propagation', function () {
         'use strict';
 
         var core,
-            rootNode,
             allMetaNodes,
             one, two, mixin, container;
 
@@ -285,7 +282,6 @@ describe('Meta change propagation', function () {
             core = removeCore;
             core.loadRoot(removeRootHash)
                 .then(function (root) {
-                    rootNode = root;
                     allMetaNodes = core.getAllMetaNodes(root);
 
                     return Q.all([
@@ -418,7 +414,7 @@ describe('Meta change propagation', function () {
 
         it('should take care of aspect removal from mixin', function (done) {
             core.delAspectMeta(allMetaNodes['/L'], 'one');
-            propagateMetaDefinitionRemove(core, allMetaNodes['/L'], {type: 'aspect', name:'one'}, function (err) {
+            propagateMetaDefinitionRemove(core, allMetaNodes['/L'], {type: 'aspect', name: 'one'}, function (err) {
                 expect(err).to.eql(null);
                 expect(core.getValidAspectNames(one)).to.have.members(['one']);
                 done();
@@ -427,7 +423,7 @@ describe('Meta change propagation', function () {
 
         it('should take care of aspect removal from both', function (done) {
             core.delAspectMeta(allMetaNodes['/L'], 'one');
-            propagateMetaDefinitionRemove(core, allMetaNodes['/L'], {type: 'aspect', name:'one'}, function (err) {
+            propagateMetaDefinitionRemove(core, allMetaNodes['/L'], {type: 'aspect', name: 'one'}, function (err) {
                 expect(err).to.eql(null);
                 expect(core.getValidAspectNames(one)).to.have.members(['one']);
                 core.delAspectMeta(allMetaNodes['/e'], 'one');
