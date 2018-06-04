@@ -98,7 +98,7 @@ define([
         this.close = function (callback) {
             logger.debug('Closing storage, openProjects', Object.keys(projects));
 
-            return Q.all(Object.keys(projects)
+            return Q.allSettled(Object.keys(projects)
                 .map(function (projectId) {
                     return self.closeProject(projectId);
                 }))
@@ -182,7 +182,7 @@ define([
             logger.debug('closeProject', projectId);
 
             if (projects[projectId]) {
-                return Q.all(Object.keys(projects[projectId].branches)
+                return Q.allSettled(Object.keys(projects[projectId].branches)
                     .map(function (branchName) {
                         return self.closeBranch(projectId, branchName);
                     }))

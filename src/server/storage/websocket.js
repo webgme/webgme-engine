@@ -63,7 +63,10 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 .catch(function (err) {
                     if (err.name === 'TokenExpiredError') {
                         logger.debug('JWT_EXPIRED for socket', socket.id);
-                        socket.emit(CONSTANTS.JWT_EXPIRED, {});
+                        if (!socket[CONSTANTS.JWT_EXPIRED]) {
+                            socket[CONSTANTS.JWT_EXPIRED] = true;
+                            socket.emit(CONSTANTS.JWT_EXPIRED, {});
+                        }
                         deferred.reject(new Error('TokenExpired'));
                     } else {
                         deferred.reject(err);
