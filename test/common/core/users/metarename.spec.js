@@ -292,7 +292,7 @@ describe('Meta change propagation', function () {
                         core.loadByPath(root, '/t'),
                         core.loadByPath(root, '/H'),
                         core.loadByPath(root, '/F'),
-                        core.loadByPath(root, '/Z'),
+                        core.loadByPath(root, '/z'),
                     ]);
                 })
                 .then(function (nodes) {
@@ -345,6 +345,97 @@ describe('Meta change propagation', function () {
                 expect(core.getPointerPath(one, 'ref')).eql(null);
                 expect(core.getPointerPath(two, 'ref')).eql(core.getPath(one));
                 done();
+            });
+        });
+
+        it('should take care of set removal from the item', function (done) {
+            core.delPointerMetaTarget(allMetaNodes['/e'], 'coll', '/e');
+            propagateMetaDefinitionRemove(core, allMetaNodes['/e'], {type: 'set', name: 'coll'}, function (err) {
+                expect(err).to.eql(null);
+                expect(core.getValidSetNames(allMetaNodes['/e'])).to.have.members(['coll']);
+                expect(core.getMemberPaths(one, 'coll')).to.have.members([core.getPath(mixin)]);
+                expect(core.getMemberPaths(two, 'coll')).to.have.members([core.getPath(one)]);
+                done();
+            });
+        });
+
+        it('should take care of set removal from the mixin', function (done) {
+            core.delPointerMetaTarget(allMetaNodes['/L'], 'coll', '/1');
+            propagateMetaDefinitionRemove(core, allMetaNodes['/L'], {type: 'set', name: 'coll'}, function (err) {
+                expect(err).to.eql(null);
+                expect(core.getValidSetNames(allMetaNodes['/e'])).to.have.members(['coll']);
+                expect(core.getMemberPaths(one, 'coll')).to.have.members([]);
+                expect(core.getMemberPaths(two, 'coll')).to.have.members([core.getPath(one)]);
+                done();
+            });
+        });
+
+        it('should take care of containment removal from item', function (done) {
+            core.delChildMeta(allMetaNodes['/e'], '/e');
+            propagateMetaDefinitionRemove(core, allMetaNodes['/e'], {type: 'containment'}, function (err) {
+                expect(err).to.eql(null);
+                expect(core.getChildrenPaths(container)).to.have.length(2);
+                done();
+            });
+        });
+
+        it('should take care of containment removal from mixin', function (done) {
+            core.delChildMeta(allMetaNodes['/L'], '/1');
+            propagateMetaDefinitionRemove(core, allMetaNodes['/L'], {type: 'containment'}, function (err) {
+                expect(err).to.eql(null);
+                expect(core.getChildrenPaths(container)).to.have.length(2);
+                done();
+            });
+        });
+
+        it('should take care of containment removal from both', function (done) {
+            core.delChildMeta(allMetaNodes['/e'], '/e');
+            propagateMetaDefinitionRemove(core, allMetaNodes['/e'], {type: 'containment'}, function (err) {
+                expect(err).to.eql(null);
+                expect(core.getChildrenPaths(container)).to.have.length(2);
+                core.delChildMeta(allMetaNodes['/L'], '/1');
+                propagateMetaDefinitionRemove(core, allMetaNodes['/L'], {type: 'containment'}, function (err) {
+                    expect(err).to.eql(null);
+                    expect(core.getChildrenPaths(container)).to.have.length(2);
+                    core.delChildMeta(allMetaNodes['/1'], '/L');
+                    propagateMetaDefinitionRemove(core, allMetaNodes['/1'], {type: 'containment'}, function (err) {
+                        expect(err).to.eql(null);
+                        expect(core.getChildrenPaths(container)).to.have.length(0);
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('should take care of aspect removal from item', function (done) {
+            core.delAspectMeta(allMetaNodes['/e'], 'one');
+            propagateMetaDefinitionRemove(core, allMetaNodes['/e'], {type: 'aspect', name: 'one'}, function (err) {
+                expect(err).to.eql(null);
+                expect(core.getValidAspectNames(one)).to.have.members(['one']);
+                done();
+            });
+        });
+
+        it('should take care of aspect removal from mixin', function (done) {
+            core.delAspectMeta(allMetaNodes['/L'], 'one');
+            propagateMetaDefinitionRemove(core, allMetaNodes['/L'], {type: 'aspect', name:'one'}, function (err) {
+                expect(err).to.eql(null);
+                expect(core.getValidAspectNames(one)).to.have.members(['one']);
+                done();
+            });
+        });
+
+        it('should take care of aspect removal from both', function (done) {
+            core.delAspectMeta(allMetaNodes['/L'], 'one');
+            propagateMetaDefinitionRemove(core, allMetaNodes['/L'], {type: 'aspect', name:'one'}, function (err) {
+                expect(err).to.eql(null);
+                expect(core.getValidAspectNames(one)).to.have.members(['one']);
+                core.delAspectMeta(allMetaNodes['/e'], 'one');
+                propagateMetaDefinitionRemove(core, allMetaNodes['/e'], {type: 'aspect', name: 'one'}, function (err) {
+                    expect(err).to.eql(null);
+                    expect(core.getValidAspectNames(one)).to.have.members([]);
+                    done();
+                });
             });
         });
     });
