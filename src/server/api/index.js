@@ -2293,9 +2293,10 @@ function createAPI(app, mountPath, middlewareOpts) {
     router.get('/status', ensureAuthenticated, function (req, res, next) {
         var userId = getUserId(req),
             result = {
-                addresses: middlewareOpts.addresses,
+                addresses: middlewareOpts.server.getAddresses(),
                 addOns: null,
                 serverWorkers: null,
+                sockets: middlewareOpts.server.getSocketsInfo(),
                 webSockets: null,
             };
 

@@ -630,7 +630,7 @@ function StandAloneServer(gmeConfig) {
     middlewareOpts = {  //TODO: Pass this to every middleware They must not modify the options!
         gmeConfig: gmeConfig,
         logger: logger,
-        IPs: [],
+        server: null,
         ensureAuthenticated: ensureAuthenticated,
         getUserId: getUserId,
         gmeAuth: __gmeAuth,
@@ -931,12 +931,24 @@ function StandAloneServer(gmeConfig) {
     }
 
     logger.info('Valid addresses of gme web server: ', addresses.join('  '));
-
-    middlewareOpts.addresses = addresses;
-
     logger.debug('standalone server initialization completed');
 
-    return {
+    var module = {
+        getAddresses: function () {
+            return addresses;
+        },
+        getSocketsInfo: function () {
+            return Object.keys(sockets)
+                .map(function (sid) {
+                    return {
+                        address: sockets[sid].address(),
+                        localAddress: sockets[sid].localAddress,
+                        localPort: sockets[sid].localPort,
+                        remoteAddress: sockets[sid].remoteAddress,
+                        remotePort: sockets[sid].remotePort,
+                    };
+                });
+        },
         getUrl: getUrl,
         getGmeConfig: function () {
             return gmeConfig;
@@ -950,6 +962,10 @@ function StandAloneServer(gmeConfig) {
             return self.isRunning;
         }
     };
+
+    middlewareOpts.server = module;
+
+    return module;
 }
 
 module.exports = StandAloneServer;
