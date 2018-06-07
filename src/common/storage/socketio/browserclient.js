@@ -11,7 +11,7 @@ define(['common/util/url'], function (URL) {
         var logger = mainLogger.fork('socketio-browserclient');
 
         this.connect = function (callback) {
-            var hostAddress = window.location.protocol + '//' + window.location.host,
+            var hostAddress = window.location.protocol + '//' + window.location.host + gmeConfig.client.mountedPath,
                 socketIoUrl;
 
             if (window.__karma__) {

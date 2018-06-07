@@ -127,7 +127,7 @@ function getSVGMap(gmeConfig, logger, callback) {
     }
 
     function joinPath(paths) {
-        return '/' + paths.join('/');
+        return gmeConfig.client.mountedPath + paths.join('/');
     }
 
     function walkExtraDir(svgDir) {

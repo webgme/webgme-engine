@@ -603,7 +603,7 @@ define([
         function getNewToken(callback) {
             if (state.renewingToken === false) {
                 state.renewingToken = true;
-                (new superagent.Request('GET', 'api/user/token'))
+                (new superagent.Request('GET', gmeConfig.client.mountedPath + '/api/user/token'))
                     .end(function (err, res) {
                         state.renewingToken = false;
                         callback(err, res.body.webgmeToken);
