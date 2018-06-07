@@ -24,8 +24,12 @@ define(['common/util/url'], function (URL) {
 
             require([socketIoUrl], function (io_) {
                 var io = io_ || window.io,
+                    socketOptions = gmeConfig.socketIO.clientOptions,
                     socket;
 
+                if (gmeConfig.server.prefix && gmeConfig.socketIO.clientOptions.path === undefined) {
+                    socketOptions.path = '/' + gmeConfig.server.prefix + '/socket.io';
+                }
                 logger.debug('Connecting to "' + hostAddress + '" with options', gmeConfig.socketIO.clientOptions);
                 socket = io(hostAddress, gmeConfig.socketIO.clientOptions);
                 callback(null, socket);
