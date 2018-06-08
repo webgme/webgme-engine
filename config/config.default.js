@@ -155,7 +155,6 @@ var path = require('path'),
 
         server: {
             port: 8888,
-            prefix: '',
             handle: null,
             timeout: -1,
             workerManager: {
