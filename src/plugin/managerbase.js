@@ -43,7 +43,16 @@ define([
                 pluginPath;
 
             function instantiatePlugin(PluginClass) {
-                var plugin = new PluginClass();
+                var plugin;
+
+                if (!PluginClass) {
+                    // This should not happen, but just in case..
+                    deferred.reject(new Error('Loading plugin "' + pluginIdOrClass +
+                        '" with requirejs return undefined.'));
+                    return;
+                }
+
+                plugin = new PluginClass();
                 if (self.serverSide && plugin.pluginMetadata.disableServerSideExecution) {
                     deferred.reject(new Error(pluginIdOrClass + ' cannot be invoked on server.'));
                 } else if (self.browserSide && plugin.pluginMetadata.disableBrowserSideExecution) {
