@@ -10,7 +10,7 @@
     "start": "node ./src/bin/start_server.js",
     "prepublishOnly": "node ./utils/prepublish.js",
     "postinstall": "node ./utils/postinstall.js",
-    "test": "node ./node_modules/mocha/bin/mocha --recursive test",
+    "test": "node ./node_modules/mocha/bin/mocha --exit --recursive test",
     "test_ci": "node ./node_modules/mocha/bin/mocha -R dot --timeout 10000 --recursive test",
     "test_cover": "node ./node_modules/istanbul/lib/cli.js --hook-run-in-context cover node_modules/mocha/bin/_mocha -- -R spec --timeout 10000 --recursive test",
     "test_browser": "node ./node_modules/karma/bin/karma start karma.conf.js --browsers Firefox --single-run --no-auto-watch",
