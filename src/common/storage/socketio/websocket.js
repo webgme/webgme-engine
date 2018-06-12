@@ -51,10 +51,6 @@ define([
 
                 self.socket = socket_;
 
-                self.socket.on('error', function (err) {
-                    console.log('what the fuck');
-                });
-
                 self.socket.on('connect', function () {
                     var i,
                         sendBufferSave = [];

@@ -1,4 +1,4 @@
-/*globals define, Uint8Array, ArrayBuffer*/
+/*globals define, Uint8Array, ArrayBuffer, WebGMEGlobal*/
 /*eslint-env node, browser*/
 
 /**

@@ -925,11 +925,10 @@ describe('BlobClient', function () {
         });
 
         it('should be correct with WebGMEGlobal config mountedPath', function () {
-            var relUrl = '/relative/',
-                bc,
-                oldGlobal = WebGMEGlobal;
+            var bc,
+                oldGlobal = WebGMEGlobal; // eslint-disable-line no-undef
 
-            WebGMEGlobal = {gmeConfig: {client: {mountedPath: '/mounted'}}};
+            WebGMEGlobal = {gmeConfig: {client: {mountedPath: '/mounted'}}}; // eslint-disable-line no-undef
 
             bc = new BlobClient({});
             expect(bc.getMetadataURL()).to.contain('/mounted/rest/blob');
@@ -941,7 +940,7 @@ describe('BlobClient', function () {
             expect(bc.getRelativeDownloadURL()).to.contain('/mounted/rest/blob');
             expect(bc.getRelativeDownloadURL()).to.contain('download');
 
-            WebGMEGlobal = oldGlobal;
+            WebGMEGlobal = oldGlobal; // eslint-disable-line no-undef
         });
     });
 
