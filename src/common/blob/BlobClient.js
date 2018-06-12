@@ -73,7 +73,7 @@ define([
         if (this.httpsecure !== undefined && this.server && this.serverPort) {
             this.origin = (this.httpsecure ? 'https://' : 'http://') + this.server + ':' + this.serverPort;
         }
-        if (typeof parameters.relativeUrl === 'string') {
+        if (parameters && typeof parameters.relativeUrl === 'string') {
             this.relativeUrl = parameters.relativeUrl;
         } else if (typeof WebGMEGlobal !== 'undefined' && WebGMEGlobal.gmeConfig &&
             typeof WebGMEGlobal.gmeConfig.client.mountedPath === 'string') {
