@@ -11,10 +11,7 @@ function getClientConfig(gmeConfig) {
 
     delete clientConfig.server;
     clientConfig.server = {port: gmeConfig.server.port}; // This is only needed for the karma tests.
-    if (gmeConfig.server.prefix) {
-        clientConfig.server.prefix = gmeConfig.server.prefix;
-    }
-
+    
     delete clientConfig.webhooks;
     clientConfig.webhooks = {enable: gmeConfig.webhooks.enable};
 

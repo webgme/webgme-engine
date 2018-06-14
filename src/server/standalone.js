@@ -150,6 +150,14 @@ function StandAloneServer(gmeConfig) {
         return self.serverUrl;
     }
 
+    function getLogInUrl() {
+        return gmeConfig.client.mountedPath + gmeConfig.authentication.logInUrl;
+    }
+
+    function getLogOutUrl() {
+        return gmeConfig.client.mountedPath + gmeConfig.authentication.logOutUrl;
+    }
+
     //public functions
     function start(callback) {
         var serverDeferred = Q.defer();
@@ -412,7 +420,7 @@ function StandAloneServer(gmeConfig) {
                             res.status(401);
                             next(err);
                         } else {
-                            res.redirect(gmeConfig.authentication.logInUrl);
+                            res.redirect(getLogInUrl());
                         }
                     } else {
                         logger.error('Cookie verification failed', {metadata: err});
@@ -456,7 +464,7 @@ function StandAloneServer(gmeConfig) {
                             res.status(401);
                             next(err);
                         } else {
-                            res.redirect(gmeConfig.authentication.logInUrl);
+                            res.redirect(getLogInUrl());
                         }
                     } else {
                         logger.error('Cookie verification failed', err);
@@ -498,7 +506,7 @@ function StandAloneServer(gmeConfig) {
                             res.status(401);
                             next(err);
                         } else {
-                            res.redirect(gmeConfig.authentication.logInUrl);
+                            res.redirect(getLogInUrl());
                         }
                     } else {
                         logger.error('Cookie verification failed', err);
@@ -525,7 +533,7 @@ function StandAloneServer(gmeConfig) {
             res.status(401);
             return next(new Error());
         } else {
-            res.redirect(gmeConfig.authentication.logInUrl + webgmeUtils.getRedirectUrlParameter(req));
+            res.redirect(getLogInUrl() + webgmeUtils.getRedirectUrlParameter(req));
         }
     }
 
@@ -655,6 +663,11 @@ function StandAloneServer(gmeConfig) {
     //     });
     // }
 
+    // __app.use(function (req, res, next) {
+    //     console.log(req.url);
+    //     next();
+    // });
+
     __app.use(compression());
     __app.use(cookieParser());
     __app.use(bodyParser.json());
@@ -721,7 +734,7 @@ function StandAloneServer(gmeConfig) {
             redirectUrl = req.query.redirectUrl;
 
             res.clearCookie(gmeConfig.authentication.jwt.cookieId);
-            res.redirect(gmeConfig.authentication.logOutUrl || redirectUrl || gmeConfig.authentication.logInUrl || '/');
+            res.redirect(getLogOutUrl() || redirectUrl || getLogInUrl() || '/');
         }
     });
 
