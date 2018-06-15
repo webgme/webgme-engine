@@ -8,8 +8,8 @@
  * with your project from your user-defined UI pieces. It allows project selection, project tracking,
  * model interpretation and model manipulation.
  * !!! Documentation of the class is incomplete !!!
- * For a better understanding of what functionality it can provide, you can check the [Core]{@link Core}
- * documentation as much of the functions of this class are aligned with those functions.
+ * What is mainly missing are the node setters. Until added here use the [Core documentation]{@link Core}
+ * and simply replace any Core nodes in the arguments with the id/path of the nodes instead.
  *
  * @class Client
  *
@@ -160,7 +160,8 @@
  * @param {string} pluginId - Id of plugin.
  * @param {object} context
  * @param {object} context.managerConfig - Where the plugin should execute.
- * @param {ProjectInterface} context.managerConfig.project - Project (e.g. client.getProjectObject()).
+ * @param {ProjectInterface} context.managerConfig.project - Project (can be obtained via
+ * [client.getProjectObject()]{@link Client#getProjectObject}).
  * @param {string} [context.managerConfig.activeNode=''] - Path to activeNode.
  * @param {string} [context.managerConfig.activeSelection=[]] - Paths to selected nodes.
  * @param {string} context.managerConfig.commitHash - Commit hash to start the plugin from.
@@ -353,6 +354,284 @@
  */
 
 /**
+ * @description Establishes a ws-connection to the storage/database on the server. If already connected - it will
+ * resolve immediately. Note that the client itself attempts to reconnect on unintended disconnections. To monitor the
+ * status register for the client.CONSTANTS.NETWORK_STATUS_CHANGED event.
+ * @function connectToDatabase
+ * @memberOf Client
+ * @param {function} callback - Invoked when request completed.
+ * @param {null|Error} callback.err - If the request failed.
+ * @instance
+ */
+
+/**
+ * @description Ends the ws-connection to the storage/database on the server.
+ * @function disconnectFromDatabase
+ * @memberOf Client
+ * @param {function} callback - Invoked when request completed.
+ * @param {null|Error} callback.err - If the request failed.
+ * @instance
+ */
+
+/**
+ * @description Selects a new project and opens a branch for monitoring. Any previously opened project/branch will be
+ * closed. If the same project is already open - it will resolve immediately and keep that project open.
+ * (To only change the branch use selectBranch instead). If branchName is given and it does not exist,
+ * the project will be closed and the callback will resolve with an error.
+ * If branchName is NOT given it will attempt proceed in the following in order and break if successful at any step:
+ *  1) Select the 'master' if available.
+ *  2) Select any available branch.
+ *  3) Select the latest commit.
+ *  4) Close the project and resolve with an error.
+ * @function selectProject
+ * @memberOf Client
+ * @param {string} projectId - Id of project to be selected
+ * @param {string} [branchName='master'] - branch to open
+ * @param {function} callback - Invoked when request completed.
+ * @param {null|Error} callback.err - If the request failed.
+ * @instance
+ */
+
+/**
+ * @description Closes the currently selected project. If a branch is opened it will be closed as well.
+ * Will resolve with error if no project is opened.
+ * @function closeProject
+ * @memberOf Client
+ * @param {function} callback - Invoked when request completed.
+ * @param {null|Error} callback.err - If the request failed.
+ * @instance
+ */
+
+/**
+ * @description Selects a branch in the currently opened project. It will close any currently opened branch.
+ * If the same branch is opened it will close and reselect it (this differs from how selectProject works).
+ * @function selectBranch
+ * @memberOf Client
+ * @param {string} branchName - Name of branch to open.
+ * @param {function} callback - Invoked when request completed.
+ * @param {null|Error} callback.err - If the request failed.
+ * @instance
+ */
+
+/**
+ * @description Selects a specific commit and enters "read-only" mode see [isReadOnly]{@link Client#isReadOnly} and
+ * [isReadOnlyCommit]{@link Client#isReadOnlyCommit}.
+ * If a branch is opened it will be closed. Will resolve with error if the commit does not exist.
+ * @function selectCommit
+ * @memberOf Client
+ * @param {string} commitHash - Unique id for the commit to select.
+ * @param {function} callback - Invoked when request completed.
+ * @param {null|Error} callback.err - If the request failed.
+ * @instance
+ */
+
+/**
+ * @description Returns true if either the selected project is read-only for the connected user or if a commit
+ * is selected, i.e. if either [isReadOnlyCommit]{@link Client#isReadOnlyCommit} or
+ * [isProjectReadOnly]{@link Client#isProjectReadOnly} return true.
+ * @function isReadOnly
+ * @memberOf Client
+ * @instance
+ * @returns {boolean} True if in read-only state.
+ */
+
+/**
+ * @description Returns true if the selected project is read-only for the connected user.
+ * @function isProjectReadOnly
+ * @memberOf Client
+ * @instance
+ * @returns {boolean} True if the user only has read-access to the project.
+ */
+
+/**
+ * @description Returns true if a specific commit is selected (no branch opened).
+ * @function isCommitReadOnly
+ * @memberOf Client
+ * @instance
+ * @returns {boolean} True if a commit is selected
+ */
+
+/**
+ * @description Returns true if a connection to the database/storage has been established and
+ * is not in a disconnected state.
+ * @function isConnected
+ * @memberOf Client
+ * @instance
+ * @returns {boolean} True if connected to the database/storage.
+ */
+
+/**
+ * @description Returns the current connection state or null if connectToDatabase was never invoked.
+ * @function getNetworkStatus
+ * @memberOf Client
+ * @instance
+ * @returns {string|null} One of client.CONSTANTS.STORAGE.
+ * CONNECTED/DISCONNECTED/RECONNECTED/INCOMPATIBLE_CONNECTION/CONNECTION_ERROR
+ */
+
+/**
+ * @description Returns the version (package.json version of webgme-engine) of the server the initial connection was
+ * established to.
+ * @function getConnectedStorageVersion
+ * @memberOf Client
+ * @instance
+ * @returns {string|null} null if it was never connected.
+ */
+
+/**
+ * @description Returns the current status of the opened branch. Returns null if no branch is opened.
+ * @function getBranchStatus
+ * @memberOf Client
+ * @instance
+ * @returns {string|null} One of client.CONSTANTS.BRANCH_STATUS. SYNC/AHEAD_SYNC/AHEAD_NOT_SYNC/PULLING/ERROR.
+ */
+
+/**
+ * @description Returns the id of currently selected project. Returns null if no project is opened.
+ * @function getActiveProjectId
+ * @memberOf Client
+ * @instance
+ * @returns {string|null} The project-id of the selected project.
+ */
+
+/**
+ * @description Returns the name of currently selected project. Returns null if no project is opened.
+ * @function getActiveProjectName
+ * @memberOf Client
+ * @instance
+ * @returns {string|null} The project-name of the selected project.
+ */
+
+/**
+ * @description Returns the kind of currently selected project at the time it was opened.
+ * Returns null if no project is opened and returns undefined if the field is not specified for the project.
+ * (To get the latest info from the server use client.getProjectObject() followed by project.getProjectInfo.)
+ * @function getActiveProjectKind
+ * @memberOf Client
+ * @instance
+ * @returns {string|null|undefined} The project-kind of the selected project.
+ */
+
+/**
+ * @description Returns the name of currently selected branch. Returns null if no branch is open.
+ * @function getActiveBranchName
+ * @memberOf Client
+ * @instance
+ * @returns {string|null} The name of the selected branch.
+ */
+
+/**
+ * @description Returns the current commit-hash of either the opened branch or the selected commit. Return null if
+ * none is selected.
+ * @function getActiveCommitHash
+ * @memberOf Client
+ * @instance
+ * @returns {string|null} The active commit-hash.
+ */
+
+/**
+ * @description Returns the current root-hash the client is at. If there are changes inside a transaction the root-hash
+ * will correspond to the state that is being updated. Returns null if no no branch or commit selected is selected.
+ * @function getActiveRootHash
+ * @memberOf Client
+ * @instance
+ * @returns {string|null} The active root-hash.
+ */
+
+/**
+ * @description Returns the access the current user had to the selected project when it was opened. Returns null if no
+ * project is open.
+ * (To get the latest info from the server use [client.getProjectObject()]{@link Client#getProjectObject}
+ * followed by [project.getProjectInfo]{@link Project#getProjectInfo}.)
+ * @function getProjectAccess
+ * @example
+ * { read: true, write: false, delete: false }
+ * @memberOf Client
+ * @instance
+ * @returns {object|null} The access levels to the project.
+ */
+
+/**
+ * @description Returns the info of the selected project when it was opened. Returns null if no project is open.
+ * (To get the latest info from the server use [client.getProjectObject()]{@link Client#getProjectObject}
+ * followed by [project.getProjectInfo]{@link Project#getProjectInfo}.)
+ * @function getProjectInfo
+ * @memberOf Client
+ * @instance
+ * @returns {object|null} The project info - see [project.getProjectInfo]{@link Project#getProjectInfo}
+ */
+
+/**
+ * @description Returns the project object of the selected project. Returns null if no project is open.
+ * @function getProjectObject
+ * @memberOf Client
+ * @instance
+ * @returns {ProjectInterface|null} The project instance.
+ */
+
+/**
+ * @description Creates a new core instance using the state of the client and loads a new root node.
+ * Resolves with error if no project or root-hash is active.
+ * @function getCoreInstance
+ * @memberOf Client
+ * @param {object} [options]
+ * @param {string} [options.commitHash=%state.commitHash%] - If a different commit-hash should be loaded.
+ * @param {GmeLogger} [options.logger=%clientLogger%] - Logger passed to the core instance.
+ * @param {function} callback
+ * @param {Error|null} callback.err - Non-null if failed to retrieve result.
+ * @param {object} callback.result - The result object
+ * @param {Core} callback.result.core - Newly created core instance
+ * @param {Core~Node} callback.result.rootNode - The root-node that was loaded.
+ * @param {string} callback.result.commitHash - The commitHash used as basis for loading the root-node.
+ * @param {Project} callback.result.project - A reference to the project.
+ * @instance
+ * @returns {Core|null} The core instance.
+ */
+
+/**
+ * @description Undo the latest change/commit, i.e. sets the branch-hash to point to the previous commit.
+ * Will immediately resolve with error if the provided branchName is not the
+ * same as the selected or if the current user did not make the latest change (see [canRedo]{@link Client#canRedo}).
+ * @function undo
+ * @memberOf Client
+ * @param {string} branchName - Must match the active branch.
+ * @param {function} callback - Invoked when request completed.
+ * @param {null|Error} callback.err - If the request failed.
+ * @instance
+ */
+
+/**
+ * @description Redo the latest undo. Will immediately resolve with error if the provided branchName is not the
+ * same as the selected or if there were commits after the previous undo (see [canRedo]{@link Client#canRedo}).
+ * @function redo
+ * @memberOf Client
+ * @param {string} branchName - Must match the active branch.
+ * @param {function} callback - Invoked when request completed.
+ * @param {null|Error} callback.err - If the request failed.
+ * @instance
+ */
+
+/**
+ * @description Returns true if the provided branchName matches the selected and if the current user did made the latest
+ * change.
+ * @function canUndo
+ * @memberOf Client
+ * @param {string} branchName - Must match the active branch.
+ * @instance
+ * @returns {boolean} True if it's fine to call client.undo()
+ */
+
+/**
+ * @description Returns true if the provided branchName matches the selected and if there were no commits after the
+ * previous undo.
+ * @function canRedo
+ * @memberOf Client
+ * @param {string} branchName - Must match the active branch.
+ * @instance
+ * @returns {boolean} True if it's fine to call client.redo()
+ */
+
+/**
  [
  __"_eventList",
  "CONSTANTS",
@@ -381,36 +660,10 @@
  "getOwnValidChildrenTypes",
  "getAspectTerritoryPattern",
 
- "connectToDatabase",
- "disconnectFromDatabase",
- "selectProject",
- "selectBranch",
- "selectCommit",
- "_selectCommitFilteredEvents",
  "forkCurrentBranch",
- "isConnected",
- "getNetworkStatus",
- "getConnectedStorageVersion",
- "getBranchStatus",
- "getActiveProjectId",
- "getActiveProjectName",
- "getActiveProjectKind",
- "getActiveBranchName",
- "getActiveCommitHash",
- "getActiveRootHash",
- "isProjectReadOnly",
- "isCommitReadOnly",
- "isReadOnly",
- "getProjectAccess",
- "getProjectInfo",
- "getProjectObject",
- "getCoreInstance",
  "getCommitQueue",
  "downloadCommitQueue",
  "downloadError",
-
- "undo",
- "redo",
 
  "applyCommitQueue",
  "getProjects",

@@ -4334,6 +4334,7 @@ describe('GME client', function () {
                 //we should only receive events once at the init
                 expect(events).to.have.length(2);
                 expect(events[1]).to.deep.equal({eid: '/323573539', etype: 'load'});
+                expect(client.canUndo(client.getActiveBranchName())).to.equal(false);
 
                 client.undo(client.getActiveBranchName(), function (err) {
                     expect(err).not.to.equal(null);
@@ -4351,6 +4352,7 @@ describe('GME client', function () {
                 //we should only receive events once at the init
                 expect(events).to.have.length(2);
                 expect(events[1]).to.deep.equal({eid: '/323573539', etype: 'load'});
+                expect(client.canRedo(client.getActiveBranchName())).to.equal(false);
 
                 client.redo(client.getActiveBranchName(), function (err) {
                     expect(err).not.to.equal(null);
