@@ -115,7 +115,10 @@
             tex: 'tex',
             ttcn: 'ttcn',
             yaml: 'yaml'
-        }
+        },
 
+        HTTP_HEADERS: {
+            MOUNTED_PATH: 'X-Proxy-Mounted-Path'
+        }
     };
 }));

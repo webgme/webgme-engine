@@ -1,4 +1,4 @@
-/*globals define*/
+/*globals define, WebGMEGlobal*/
 /*eslint-env node, browser*/
 
 /**

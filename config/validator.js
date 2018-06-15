@@ -151,7 +151,6 @@ function validateConfig(configOrFileName) {
     assertString('config.client.appVersion', config.client.appVersion);
     assertString('config.client.faviconPath', config.client.faviconPath);
     assertString('config.client.pageTitle', config.client.pageTitle, true);
-    assertString('config.client.mountedPath', config.client.mountedPath);
     assertObject('config.client.log', config.client.log);
     assertString('config.client.log.level', config.client.log.level);
 

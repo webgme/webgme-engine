@@ -114,8 +114,6 @@ ubuntu
  - Custom title for app, if not given the default title will be the name/id of the open project (or WebGME).
 - `config.client.log.level = 'debug'`
  - When [debug](https://github.com/visionmedia/debug) is activated in the browser messages below this level will not be printed.
-- `config.client.mountedPath = ''`
- - This string should point the web-clients of the hosting site to the correct subpath where the WebGME server responds. For example if it is served under the 'webgme' subpath then the value should be `/webgme` for correct routing. This setting does not affect the server as it should always behave as being served at the root. 
 ##### core
 
 - `config.core.enableCustomConstraints = false`
