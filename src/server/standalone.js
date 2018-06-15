@@ -588,7 +588,7 @@ function StandAloneServer(gmeConfig) {
     }
 
     function getMountedPath(req) {
-        return req.header(CONSTANTS.HTTP_HEADERS.MOUNTED_PATH);
+        return req.header(CONSTANTS.HTTP_HEADERS.MOUNTED_PATH) || '';
     }
 
     function processRequestBasedGMEConfigFields(baseConfig, req) {
