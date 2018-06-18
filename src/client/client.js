@@ -763,6 +763,11 @@ define([
                     return;
                 }
                 state.core = null;
+                if (state.branchName) {
+                    self.dispatchEvent(CONSTANTS.BRANCH_CLOSED, state.branchName);
+                    self.dispatchEvent(CONSTANTS.BRANCH_CHANGED, null);
+                }
+
                 state.branchName = null;
                 //self.dispatchEvent(null);
                 state.patterns = {};
@@ -1448,9 +1453,17 @@ define([
             stateLogHelpers.downloadStateDump(self, state);
         };
 
+        this.canUndo = function (branchName) {
+            return branchName === state.branchName && canUndo();
+        };
+
+        this.canRedo = function (branchName) {
+            return branchName === state.branchName && canRedo();
+        };
+
         // Undo/Redo functionality
         this.undo = function (branchName, callback) {
-            if (canUndo() === false) {
+            if (self.canUndo() === false) {
                 callback(new Error('unable to make undo'));
                 return;
             }
@@ -1473,7 +1486,7 @@ define([
         };
 
         this.redo = function (branchName, callback) {
-            if (canRedo() === false) {
+            if (self.canRedo() === false) {
                 callback(new Error('unable to make redo'));
                 return;
             }
