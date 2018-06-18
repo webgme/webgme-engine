@@ -69,8 +69,8 @@ describe('Seeds', function () {
             }
 
             Q.allDone([
-                gmeAuth.unload(),
-                safeStorage.closeDatabase()
+                gmeAuth ? gmeAuth.unload() : Q(),
+                safeStorage ? safeStorage.closeDatabase() : Q()
             ])
                 .nodeify(done);
         });
