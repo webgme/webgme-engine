@@ -114,7 +114,6 @@ ubuntu
  - Custom title for app, if not given the default title will be the name/id of the open project (or WebGME).
 - `config.client.log.level = 'debug'`
  - When [debug](https://github.com/visionmedia/debug) is activated in the browser messages below this level will not be printed.
-
 ##### core
 
 - `config.core.enableCustomConstraints = false`

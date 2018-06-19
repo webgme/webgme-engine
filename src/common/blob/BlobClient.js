@@ -1,4 +1,4 @@
-/*globals define, Uint8Array, ArrayBuffer*/
+/*globals define, Uint8Array, ArrayBuffer, WebGMEGlobal*/
 /*eslint-env node, browser*/
 
 /**
@@ -73,7 +73,14 @@ define([
         if (this.httpsecure !== undefined && this.server && this.serverPort) {
             this.origin = (this.httpsecure ? 'https://' : 'http://') + this.server + ':' + this.serverPort;
         }
-        this.relativeUrl = '/rest/blob/';
+        if (parameters && typeof parameters.relativeUrl === 'string') {
+            this.relativeUrl = parameters.relativeUrl;
+        } else if (typeof WebGMEGlobal !== 'undefined' && WebGMEGlobal.gmeConfig &&
+            typeof WebGMEGlobal.gmeConfig.client.mountedPath === 'string') {
+            this.relativeUrl = WebGMEGlobal.gmeConfig.client.mountedPath + '/rest/blob/';
+        } else {
+            this.relativeUrl = '/rest/blob/';
+        }
         this.blobUrl = this.origin + this.relativeUrl;
 
         this.isNodeOrNodeWebKit = typeof process !== 'undefined';

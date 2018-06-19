@@ -19,15 +19,19 @@ define(['common/util/url'], function (URL) {
                 hostAddress = window.location.protocol + '//localhost:' + gmeConfig.server.port;
             }
 
-            socketIoUrl = hostAddress + '/socket.io/socket.io.js';
+            socketIoUrl = hostAddress + gmeConfig.client.mountedPath + '/socket.io/socket.io.js';
             logger.debug('Will require socketIO from', socketIoUrl);
 
             require([socketIoUrl], function (io_) {
                 var io = io_ || window.io,
+                    socketOptions = gmeConfig.socketIO.clientOptions,
                     socket;
 
-                logger.debug('Connecting to "' + hostAddress + '" with options', gmeConfig.socketIO.clientOptions);
-                socket = io(hostAddress, gmeConfig.socketIO.clientOptions);
+                if (gmeConfig.client.mountedPath && gmeConfig.socketIO.clientOptions.path === undefined) {
+                    socketOptions.path = gmeConfig.client.mountedPath + '/socket.io';
+                }
+                logger.debug('Connecting to "' + hostAddress + '" with options', socketOptions);
+                socket = io(hostAddress, socketOptions);
                 callback(null, socket);
             });
         };

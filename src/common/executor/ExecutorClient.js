@@ -1,4 +1,4 @@
-/*globals define*/
+/*globals define, WebGMEGlobal*/
 /*eslint-env node, browser*/
 
 /**
@@ -65,7 +65,14 @@ define(['superagent', 'q'], function (superagent, Q) {
         if (this.httpsecure !== undefined && this.server && this.serverPort) {
             this.origin = (this.httpsecure ? 'https://' : 'http://') + this.server + ':' + this.serverPort;
         }
-        this.relativeUrl = '/rest/executor/';
+        if (parameters && typeof parameters.relativeUrl === 'string') {
+            this.relativeUrl = parameters.relativeUrl;
+        } else if (typeof WebGMEGlobal !== 'undefined' && WebGMEGlobal.gmeConfig &&
+            typeof WebGMEGlobal.gmeConfig.client.mountedPath === 'string') {
+            this.relativeUrl = WebGMEGlobal.gmeConfig.client.mountedPath + '/rest/executor/';
+        } else {
+            this.relativeUrl = '/rest/executor/';
+        }
         this.executorUrl = this.origin + this.relativeUrl;
 
         // TODO: TOKEN???
@@ -140,7 +147,7 @@ define(['superagent', 'q'], function (superagent, Q) {
         var deferred = Q.defer(),
             self = this;
         if (typeof jobInfo === 'string') {
-            jobInfo = { hash: jobInfo }; // old API
+            jobInfo = {hash: jobInfo}; // old API
         }
 
         this.logger.debug('createJob', {metadata: jobInfo});

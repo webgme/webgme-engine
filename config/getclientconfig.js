@@ -11,7 +11,7 @@ function getClientConfig(gmeConfig) {
 
     delete clientConfig.server;
     clientConfig.server = {port: gmeConfig.server.port}; // This is only needed for the karma tests.
-
+    
     delete clientConfig.webhooks;
     clientConfig.webhooks = {enable: gmeConfig.webhooks.enable};
 
@@ -30,7 +30,7 @@ function getClientConfig(gmeConfig) {
     delete clientConfig.socketIO.adapter;
     delete clientConfig.storage.database;
 
-    clientConfig.rest = { components: {} };
+    clientConfig.rest = {components: {}};
 
     for (key in gmeConfig.rest.components) {
         if (typeof gmeConfig.rest.components[key] === 'string') {

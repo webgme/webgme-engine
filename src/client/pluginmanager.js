@@ -32,7 +32,7 @@ define([
         this.getCurrentPluginContext = function (pluginId, activeNodeId, activeSelectionIds) {
             var activeNode,
                 validPlugins,
-                context =  {
+                context = {
                     managerConfig: {
                         project: client.getProjectObject(),
                         branchName: client.getActiveBranchName(),
@@ -94,7 +94,10 @@ define([
          * @param {function(err, PluginResult)} callback
          */
         this.runBrowserPlugin = function (pluginIdOrClass, context, callback) {
-            var blobClient = new BlobClient({logger: logger.fork('BlobClient')}),
+            var blobClient = new BlobClient({
+                    logger: logger.fork('BlobClient'),
+                    relativeUrl: gmeConfig.client.mountedPath + '/rest/blob/'
+                }),
                 pluginManager = new PluginManagerBase(blobClient, null, mainLogger, gmeConfig);
 
             pluginManager.browserSide = true;

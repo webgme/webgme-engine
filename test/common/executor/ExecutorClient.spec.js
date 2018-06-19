@@ -63,6 +63,34 @@ describe('ExecutorClient', function () {
         expect(noLoggerPassed.logger).to.have.keys('debug', 'log', 'info', 'warn', 'error');
     });
 
+    it('should get create url if relativeUrl is set', function () {
+        var relative = '/relative/yeah',
+            myClient = new ExecutorClient({
+                relativeUrl: relative
+            });
+
+        expect(myClient.getCreateURL()).to.contain('create');
+        expect(myClient.getCreateURL()).to.contain(relative);
+        expect(myClient.getCreateURL()).not.to.contain('/rest/executor');
+    });
+
+    it('should get create url with the mountedPath in gmeConfig', function () {
+        var mounted = '/mounted',
+            myClient,
+            oldGlobal = WebGMEGlobal; // eslint-disable-line no-undef
+
+        WebGMEGlobal = {gmeConfig: {client: {mountedPath: mounted}}}; // eslint-disable-line no-undef
+
+
+        myClient = new ExecutorClient({});
+
+        expect(myClient.getCreateURL()).to.contain('create');
+        expect(myClient.getCreateURL()).to.contain(mounted);
+        expect(myClient.getCreateURL()).to.contain('/rest/executor');
+
+        WebGMEGlobal = oldGlobal; // eslint-disable-line no-undef
+    });
+
     it('getInfoURL should be concatenation of origin and getRelativeInfoURL', function () {
         var relativeUrl = executorClient.getRelativeInfoURL('someHash');
 

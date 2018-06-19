@@ -894,6 +894,56 @@ describe('BlobClient', function () {
         });
     });
 
+    describe('paths', function () {
+        it('should be correct with default config', function () {
+            var bc = new BlobClient({});
+            expect(bc.getMetadataURL()).to.contain('/rest/blob');
+            expect(bc.getMetadataURL()).to.contain('metadata');
+            expect(bc.getDownloadURL()).to.contain('/rest/blob');
+            expect(bc.getDownloadURL()).to.contain('download');
+            expect(bc.getRelativeViewURL()).to.contain('/rest/blob');
+            expect(bc.getRelativeViewURL()).to.contain('view');
+            expect(bc.getRelativeDownloadURL()).to.contain('/rest/blob');
+            expect(bc.getRelativeDownloadURL()).to.contain('download');
+        });
+
+        it('should be correct with relativeUrl set', function () {
+            var relUrl = '/relative/',
+                bc = new BlobClient({relativeUrl: relUrl});
+            expect(bc.getMetadataURL()).not.to.contain('/rest/blob');
+            expect(bc.getMetadataURL()).to.contain(relUrl);
+            expect(bc.getMetadataURL()).to.contain('metadata');
+            expect(bc.getDownloadURL()).not.to.contain('/rest/blob');
+            expect(bc.getDownloadURL()).to.contain(relUrl);
+            expect(bc.getDownloadURL()).to.contain('download');
+            expect(bc.getRelativeViewURL()).not.to.contain('/rest/blob');
+            expect(bc.getRelativeViewURL()).to.contain(relUrl);
+            expect(bc.getRelativeViewURL()).to.contain('view');
+            expect(bc.getRelativeDownloadURL()).not.to.contain('/rest/blob');
+            expect(bc.getRelativeDownloadURL()).to.contain(relUrl);
+            expect(bc.getRelativeDownloadURL()).to.contain('download');
+        });
+
+        it('should be correct with WebGMEGlobal config mountedPath', function () {
+            var bc,
+                oldGlobal = WebGMEGlobal; // eslint-disable-line no-undef
+
+            WebGMEGlobal = {gmeConfig: {client: {mountedPath: '/mounted'}}}; // eslint-disable-line no-undef
+
+            bc = new BlobClient({});
+            expect(bc.getMetadataURL()).to.contain('/mounted/rest/blob');
+            expect(bc.getMetadataURL()).to.contain('metadata');
+            expect(bc.getDownloadURL()).to.contain('/mounted/rest/blob');
+            expect(bc.getDownloadURL()).to.contain('download');
+            expect(bc.getRelativeViewURL()).to.contain('/mounted/rest/blob');
+            expect(bc.getRelativeViewURL()).to.contain('view');
+            expect(bc.getRelativeDownloadURL()).to.contain('/mounted/rest/blob');
+            expect(bc.getRelativeDownloadURL()).to.contain('download');
+
+            WebGMEGlobal = oldGlobal; // eslint-disable-line no-undef
+        });
+    });
+
     function createZip(data, done) {
         var bc = new BlobClient(bcParam);
         bc.putFile('testzip.zip', data, function (err, hash) {

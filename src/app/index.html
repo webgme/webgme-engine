@@ -43,7 +43,7 @@
                 })
             });
 
-            GME.utils.superagent.get('/api/user', function (err, res) {
+            GME.utils.superagent.get('api/user', function (err, res) {
                 if (err) {
                     alert('Failed to retrieve user:' + err);
                     return;
@@ -57,7 +57,7 @@
 
     </script>
 
-    <script type="text/javascript" src="/gme-dist/webgme.classes.build.js"></script>
+    <script type="text/javascript" src="gme-dist/webgme.classes.build.js"></script>
 
 </head>
 

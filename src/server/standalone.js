@@ -43,7 +43,9 @@ var path = require('path'),
 
     servers = [],
 
-    mainLogger;
+    mainLogger,
+
+    CONSTANTS = requireJS('common/Constants');
 
 function shutdown() {
     var i,
@@ -148,6 +150,14 @@ function StandAloneServer(gmeConfig) {
         }
 
         return self.serverUrl;
+    }
+
+    function getLogInUrl(req) {
+        return getMountedPath(req) + gmeConfig.authentication.logInUrl;
+    }
+
+    function getLogOutUrl(req) {
+        return getMountedPath(req) + gmeConfig.authentication.logOutUrl;
     }
 
     //public functions
@@ -412,7 +422,7 @@ function StandAloneServer(gmeConfig) {
                             res.status(401);
                             next(err);
                         } else {
-                            res.redirect(gmeConfig.authentication.logInUrl);
+                            res.redirect(getLogInUrl(req));
                         }
                     } else {
                         logger.error('Cookie verification failed', {metadata: err});
@@ -456,7 +466,7 @@ function StandAloneServer(gmeConfig) {
                             res.status(401);
                             next(err);
                         } else {
-                            res.redirect(gmeConfig.authentication.logInUrl);
+                            res.redirect(getLogInUrl(req));
                         }
                     } else {
                         logger.error('Cookie verification failed', err);
@@ -498,7 +508,7 @@ function StandAloneServer(gmeConfig) {
                             res.status(401);
                             next(err);
                         } else {
-                            res.redirect(gmeConfig.authentication.logInUrl);
+                            res.redirect(getLogInUrl(req));
                         }
                     } else {
                         logger.error('Cookie verification failed', err);
@@ -525,7 +535,7 @@ function StandAloneServer(gmeConfig) {
             res.status(401);
             return next(new Error());
         } else {
-            res.redirect(gmeConfig.authentication.logInUrl + webgmeUtils.getRedirectUrlParameter(req));
+            res.redirect(getLogInUrl(req) + webgmeUtils.getRedirectUrlParameter(req));
         }
     }
 
@@ -575,6 +585,15 @@ function StandAloneServer(gmeConfig) {
         userComponent.initialize(middlewareOpts);
         routeComponents.push(userComponent);
         __app.use('/profile', userComponent.router);
+    }
+
+    function getMountedPath(req) {
+        return req.header(CONSTANTS.HTTP_HEADERS.MOUNTED_PATH) || '';
+    }
+
+    function processRequestBasedGMEConfigFields(baseConfig, req) {
+        baseConfig.client.mountedPath = getMountedPath(req);
+        return baseConfig;
     }
 
     //here starts the main part
@@ -630,9 +649,10 @@ function StandAloneServer(gmeConfig) {
     middlewareOpts = {  //TODO: Pass this to every middleware They must not modify the options!
         gmeConfig: gmeConfig,
         logger: logger,
-        IPs: [],
+        server: null,
         ensureAuthenticated: ensureAuthenticated,
         getUserId: getUserId,
+        getMountedPath: getMountedPath,
         gmeAuth: __gmeAuth,
         safeStorage: __storage,
         workerManager: __workerManager,
@@ -654,6 +674,11 @@ function StandAloneServer(gmeConfig) {
     //         next();
     //     });
     // }
+
+    // __app.use(function (req, res, next) {
+    //     console.log(req.url);
+    //     next();
+    // });
 
     __app.use(compression());
     __app.use(cookieParser());
@@ -701,6 +726,7 @@ function StandAloneServer(gmeConfig) {
                 res.send(ejs.render(indexTemp, {
                     webgmeVersion: nmpPackageJson.version,
                     appVersion: gmeConfig.client.appVersion,
+                    mountedPath: req.header('X-Proxy-Mounted-Path') || '',
                     url: url,
                     imageUrl: imageUrl,
                     projectId: projectId ? projectId.replace('+', '/') : 'WebGME',
@@ -714,14 +740,18 @@ function StandAloneServer(gmeConfig) {
     logger.debug('creating login routing rules for the static server');
 
     __app.get('/logout', function (req, res) {
-        var redirectUrl;
+        var redirectUrl,
+            logOutUrl = '';
         if (gmeConfig.authentication.enable === false) {
             res.sendStatus(404);
         } else {
             redirectUrl = req.query.redirectUrl;
+            if (gmeConfig.authentication.logOutUrl) {
+                logOutUrl = getLogOutUrl(req);
+            }
 
             res.clearCookie(gmeConfig.authentication.jwt.cookieId);
-            res.redirect(gmeConfig.authentication.logOutUrl || redirectUrl || gmeConfig.authentication.logInUrl || '/');
+            res.redirect(logOutUrl || redirectUrl || getLogInUrl(req) || '/');
         }
     });
 
@@ -756,14 +786,15 @@ function StandAloneServer(gmeConfig) {
     __app.get('/bin/getconfig.js', ensureAuthenticated, function (req, res) {
         res.status(200);
         res.setHeader('Content-type', 'application/javascript');
-        res.end('define([],function(){ return ' + JSON.stringify(clientConfig) + ';});');
+        res.end('define([],function(){ return ' +
+            JSON.stringify(processRequestBasedGMEConfigFields(clientConfig, req)) + ';});');
     });
 
     logger.debug('creating gmeConfig.json specific routing rules');
     __app.get('/gmeConfig.json', function (req, res) {
         res.status(200);
         res.setHeader('Content-type', 'application/json');
-        res.end(JSON.stringify(clientConfig));
+        res.end(JSON.stringify(processRequestBasedGMEConfigFields(clientConfig, req)));
     });
 
     __app.get(/^\/(gme-dist)\/.*\.(js|map)$/, function (req, res) {
@@ -931,12 +962,24 @@ function StandAloneServer(gmeConfig) {
     }
 
     logger.info('Valid addresses of gme web server: ', addresses.join('  '));
-
-    middlewareOpts.addresses = addresses;
-
     logger.debug('standalone server initialization completed');
 
-    return {
+    var module = {
+        getAddresses: function () {
+            return addresses;
+        },
+        getSocketsInfo: function () {
+            return Object.keys(sockets)
+                .map(function (sid) {
+                    return {
+                        address: sockets[sid].address(),
+                        localAddress: sockets[sid].localAddress,
+                        localPort: sockets[sid].localPort,
+                        remoteAddress: sockets[sid].remoteAddress,
+                        remotePort: sockets[sid].remotePort,
+                    };
+                });
+        },
         getUrl: getUrl,
         getGmeConfig: function () {
             return gmeConfig;
@@ -950,6 +993,10 @@ function StandAloneServer(gmeConfig) {
             return self.isRunning;
         }
     };
+
+    middlewareOpts.server = module;
+
+    return module;
 }
 
 module.exports = StandAloneServer;
