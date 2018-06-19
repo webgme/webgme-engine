@@ -740,14 +740,18 @@ function StandAloneServer(gmeConfig) {
     logger.debug('creating login routing rules for the static server');
 
     __app.get('/logout', function (req, res) {
-        var redirectUrl;
+        var redirectUrl,
+            logOutUrl = '';
         if (gmeConfig.authentication.enable === false) {
             res.sendStatus(404);
         } else {
             redirectUrl = req.query.redirectUrl;
+            if (gmeConfig.authentication.logOutUrl) {
+                logOutUrl = getLogOutUrl(req);
+            }
 
             res.clearCookie(gmeConfig.authentication.jwt.cookieId);
-            res.redirect(getLogOutUrl(req) || redirectUrl || getLogInUrl(req) || '/');
+            res.redirect(logOutUrl || redirectUrl || getLogInUrl(req) || '/');
         }
     });
 
