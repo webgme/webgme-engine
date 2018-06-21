@@ -260,5 +260,6 @@ exports.getGmeConfig = function () {
 };
 
 exports.getComponentsJson = webgmeUtils.getComponentsJson;
+exports.utils = webgmeUtils;
 
 module.exports = exports;

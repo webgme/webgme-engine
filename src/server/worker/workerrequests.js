@@ -251,8 +251,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                         data.originalSocketId = socketId;
                         storage.sendNotification(data, callback);
                     }];
-                } else {
-                    logger.warn('No socketId provided for plugin execution - notifications NOT available.');
                 }
 
                 pluginManager.projectAccess = res.access;

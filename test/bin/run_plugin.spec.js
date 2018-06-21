@@ -1,6 +1,7 @@
 /*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
+ * @author pmeijer / https://github.com/pmeijer
  */
 
 
@@ -234,5 +235,32 @@ describe('Run plugin CLI', function () {
             });
         });
 
+        it('should run and connect to server when serverUrl specified', function (done) {
+            var webGME = testFixture.WebGME,
+                gmeConfig = testFixture.getGmeConfig(),
+                error,
+                server;
+
+            server = webGME.standaloneServer(gmeConfig);
+
+            Q.ninvoke(server, 'start')
+                .then(function () {
+                    return runPlugin.main([
+                        'node', filename, 'MinimalWorkingExample', projectName, '-l',
+                        'http://127.0.0.1:' + gmeConfig.server.port]);
+                })
+                .then(function (result) {
+                    expect(result.success).to.equal(true);
+                    expect(result.error).to.equal(null);
+                })
+                .catch(function (err) {
+                    error = err;
+                })
+                .finally(function () {
+                    server.stop(function (err2) {
+                        done(error || err2);
+                    });
+                });
+        });
     });
 });
