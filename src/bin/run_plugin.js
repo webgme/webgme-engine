@@ -50,8 +50,9 @@ main = function (argv, callback) {
             'Namespace the plugin should run under.', '')
         .option('-m, --mongo-database-uri [url]',
             'URI of the MongoDB [default from the configuration file]', gmeConfig.mongo.uri)
-        .option('-u, --user [string]', 'the user of the command [if not given we use the default user]',
-            gmeConfig.authentication.guestAccount)
+        .option('-u, --user [string]', 'the user of the command [if not given we use the default user]. Note that if ' +
+            'this is used together with the --serverUrl option the password can be provided by adding a semicolon.',
+        gmeConfig.authentication.guestAccount)
         .option('-o, --owner [string]', 'the owner of the project [by default, the user is the owner]')
         .option('-w, --writeBlobFilesDir [string]',
             'If defined will also write blob-files to %cwd%/%writeBlobFilesDir%')
