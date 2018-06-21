@@ -25,7 +25,7 @@
     "users": "node ./src/bin/usermanager.js",
     "clean_up": "node ./src/bin/clean_up.js",
     "stats": "node ./src/bin/storage_stats.js",
-    "lint": "./node_modules/.bin/eslint ."
+    "lint": "node ./node_modules/.bin/eslint ."
   },
   "repository": {
     "type": "git",
