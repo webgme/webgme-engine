@@ -74,6 +74,7 @@ main = function (argv, callback) {
             console.log('    $ node run_plugin.js MinimalWorkingExample TestProject -w plugin-blobs');
             console.log('    $ node run_plugin.js MinimalWorkingExample TestProject -b b1 -c ' +
                 '#def8861ca16237e6756ee22d27678d979bd2fcde');
+            console.log('    $ node run_plugin.js PluginGenerator TestProject --serverUrl http://localhost:8888');
             console.log();
             console.log('  Plugin paths using ' + configDir + path.sep + 'config.' + env + '.js :');
             console.log();
@@ -163,14 +164,16 @@ main = function (argv, callback) {
             if (program.serverUrl) {
                 logger.info('serverUrl was specified "', program.serverUrl, '" will request token for user.');
 
-                webgme.requestWebGMEToken(gmeConfig, userName, program.user.split[':'][1], program.serverUrl)
+                webgme.utils.requestWebGMEToken(gmeConfig, userName, program.user.split(':')[1], program.serverUrl)
                     .then(function (token) {
                         var WorkerRequests = require('../server/worker/workerrequests'),
                             wr = new WorkerRequests(logger, gmeConfig, program.serverUrl);
-                        context.pluginConfig = pluginConfig;
-                        context.project = project.getProjectId();
-
-                        wr.executePlugin(token, undefined, pluginName, context,
+                        context.project = project.projectId;
+                        wr.executePlugin(token, undefined, pluginName,
+                            {
+                                managerConfig: context,
+                                pluginConfig: pluginConfig,
+                            },
                             function (err_, pluginResult_) {
                                 err = err_;
                                 pluginResult = pluginResult_;

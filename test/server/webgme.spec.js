@@ -3,6 +3,7 @@
 
 /**
  * @author lattmann / https://github.com/lattmann
+ * @author pmeijer / https://github.com/pmeijer
  */
 
 var testFixture = require('../_globals.js');
@@ -12,6 +13,7 @@ describe('webgme', function () {
     'use strict';
 
     var expect = testFixture.expect,
+        Q = testFixture.Q,
         logger = testFixture.logger.fork('webgme.spec');
 
     it('should export public API functions and classes', function () {
@@ -138,5 +140,116 @@ describe('webgme', function () {
 
             })
             .nodeify(done);
+    });
+
+    it('should requestWebGMEToken with auth turned off', function (done) {
+        var webGME = testFixture.WebGME,
+            gmeConfig = testFixture.getGmeConfig(),
+            error,
+            server;
+
+        server = webGME.standaloneServer(gmeConfig);
+
+        Q.ninvoke(server, 'start')
+            .then(function () {
+                return Q.allDone([
+                    webGME.utils.requestWebGMEToken(gmeConfig, 'guest', null, null),
+                    webGME.utils.requestWebGMEToken(gmeConfig, 'someone', null, null),
+                    webGME.utils.requestWebGMEToken(gmeConfig, 'guest', null,
+                        'http://localhost:' + gmeConfig.server.port),
+                ]);
+            })
+            .then(function (tokens) {
+                expect(tokens).to.deep.equal([undefined, undefined, undefined]);
+            })
+            .catch(function (err) {
+                error = err;
+            })
+            .finally(function () {
+                server.stop(function (err2) {
+                    done(error || err2);
+                });
+            });
+    });
+
+    it('should requestWebGMEToken with auth turned on', function (done) {
+        var webGME = testFixture.WebGME,
+            gmeConfig = testFixture.getGmeConfig(),
+            error,
+            gmeAuth,
+            server;
+
+        gmeConfig.authentication.enable = true;
+
+        server = webGME.standaloneServer(gmeConfig);
+        testFixture.clearDBAndGetGMEAuth(gmeConfig)
+            .then(function (gmeAuth_) {
+                gmeAuth = gmeAuth_;
+            })
+            .then(function () {
+                return Q.ninvoke(server, 'start');
+            })
+            .then(function () {
+                return Q.allDone([
+                    webGME.utils.requestWebGMEToken(gmeConfig, 'guest', null, null),
+                    webGME.utils.requestWebGMEToken(gmeConfig, 'guest', null,
+                        'http://localhost:' + gmeConfig.server.port),
+                    webGME.utils.requestWebGMEToken(gmeConfig, 'admin', 'admin',
+                        'http://localhost:' + gmeConfig.server.port),
+                ]);
+            })
+            .then(function (tokens) {
+                expect(typeof tokens[0]).to.equal('string');
+                expect(typeof tokens[1]).to.equal('string');
+                expect(typeof tokens[2]).to.equal('string');
+
+                return webGME.utils.requestWebGMEToken(gmeConfig, 'otherUser')
+                    .then(function () {
+                        throw new Error('Should have failed!');
+                    })
+                    .catch(function (err) {
+                        try {
+                            expect(err.message).to.include('password was not provided');
+                        } catch (e) {
+                            error = e;
+                        }
+                    });
+            })
+            .then(function () {
+                return webGME.utils.requestWebGMEToken(gmeConfig, 'admin', 'wrongPass')
+                    .then(function () {
+                        throw new Error('Should have failed!');
+                    })
+                    .catch(function (err) {
+                        try {
+                            expect(err.message).to.include('Unauthorized');
+                        } catch (e) {
+                            error = e;
+                        }
+                    });
+            })
+            .then(function () {
+                return webGME.utils.requestWebGMEToken(gmeConfig, 'admin', 'admin', 'http://localhost:9999')
+                    .then(function () {
+                        throw new Error('Should have failed!');
+                    })
+                    .catch(function (err) {
+                        try {
+                            expect(err.message).to.include('ECONNREFUSED');
+                        } catch (e) {
+                            error = e;
+                        }
+                    });
+            })
+            .catch(function (err) {
+                error = err;
+            })
+            .finally(function () {
+                server.stop(function (err2) {
+                    gmeAuth.unload(function (err3) {
+                        done(error || err2 || err3);
+                    });
+                });
+            });
     });
 });

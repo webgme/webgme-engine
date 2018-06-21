@@ -1,6 +1,7 @@
 /*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
+ * @author pmeijer / https://github.com/pmeijer
  */
 
 
@@ -112,35 +113,35 @@ describe('Run plugin CLI', function () {
 
         it('should run the Minimal Working Example plugin and return with error in plugin-result', function (done) {
             runPlugin.main(['node', filename, 'MinimalWorkingExample', projectName,
-                '-j', './test/bin/run_plugin/MinimalWorkingExample.config.json'],
-            function (err, pluginResult) {
-                if (err) {
-                    done(err);
-                    return;
-                }
+                    '-j', './test/bin/run_plugin/MinimalWorkingExample.config.json'],
+                function (err, pluginResult) {
+                    if (err) {
+                        done(err);
+                        return;
+                    }
 
-                if (pluginResult.success === true) {
-                    done(new Error('should have failed to run plugin'));
-                } else {
-                    expect(pluginResult.error).to.include('Failed on purpose');
-                    done();
+                    if (pluginResult.success === true) {
+                        done(new Error('should have failed to run plugin'));
+                    } else {
+                        expect(pluginResult.error).to.include('Failed on purpose');
+                        done();
+                    }
                 }
-            }
             );
         });
 
         it('should run the Minimal Working Example plugin if owner is specified', function (done) {
             runPlugin.main(['node', filename, 'MinimalWorkingExample', projectName,
-                '-o', gmeConfig.authentication.guestAccount],
-            function (err, result) {
-                if (err) {
-                    done(new Error(err));
-                    return;
+                    '-o', gmeConfig.authentication.guestAccount],
+                function (err, result) {
+                    if (err) {
+                        done(new Error(err));
+                        return;
+                    }
+                    expect(result.success).to.equal(true);
+                    expect(result.error).to.equal(null);
+                    done();
                 }
-                expect(result.success).to.equal(true);
-                expect(result.error).to.equal(null);
-                done();
-            }
             );
         });
 
@@ -234,5 +235,32 @@ describe('Run plugin CLI', function () {
             });
         });
 
+        it('should run and connect to server when serverUrl specified', function (done) {
+            var webGME = testFixture.WebGME,
+                gmeConfig = testFixture.getGmeConfig(),
+                error,
+                server;
+
+            server = webGME.standaloneServer(gmeConfig);
+
+            Q.ninvoke(server, 'start')
+                .then(function () {
+                    return runPlugin.main([
+                        'node', filename, 'MinimalWorkingExample', projectName, '-l',
+                        'http://127.0.0.1:' + gmeConfig.server.port]);
+                })
+                .then(function (result) {
+                    expect(result.success).to.equal(true);
+                    expect(result.error).to.equal(null);
+                })
+                .catch(function (err) {
+                    error = err;
+                })
+                .finally(function () {
+                    server.stop(function (err2) {
+                        done(error || err2);
+                    });
+                });
+        });
     });
 });
