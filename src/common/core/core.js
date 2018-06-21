@@ -3574,6 +3574,14 @@ define([
          *
          * @param {module:Core~Node} node - the node in question.
          * @param {string} path - the path of the mixin node.
+         * @return {object} - Returns and object with isOk set to true if the given path can be added as a
+         * mixin to the given node. If it cannot, the reason will be reported under reason.
+         *
+         * @example
+         * result = core.canSetAsMixin(node, core.getPath(aValidMixinNode));
+         * // result = { isOk: true, reason: '' }
+         * result = core.canSetAsMixin(node, core.getPath(node));
+         * // result = { isOk: false, reason: 'Node cannot be mixin of itself!' }
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.

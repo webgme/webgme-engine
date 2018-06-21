@@ -12,9 +12,55 @@
 var fs = require('fs'),
     Q = require('q'),
     path = require('path'),
+    superagent = require('superagent'),
     requireUncached = require('require-uncached'),
     storageUtils = requireJS('common/storage/util'),
     SVGMapDeffered;
+
+/**
+ * Request a token for the user via the webgme server.
+ * If authentication is turned off it will resolve with undefined.
+ * @param {object} gmeConfig
+ * @param {string} userId - User to get token for.
+ * @param {string} [password] - Must be provided if userId is not the guestAccount.
+ * @param {string} [serverUrl='http://127.0.0.1:<gmeConfig.server.port>'] - Url of webgme server.
+ * @param [callback] - If not provided will return a promise.
+ * @returns {Promise}
+ */
+function requestWebGMEToken(gmeConfig, userId, password, serverUrl, callback) {
+    var deferred,
+        req;
+
+    if (gmeConfig.authentication.enable === false) {
+        return Q().nodeify(callback);
+    }
+
+    if (!serverUrl) {
+        serverUrl = 'http://localhost:' + gmeConfig.server.port;
+    }
+
+    req = superagent.get(serverUrl + '/api/v1/user/token');
+
+    if (gmeConfig.authentication.guestAccount !== userId) {
+        if (!password) {
+            return Q.reject(new Error('password was not provided!'));
+        }
+
+        req.set('Authorization', 'Basic ' + new Buffer(userId + ':' + password).toString('base64'));
+    }
+
+    deferred = Q.defer();
+
+    req.end(function (err, res) {
+        if (err) {
+            deferred.reject(err);
+        } else {
+            deferred.resolve(res.body.webgmeToken);
+        }
+    });
+
+    return deferred.promise.nodeify(callback);
+}
 
 function walkDir(dir, done) {
     var deferred = Q.defer(),
@@ -523,4 +569,6 @@ module.exports = {
     getSeedDictionarySync: getSeedDictionarySync,
     getComponentsJson: getComponentsJson,
     createStartUpProjects: createStartUpProjects,
+
+    requestWebGMEToken: requestWebGMEToken,
 };

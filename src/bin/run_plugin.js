@@ -31,7 +31,8 @@ main = function (argv, callback) {
         pluginName,
         pluginConfig,
         err,
-        pluginResult;
+        pluginResult,
+        userName;
 
     function list(val) {
         return val ? val.split(',') : [];
@@ -56,6 +57,9 @@ main = function (argv, callback) {
             'If defined will also write blob-files to %cwd%/%writeBlobFilesDir%')
         .option('-j, --pluginConfigPath [string]',
             'Path to json file with plugin options that should be overwritten.', '')
+        .option('-l, --serverUrl [string]', 'If specified the plugin will connect to the storage via ' +
+            'a running webgme server, example "http://localhost:8888". Note that if a different user than the ' +
+            'guest is used the password needs to be added after a semicolon, e.g. "-u someUser:pass".')
 
         .on('--help', function () {
             var i,
@@ -106,6 +110,8 @@ main = function (argv, callback) {
         pluginConfig = {};
     }
 
+    userName = program.user.split(':')[0];
+
     webgme.getGmeAuth(gmeConfig)
         .then(function (gmeAuth_) {
             gmeAuth = gmeAuth_;
@@ -115,14 +121,14 @@ main = function (argv, callback) {
         .then(function () {
             params = {
                 projectId: '',
-                username: program.user
+                username: userName
             };
             logger.info('Database is opened.');
 
             if (program.owner) {
                 params.projectId = program.owner + STORAGE_CONSTANTS.PROJECT_ID_SEP + projectName;
             } else {
-                params.projectId = program.user + STORAGE_CONSTANTS.PROJECT_ID_SEP + projectName;
+                params.projectId = userName + STORAGE_CONSTANTS.PROJECT_ID_SEP + projectName;
             }
 
             return storage.openProject(params);
@@ -134,9 +140,7 @@ main = function (argv, callback) {
             };
             project = project_;
 
-            if (program.user) {
-                project.setUser(program.user);
-            }
+            project.setUser(userName);
             return gmeAuth.authorizer.getAccessRights(params.username, params.projectId, projectAuthParams);
         })
         .then(function (access) {
@@ -146,9 +150,7 @@ main = function (argv, callback) {
             return project.getBranchHash(program.branchName);
         })
         .then(function (commitHash) {
-            var pluginManager = new PluginCliManager(project, logger, gmeConfig, {
-                    writeBlobFilesDir: program.writeBlobFilesDir
-                }),
+            var executeDeferred = Q.defer(),
                 context = {
                     activeNode: program.activeNode,
                     activeSelection: program.activeSelection || [],
@@ -156,17 +158,42 @@ main = function (argv, callback) {
                     commitHash: program.commitHash || commitHash,
                     namespace: program.namespace
                 },
-                executeDeferred = Q.defer();
+                pluginManager;
 
-            pluginManager.projectAccess = projectAccess;
+            if (program.serverUrl) {
+                logger.info('serverUrl was specified "', program.serverUrl, '" will request token for user.');
 
-            pluginManager.executePlugin(pluginName, pluginConfig, context,
-                function (err_, pluginResult_) {
-                    err = err_;
-                    pluginResult = pluginResult_;
-                    executeDeferred.resolve();
-                }
-            );
+                webgme.requestWebGMEToken(gmeConfig, userName, program.user.split[':'][1], program.serverUrl)
+                    .then(function (token) {
+                        var WorkerRequests = require('../server/worker/workerrequests'),
+                            wr = new WorkerRequests(logger, gmeConfig, program.serverUrl);
+                        context.pluginConfig = pluginConfig;
+                        context.project = project.getProjectId();
+
+                        wr.executePlugin(token, undefined, pluginName, context,
+                            function (err_, pluginResult_) {
+                                err = err_;
+                                pluginResult = pluginResult_;
+                                executeDeferred.resolve();
+                            }
+                        );
+                    })
+                    .catch(executeDeferred.reject);
+
+            } else {
+                pluginManager = new PluginCliManager(project, logger, gmeConfig, {
+                    writeBlobFilesDir: program.writeBlobFilesDir
+                });
+                pluginManager.projectAccess = projectAccess;
+
+                pluginManager.executePlugin(pluginName, pluginConfig, context,
+                    function (err_, pluginResult_) {
+                        err = err_;
+                        pluginResult = pluginResult_;
+                        executeDeferred.resolve();
+                    }
+                );
+            }
 
             return executeDeferred.promise;
         })
