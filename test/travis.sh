@@ -7,7 +7,7 @@ echo "TRAVIS_LINT_TEST = $TRAVIS_LINT_TEST"
 
 if [ "$TRAVIS_LINT_TEST" == "true" ]
 then
-  export COMMAND="node ./node_modules/eslint/bin/eslint.js ."
+  export COMMAND="npm run lint"
 elif [ "$TEST_BROWSER" == "true" ]
 then
   export COMMAND="node ./node_modules/karma/bin/karma start karma.conf.js --browsers Firefox --single-run"
@@ -24,5 +24,3 @@ fi
 echo "Running $COMMAND ..."
 
 $COMMAND
-cd node_modules
-ls
