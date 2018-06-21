@@ -40,18 +40,18 @@ Each script supports the `--help` or `-h` command line parameter, which will lis
 ### Repo structure
 * `config` - contains the configuration files for webgme.
 * `dist` - container for `webgme.classes.build.js` generated at prepublish or postinstall.
-* `docs` - 'REST' and 'source' docs generated at postinstall.
+* `docs` - 'REST' and 'source' are generated at postinstall.
 * `seeds` - contains the project templates including the base seed 'EmptyProject' and some samples.
-* `src/addon` - addon related files - all these are currently only executed on the server.
+* `src/addon` - addon related files - all these are currently only executed under nodejs.
 * `src/app` - sample application illustrating how to use the `webgme.classes.build.js` from served from `dist`.
 The path to the app-dir is configurable via `gmeConfig.client.appDir`.
-* `src/bin` - contains the bin for explained above.
-* `src/client` - code for the browser/gui API (strictly javascript and no html nor css)
-* `src/common` - code running under nodejs and/or inside a browser. Under nodejs the code (e.g. core, storage and blob) is typically executed in workers and not in the sever process.
+* `src/bin` - contains the bin-scripts explained above.
+* `src/client` - code for the browser/GUI API - a.k.a. the "Client API" (strictly JavaScript and no HTML nor CSS)
+* `src/common` - code running under nodejs and/or inside a browser. Under nodejs the code (e.g. core, storage and blob) is typically executed in workers and not in the main server process.
 * `src/docs` - source code documentation that isn't inlined in the code itself.
-* `src/plugin` - plugin related code such as plugin managers and the `PluginBase`, also contains sample plugins.
+* `src/plugin` - plugin related code such as plugin-managers and the `PluginBase`, also contains a range of sample plugins under 'coreplugins'.
 * `src/server` - code strictly running under nodejs. Aside from the `worker` code - the code runs in the main server process.
-* `test` - test directory, of interest for users are `_globals.js` that contains utitlity functions for settings up test contexts.
+* `test` - test directory, note that `_globals.js` contains utitlity functions for settings up test-contexts.
 * `test-karma` - test directory for tests running inside a browser.
-* `test-tmp` - files generate during the tests.
+* `test-tmp` - temporary files generate during tests.
 * `utils` - postinstall, prebublish and build scripts.
