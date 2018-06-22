@@ -100,7 +100,7 @@ function BranchMonitor(webgmeToken, storage, project, branchName, mainLogger, gm
             params.server = urlObj.hostname;
         }
 
-        blobClient = new BlobClientClass();
+        blobClient = new BlobClientClass(params);
 
         return {
             core: core,

@@ -177,11 +177,14 @@ describe('addon_handler bin', function () {
                         logger,
                         gmeConfig);
 
+                    var didResolve = false;
                     connStorage.open(function (networkState) {
                         if (networkState === project.CONSTANTS.CONNECTED) {
+                            didResolve = true;
                             done();
-                        } else {
-                            throw new Error('Unexpected network state: ' + networkState);
+                        } else if (!didResolve) {
+                            didResolve = true;
+                            done(new Error('Unexpected network state: ' + networkState));
                         }
                     });
                 })
@@ -302,7 +305,6 @@ describe('addon_handler bin', function () {
                 })
                 .catch(done);
         });
-
 
         it('commit with change of usedAddOns should switch running add-on', function (done) {
             var branchName = 'b3',
@@ -464,11 +466,14 @@ describe('addon_handler bin', function () {
                         logger,
                         gmeConfig);
 
+                    var didResolve = false;
                     connStorage.open(function (networkState) {
                         if (networkState === project.CONSTANTS.CONNECTED) {
+                            didResolve = true;
                             done();
-                        } else {
-                            throw new Error('Unexpected network state: ' + networkState);
+                        } else if (!didResolve) {
+                            didResolve = true;
+                            done(new Error('Unexpected network state: ' + networkState));
                         }
                     });
                 })
@@ -647,11 +652,14 @@ describe('addon_handler bin', function () {
                             logger,
                             gmeConfig);
 
+                        var didResolve = false;
                         connStorage.open(function (networkState) {
                             if (networkState === project.CONSTANTS.CONNECTED) {
+                                didResolve = true;
                                 done();
-                            } else {
-                                throw new Error('Unexpected network state: ' + networkState);
+                            } else if (!didResolve) {
+                                didResolve = true;
+                                done(new Error('Unexpected network state: ' + networkState));
                             }
                         });
                     })
@@ -662,7 +670,9 @@ describe('addon_handler bin', function () {
         afterEach(function (done) {
             connStorage.close(function (/*err*/) {
                 socket.disconnect();
-                server.stop(done);
+                setTimeout(function () {
+                    server.stop(done);
+                });
             });
         });
 
