@@ -105,7 +105,7 @@ Q.all(COMMON_LIBS.map(browserifyModule))
         return ensureDir(outDir)
             .then(function () {
                 return Q.all([
-                    copyFile(require.resolve('text'), path.join(outDir, 'text.js')),
+                    copyFile(require.resolve('requirejs-text'), path.join(outDir, 'text.js')),
                     copyFile(path.join(path.dirname(require.resolve('requirejs')), '..', 'require.js'),
                         path.join(outDir, 'require.js'))
                 ]);
