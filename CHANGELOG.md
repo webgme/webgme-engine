@@ -1,16 +1,30 @@
 # Change Log
 
+## [v2.20.0](https://github.com/webgme/webgme-engine/tree/v2.20.0) (2018-06-22)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.9...v2.20.0)
+
+**Implemented enhancements:**
+
+- Package update [\#103](https://github.com/webgme/webgme-engine/pull/103) ([kecso](https://github.com/kecso))
+- Update README.md and add documentation to client API. [\#102](https://github.com/webgme/webgme-engine/pull/102) ([pmeijer](https://github.com/pmeijer))
+- Allow webgme server to be mounted at non-root path [\#101](https://github.com/webgme/webgme-engine/pull/101) ([kecso](https://github.com/kecso))
+- Update major version of mocha and karma [\#100](https://github.com/webgme/webgme-engine/pull/100) ([pmeijer](https://github.com/pmeijer))
+
+**Merged pull requests:**
+
+- Add option for plugin\_bin to connect to storage via server [\#104](https://github.com/webgme/webgme-engine/pull/104) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.19.9](https://github.com/webgme/webgme-engine/tree/v2.19.9) (2018-06-04)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.8...v2.19.9)
 
 **Implemented enhancements:**
 
 - Add methods for getting common base and getting common parent for two or more nodes [\#82](https://github.com/webgme/webgme-engine/issues/82)
+- Node module updates [\#92](https://github.com/webgme/webgme-engine/pull/92) ([pmeijer](https://github.com/pmeijer))
 - Changing meta rule removal propagation [\#97](https://github.com/webgme/webgme-engine/pull/97) ([kecso](https://github.com/kecso))
 - Fixes \#82 by adding core.getCommonBase and getCommonParent and equivalents on client API [\#96](https://github.com/webgme/webgme-engine/pull/96) ([pmeijer](https://github.com/pmeijer))
 - Add addresses field and more details for webSockets in /api/status endpoint [\#95](https://github.com/webgme/webgme-engine/pull/95) ([pmeijer](https://github.com/pmeijer))
 - Add module for handling crosscuts using the core \(e.g. from a plugin\) [\#94](https://github.com/webgme/webgme-engine/pull/94) ([pmeijer](https://github.com/pmeijer))
-- Node module updates [\#92](https://github.com/webgme/webgme-engine/pull/92) ([pmeijer](https://github.com/pmeijer))
 
 **Fixed bugs:**
 
