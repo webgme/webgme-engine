@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.20.1](https://github.com/webgme/webgme-engine/tree/v2.20.1) (2018-06-25)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.0...v2.20.1)
+
+**Fixed bugs:**
+
+- Point to published npm package for requirejs-text [\#105](https://github.com/webgme/webgme-engine/pull/105) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.20.0](https://github.com/webgme/webgme-engine/tree/v2.20.0) (2018-06-22)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.19.9...v2.20.0)
 
