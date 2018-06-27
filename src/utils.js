@@ -433,6 +433,9 @@ function getComponentsJson(logger, callback) {
         },
         warn: function () {
             console.warn.apply(console, arguments);
+        },
+        error: function () {
+            console.error.apply(console, arguments);
         }
     };
     /*eslint-enable no-console*/
@@ -442,6 +445,10 @@ function getComponentsJson(logger, callback) {
         result = requireUncached(filePath);
         deferred.resolve(result);
     } catch (e) {
+        if (e.code !== 'MODULE_NOT_FOUND') {
+            logger.error('Failed to load components.' + env + '.js', e, 'Falling back on components.json');
+        }
+
         logger.debug('Did not find component settings at', filePath, '(proceeding with fallbacks see issue #1335)');
         filePath = path.join(configDir, 'components.json');
 
