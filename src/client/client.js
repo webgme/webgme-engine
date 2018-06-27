@@ -762,12 +762,8 @@ define([
                     callback(err);
                     return;
                 }
-                state.core = null;
-                if (state.branchName) {
-                    self.dispatchEvent(CONSTANTS.BRANCH_CLOSED, state.branchName);
-                    self.dispatchEvent(CONSTANTS.BRANCH_CHANGED, null);
-                }
 
+                state.core = null;
                 state.branchName = null;
                 //self.dispatchEvent(null);
                 state.patterns = {};
