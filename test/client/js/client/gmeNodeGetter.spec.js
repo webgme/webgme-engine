@@ -174,6 +174,7 @@ describe('gmeNodeGetter', function () {
         expect(typeof node.isReadOnly).to.equal('function');
         expect(typeof node.getCommonBaseId).to.equal('function');
         expect(typeof node.getCommonParentId).to.equal('function');
+        expect(typeof node.getLibraryRootId).to.equal('function');
     });
 
     it('should return the parentId', function () {
@@ -876,5 +877,11 @@ describe('gmeNodeGetter', function () {
 
         expect(!!threw).to.equal(true);
         expect(threw.message).to.include('is not a valid node');
+    });
+
+    it('should return null at getLibraryRootId without proper libraryName', function () {
+        var node = getNode('', logger, basicState, basicStoreNode);
+
+        expect(node.getLibraryRootId('mope')).to.equal(null);
     });
 });

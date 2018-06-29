@@ -595,6 +595,11 @@ define([], function () {
         };
     };
 
+    GMENode.prototype.getLibraryRootId = function (name) {
+        return this._storeNode(this._state.core.getLibraryRoot(this._state.nodes[this._id].node, name));
+    };
+
+
     // GetNode from another node...
     GMENode.prototype.getNode = function (id) {
         if (this._state.nodes[id]) {
