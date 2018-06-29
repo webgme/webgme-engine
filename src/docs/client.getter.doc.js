@@ -297,7 +297,7 @@
  * @instance
  * @param {string} baseId - Id to the base node we want to check.
  *
- * @return {bool} Returns true if the base is on the inheritance chain of node. A node is considered to be an 
+ * @return {bool} Returns true if the base is on the inheritance chain of node. A node is considered to be an
  * instance of itself here.
  */
 
@@ -318,6 +318,16 @@
  * @param {string | null | undefined} base - the new base.
  *
  * @return {boolean} True if the supplied base is a valid base for the node.
+ */
+
+/**
+ * @description Returns the Id of the root of the library in question.
+ * @function getLibraryRootId
+ * @memberOf GMENode
+ * @param {string} name - the name of the library.
+ *
+ * @return {string | null} If the library is found then the return value will be the Id of its root,
+ * otherwise the function returns null.
  */
 
 // expect(typeof node.getRegistryNames).to.equal('function');
