@@ -1,5 +1,17 @@
 # Change Log
 
+## [v2.20.2](https://github.com/webgme/webgme-engine/tree/v2.20.2) (2018-07-02)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.1...v2.20.2)
+
+**Implemented enhancements:**
+
+- Get library root id for GMENode [\#108](https://github.com/webgme/webgme-engine/pull/108) ([kecso](https://github.com/kecso))
+- Log error when component-settings fails to load [\#107](https://github.com/webgme/webgme-engine/pull/107) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- FIX Remove recently added branch events. [\#106](https://github.com/webgme/webgme-engine/pull/106) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.20.1](https://github.com/webgme/webgme-engine/tree/v2.20.1) (2018-06-25)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.0...v2.20.1)
 
