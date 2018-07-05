@@ -35,16 +35,24 @@ var requirejs = require('requirejs'),
         include: [requireJsPath]
     };
 
-function doBuild(callback) {
-    requirejs.optimize(config, function (data) {
-        callback(null, data);
+function doBuilds(callback) {
+    var minConfig = JSON.parse(JSON.stringify(config));
+    minConfig.out = './dist/webgme.classes.build.min.js';
+    minConfig.optimize = 'uglify2';
+
+    requirejs.optimize(minConfig, function (res1) {
+        requirejs.optimize(config, function (res2) {
+            callback(null, [res1, res2]);
+        }, function (err2) {
+            callback(err2);
+        });
     }, function (err) {
         callback(err);
     });
 }
 
 if (require.main === module) {
-    doBuild(function (err, data) {
+    doBuilds(function (err, data) {
         if (err) {
             console.error(err);
         } else {
@@ -53,4 +61,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = doBuild;
+module.exports = doBuilds;
