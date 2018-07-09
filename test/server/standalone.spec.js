@@ -67,15 +67,24 @@ describe('standalone server', function () {
         gmeConfig.server.port = gmeConfig.server.port + 1;
 
         httpServer.listen(gmeConfig.server.port, function (err) {
-            expect(err).to.equal(undefined);
+            if (err) {
+                done(err);
+                return;
+            }
 
             server = WebGME.standaloneServer(gmeConfig);
             server.start(function (err) {
-                expect(err.code).to.equal('EADDRINUSE');
+                var err0;
+                try {
+                    expect(err.code).to.equal('EADDRINUSE');
+                } catch (e) {
+                    err0 = e;
+                }
+
                 httpServer.close(function (err1) {
                     server._setIsRunning(true); //This ensures stopping modules.
                     server.stop(function (err2) {
-                        done(err1 || err2 || null);
+                        done(err0 || err1 || err2 || null);
                     });
                 });
             });
@@ -129,16 +138,22 @@ describe('standalone server', function () {
                     }
 
                     agent.get('https://localhost:' + proxyServerPort + '/index.html').end(function (err, res) {
+                        var err0;
                         if (err) {
                             done(err);
                             return;
                         }
-                        should.equal(res.status, 200, err);
-                        should.equal(/WebGME/.test(res.text), true, 'Index page response must contain WebGME');
+
+                        try {
+                            should.equal(res.status, 200, err);
+                            should.equal(/WebGME/.test(res.text), true, 'Index page response must contain WebGME');
+                        } catch (e) {
+                            err0 = e;
+                        }
 
                         server.stop(function (err) {
                             proxy.close(function (err1) {
-                                done(err || err1);
+                                done(err0 || err || err1);
                             });
                         });
                     });
@@ -200,6 +215,8 @@ describe('standalone server', function () {
             {code: 404, url: '/extlib/src'},
             //excluded extlib paths.
             {code: 403, url: '/extlib/config/config.default.js'},
+            {code: 200, url: '/gme-dist/webgme.classes.build.js'},
+            {code: 200, url: '/gme-dist/webgme.classes.build.min.js'},
 
             //{code: 410, url: '/getToken'},
             //{code: 410, url: '/checktoken/does_not_exist'},
@@ -305,31 +322,35 @@ describe('standalone server', function () {
                             return;
                         }
 
-                        should.equal(res.status, requestTest.code, err);
+                        try {
+                            should.equal(res.status, requestTest.code, err);
 
-                        if (requestTest.redirectUrl) {
-                            // redirected
-                            should.equal(res.status, 200);
-                            if (res.headers.location) {
-                                should.equal(res.headers.location, requestTest.redirectUrl);
-                            }
-                            should.not.equal(res.headers.location, url);
-                            logger.debug(res.headers.location, url, requestTest.redirectUrl);
-                            should.equal(res.redirects.length, 1);
-                        } else {
-                            // was not redirected
-                            //should.equal(res.res.url, url); // FIXME: should server response set the url?
-                            if (res.headers.location) {
-                                should.equal(res.headers.location, url);
-                            }
-                            if (res.res.url) {
-                                should.equal(res.res.url, url);
+                            if (requestTest.redirectUrl) {
+                                // redirected
+                                should.equal(res.status, 200);
+                                if (res.headers.location) {
+                                    should.equal(res.headers.location, requestTest.redirectUrl);
+                                }
+                                should.not.equal(res.headers.location, url);
+                                logger.debug(res.headers.location, url, requestTest.redirectUrl);
+                                should.equal(res.redirects.length, 1);
+                            } else {
+                                // was not redirected
+                                //should.equal(res.res.url, url); // FIXME: should server response set the url?
+                                if (res.headers.location) {
+                                    should.equal(res.headers.location, url);
+                                }
+                                if (res.res.url) {
+                                    should.equal(res.res.url, url);
+                                }
+
+                                should.equal(res.redirects.length, 0);
                             }
 
-                            should.equal(res.redirects.length, 0);
+                            done();
+                        } catch (e) {
+                            done(e);
                         }
-
-                        done();
                     });
                 });
             }

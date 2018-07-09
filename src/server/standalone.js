@@ -283,7 +283,8 @@ function StandAloneServer(gmeConfig) {
         // request server close - do not accept any new connections.
         __httpServer.close(function (err) {
             if (err) {
-                if (err.message.indexOf('Not running') > -1) {
+                // First check applies to node >= 10. Second one to node < 10.
+                if (err.code === 'ERR_SERVER_NOT_RUNNING' || err.message.indexOf('Not running') > -1) {
                     // It's not running which is what we want.
                     serverDeferred.resolve();
                 } else {

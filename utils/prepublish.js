@@ -30,8 +30,8 @@ function prepublish(jsdocConfigPath) {
         });
 
 
-    if (process.env.TEST_FOLDER) {
-        console.warn('TEST_FOLDER environment variable is set, skipping distribution scripts.');
+    if (process.env.TEST_FOLDER && process.env.TEST_FOLDER !== 'test/server') {
+        console.warn('TEST_FOLDER environment variable is set and not to test/server, skipping distribution scripts.');
     } else {
         var webgmeBuild = require('./build/webgme.classes/build_classes.js');
 
