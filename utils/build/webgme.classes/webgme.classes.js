@@ -141,15 +141,24 @@ define('webgme.classes', [
         // eslint-disable-next-line
         docReady(function () {
             somethingFinishedLoading();
+            requestGmeConfig();
         });
     } else {
         somethingFinishedLoading();
+        requestGmeConfig();
     }
 
-
-    (function getGmeConfig() {
+    function requestGmeConfig() {
         var http = new XMLHttpRequest(),
-            configUrl = window.location.origin + '/gmeConfig.json';
+            mountPath = '',
+            mountElm = document.getElementById('mounted-path'),
+            configUrl;
+
+        if (mountElm && mountElm.getAttribute('content')) {
+            mountPath = mountElm.getAttribute('content');
+        }
+
+        configUrl = window.location.origin + mountPath + '/gmeConfig.json';
         http.onreadystatechange = function () {
             if (http.readyState === 4 && http.status === 200) {
                 GME.gmeConfig = JSON.parse(http.responseText);
@@ -161,5 +170,5 @@ define('webgme.classes', [
         };
         http.open('GET', configUrl, true);
         http.send();
-    })();
+    }
 });
