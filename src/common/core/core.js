@@ -3319,13 +3319,12 @@ define([
          * @param {object} parameters - the input parameters of the query.
          * @param {module:Core~Node} parameters.node - the node in question.
          * @param {module:Core~Node[]} [parameters.children] - the current children of the node in question.
-         * @param {bool} [parameters.sensitive] - if true, the query filters out the abstract and connection-like
-         * nodes (the default value is false)
-         * @param {bool} [parameters.multiplicity] - if true, the query tries to filter out even more nodes according
-         * to the multiplicity rules (the default value is false, the check is only meaningful if all the children were
-         * passed)
-         * @param {string|null} [parameters.aspect] - if given, the query filters to contain only types that are
-         * visible in the given aspect.
+         * @param {bool} [parameters.sensitive=false] - if true, the query filters out the abstract and connection-like
+         * nodes.
+         * @param {bool} [parameters.multiplicity=false] - if true, the query tries to filter out even more
+         * nodes according to the multiplicity rules (the check is only meaningful if all the children were passed)
+         * @param {string|null} [parameters.aspect=undefined] - if given, the query filters to contain only types that
+         * are visible in the given aspect.
          * @return {module:Core~Node[]} The function returns a list of valid nodes that can be instantiated as a
          * child of the node.
          *
@@ -3360,11 +3359,10 @@ define([
          * @param {module:Core~Node} parameters.node - the node in question.
          * @param {string} parameters.name - the name of the set.
          * @param {module:Core~Node[]} [parameters.members] - the current members of the set of the node in question.
-         * @param {bool} [parameters.sensitive] - if true, the query filters out the abstract and connection-like
-         * nodes (the default value is false)
-         * @param {bool} [parameters.multiplicity] - if true, the query tries to filter out even more nodes according
-         * to the multiplicity rules (the default value is false, the check is only meaningful if all the members were
-         * passed)
+         * @param {bool} [parameters.sensitive=false] - if true, the query filters out the abstract and connection-like
+         * nodes.
+         * @param {bool} [parameters.multiplicity=false] - if true, the query tries to filter out even more nodes
+         * according to the multiplicity rules (the check is only meaningful if all the members were passed)
          *
          * @return {module:Core~Node[]} The function returns a list of valid nodes that can be instantiated as a
          * member of the set of the node.
@@ -3897,7 +3895,7 @@ define([
          *
          * @param {module:Core~Node} node - any node of your project.
          * @param {string} name - name of your library.
-         * @param {bool} [onlyOwn] - if true only returns with Meta nodes defined in the library itself.
+         * @param {bool} [onlyOwn=false] - if true only returns with Meta nodes defined in the library itself.
          *
          * @return {module:Core~Node[]} - Returns an array of core nodes that are part of your meta from
          * the given library.
@@ -3921,11 +3919,11 @@ define([
          *
          * @param {module:Core~Node} root - the root node of the sub-tree that needs to be traversed.
          * @param {object} options - parameters to control the traversing.
-         * @param {bool} [options.excludeRoot = false] - controls whether the root should be excluded from visit.
-         * @param {'BFS'|'DFS'} [options.order = 'BFS'] - controls if the traversal order should be breadth first
+         * @param {bool} [options.excludeRoot=false] - controls whether the root should be excluded from visit.
+         * @param {'BFS'|'DFS'} [options.order='BFS'] - controls if the traversal order should be breadth first
          * or depth first.
-         * @param {integer} [options.maxParallelLoad = 100]- the maximum number of parallel loads allowed.
-         * @param {bool} [options.stopOnError = true]- controls if the traverse should stop in case of error.
+         * @param {integer} [options.maxParallelLoad=100]- the maximum number of parallel loads allowed.
+         * @param {bool} [options.stopOnError=true]- controls if the traverse should stop in case of error.
          * @param {function} visitFn - the visitation function that will be called for
          * every node in the sub-tree, the second parameter of the function is a callback that should be called to
          * note to the traversal function that the visitation for a given node finished.
