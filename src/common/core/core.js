@@ -1601,8 +1601,8 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} attrName - the name of the attribute entry.
          *
-         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined, than there
-         * is no such attribute at the set.
+         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined,
+         * then there is no such attribute at the set.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1626,8 +1626,8 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} attrName - the name of the attribute entry.
          *
-         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined, than there
-         * is no such attribute at the set.
+         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined,
+         * then there is no such attribute at the set.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1744,8 +1744,8 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} regName - the name of the registry entry.
          *
-         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined, than there
-         * is no such registry at the set.
+         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined,
+         * then there is no such registry at the set.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1769,8 +1769,8 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} regName - the name of the registry entry.
          *
-         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined, than there
-         * is no such registry at the set.
+         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined,
+         * then there is no such registry at the set.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -1986,8 +1986,8 @@ define([
          * @param {string} path - the absolute path of the member node.
          * @param {string} attrName - the name of the attribute.
          *
-         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined, than there
-         * is no such attributed connected to the given set membership.
+         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined,
+         * then there is no such attributed connected to the given set membership.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -2017,8 +2017,8 @@ define([
          * @param {string} path - the absolute path of the member node.
          * @param {string} attrName - the name of the attribute.
          *
-         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined, than there
-         * is no such attributed connected to the given set membership.
+         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined,
+         * then there is no such attributed connected to the given set membership.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -2166,8 +2166,8 @@ define([
          * @param {string} path - the absolute path of the member node.
          * @param {string} regName - the name of the registry entry.
          *
-         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined, than there
-         * is no such registry connected to the given set membership.
+         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined,
+         * then there is no such registry connected to the given set membership.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -2197,8 +2197,8 @@ define([
          * @param {string} path - the absolute path of the member node.
          * @param {string} regName - the name of the registry entry.
          *
-         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined, than there
-         * is no such registry connected to the given set membership.
+         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined,
+         * then there is no such registry connected to the given set membership.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
