@@ -1,5 +1,17 @@
 # Change Log
 
+## [v2.20.3](https://github.com/webgme/webgme-engine/tree/v2.20.3) (2018-07-30)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.2...v2.20.3)
+
+**Implemented enhancements:**
+
+- Make sure gmeConfig is loaded correctly in classes.build [\#110](https://github.com/webgme/webgme-engine/pull/110) ([pmeijer](https://github.com/pmeijer))
+- Add generation of minified build classes [\#109](https://github.com/webgme/webgme-engine/pull/109) ([pmeijer](https://github.com/pmeijer))
+
+**Closed issues:**
+
+- Creating metamodel from plugin loses metamodel tabs on refresh [\#112](https://github.com/webgme/webgme-engine/issues/112)
+
 ## [v2.20.2](https://github.com/webgme/webgme-engine/tree/v2.20.2) (2018-07-02)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.1...v2.20.2)
 
