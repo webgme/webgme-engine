@@ -201,7 +201,8 @@ var path = require('path'),
             },
             extlibExcludes: ['config/config..*.js$'],
             behindSecureProxy: false,
-            jsonLimit: '100kb'
+            // Configuration for bodyParser.json, can be fully customized by the user
+            json: {}
         },
 
         socketIO: {
