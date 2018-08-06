@@ -200,7 +200,8 @@ var path = require('path'),
                 }]
             },
             extlibExcludes: ['config/config..*.js$'],
-            behindSecureProxy: false
+            behindSecureProxy: false,
+            jsonLimit: '100kb'
         },
 
         socketIO: {

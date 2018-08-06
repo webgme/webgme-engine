@@ -267,6 +267,8 @@ function validateConfig(configOrFileName) {
     assertArray('config.server.log.transports', config.server.log.transports);
     // server extlib
     assertArray('config.server.extlibExcludes', config.server.extlibExcludes);
+    // server bodyParser config
+    assertString('config.server.jsonLimit', config.server.jsonLimit);
 
     // socketIO
     expectedKeys.push('socketIO');

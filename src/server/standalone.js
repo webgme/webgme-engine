@@ -683,7 +683,9 @@ function StandAloneServer(gmeConfig) {
 
     __app.use(compression());
     __app.use(cookieParser());
-    __app.use(bodyParser.json());
+    __app.use(bodyParser.json({
+      limit: gmeConfig.server.jsonLimit || '100kb'
+    }));
     __app.use(bodyParser.urlencoded({
         extended: true
     }));
