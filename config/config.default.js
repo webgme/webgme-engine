@@ -203,7 +203,7 @@ var path = require('path'),
             behindSecureProxy: false,
             // Configuration for bodyParser middlewares
             bodyParser: {
-              json: {}
+                json: {}
             }
         },
 
