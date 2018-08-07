@@ -200,7 +200,11 @@ var path = require('path'),
                 }]
             },
             extlibExcludes: ['config/config..*.js$'],
-            behindSecureProxy: false
+            behindSecureProxy: false,
+            // Configuration for bodyParser middlewares
+            bodyParser: {
+                json: {}
+            }
         },
 
         socketIO: {
