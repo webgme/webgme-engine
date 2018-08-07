@@ -683,7 +683,7 @@ function StandAloneServer(gmeConfig) {
 
     __app.use(compression());
     __app.use(cookieParser());
-    __app.use(bodyParser.json(gmeConfig.server.json));
+    __app.use(bodyParser.json(gmeConfig.server.bodyParser.json));
     __app.use(bodyParser.urlencoded({
         extended: true
     }));

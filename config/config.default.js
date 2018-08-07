@@ -201,8 +201,10 @@ var path = require('path'),
             },
             extlibExcludes: ['config/config..*.js$'],
             behindSecureProxy: false,
-            // Configuration for bodyParser.json, can be fully customized by the user
-            json: {}
+            // Configuration for bodyParser middlewares
+            bodyParser: {
+              json: {}
+            }
         },
 
         socketIO: {
