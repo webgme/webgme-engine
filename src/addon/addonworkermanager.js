@@ -22,7 +22,7 @@ function AddOnWorkerManager(_parameters) {
         _managerId = null,
         _workers = {},
         _idToPid = {},
-        debugPort = 5857,
+        debugPort = 5858,
         gmeConfig = _parameters.gmeConfig,
         logger = _parameters.logger.fork('AddOnWorkerManager');
 
@@ -33,15 +33,18 @@ function AddOnWorkerManager(_parameters) {
         var debug = false,
             execArgv = process.execArgv.filter(function (arg) {
                 if (arg.indexOf('--debug-brk') === 0) {
-                    logger.info('Main process is in debug mode', arg);
                     debug = '--debug-brk';
-                    return false;
                 } else if (arg.indexOf('--debug') === 0) {
-                    logger.info('Main process is in debug mode', arg);
                     debug = '--debug';
-                    return false;
+                } else if (arg.indexOf('--inspect-brk') === 0) {
+                    debug = '--inspect-brk';
+                } else if (arg.indexOf('--inspect') === 0) {
+                    debug = '--inspect';
+                } else {
+                    return true;
                 }
-                return true;
+
+                return false;
             }),
             childProcess;
 
@@ -50,7 +53,7 @@ function AddOnWorkerManager(_parameters) {
         if (debug) {
             execArgv.push(debug + '=' + debugPort.toString());
             logger.info('Child debug port: ' + debugPort.toString());
-            debugPort -= 1;
+            debugPort += 2;
         }
 
         logger.debug('execArgv for main process', process.execArgv);
