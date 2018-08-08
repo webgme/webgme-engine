@@ -1459,7 +1459,7 @@ define([
 
         // Undo/Redo functionality
         this.undo = function (branchName, callback) {
-            if (self.canUndo() === false) {
+            if (self.canUndo(branchName) === false) {
                 callback(new Error('unable to make undo'));
                 return;
             }
@@ -1482,7 +1482,7 @@ define([
         };
 
         this.redo = function (branchName, callback) {
-            if (self.canRedo() === false) {
+            if (self.canRedo(branchName) === false) {
                 callback(new Error('unable to make redo'));
                 return;
             }
