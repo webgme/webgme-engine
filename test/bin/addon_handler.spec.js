@@ -17,10 +17,8 @@ describe('addon_handler bin', function () {
         Q = testFixture.Q,
         superagent = testFixture.superagent,
         projectId,
-        agent,
         server,
         core,
-        socket,
         connStorage,
         project,
         addOnHandler,
@@ -103,7 +101,8 @@ describe('addon_handler bin', function () {
                 rootNode: null
             };
 
-        statusHandler = statusHandler || function () {};
+        statusHandler = statusHandler || function () {
+        };
         hashHandler = hashHandler || function (data, commitQueue, updateQueue, callback) {
             callback(null, true);
         };
@@ -168,32 +167,22 @@ describe('addon_handler bin', function () {
         });
 
         beforeEach(function (done) {
-            agent = superagent.agent();
-            testFixture.openSocketIo(server, agent, 'guest', 'guest')
-                .then(function (result) {
-                    socket = result.socket;
-                    connStorage = NodeStorage.createStorage(null,
-                        result.webgmeToken,
-                        logger,
-                        gmeConfig);
+            connStorage = NodeStorage.createStorage(null, null, logger, gmeConfig);
 
-                    var didResolve = false;
-                    connStorage.open(function (networkState) {
-                        if (networkState === project.CONSTANTS.CONNECTED) {
-                            didResolve = true;
-                            done();
-                        } else if (!didResolve) {
-                            didResolve = true;
-                            done(new Error('Unexpected network state: ' + networkState));
-                        }
-                    });
-                })
-                .catch(done);
+            var didResolve = false;
+            connStorage.open(function (networkState) {
+                if (networkState === project.CONSTANTS.CONNECTED) {
+                    didResolve = true;
+                    done();
+                } else if (!didResolve) {
+                    didResolve = true;
+                    done(new Error('Unexpected network state: ' + networkState));
+                }
+            });
         });
 
         afterEach(function (done) {
             connStorage.close(function (/*err*/) {
-                socket.disconnect();
                 addOnHandler.stop(done);
             });
         });
@@ -457,10 +446,11 @@ describe('addon_handler bin', function () {
         });
 
         beforeEach(function (done) {
-            agent = superagent.agent();
+            var agent = superagent.agent();
             testFixture.openSocketIo(server, agent, 'guest', 'guest')
                 .then(function (result) {
-                    socket = result.socket;
+                    result.socket.disconnect();
+
                     connStorage = NodeStorage.createStorage(null,
                         result.webgmeToken,
                         logger,
@@ -482,7 +472,6 @@ describe('addon_handler bin', function () {
 
         afterEach(function (done) {
             connStorage.close(function (/*err*/) {
-                socket.disconnect();
                 addOnHandler.stop(done);
             });
         });
@@ -490,7 +479,6 @@ describe('addon_handler bin', function () {
         after(function (done) {
             server.stop(done);
         });
-
 
         it('opening branch should start addon when no auth info passed in handler', function (done) {
             var branchName = 'bb1',
@@ -629,7 +617,7 @@ describe('addon_handler bin', function () {
         });
     });
 
-    // This is here in order to reuse the helper functions
+    // This is here in this file in order to reuse the test helper functions.
     describe('addon worker process', function () {
         beforeEach(function (done) {
             gmeConfig = testFixture.getGmeConfig();
@@ -643,33 +631,23 @@ describe('addon_handler bin', function () {
                     return done(err);
                 }
 
-                agent = superagent.agent();
-                testFixture.openSocketIo(server, agent, 'guest', 'guest')
-                    .then(function (result) {
-                        socket = result.socket;
-                        connStorage = NodeStorage.createStorage(null,
-                            result.webgmeToken,
-                            logger,
-                            gmeConfig);
+                connStorage = NodeStorage.createStorage(null, null, logger, gmeConfig);
 
-                        var didResolve = false;
-                        connStorage.open(function (networkState) {
-                            if (networkState === project.CONSTANTS.CONNECTED) {
-                                didResolve = true;
-                                done();
-                            } else if (!didResolve) {
-                                didResolve = true;
-                                done(new Error('Unexpected network state: ' + networkState));
-                            }
-                        });
-                    })
-                    .catch(done);
+                var didResolve = false;
+                connStorage.open(function (networkState) {
+                    if (networkState === project.CONSTANTS.CONNECTED) {
+                        didResolve = true;
+                        done();
+                    } else if (!didResolve) {
+                        didResolve = true;
+                        done(new Error('Unexpected network state: ' + networkState));
+                    }
+                });
             });
         });
 
         afterEach(function (done) {
             connStorage.close(function (/*err*/) {
-                socket.disconnect();
                 setTimeout(function () {
                     server.stop(done);
                 });

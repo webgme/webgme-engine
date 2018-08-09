@@ -49,7 +49,7 @@ function ServerWorkerManager(parameters) {
             logger.info('Main process is in debug mode [', debug, ']');
             execArgv.push(debug + '=' + debugPort.toString());
             logger.info('Child debug port: ' + debugPort.toString());
-            debugPort += 1;
+            debugPort += 2;
         }
 
         logger.debug('execArgv for main process', process.execArgv);

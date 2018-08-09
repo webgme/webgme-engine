@@ -14,6 +14,16 @@ global.WebGMEGlobal = {};
 process.env.NODE_ENV = (process.env.NODE_ENV && process.env.NODE_ENV.indexOf('test') === 0) ?
     process.env.NODE_ENV : 'test';
 
+// If test processes aren't stopping use this to find open handles etc.
+//
+// $ npm install wtfnode
+//
+// const wtf = require('wtfnode');
+//
+// setInterval(() => {
+//     console.log(wtf.dump());
+// }, 5000);
+
 //adding a local storage class to the global Namespace
 var WebGME = require('../index'),
     _gmeConfig,

@@ -255,6 +255,7 @@ function AddOnManager(projectId, mainLogger, gmeConfig, options) {
     this.close = function (callback) {
 
         function stopMonitor(branchName) {
+            clearTimeout(self.branchMonitors[branchName].stopTimeout.id);
             return self.branchMonitors[branchName].instance.stop();
         }
 
