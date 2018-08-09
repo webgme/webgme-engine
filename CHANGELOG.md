@@ -1,16 +1,29 @@
 # Change Log
 
+## [v2.20.4](https://github.com/webgme/webgme-engine/tree/v2.20.4) (2018-08-09)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.3...v2.20.4)
+
+**Implemented enhancements:**
+
+- Some jsdoc fixes in core and project API [\#119](https://github.com/webgme/webgme-engine/pull/119) ([pmeijer](https://github.com/pmeijer))
+-  Add getRootHash and getCommitObject on project API [\#118](https://github.com/webgme/webgme-engine/pull/118) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Absolute login and logout urls do not work if app is mounted at different path. [\#111](https://github.com/webgme/webgme-engine/issues/111)
+- FIX undo/redo not working on client [\#117](https://github.com/webgme/webgme-engine/pull/117) ([pmeijer](https://github.com/pmeijer))
+- Handle --inspect option at spawned add-on process [\#116](https://github.com/webgme/webgme-engine/pull/116) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#111 Absolute login and logout urls do not work if app is mounted at different path. [\#115](https://github.com/webgme/webgme-engine/pull/115) ([kecso](https://github.com/kecso))
+
 ## [v2.20.3](https://github.com/webgme/webgme-engine/tree/v2.20.3) (2018-07-30)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.2...v2.20.3)
 
 **Implemented enhancements:**
 
+- JSON Payload Sizing [\#113](https://github.com/webgme/webgme-engine/issues/113)
+- Expose bodyParser.json 'limit' configuration option, verify within co… [\#114](https://github.com/webgme/webgme-engine/pull/114) ([nawgszy](https://github.com/nawgszy))
 - Make sure gmeConfig is loaded correctly in classes.build [\#110](https://github.com/webgme/webgme-engine/pull/110) ([pmeijer](https://github.com/pmeijer))
 - Add generation of minified build classes [\#109](https://github.com/webgme/webgme-engine/pull/109) ([pmeijer](https://github.com/pmeijer))
-
-**Closed issues:**
-
-- Creating metamodel from plugin loses metamodel tabs on refresh [\#112](https://github.com/webgme/webgme-engine/issues/112)
 
 ## [v2.20.2](https://github.com/webgme/webgme-engine/tree/v2.20.2) (2018-07-02)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.1...v2.20.2)
