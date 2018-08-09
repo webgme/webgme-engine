@@ -9,10 +9,12 @@
  */
 
 define([
+    'q',
     'common/storage/project/cache',
     'common/storage/constants',
-    'common/storage/util'
-], function (ProjectCache, CONSTANTS, UTIL) {
+    'common/storage/util',
+    'common/regexp',
+], function (Q, ProjectCache, CONSTANTS, UTIL, REGEXP) {
     'use strict';
 
     /**
@@ -228,11 +230,28 @@ define([
          * @param {function} [callback] - if provided no promise will be returned.
          *
          * @return {external:Promise}  On success the promise will be resolved with
-         * {module:Storage~CommitHash} <b>branchHash</b>.<br>
+         * {@link module:Storage~CommitHash} <b>branchHash</b>.<br>
          * On error the promise will be rejected with {@link Error} <b>error</b>.
          */
         this.getBranchHash = function (branchName, callback) {
             throw new Error('getBranchHash must be overridden in derived class');
+        };
+
+        /**
+         * Retrieves the root hash at the provided branch or commit-hash.
+         * @param {string} branchNameOrCommitHash - Name of branch or a commit-hash.
+         * @param {function} [callback] - if provided no promise will be returned.
+         *
+         * @return {external:Promise}  On success the promise will be resolved with
+         * {@link module:Core~ObjectHash} <b>rootHash</b>.<br>
+         * On error the promise will be rejected with {@link Error} <b>error</b>.
+         */
+        this.getRootHash = function (branchNameOrCommitHash, callback) {
+            return this.getCommitObject(branchNameOrCommitHash)
+                .then(function (commitObj) {
+                    return commitObj.root;
+                })
+                .nodeify(callback);
         };
 
         /**
@@ -273,6 +292,32 @@ define([
          */
         this.getBranches = function (callback) {
             throw new Error('getBranches must be overridden in derived class');
+        };
+
+        /**
+         * Retrieves the commit-object at the provided branch or commit-hash.
+         * @param {string} branchNameOrCommitHash - Name of branch or a commit-hash.
+         * @param {function} [callback] - if provided no promise will be returned.
+         *
+         * @return {external:Promise}  On success the promise will be resolved with
+         * {@link module:Storage~CommitObject} <b>commitObject</b>.<br>
+         * On error the promise will be rejected with {@link Error} <b>error</b>.
+         */
+        this.getCommitObject = function (branchNameOrCommitHash, callback) {
+            var self = this,
+                commitDeferred;
+
+            if (REGEXP.HASH.test(branchNameOrCommitHash)) {
+                commitDeferred = Q(branchNameOrCommitHash);
+            } else {
+                commitDeferred = this.getBranchHash(branchNameOrCommitHash);
+            }
+
+            return commitDeferred
+                .then(function (commitHash) {
+                    return Q.ninvoke(self, 'loadObject', commitHash);
+                })
+                .nodeify(callback);
         };
 
         /**

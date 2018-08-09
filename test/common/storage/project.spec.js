@@ -214,6 +214,56 @@ describe('common storage project', function () {
             .nodeify(done);
     });
 
+    it('should getCommitObject from branch-name and commit-hash', function (done) {
+        var project,
+            returned;
+
+        Q.nfcall(storage.openProject, projectName2Id(projectName))
+            .then(function (result) {
+                project = result[0];
+
+                return project.getCommitObject('master');
+            })
+            .then(function (commitObj) {
+                returned = commitObj;
+                expect(typeof commitObj).to.equal('object');
+                expect(typeof commitObj._id).to.equal('string');
+                return project.getCommitObject(commitObj._id);
+            })
+            .then(function (commitObj) {
+                expect(commitObj).to.deep.equal(returned);
+            })
+            .nodeify(done);
+    });
+
+    it('should getRootHash from branch-name and commit-hash', function (done) {
+        var project,
+            rootHash;
+
+        Q.nfcall(storage.openProject, projectName2Id(projectName))
+            .then(function (result) {
+                project = result[0];
+
+                return project.getCommitObject('master');
+            })
+            .then(function (commitObj) {
+                rootHash = commitObj.root;
+                expect(typeof rootHash).to.equal('string');
+                expect(rootHash).to.not.equal('');
+                expect(rootHash[0]).to.equal('#');
+
+                return Q.allDone([
+                    project.getRootHash(commitObj._id),
+                    project.getRootHash('master')
+                ]);
+            })
+            .then(function (res) {
+                expect(res[0]).to.equal(rootHash);
+                expect(res[1]).to.equal(rootHash);
+            })
+            .nodeify(done);
+    });
+
     it('should getHistory from branch', function (done) {
         var project;
 
@@ -550,7 +600,8 @@ describe('common storage project', function () {
                 })
                 .then(function () {
                     branch = project.branches.queueCommitName;
-                    branch.queueCommit(commitData, function () {});
+                    branch.queueCommit(commitData, function () {
+                    });
                     expect(branch.getCommitQueue().length).to.equal(1);
                     expect(branch.getFirstCommit()).to.equal(commitData);
                     expect(branch.getCommitQueue().length).to.equal(1);
@@ -599,8 +650,10 @@ describe('common storage project', function () {
                     branch.updateHashes('hash', 'hash');
                     expect(branch.getCommitsForNewFork('hash_different')).to.equal(false);
                     expect(branch.getCommitsForNewFork()).to.deep.equal({commitHash: 'hash', queue: []});
-                    branch.queueCommit(commitData, function () {});
-                    branch.queueCommit(commitData2, function () {});
+                    branch.queueCommit(commitData, function () {
+                    });
+                    branch.queueCommit(commitData2, function () {
+                    });
                     expect(branch.getCommitQueue().length).to.equal(2);
                     expect(branch.getCommitQueue()[0]).to.equal(commitData);
                     expect(branch.getCommitsForNewFork('asd2').queue.length).to.equal(1);

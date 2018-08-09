@@ -83,6 +83,44 @@ describe('UserProject', function () {
             .nodeify(done);
     });
 
+    it('should getCommitObject from branch-name and commit-hash', function (done) {
+        var returned;
+
+        project.getCommitObject('master')
+            .then(function (commitObj) {
+                returned = commitObj;
+                expect(typeof commitObj).to.equal('object');
+                expect(typeof commitObj._id).to.equal('string');
+                return project.getCommitObject(commitObj._id);
+            })
+            .then(function (commitObj) {
+                expect(commitObj).to.deep.equal(returned);
+            })
+            .nodeify(done);
+    });
+
+    it('should getRootHash from branch-name and commit-hash', function (done) {
+        var rootHash;
+
+        project.getCommitObject('master')
+            .then(function (commitObj) {
+                rootHash = commitObj.root;
+                expect(typeof rootHash).to.equal('string');
+                expect(rootHash).to.not.equal('');
+                expect(rootHash[0]).to.equal('#');
+
+                return Q.allDone([
+                    project.getRootHash(commitObj._id),
+                    project.getRootHash('master')
+                ]);
+            })
+            .then(function (res) {
+                expect(res[0]).to.equal(rootHash);
+                expect(res[1]).to.equal(rootHash);
+            })
+            .nodeify(done);
+    });
+
     it('should getCommits', function (done) {
         project.getCommits((new Date()).getTime() + 100, 1)
             .then(function (commits) {
