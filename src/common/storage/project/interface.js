@@ -325,7 +325,8 @@ define([
          * <br> The result is ordered by the rules (applied in order)
          * <br> 1. Descendants are always returned before their ancestors.
          * <br> 2. By their timestamp.
-         * @param {string|module:Storage~CommitHash|Array} start - Branch name, commit hash or array of these.
+         * @param {string|module:Storage~CommitHash|string[]|module:Storage~CommitHash[]} start - Branch name,
+         * commit hash or array of these.
          * @param {number} number - Number of commits to load.
          * @param {function} [callback] - if provided no promise will be returned.
          *

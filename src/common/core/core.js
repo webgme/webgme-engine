@@ -398,7 +398,7 @@ define([
          * Returns the common parent node of all supplied nodes.
          * @param {...module:Core~Node} nodes - a variable number of nodes to compare
          *
-         * @return {module:Core~Node | null} The common base or null if no nodes were passed.
+         * @return {module:Core~Node|null} The common base or null if no nodes were passed.
          * @example
          * core.getCommonParent(node1, node2, node3);
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -730,7 +730,7 @@ define([
          * @param {module:Core~Node} node - the node that is the root of the sub-tree in question.
          * @param {function} [callback]
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
-         * @param {module:Core~Node[]} callback.node - the resulting sources
+         * @param {module:Core~Node[]} callback.nodes - the resulting sources
          *
          * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
@@ -755,7 +755,7 @@ define([
          * @param {module:Core~Node} node - the container node in question.
          * @param {function} [callback]
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
-         * @param {module:Core~Node[]} callback.node - the resulting sources
+         * @param {module:Core~Node[]} callback.nodes - the resulting sources
          *
          * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
@@ -860,8 +860,8 @@ define([
         /**
          * Creates a node according to the given parameters.
          * @param {object} [parameters] - the details of the creation.
-         * @param {module:Core~Node | null} [parameters.parent] - the parent of the node to be created.
-         * @param {module:Core~Node | null} [parameters.base] - the base of the node to be created.
+         * @param {module:Core~Node|null} [parameters.parent] - the parent of the node to be created.
+         * @param {module:Core~Node|null} [parameters.base] - the base of the node to be created.
          * @param {string} [parameters.relid] - the relative id of the node to be created (if reserved, the function
          * returns the node behind the relative id)
          * @param {module:Core~GUID} [parameters.guid] - the GUID of the node to be created
@@ -1005,9 +1005,9 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the attribute.
          *
-         * @return {object | primitive | null | undefined} The function returns the value of the attribute of the node.
-         * The value can be an object or any primitive type. If the value is undefined that means the node do not have
-         * such attribute defined. [The retrieved attribute should not be modified as is - it should be copied first!!]
+         * @return {string|number|bool|object|undefined} The function returns the value of the attribute of the node.
+         * If the value is undefined that means the node do not have
+         * such attribute defined.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -1024,8 +1024,7 @@ define([
          * will set the given attribute even if was ot defined for the node beforehand.
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the attribute.
-         * @param {object | primitive | null} value - the new of the attribute. Can be any primitive type or object.
-         * Undefined is not allowed.
+         * @param {string|number|bool|object} value - the new of the attribute, undefined is not allowed.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1076,10 +1075,9 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the registry entry.
          *
-         * @return {object | primitive | null | undefined} The function returns the value of the registry entry
+         * @return {string|number|bool|object|undefined} The function returns the value of the registry entry
          * of the node. The value can be an object or any primitive type. If the value is undefined that means
-         * the node do not have such attribute defined. [The retrieved registry value should
-         * not be modified as is - it should be copied first!!]
+         * the node do not have such attribute defined.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -1096,7 +1094,7 @@ define([
          * means that it will set the given registry entry even if was ot defined for the node beforehand.
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the registry entry.
-         * @param {object | primitive | null} value - the new of the registry entry. Can be any primitive
+         * @param {string|number|bool|object} value - the new of the registry entry. Can be any primitive
          * type or object. Undefined is not allowed.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -1149,7 +1147,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the pointer in question.
          *
-         * @return {string | null | undefined} The function returns the absolute path of the target node
+         * @return {string|null|undefined} The function returns the absolute path of the target node
          * if there is a valid target. It returns null if though the pointer is defined it does not have any
          * valid target. Finally, it return undefined if there is no pointer defined for the node under the given name.
          *
@@ -1266,7 +1264,7 @@ define([
          * Returns the base node.
          * @param {module:Core~Node} node - the node in question.
          *
-         * @return {module:Core~Node | null} Returns the base of the given node or null if there is no such node.
+         * @return {module:Core~Node|null} Returns the base of the given node or null if there is no such node.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -1281,7 +1279,7 @@ define([
          * Returns the common base node of all supplied nodes.
          * @param {...module:Core~Node} nodes - a variable number of nodes to compare
          *
-         * @return {module:Core~Node | null} The common base or null if e.g. the root node was passed.
+         * @return {module:Core~Node|null} The common base or null if e.g. the root node was passed.
          * @example
          * core.getCommonBase(node1, node2, node3);
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -1357,7 +1355,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the attribute.
          *
-         * @return {object | primitive | null | undefined} Returns the value of the attribute defined specifically for
+         * @return {string|number|bool|object|undefined} Returns the value of the attribute defined specifically for
          * the node. If undefined then it means that there is no such attribute defined directly for the node, meaning
          * that it either inherits some value or there is no such attribute at all.
          *
@@ -1376,7 +1374,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the registry entry.
          *
-         * @return {object | primitive | null | undefined} Returns the value of the registry entry defined specifically
+         * @return {string|number|bool|object|undefined} Returns the value of the registry entry defined specifically
          * for the node. If undefined then it means that there is no such registry entry defined directly for the node,
          * meaning that it either inherits some value or there is no such registry entry at all.
          *
@@ -1410,7 +1408,7 @@ define([
          * @param {module:Core~Node} node - the node in question
          * @param {string} name - the name of the pointer
          *
-         * @return {string | null | undefined} Returns the absolute path. If the path is null, then it means that
+         * @return {string|null|undefined} Returns the absolute path. If the path is null, then it means that
          * 'no-target' was defined specifically for this node for the pointer. If undefined it means that the node
          * either inherits the target of the pointer or there is no pointer defined at all.
          *
@@ -1427,7 +1425,7 @@ define([
         /**
          * Checks if base can be the new base of node.
          * @param {module:Core~Node} node - the node in question.
-         * @param {module:Core~Node | null | undefined} base - the new base.
+         * @param {module:Core~Node|null|undefined} base - the new base.
          *
          * @return {boolean} True if the supplied base is a valid base for the node.
          *
@@ -1447,7 +1445,7 @@ define([
          * Sets the base node of the given node. The function doesn't touches the properties or the children of the node
          * so it can cause META rule violations that needs to be corrected manually.
          * @param {module:Core~Node} node - the node in question.
-         * @param {module:Core~Node | null} base - the new base.
+         * @param {module:Core~Node|null} base - the new base.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1466,7 +1464,7 @@ define([
          * Returns the root of the inheritance chain (cannot be the node itself).
          * @param {module:Core~Node} node - the node in question.
          *
-         * @return {module:Core~Node | null} Returns the root of the inheritance chain of the node. If returns null,
+         * @return {module:Core~Node|null} Returns the root of the inheritance chain of the node. If returns null,
          * that means the node in question is the root of the chain.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -1603,8 +1601,8 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} attrName - the name of the attribute entry.
          *
-         * @return {object|primitive|null|undefined} Return the value of the attribute. If it is undefined, than there
-         * is no such attribute at the set.
+         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined,
+         * then there is no such attribute at the set.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1628,8 +1626,8 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} attrName - the name of the attribute entry.
          *
-         * @return {object|primitive|null|undefined} Return the value of the attribute. If it is undefined, than there
-         * is no such attribute at the set.
+         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined,
+         * then there is no such attribute at the set.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1652,7 +1650,7 @@ define([
          * @param {module:Core~Node} node - the owner of the set.
          * @param {string} setName - the name of the set.
          * @param {string} attrName - the name of the attribute entry.
-         * @param {object|primitive|null} value - the new value of the attribute.
+         * @param {string|number|bool|object} value - the new value of the attribute.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1746,8 +1744,8 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} regName - the name of the registry entry.
          *
-         * @return {object|primitive|null|undefined} Return the value of the registry. If it is undefined, than there
-         * is no such registry at the set.
+         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined,
+         * then there is no such registry at the set.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1771,8 +1769,8 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} regName - the name of the registry entry.
          *
-         * @return {object|primitive|null|undefined} Return the value of the registry. If it is undefined, than there
-         * is no such registry at the set.
+         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined,
+         * then there is no such registry at the set.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -1794,7 +1792,7 @@ define([
          * @param {module:Core~Node} node - the owner of the set.
          * @param {string} setName - the name of the set.
          * @param {string} regName - the name of the registry entry.
-         * @param {object|primitive|null} value - the new value of the registry.
+         * @param {string|number|bool|object} value - the new value of the registry.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -1988,8 +1986,8 @@ define([
          * @param {string} path - the absolute path of the member node.
          * @param {string} attrName - the name of the attribute.
          *
-         * @return {object|primitive|null|undefined} Return the value of the attribute. If it is undefined, than there
-         * is no such attributed connected to the given set membership.
+         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined,
+         * then there is no such attributed connected to the given set membership.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -2019,8 +2017,8 @@ define([
          * @param {string} path - the absolute path of the member node.
          * @param {string} attrName - the name of the attribute.
          *
-         * @return {object|primitive|null|undefined} Return the value of the attribute. If it is undefined, than there
-         * is no such attributed connected to the given set membership.
+         * @return {string|number|bool|object|undefined} Return the value of the attribute. If it is undefined,
+         * then there is no such attributed connected to the given set membership.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -2049,7 +2047,7 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} path - the absolute path of the member node.
          * @param {string} attrName - the name of the attribute.
-         * @param {object|primitive|null} value - the new value of the attribute.
+         * @param {string|number|bool|object} value - the new value of the attribute.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -2168,8 +2166,8 @@ define([
          * @param {string} path - the absolute path of the member node.
          * @param {string} regName - the name of the registry entry.
          *
-         * @return {object|primitive|null|undefined} Return the value of the registry. If it is undefined, than there
-         * is no such registry connected to the given set membership.
+         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined,
+         * then there is no such registry connected to the given set membership.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -2199,8 +2197,8 @@ define([
          * @param {string} path - the absolute path of the member node.
          * @param {string} regName - the name of the registry entry.
          *
-         * @return {object|primitive|null|undefined} Return the value of the registry. If it is undefined, than there
-         * is no such registry connected to the given set membership.
+         * @return {string|number|bool|object|undefined} Return the value of the registry. If it is undefined,
+         * then there is no such registry connected to the given set membership.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -2229,7 +2227,7 @@ define([
          * @param {string} setName - the name of the set.
          * @param {string} path - the absolute path of the member node.
          * @param {string} regName - the name of the registry entry.
-         * @param {object|primitive|null} value - the new value of the registry.
+         * @param {string|number|bool|object} value - the new value of the registry.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -2345,7 +2343,7 @@ define([
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the constraint.
          *
-         * @return {module:Core~Constraint | null} Returns the defined constraint or null if it was not
+         * @return {module:Core~Constraint|null} Returns the defined constraint or null if it was not
          * defined for the node.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -2435,7 +2433,7 @@ define([
          * Checks if the given node in any way inherits from the typeNode. In addition to checking if the node
          * "isInstanceOf" of typeNode, this methods also takes mixins into account.
          * @param {module:Core~Node} node - the node in question.
-         * @param {module:Core~Node | string} typeNodeOrPath - the type node we want to check or its path.
+         * @param {module:Core~Node|string} typeNodeOrPath - the type node we want to check or its path.
          *
          * @return {bool} The function returns true if the typeNodeOrPath represents a base node,
          * or a mixin of any of the base nodes, of the node.
@@ -2591,7 +2589,7 @@ define([
          * Checks if the given value is of the necessary type, according to the META rules.
          * @param {module:Core~Node} node - the node in question.
          * @param {string} name - the name of the attribute.
-         * @param {object|primitive|null} value - the value to test.
+         * @param {string|number|bool|object} value - the value to test.
          *
          * @return {bool} Returns true if the value matches the META definitions.
          *
@@ -2938,7 +2936,7 @@ define([
 
         /**
          * Sets the global containment limits for the node.
-         *
+         * @param {module:Core~Node} node - the node in question.
          * @param {integer} [min] - the allowed minimum number of children (if not given or
          * -1 is set, then there will be no minimum rule according children)
          * @param {integer} [max] - the allowed maximum number of children (if not given or
@@ -3139,7 +3137,7 @@ define([
          * (Aliased getBaseType).
          * @param {module:Core~Node} node - the node in question
          *
-         * @return {module:Core~Node | null} Returns the first node (including itself) among the inheritance chain
+         * @return {module:Core~Node|null} Returns the first node (including itself) among the inheritance chain
          * that is a META node. It returns null if it does not find such node (ideally the only node with this result
          * is the ROOT).
          *
@@ -3158,7 +3156,7 @@ define([
          * @function
          * @param {module:Core~Node} node - the node in question
          *
-         * @return {module:Core~Node | null} Returns the first node (including itself) among the inheritance chain
+         * @return {module:Core~Node|null} Returns the first node (including itself) among the inheritance chain
          * that is a META node. It returns null if it does not find such node (ideally the only node with this result
          * is the ROOT).
          *
@@ -3170,7 +3168,7 @@ define([
         /**
          * Checks if the node is an instance of base.
          * @param {module:Core~Node} node - the node in question.
-         * @param {module:Core~Node | string} baseNodeOrPath - a potential base node (or its path) of the node
+         * @param {module:Core~Node|string} baseNodeOrPath - a potential base node (or its path) of the node
          *
          * @return {bool} Returns true if the base is on the inheritance chain of node.
          * A node is considered to be an instance of itself here.
@@ -3320,14 +3318,13 @@ define([
          * Retrieves the valid META nodes that can be base of a child of the node.
          * @param {object} parameters - the input parameters of the query.
          * @param {module:Core~Node} parameters.node - the node in question.
-         * @param {module:Core~Node[]} [parameters.children] - the children of the node in question.
-         * @param {bool} - [parameters.sensitive] - if true, the query filters out the abstract and connection-like
-         * nodes (the default value is false)
-         * @param {bool} - [parameters.multiplicity] - if true, the query tries to filter out even more nodes according
-         * to the multiplicity rules (the default value is false, the check is only meaningful if all the children were
-         * passed)
-         * @param {string|null} - [parameters.aspect] - if given, the query filters to contain only types that are
-         * visible in the given aspect.
+         * @param {module:Core~Node[]} [parameters.children] - the current children of the node in question.
+         * @param {bool} [parameters.sensitive=false] - if true, the query filters out the abstract and connection-like
+         * nodes.
+         * @param {bool} [parameters.multiplicity=false] - if true, the query tries to filter out even more
+         * nodes according to the multiplicity rules (the check is only meaningful if all the children were passed)
+         * @param {string|null} [parameters.aspect=undefined] - if given, the query filters to contain only types that
+         * are visible in the given aspect.
          * @return {module:Core~Node[]} The function returns a list of valid nodes that can be instantiated as a
          * child of the node.
          *
@@ -3361,12 +3358,11 @@ define([
          * @param {object} parameters - the input parameters of the query.
          * @param {module:Core~Node} parameters.node - the node in question.
          * @param {string} parameters.name - the name of the set.
-         * @param {module:Core~Node[]} [parameters.members] - the members of the set of the node in question.
-         * @param {bool} - [parameters.sensitive] - if true, the query filters out the abstract and connection-like
-         * nodes (the default value is false)
-         * @param {bool} - [parameters.multiplicity] - if true, the query tries to filter out even more nodes according
-         * to the multiplicity rules (the default value is false, the check is only meaningful if all the members were
-         * passed)
+         * @param {module:Core~Node[]} [parameters.members] - the current members of the set of the node in question.
+         * @param {bool} [parameters.sensitive=false] - if true, the query filters out the abstract and connection-like
+         * nodes.
+         * @param {bool} [parameters.multiplicity=false] - if true, the query tries to filter out even more nodes
+         * according to the multiplicity rules (the check is only meaningful if all the members were passed)
          *
          * @return {module:Core~Node[]} The function returns a list of valid nodes that can be instantiated as a
          * member of the set of the node.
@@ -3817,10 +3813,10 @@ define([
          * Returns the origin GUID of any library node. (If name is not provided the returned GUID will be the same
          * across all projects where the library node is contained - regardless of library hierarchy.)
          * @param {module:Core~Node} node - the node in question.
-         * @param {undefined | string} [name] - name of the library where we want to compute the GUID from.
+         * @param {undefined|string} [name] - name of the library where we want to compute the GUID from.
          * If not given, then the GUID is computed from the direct library root of the node.
          *
-         * @return {module:Core~GUID | Error} - Returns the origin GUID of the node or
+         * @return {module:Core~GUID|Error} - Returns the origin GUID of the node or
          * error if the query cannot be fulfilled.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3881,7 +3877,7 @@ define([
          * @param {module:Core~Node} node - any node in the project.
          * @param {string} name - the name of the library.
          *
-         * @return {module:Core~Node | null} - Returns the library root node or null, if the library is unknown.
+         * @return {module:Core~Node|null} - Returns the library root node or null, if the library is unknown.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -3899,7 +3895,7 @@ define([
          *
          * @param {module:Core~Node} node - any node of your project.
          * @param {string} name - name of your library.
-         * @param {bool} [onlyOwn] - if true only returns with Meta nodes defined in the library itself.
+         * @param {bool} [onlyOwn=false] - if true only returns with Meta nodes defined in the library itself.
          *
          * @return {module:Core~Node[]} - Returns an array of core nodes that are part of your meta from
          * the given library.
@@ -3923,11 +3919,11 @@ define([
          *
          * @param {module:Core~Node} root - the root node of the sub-tree that needs to be traversed.
          * @param {object} options - parameters to control the traversing.
-         * @param {bool} [options.excludeRoot = false] - controls whether the root should be excluded from visit.
-         * @param {'BFS'|'DFS'} [options.order = 'BFS'] - controls if the traversal order should be breadth first
+         * @param {bool} [options.excludeRoot=false] - controls whether the root should be excluded from visit.
+         * @param {'BFS'|'DFS'} [options.order='BFS'] - controls if the traversal order should be breadth first
          * or depth first.
-         * @param {integer} [options.maxParallelLoad = 100]- the maximum number of parallel loads allowed.
-         * @param {bool} [options.stopOnError = true]- controls if the traverse should stop in case of error.
+         * @param {integer} [options.maxParallelLoad=100]- the maximum number of parallel loads allowed.
+         * @param {bool} [options.stopOnError=true]- controls if the traverse should stop in case of error.
          * @param {function} visitFn - the visitation function that will be called for
          * every node in the sub-tree, the second parameter of the function is a callback that should be called to
          * note to the traversal function that the visitation for a given node finished.
@@ -4567,8 +4563,8 @@ define([
          * Checks if an instance of the given base can be created under the parent. It does not check for
          * meta consistency. It only validates if the proposed creation would cause any loops in the
          * combined containment inheritance trees.
-         * @param {module:Core~Node | null } parentNode - the parent in question.
-         * @param {module:Core~Node | null } baseNode - the intended type of the node.
+         * @param {module:Core~Node|null} parentNode - the parent in question.
+         * @param {module:Core~Node|null} baseNode - the intended type of the node.
          *
          * @return {boolean} True if a child of the type can be created.
          *

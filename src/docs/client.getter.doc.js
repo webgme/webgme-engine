@@ -117,7 +117,7 @@
  *
  * @return {(object|primitive|null|undefined)} The function returns the value of the attribute of the node.
  * The value can be an object or any primitive type. If the value is undefined that means the node do not have
- * such attribute defined. [The retrieved attribute should not be modified as is - it should be copied first!!]
+ * such attribute defined.
  */
 
 /**
@@ -136,7 +136,6 @@
 
 /**
  * @description Returns the value of the given registry entry.
- * Please note that this return value should not be mutated!
  * @function getRegistry
  * @memberOf GMENode
  * @instance
