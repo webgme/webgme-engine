@@ -730,7 +730,7 @@ define([
          * @param {module:Core~Node} node - the node that is the root of the sub-tree in question.
          * @param {function} [callback]
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
-         * @param {module:Core~Node[]} callback.node - the resulting sources
+         * @param {module:Core~Node[]} callback.nodes - the resulting sources
          *
          * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
@@ -755,7 +755,7 @@ define([
          * @param {module:Core~Node} node - the container node in question.
          * @param {function} [callback]
          * @param {Error|CoreIllegalArgumentError|CoreAssertError|null} callback.error - the result of the execution
-         * @param {module:Core~Node[]} callback.node - the resulting sources
+         * @param {module:Core~Node[]} callback.nodes - the resulting sources
          *
          * @return {external:Promise} If no callback is given, the result will be provided in a promise.
          *
