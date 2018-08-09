@@ -45,7 +45,8 @@ var path = require('path'),
 
     mainLogger,
 
-    CONSTANTS = requireJS('common/Constants');
+    CONSTANTS = requireJS('common/Constants'),
+    isAbsUrlPath = new RegExp('^(?:[a-z]+:)?//', 'i');
 
 function shutdown() {
     var i,
@@ -153,10 +154,16 @@ function StandAloneServer(gmeConfig) {
     }
 
     function getLogInUrl(req) {
+        if (isAbsUrlPath.test(gmeConfig.authentication.logInUrl)) {
+            return gmeConfig.authentication.logInUrl;
+        }
         return getMountedPath(req) + gmeConfig.authentication.logInUrl;
     }
 
     function getLogOutUrl(req) {
+        if (isAbsUrlPath.test(gmeConfig.authentication.logOutUrl)) {
+            return gmeConfig.authentication.logOutUrl;
+        }
         return getMountedPath(req) + gmeConfig.authentication.logOutUrl;
     }
 
