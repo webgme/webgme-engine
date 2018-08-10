@@ -73,7 +73,7 @@
     "mongodb": "3.1.1",
     "ncp": "2.0.0",
     "q": "1.5.1",
-    "raml2html": "7.1.0",
+    "raml2html": "3.0.1",
     "redis": "2.8.0",
     "require-uncached": "1.0.3",
     "requirejs": "2.3.5",
@@ -109,5 +109,10 @@
     "rimraf": "^2.6.2",
     "ssl-root-cas": "^1.2.5",
     "webgme-executor-worker": "^3.0.1"
+  },
+  "greenkeeper": {
+    "ignore": [
+      "raml2html"
+    ]
   }
 }
