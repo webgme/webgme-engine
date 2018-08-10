@@ -1,4 +1,7 @@
 # Webgme-Engine
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/webgme/webgme-engine.svg)](https://greenkeeper.io/)
+
 This is the "engine" of the webgme app containing all server code, common-modules and client-api.
 If this is your first encounter with webgme the [webgme/webgme](https://github.com/webgme/webgme/) is probably what you're looking for.
 
