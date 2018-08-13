@@ -20,6 +20,7 @@ var requirejs = require('requirejs'),
     _AuthorizerBase,
     _ServerWorkerManager,
     _WorkerRequests,
+    _ConnectedStorage,
     exports = {
         requirejs: requirejs
     };
@@ -137,7 +138,7 @@ Object.defineProperties(exports, {
     Core: {
         get: function () {
             if (!_core) {
-                _core = requirejs('common/core/core');
+                _core = requirejs('common/core/coreQ');
             }
             return _core;
         }
@@ -217,6 +218,15 @@ Object.defineProperties(exports, {
             }
 
             return _AuthorizerBase;
+        }
+    },
+    ConnectedStorage: {
+        get: function () {
+            if (!_ConnectedStorage) {
+                _ConnectedStorage = requirejs('common/storage/nodestorage');
+            }
+
+            return _ConnectedStorage;
         }
     }
 });
