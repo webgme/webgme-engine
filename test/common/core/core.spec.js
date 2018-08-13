@@ -5170,4 +5170,16 @@ describe('core', function () {
             })
             .nodeify(done);
     });
+
+    it('createChild should create a node', function (done) {
+        prepRootNode()
+            .then(function (rootNode) {
+                var fco = core.getFCO(rootNode);
+                var child = core.createChild(rootNode, fco);
+
+                expect(core.getBase(child)).to.equal(fco);
+                expect(core.getParent(child)).to.equal(rootNode);
+            })
+            .nodeify(done);
+    });
 });

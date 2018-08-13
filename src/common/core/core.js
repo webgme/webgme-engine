@@ -867,8 +867,7 @@ define([
          * @param {module:Core~GUID} [parameters.guid] - the GUID of the node to be created
          *
          *
-         * @return {module:Core~Node} The function returns the created node or null if no node was created
-         * or an error if the creation with the given parameters are not allowed.
+         * @return {module:Core~Node} The function returns the created node.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -890,6 +889,25 @@ define([
                 }
             }
             return core.createNode(parameters);
+        };
+
+
+        /**
+         * Creates a child, with base as provided, inside the provided node.
+         * @param {module:Core~Node} node - the parent of the node to be created.
+         * @param {module:Core~Node} base - the base of the node to be created.
+         *
+         * @return {module:Core~Node} The function returns the created child node.
+         *
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
+         * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
+         * @throws {CoreAssertError} If some internal error took place inside the core layers.
+         */
+        this.createChild = function (node, base) {
+            ensureNode(node, 'node');
+            ensureNode(base, 'base');
+
+            return core.createNode({parent: node, base: base});
         };
 
         /**
@@ -3201,7 +3219,7 @@ define([
          * @param {object} callback.treeDiff - the difference between the two containment hierarchies in
          * a special JSON object
          *
-         * @return {external:Promise} - if the callback is not defined, the result is provided in a promise
+         * @return {external:Promise} if the callback is not defined, the result is provided in a promise
          * like manner.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3570,7 +3588,7 @@ define([
          *
          * @param {module:Core~Node} node - the node in question.
          * @param {string} path - the path of the mixin node.
-         * @return {object} - Returns and object with isOk set to true if the given path can be added as a
+         * @return {object} Returns an object with isOk set to true if the given path can be added as a
          * mixin to the given node. If it cannot, the reason will be reported under reason.
          *
          * @example
@@ -3687,7 +3705,7 @@ define([
          *
          * @param {module:Core~Node} node - any node in your project.
          *
-         * @return {string[]} - Returns the fully qualified names of all the libraries in your project
+         * @return {string[]} Returns the fully qualified names of all the libraries in your project
          * (even embedded ones).
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3704,7 +3722,7 @@ define([
          *
          * @param {module:Core~Node} node - any node in your project.
          *
-         * @return {module:Core~Node} - Returns the acting FCO of your project.
+         * @return {module:Core~Node} Returns the acting FCO of your project.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -3720,7 +3738,7 @@ define([
          *
          * @param {module:Core~Node} node - the node in question.
          *
-         * @return {bool} - Returns true if your node is a library root (even if it is embedded in other library),
+         * @return {bool} Returns true if your node is a library root (even if it is embedded in other library),
          * false otherwise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3737,7 +3755,7 @@ define([
          *
          * @param {module:Core~Node} node - the node in question.
          *
-         * @return {bool} - Returns true if your node is a library element, false otherwise.
+         * @return {bool} Returns true if your node is a library element, false otherwise.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -3755,7 +3773,7 @@ define([
          *
          * @param {module:Core~Node} node - the node in question.
          *
-         * @return {string} - Returns the name space of the node.
+         * @return {string} Returns the name space of the node.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -3774,7 +3792,7 @@ define([
          *
          * @param {module:Core~Node} node - the node in question.
          *
-         * @return {string} - Returns the fully qualified name of the node,
+         * @return {string} Returns the fully qualified name of the node,
          * i.e. its namespaces and name join together by dots.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3816,8 +3834,7 @@ define([
          * @param {undefined|string} [name] - name of the library where we want to compute the GUID from.
          * If not given, then the GUID is computed from the direct library root of the node.
          *
-         * @return {module:Core~GUID|Error} - Returns the origin GUID of the node or
-         * error if the query cannot be fulfilled.
+         * @return {module:Core~GUID} Returns the origin GUID of the node.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.
@@ -3857,7 +3874,7 @@ define([
          * @param {module:Core~Node} node - any node in the project.
          * @param {string} name - the name of the library.
          *
-         * @return {object} - Returns the information object, stored alongside the library (that basically
+         * @return {object} Returns the information object, stored alongside the library (that basically
          * carries metaData about the library).
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -3877,7 +3894,7 @@ define([
          * @param {module:Core~Node} node - any node in the project.
          * @param {string} name - the name of the library.
          *
-         * @return {module:Core~Node|null} - Returns the library root node or null, if the library is unknown.
+         * @return {module:Core~Node|null} Returns the library root node or null, if the library is unknown.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreAssertError} If some internal error took place inside the core layers.
@@ -3897,7 +3914,7 @@ define([
          * @param {string} name - name of your library.
          * @param {bool} [onlyOwn=false] - if true only returns with Meta nodes defined in the library itself.
          *
-         * @return {module:Core~Node[]} - Returns an array of core nodes that are part of your meta from
+         * @return {module:Core~Node[]} Returns an array of core nodes that are part of your meta from
          * the given library.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
