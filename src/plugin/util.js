@@ -16,6 +16,64 @@
 
     /**
      *
+     * @param {object} core
+     * @param {GmeNode} rootNode
+     * @param {GmeLogger} logger
+     * @param {string} [namespace='']
+     * @param namespace
+     */
+    function getMetaNodesMap(core, rootNode, logger, namespace) {
+        var paths2MetaNodes = core.getAllMetaNodes(rootNode),
+            libraryNames = core.getLibraryNames(rootNode),
+            result = {},
+            metaNodeName,
+            nodeNamespace,
+            fullName,
+            path;
+
+        // Gather the META nodes and "sort" based on given namespace.
+        function startsWith(str, pattern) {
+            return str.indexOf(pattern) === 0;
+        }
+
+        if (namespace) {
+            if (libraryNames.indexOf(namespace) === -1) {
+                throw new Error('Given namespace does not exist among the available: "' +
+                    libraryNames + '".');
+            }
+
+            for (path in paths2MetaNodes) {
+                nodeNamespace = core.getNamespace(paths2MetaNodes[path]);
+                metaNodeName = core.getAttribute(paths2MetaNodes[path], 'name');
+
+                if (startsWith(nodeNamespace, namespace)) {
+                    // Trim the based on the chosen namespace (+1 is to remove any dot).
+                    nodeNamespace = nodeNamespace.substring(namespace.length + 1);
+                    if (nodeNamespace) {
+                        result[nodeNamespace + '.' + metaNodeName] = paths2MetaNodes[path];
+                    } else {
+                        result[metaNodeName] = paths2MetaNodes[path];
+                    }
+                } else {
+                    // Meta node is not within the given namespace and will not be added to META.
+                }
+            }
+        } else {
+            for (path in paths2MetaNodes) {
+                fullName = core.getFullyQualifiedName(paths2MetaNodes[path]);
+                if (result[fullName]) {
+                    logger.error('Meta-nodes share the same full name. Will still proceed..', fullName);
+                }
+
+                result[fullName] = paths2MetaNodes[path];
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     *
      * @param {object} project
      * @param {object} core
      * @param {string} commitHash
@@ -64,53 +122,9 @@
                 }));
             })
             .then(function (activeSelection) {
-                var paths2MetaNodes = core.getAllMetaNodes(result.rootNode),
-                    libraryNames = core.getLibraryNames(result.rootNode),
-                    metaNodeName,
-                    nodeNamespace,
-                    fullName,
-                    path;
-
                 result.activeSelection = activeSelection;
                 logger.debug('activeSelection loaded');
-
-                // Gather the META nodes and "sort" based on given namespace.
-                function startsWith(str, pattern) {
-                    return str.indexOf(pattern) === 0;
-                }
-
-                if (options.namespace) {
-                    if (libraryNames.indexOf(options.namespace) === -1) {
-                        throw new Error('Given namespace does not exist among the available: "' +
-                            libraryNames + '".');
-                    }
-
-                    for (path in paths2MetaNodes) {
-                        nodeNamespace = core.getNamespace(paths2MetaNodes[path]);
-                        metaNodeName = core.getAttribute(paths2MetaNodes[path], 'name');
-
-                        if (startsWith(nodeNamespace, options.namespace)) {
-                            // Trim the based on the chosen namespace (+1 is to remove any dot).
-                            nodeNamespace = nodeNamespace.substring(options.namespace.length + 1);
-                            if (nodeNamespace) {
-                                result.META[nodeNamespace + '.' + metaNodeName] = paths2MetaNodes[path];
-                            } else {
-                                result.META[metaNodeName] = paths2MetaNodes[path];
-                            }
-                        } else {
-                            // Meta node is not within the given namespace and will not be added to META.
-                        }
-                    }
-                } else {
-                    for (path in paths2MetaNodes) {
-                        fullName = core.getFullyQualifiedName(paths2MetaNodes[path]);
-                        if (result.META[fullName]) {
-                            logger.error('Meta-nodes share the same full name. Will still proceed..', fullName);
-                        }
-
-                        result.META[fullName] = paths2MetaNodes[path];
-                    }
-                }
+                result.META = getMetaNodesMap(core, result.rootNode, logger, options.namespace);
 
                 return result;
             })
@@ -118,6 +132,7 @@
     }
 
     return {
-        loadNodesAtCommitHash: loadNodesAtCommitHash
+        loadNodesAtCommitHash: loadNodesAtCommitHash,
+        getMetaNodesMap: getMetaNodesMap,
     };
 }));
