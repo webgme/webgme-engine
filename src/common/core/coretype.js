@@ -1356,14 +1356,16 @@ define([
             }
         };
 
-        this.isInstanceOf = function (node, base) {
-            do {
-                if (node === base) {
+        this.isInstanceOf = function (node, baseNodeOrPath) {
+            var typePath = typeof baseNodeOrPath === 'string' ? baseNodeOrPath : self.getPath(baseNodeOrPath);
+
+            while (node) {
+                if (typePath === self.getPath(node)) {
                     return true;
                 }
 
                 node = node.base;
-            } while (node);
+            }
 
             return false;
         };
