@@ -3391,6 +3391,7 @@ define([
         this.getValidSetElementsMetaNodes = function (parameters) {
             ensureType(parameters, 'parameters', 'object');
             ensureNode(parameters.node, 'parameters.node');
+            ensureType(parameters.name, 'parameters.name', 'string');
             if (parameters.hasOwnProperty('members')) {
                 ensureInstanceOf(parameters.members, 'parameters.members', Array);
                 for (var i = 0; i < parameters.members.length; i += 1) {
@@ -3596,6 +3597,10 @@ define([
          * // result = { isOk: true, reason: '' }
          * result = core.canSetAsMixin(node, core.getPath(node));
          * // result = { isOk: false, reason: 'Node cannot be mixin of itself!' }
+         * result = core.canSetAsMixin(node, core.getPath(nonMetaNode));
+         * // result = { isOk: false, reason: 'Mixin must be on the Meta!!' }
+         * result = core.canSetAsMixin(node, core.getPath(FCO));
+         * // result = { isOk: false, reason: 'Base of node cannot be its mixin as well!' }
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreInternalError} If some internal error took place inside the core layers.
