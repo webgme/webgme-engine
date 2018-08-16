@@ -2553,7 +2553,7 @@ define([
         };
 
         /**
-         * Returns the list of the META defined pointers of the node.
+         * Checks if the node can be a target of a pointer of the source node in accordance with the META rules.
          * @param {module:Core~Node} node - the node in question.
          * @param {module:Core~Node} source - the source to test.
          * @param {string} name - the name of the pointer.
@@ -3487,7 +3487,7 @@ define([
         };
 
         /**
-         * Gathers the paths of the mixin nodes associated with the node.
+         * Gathers the paths of the mixin nodes defined directly at the node.
          *
          * @param {module:Core~Node} node - the node in question.
          *
@@ -3504,7 +3504,7 @@ define([
         };
 
         /**
-         * Gathers the mixin nodes associated with the node.
+         * Gathers the mixin nodes defined directly at the node.
          *
          * @param {module:Core~Node} node - the node in question.
          *
@@ -3571,8 +3571,8 @@ define([
          * Searches for the closest META node of the node in question and the direct mixins of that node.
          * @param {module:Core~Node} node - the node in question
          *
-         * @return {Object<string, module:Core~Node>} Returns the closest Meta node that is a base of the given node
-         * plus it returns all the mixin nodes associated with the base in a path-node dictionary.
+         * @return {module:Core~Node[]} Returns the closest Meta node that is a base of the given node
+         * plus it returns all the mixin nodes associated with the base.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreInternalError} If some internal error took place inside the core layers.
