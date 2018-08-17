@@ -11,6 +11,7 @@ var requirejs = require('requirejs'),
     requireJsBase = path.join(__dirname, 'src'),
     fs = require('fs'),
     webgmeUtils,
+    _CONSTANTS,
     _core,
     _canon,
     _Logger,
@@ -227,6 +228,15 @@ Object.defineProperties(exports, {
             }
 
             return _ConnectedStorage;
+        }
+    },
+    CONSTANTS: {
+        get: function () {
+            if (!_CONSTANTS) {
+                _CONSTANTS = require('./src/common/Constants');
+            }
+
+            return _CONSTANTS;
         }
     }
 });

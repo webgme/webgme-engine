@@ -4605,6 +4605,8 @@ define([
 
             return core.isValidNewChild(parentNode, baseNode);
         };
+
+        this.CONSTANTS = CONSTANTS;
     }
 
     return Core;
