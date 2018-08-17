@@ -693,4 +693,37 @@ describe('climanager', function () {
             })
             .nodeify(done);
     });
+
+    it('should addFile and addArtifact and add to the plugin results', function (done) {
+        var manager = new PluginCliManager(libContext.project, logger, gmeConfig),
+            pluginConfig = {},
+            context = {
+                commitHash: libContext.commitHash,
+            },
+            plugin;
+
+        manager.initializePlugin(pluginName)
+            .then(function (plugin_) {
+                plugin = plugin_;
+
+                return manager.configurePlugin(plugin, pluginConfig, context);
+            })
+            .then(function () {
+                return plugin.addFile('test.txt', 'Hello World');
+            })
+            .then(function (metadataHash) {
+                expect(typeof metadataHash).to.equal('string');
+                expect(metadataHash.length).to.equal(40);
+                expect(plugin.result.artifacts[0]).to.equal(metadataHash);
+            })
+            .then(function () {
+                return plugin.addArtifact('artie', {'test.txt': 'Hello World', 'test2.txt': 'Hello World2'});
+            })
+            .then(function (metadataHash) {
+                expect(typeof metadataHash).to.equal('string');
+                expect(metadataHash.length).to.equal(40);
+                expect(plugin.result.artifacts[1]).to.equal(metadataHash);
+            })
+            .nodeify(done);
+    });
 });
