@@ -526,7 +526,8 @@ define([
          * @param {module:Core~Node} node - some node element of the modified containment hierarchy (usually the root).
          *
          * @return {module:Core~GmePersisted} The function returns an object which collects all the changes
-         * on data level and necessary to update the database on server side
+         * on data level and necessary to update the database on server side. Keys of the returned object are 'rootHash'
+         * and 'objects'. The values of these should be passed to project.makeCommit.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreInternalError} If some internal error took place inside the core layers.
