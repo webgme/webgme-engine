@@ -845,7 +845,7 @@
      * Retrieves all the files in the artifact from the blob storage.
      * @param {string} metadataHash - the "id" of the artifact to retrieve.
      * @param {null|Error} callback.err - status of the call.
-     * @param {object.<string, string>} callback.files - Keys are file names and values the content.
+     * @param {object.<string, string>} callback.files - Keys are file names, and values the content.
      * @return {external:Promise} If no callback is given, the result will be provided in a promise.
      */
     PluginBase.prototype.getArtifact = function (metadataHash, callback) {
