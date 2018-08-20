@@ -79,7 +79,7 @@ describe('core', function () {
     });
 
     it('should have all public functions available', function () {
-        var functions = Object.keys(core),
+        var fields = Object.keys(core),
             i,
             Matches = ['getParent', 'getRelid', 'getRoot', 'getPath', 'getChild', 'isEmpty', 'getHash',
                 'persist', 'loadRoot', 'loadChild', 'loadByPath', 'loadChildren', 'loadOwnChildren',
@@ -128,15 +128,19 @@ describe('core', function () {
                 'isValidAspectMemberOf', 'moveAspectMetaTarget', 'movePointerMetaTarget',
                 'renameAttributeMeta', 'moveMember', 'getOwnValidPointerNames', 'getOwnValidSetNames',
                 'getValidAspectTargetPaths', 'getOwnValidAspectTargetPaths', 'isValidNewChild',
-                'getCommonBase', 'getCommonParent'
+                'getCommonBase', 'getCommonParent', 'createChild', 'CONSTANTS'
             ];
 
         //console.log(_.difference(functions, Matches));
-        expect(functions).to.have.members(Matches);
+        expect(fields).to.have.members(Matches);
         //console.error(Matches.length);
 
-        for (i = 0; i < functions.length; i += 1) {
-            expect(typeof core[functions[i]]).to.eql('function');
+        for (i = 0; i < fields.length; i += 1) {
+            if (fields[i] === 'CONSTANTS') {
+                expect(typeof core[fields[i]]).to.eql('object');
+            } else {
+                expect(typeof core[fields[i]]).to.eql('function');
+            }
         }
     });
 
