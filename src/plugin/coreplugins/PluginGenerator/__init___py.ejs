@@ -7,7 +7,7 @@ import logging
 from webgme_bindings import PluginBase
 
 # Setup a logger
-logger = logging.getLogger('<%-pluginId%>')
+logger = logging.getLogger('<%-pluginID%>')
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)  # By default it logs to stderr..
 handler.setLevel(logging.INFO)
@@ -16,7 +16,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-class <%-pluginId%>(PluginBase):
+class <%-pluginID%>(PluginBase):
     def main(self):
         core = self.core
         root_node = self.root_node

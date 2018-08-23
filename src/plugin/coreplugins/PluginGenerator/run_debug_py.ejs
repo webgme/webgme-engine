@@ -15,9 +15,9 @@ import signal
 import atexit
 import logging
 from webgme_bindings import WebGME
-from <%-pluginId%> import <%-pluginId%>
+from <%-pluginID%> import <%-pluginID%>
 
-logger = logging.getLogger('<%-pluginId%>')
+logger = logging.getLogger('<%-pluginID%>')
 
 # Modify these or add option or parse from sys.argv (as in done in run_plugin.py)
 PORT = '5555'
@@ -51,7 +51,7 @@ def exit_handler():
 atexit.register(exit_handler)
 
 commit_hash = webgme.project.get_branch_hash(BRANCH_NAME)
-plugin = <%-pluginId%>(webgme, commit_hash, BRANCH_NAME, ACTIVE_NODE_PATH, ACTIVE_SELECTION_PATHS, NAMESPACE)
+plugin = <%-pluginID%>(webgme, commit_hash, BRANCH_NAME, ACTIVE_NODE_PATH, ACTIVE_SELECTION_PATHS, NAMESPACE)
 
 # Do the work
 plugin.main()

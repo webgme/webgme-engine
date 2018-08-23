@@ -39,10 +39,10 @@
     },
     {
       "name": "language",
-      "displayName": "Language the generated plugin should target.",
-      "description": "If not native JavaScript, the generated plugin will invoke the ",
+      "displayName": "Programming Language",
+      "description": "Language the generated plugin should target, JavaScript(=default) and Python available",
       "value": "JavaScript",
-      "valueType": "boolean",
+      "valueType": "string",
       "readOnly": false,
       "valueItems": [
         "JavaScript",

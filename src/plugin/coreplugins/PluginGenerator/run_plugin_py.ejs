@@ -1,7 +1,7 @@
 """
-This script is called by the plugin-wrapper in <%-pluginId%>.js which passes the
+This script is called by the plugin-wrapper, <%-pluginID%>.js, which passes down the
 plugin context via arguments. These can be modified to include more information if needed.
-Note!
+Notes:
  - The current working directory when called from a plugin is the root of your webgme repo.
  - At the point of invocation of this plugin - it is assumed that a coreZMQ-server is running at 127.0.0.1:PORT.
  - For debugging use run_debug.py which starts coreZMQ-server (make sure to modify the context in run_debug.py first)
@@ -10,9 +10,9 @@ Note!
 import sys
 import logging
 from webgme_bindings import WebGME
-from <%-pluginId%> import <%-pluginId%>
+from <%-pluginID%> import <%-pluginID%>
 
-logger = logging.getLogger('<%-pluginId%>')
+logger = logging.getLogger('<%-pluginID%>')
 
 # Read in the context from sys.argv passed by the plugin
 logger.info('sys.args: {0}'.format(sys.argv))
@@ -38,7 +38,7 @@ logger.debug('name-space: {0}'.format(NAMESPACE))
 
 # Create an instance of WebGME and the plugin
 webgme = WebGME(PORT, logger)
-plugin = <%-pluginId%>(webgme, COMMIT_HASH, BRANCH_NAME, ACTIVE_NODE_PATH, ACTIVE_SELECTION_PATHS, NAMESPACE)
+plugin = <%-pluginID%>(webgme, COMMIT_HASH, BRANCH_NAME, ACTIVE_NODE_PATH, ACTIVE_SELECTION_PATHS, NAMESPACE)
 
 # Do the work
 plugin.main()

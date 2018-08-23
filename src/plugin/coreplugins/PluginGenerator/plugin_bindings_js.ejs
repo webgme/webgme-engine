@@ -61,7 +61,7 @@ define([
      */
     <%= pluginID %>.prototype.main = function (callback) {
         const path = require('path');
-        const CoreZMQ = require('webgme-bindings').CoreZMQ);
+        const CoreZMQ = require('webgme-bindings').CoreZMQ;
         const cp = require('child_process');
         const logger = this.logger;
 
@@ -111,15 +111,20 @@ define([
                 return callScript(COMMAND, SCRIPT_FILE, port);
             })
             .then(() => {
+                return corezmq.stopServer();
+            })
+            .then(() => {
                 this.result.setSuccess(true);
                 callback(null, this.result);
             })
             .catch((err) => {
                 this.logger.error(err.stack);
-                // Result success is false at invocation.
-                callback(err, this.result);
-            });
-
+                corezmq.stopServer()
+                .finally(() => {
+                    // Result success is false at invocation.
+                    callback(err, this.result);
+                });
+        });
     };
 
     return <%= pluginID %>;
