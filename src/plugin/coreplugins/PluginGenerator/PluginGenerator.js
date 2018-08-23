@@ -27,7 +27,7 @@ define([
              METADATA_JSON,
              PLUGIN_JS,
              PLUGIN_BINDINGS_JS,
-             INIT_PY_JS,
+             INIT_PY,
              RUN_DEBUG_PY,
              RUN_PLUGIN_PY,
              UNIT_TEST_JS) {
@@ -95,7 +95,7 @@ define([
             pluginFileContent = ejs.render(PLUGIN_BINDINGS_JS, self.currentConfig);
             self.filesToAdd[self.pluginDir + 'run_debug.py'] = ejs.render(RUN_DEBUG_PY, self.currentConfig);
             self.filesToAdd[self.pluginDir + 'run_plugin.py'] = ejs.render(RUN_PLUGIN_PY, self.currentConfig);
-            self.filesToAdd[self.pluginDir + self.currentConfig.pluginID + '/__init__.py'] = ejs.render(RUN_PLUGIN_PY,
+            self.filesToAdd[self.pluginDir + self.currentConfig.pluginID + '/__init__.py'] = ejs.render(INIT_PY,
                 self.currentConfig);
         } else {
             callback(new Error('Unexpected language type [' + self.currentConfig.language + ']'), self.result);

@@ -1,6 +1,6 @@
 """
 This is where the implementation of the plugin code goes.
-The <%-pluginId%>-class is imported from both run_plugin.py and run_debug.py
+The <%-pluginID%>-class is imported from both run_plugin.py and run_debug.py
 """
 import sys
 import logging
@@ -28,4 +28,5 @@ class <%-pluginID%>(PluginBase):
 
         core.set_attribute(active_node, 'name', 'newName')
 
-        self.util.save(root_node, self.commit_hash, 'master', 'Python plugin updated the model')
+        commit_info = self.util.save(root_node, self.commit_hash, 'master', 'Python plugin updated the model')
+        logger.info('committed :{0}'.format(commit_info))
