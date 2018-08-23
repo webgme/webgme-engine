@@ -8,7 +8,8 @@
     "src": ""
   },
   "disableServerSideExecution": false,
-  "disableBrowserSideExecution": false,
+  "disableBrowserSideExecution": <%- language !== 'JavaScript' %>,
+  "dependencies": [],
   "writeAccessRequired": false,<%if (configStructure) {%>
   "configStructure": [
     {

@@ -13,8 +13,24 @@ define([
     'plugin/PluginBase',
     'text!./metadata.json',
     'ejs',
-    'plugin/PluginGenerator/PluginGenerator/Templates/Templates'
-], function (PluginConfig, PluginBase, pluginMetadata, ejs, TEMPLATES) {
+    'text!./metadata.json.ejs',
+    'text!./plugin.js.ejs',
+    'text!./plugin_bindings.js.ejs',
+    'text!./python/__init__.py.ejs',
+    'text!./python/run_debug.py.ejs',
+    'text!./python/run_plugin.py.ejs',
+    'text!./unit_test.js.ejs',
+], function (PluginConfig,
+             PluginBase,
+             pluginMetadata,
+             ejs,
+             METADATA_JSON,
+             PLUGIN_JS,
+             PLUGIN_BINDINGS_JS,
+             INIT_PY_JS,
+             RUN_DEBUG_PY,
+             RUN_PLUGIN_PY,
+             UNIT_TEST_JS) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
@@ -63,22 +79,31 @@ define([
         self.pluginDir = 'src' + dirCommon;
         self.testDir = 'test' + dirCommon;
 
-        // Add test file if requested.
-        if (self.currentConfig.test) {
-            self.filesToAdd[self.testDir + self.currentConfig.pluginID + '.spec.js'] =
-                ejs.render(TEMPLATES['unit_test.js.ejs'], self.currentConfig);
-        }
-        self.addTemplateFile();
-        if (self.currentConfig.meta) {
-            self.addMetaFile();
-        }
+        // Add test file
+        self.filesToAdd[self.testDir + self.currentConfig.pluginID + '.spec.js'] =
+                ejs.render(UNIT_TEST_JS, self.currentConfig);
+        // Add the metadata.json
+        metadataFileContent = ejs.render(METADATA_JSON, self.currentConfig);
+        self.filesToAdd[self.pluginDir + 'metadata.json'] = metadataFileContent;
+
         // Add the plugin file.
-        pluginFileContent = ejs.render(TEMPLATES['plugin.js.ejs'], self.currentConfig);
+        if (self.currentConfig.language === 'JavaScript') {
+            pluginFileContent = ejs.render(PLUGIN_JS, self.currentConfig);
+        } else if (self.currentConfig.language.toLowerCase() === 'python') {
+            self.currentConfig.command = 'python';
+            self.currentConfig.scriptFile = 'run_plugin.py';
+            pluginFileContent = ejs.render(PLUGIN_BINDINGS_JS, self.currentConfig);
+            self.filesToAdd[self.pluginDir + 'run_debug.py'] = ejs.render(RUN_DEBUG_PY, self.currentConfig);
+            self.filesToAdd[self.pluginDir + 'run_plugin.py'] = ejs.render(RUN_PLUGIN_PY, self.currentConfig);
+            self.filesToAdd[self.pluginDir + self.currentConfig.pluginID + '/__init__.py'] = ejs.render(RUN_PLUGIN_PY,
+                self.currentConfig);
+        } else {
+            callback(new Error('Unexpected language type [' + self.currentConfig.language + ']'), self.result);
+            return;
+        }
+
         pluginFileName = self.pluginDir + self.currentConfig.pluginID + '.js';
         self.filesToAdd[pluginFileName] = pluginFileContent;
-        // Add the metadata.json
-        metadataFileContent = ejs.render(TEMPLATES['metadata.json.ejs'], self.currentConfig);
-        self.filesToAdd[self.pluginDir + 'metadata.json'] = metadataFileContent;
 
         // Add the file at the end.
         self.logger.info(JSON.stringify(self.filesToAdd, null, 4));
@@ -126,64 +151,6 @@ define([
 
         for (i = 0; i < fileKeys.length; i += 1) {
             addFileByFile(fileKeys[i], self.filesToAdd[fileKeys[i]]);
-        }
-    };
-
-    PluginGenerator.prototype.addMetaFile = function () {
-        var self = this,
-            i,
-            metaNodes = [],
-            names = Object.keys(self.META),
-            nodeData,
-            nodeDataType = {
-                name: null,
-                path: null
-            },
-            compare = function (a, b) {
-                return a.name.localeCompare(b.name);
-            };
-        // Get all the names and paths for the meta nodes.
-        for (i = 0; i < names.length; i += 1) {
-            nodeData = Object.create(nodeDataType);
-            nodeData.name = names[i];
-            nodeData.path = self.core.getPath(self.META[names[i]]);
-            metaNodes.push(nodeData);
-        }
-        // When done sort them by names.
-        metaNodes.sort(compare);
-        self.filesToAdd[self.pluginDir + 'meta.js'] = ejs.render(TEMPLATES['meta.js.ejs'], {
-            metaNodes: metaNodes,
-            date: self.currentConfig.date,
-            version: self.currentConfig.version
-        });
-    };
-
-    PluginGenerator.prototype.addTemplateFile = function () {
-        var self = this,
-            fileName,
-            fileContent;
-
-        if (self.currentConfig.templateType === 'Python') {
-            self.currentConfig.templateExt = 'py';
-            fileName = self.pluginDir + 'Templates/Python.py.ejs';
-            fileContent = 'print "<%=a%> and <%=b%> provided."';
-        } else if (self.currentConfig.templateType === 'CSharp') {
-            self.currentConfig.templateExt = 'cs';
-            fileName = self.pluginDir + 'Templates/CSharp.cs.ejs';
-            fileContent = 'using System;\nnamespace Hey {\n\tclass Hi {\n\t\tstatic void Main()' +
-                ' {\n\t\t\tConsole.WriteLine("<%=a%> and <%=b%> provided.");\n\t\t}\n\t}\n}';
-        } else if (self.currentConfig.templateType === 'JavaScript') {
-            self.currentConfig.templateExt = 'js';
-            fileName = self.pluginDir + 'Templates/JavaScript.js.ejs';
-            fileContent = 'console.info("<%=a%> and <%=b%> provided.);"';
-        } else {
-            self.currentConfig.templateType = null;
-        }
-
-        if (self.currentConfig.templateType) {
-            self.filesToAdd[fileName] = fileContent;
-            self.filesToAdd[self.pluginDir + 'Templates/combine_templates.js'] =
-                ejs.render(TEMPLATES['combine_templates.js.ejs'], self.currentConfig);
         }
     };
 
