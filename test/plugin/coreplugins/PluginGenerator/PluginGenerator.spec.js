@@ -169,6 +169,9 @@ describe('PluginGenerator', function () {
                     expect(isValidJs(files[keys[i]])).to.equal(null);
                 }
             }
+
+            expect(JSON.parse(files['src/plugins/null/NewPlugin/metadata.json']).disableBrowserSideExecution)
+                .to.equal(false);
             done();
         });
     });
@@ -195,54 +198,10 @@ describe('PluginGenerator', function () {
         });
     });
 
-    it('meta = false should generate two valid js files', function (done) {
-        var config = Object.create(pluginConfig);
-        config.meta = false;
-        runPlugin('PluginGenerator', config, function (err, result) {
-            var files = result.artifact.addedFiles,
-                keys = Object.keys(files),
-                i;
-
-            expect(err).to.equal(null);
-            expect(keys.length).to.equal(3);
-            for (i = 0; i < keys.length; i += 1) {
-                if (keys[i].indexOf('.json') > -1) {
-                    JSON.parse(files[keys[i]]);
-                } else {
-                    logger.debug(files[keys[i]]);
-                    expect(isValidJs(files[keys[i]])).to.equal(null);
-                }
-            }
-            done();
-        });
-    });
-
-    it('meta = false, configStructure = true should generate two valid js files', function (done) {
+    it('configStructure = true should generate two valid js files', function (done) {
         var config = Object.create(pluginConfig);
         config.meta = false;
         config.configStructure = true;
-        runPlugin('PluginGenerator', config, function (err, result) {
-            var files = result.artifact.addedFiles,
-                keys = Object.keys(files),
-                i;
-
-            expect(err).to.equal(null);
-            expect(keys.length).to.equal(3);
-            for (i = 0; i < keys.length; i += 1) {
-                if (keys[i].indexOf('.json') > -1) {
-                    JSON.parse(files[keys[i]]);
-                } else {
-                    logger.debug(files[keys[i]]);
-                    expect(isValidJs(files[keys[i]])).to.equal(null);
-                }
-            }
-            done();
-        });
-    });
-
-    it('test = false should generate two valid js files', function (done) {
-        var config = Object.create(pluginConfig);
-        config.test = false;
         runPlugin('PluginGenerator', config, function (err, result) {
             var files = result.artifact.addedFiles,
                 keys = Object.keys(files),
@@ -280,8 +239,14 @@ describe('PluginGenerator', function () {
                 'src/plugins/null/NewPlugin/NewPlugin.js'
             ]);
 
-            expect(isValidJs(files['src/plugins/null/NewPlugin/NewPlugin.js'])).to.equal(null);
-            done();
+            try {
+                expect(isValidJs(files['src/plugins/null/NewPlugin/NewPlugin.js'])).to.equal(null);
+                expect(JSON.parse(files['src/plugins/null/NewPlugin/metadata.json']).disableBrowserSideExecution)
+                    .to.equal(true);
+                done();
+            } catch (e) {
+                done(e);
+            }
         });
     });
 });
