@@ -128,15 +128,7 @@ define([
 
         //<editor-fold=Added Methods>
         this.isTypeOf = function (node, typeNodeOrNode) {
-            var typePath = typeof typeNodeOrNode === 'string' ? typeNodeOrNode : self.getPath(typeNodeOrNode);
-
-            while (node) {
-                if (typePath === self.getPath(node)) {
-                    return true;
-                }
-                node = self.getBase(node);
-            }
-            return false;
+            return innerCore.isInstanceOf(node, typeNodeOrNode);
         };
 
         this.isValidChildOf = function (node, parentNode) {

@@ -120,6 +120,11 @@ describe('meta core', function () {
         core.isTypeOf(attrNode, setNode).should.be.false;
     });
 
+    it('checking types using paths', function () {
+        core.isTypeOf(attrNode, core.getPath(base)).should.be.true;
+        core.isTypeOf(attrNode, core.getPath(setNode)).should.be.false;
+    });
+
     it('check instances deprecated should still work', function () {
         core.isInstanceOf(attrNode, 'base').should.be.true;
         core.isInstanceOf(setNode, 'set').should.be.false;
@@ -128,6 +133,10 @@ describe('meta core', function () {
 
     it('check instance of it self should return true', function () {
         core.isInstanceOf(attrNode, attrNode).should.be.true;
+    });
+
+    it('check instance of its own path should return true', function () {
+        core.isInstanceOf(attrNode, core.getPath(attrNode)).should.be.true;
     });
 
     it('check instance of a base should return true', function () {

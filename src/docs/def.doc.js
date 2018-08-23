@@ -107,7 +107,7 @@
  * @memberOf GmeLogger
  * @instance
  *
- * @param {string} message - The message of the log.
+ * @param {...*} message - The message of the log.
  */
 
 /**
@@ -116,7 +116,7 @@
  * @memberOf GmeLogger
  * @instance
  *
- * @param {string} message - The message of the log.
+ * @param {...*} message - The message of the log.
  */
 
 /**
@@ -125,7 +125,7 @@
  * @memberOf GmeLogger
  * @instance
  *
- * @param {string} message - The message of the log.
+ * @param {...*} message - The message of the log.
  */
 
 /**
@@ -134,7 +134,7 @@
  * @memberOf GmeLogger
  * @instance
  *
- * @param {string} message - The message of the log.
+ * @param {...*} message - The message of the log.
  */
 
 /**
@@ -146,7 +146,7 @@
  * @instance
  *
  * @param {string} name - The augmentation of the initial namespace of the logger.
- * @param {boolean} asIs - If true it will be a replacement of the original namespace.
+ * @param {boolean} [asIs=false] - If true it will be a replacement of the original namespace.
  *
  * @return {GmeLogger} The resulting logger.
  */

@@ -90,23 +90,26 @@ define([
         /**
          * Loads the object with hash key from the database or
          * directly from the cache if recently loaded.
-         *
          * @param {string} key - Hash of object to load.
          * @param {ProjectInterface~loadObjectCallback} callback - Invoked when object is loaded.
          * @func
+         * @private
          */
         this.loadObject = this.projectCache.loadObject;
 
         /**
          * Collects the objects from the server and pre-loads them into the cache
          * making the load of multiple objects faster.
-         *
+         * @private
          * @param {string} rootKey - Hash of the object at the entry point of the paths.
          * @param {string[]} paths - List of paths that needs to be pre-loaded.
          * @param {function} callback - Invoked when objects have been collected.
          * @func
+         * @private
          */
         this.loadPaths = this.projectCache.loadPaths;
+
+        // Public API
 
         /**
          * Makes a commit to data base. Based on the root hash and commit message a new
@@ -155,7 +158,9 @@ define([
          * @param {module:Core~DataObject} coreObjects - Core objects associated with the commit.
          * @param {string} msg='n/a' - Commit message.
          * @param {function} [callback] - If provided no promise will be returned.
-         * @async
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {module:Storage~CommitResult} callback.result - Status about the commit and branch update.
+         *
          * @return {external:Promise}  On success the promise will be resolved with
          * {@link module:Storage~CommitResult} <b>result</b>.<br>
          * On error the promise will be rejected with {Error} <b>error</b>.
@@ -199,7 +204,9 @@ define([
          *      master: '#36df6f8c17b2ccf4e35a2a75b1e0adb928f82a61'
          *  }
          * }
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {object} callback.projectInfo - An object with info about the project.
          *
          * @return {external:Promise}  On success the promise will be resolved with
          * {object} <b>projectInfo</b>.<br>
@@ -214,7 +221,9 @@ define([
          * @param {string} branchName - Name of branch to update.
          * @param {module:Storage~CommitHash} newHash - New commit hash for branch head.
          * @param {module:Storage~CommitHash} oldHash - Current state of the branch head inside the database.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {module:Storage~CommitResult} callback.result - Status about the branch update.
          *
          * @return {external:Promise}  On success the promise will be resolved with
          * {@link module:Storage~CommitResult} <b>result</b>.<br>
@@ -227,10 +236,12 @@ define([
         /**
          * Retrieves the commit hash for the head of the branch.
          * @param {string} branchName - Name of branch.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {module:Storage~CommitHash} callback.commitHash - The commit hash.
          *
          * @return {external:Promise}  On success the promise will be resolved with
-         * {@link module:Storage~CommitHash} <b>branchHash</b>.<br>
+         * {@link module:Storage~CommitHash} <b>commitHash</b>.<br>
          * On error the promise will be rejected with {@link Error} <b>error</b>.
          */
         this.getBranchHash = function (branchName, callback) {
@@ -240,7 +251,9 @@ define([
         /**
          * Retrieves the root hash at the provided branch or commit-hash.
          * @param {string} branchNameOrCommitHash - Name of branch or a commit-hash.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {module:Core~ObjectHash} callback.rootHash - The root hash.
          *
          * @return {external:Promise}  On success the promise will be resolved with
          * {@link module:Core~ObjectHash} <b>rootHash</b>.<br>
@@ -258,7 +271,9 @@ define([
          * Creates a new branch with head pointing to the provided commit hash.
          * @param {string} branchName - Name of branch to create.
          * @param {module:Storage~CommitHash} newHash - New commit hash for branch head.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {module:Storage~CommitResult} callback.result - Status about the branch update.
          *
          * @return {external:Promise}  On success the promise will be resolved with
          * {@link module:Storage~CommitResult} <b>result</b>.<br>
@@ -272,7 +287,9 @@ define([
          * Deletes the branch.
          * @param {string} branchName - Name of branch to create.
          * @param {module:Storage~CommitHash} oldHash - Previous commit hash for branch head.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {module:Storage~CommitResult} callback.result - Status about the branch update.
          *
          * @return {external:Promise}  On success the promise will be resolved with
          * {@link module:Storage~CommitResult} <b>result</b>.<br>
@@ -284,10 +301,12 @@ define([
 
         /**
          * Retrieves all branches and their current heads within the project.
-         * @param {function} [callback] - if provided no promise will be returned.
-         *
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {Object.<string, module:Storage~CommitHash>} callback.branches - An object with branch names as keys
+         * and their commit-hashes as values.
          * @return {external:Promise}  On success the promise will be resolved with
-         * Object.<string, {@link module:Storage~CommitHash}> <b>result</b>.<br>
+         * Object.<string, {@link module:Storage~CommitHash}> <b>branches</b>.<br>
          * On error the promise will be rejected with {@link Error} <b>error</b>.
          */
         this.getBranches = function (callback) {
@@ -297,7 +316,9 @@ define([
         /**
          * Retrieves the commit-object at the provided branch or commit-hash.
          * @param {string} branchNameOrCommitHash - Name of branch or a commit-hash.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {module:Storage~CommitObject} callback.commit - The commit-object.
          *
          * @return {external:Promise}  On success the promise will be resolved with
          * {@link module:Storage~CommitObject} <b>commitObject</b>.<br>
@@ -328,10 +349,13 @@ define([
          * @param {string|module:Storage~CommitHash|string[]|module:Storage~CommitHash[]} start - Branch name,
          * commit hash or array of these.
          * @param {number} number - Number of commits to load.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {Array.<module:Storage~CommitObject>} callback.commits - The commits that match the input ordered
+         * as explained.
          *
          * @return {external:Promise}  On success the promise will be resolved with
-         * Array.<{@link module:Storage~CommitObject}> <b>result</b>.<br>
+         * Array.<{@link module:Storage~CommitObject}> <b>commits</b>.<br>
          * On error the promise will be rejected with {@link Error} <b>error</b>.
          */
         this.getHistory = function (start, number, callback) {
@@ -346,10 +370,13 @@ define([
          * their descendants. Unless looking for 'headless' commits 'getHistory' is the preferred method.
          * @param {number|module:Storage~CommitHash} before - Timestamp or commitHash to load history from.
          * @param {number} number - Number of commits to load.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {Array.<module:Storage~CommitObject>} callback.commits - The commits that match the input, ordered
+         * by their time of insertion.
          *
          * @return {external:Promise}  On success the promise will be resolved with
-         * Array.<{@link module:Storage~CommitObject}> <b>result</b>.<br>
+         * Array.<{@link module:Storage~CommitObject}> <b>commits</b>.<br>
          * On error the promise will be rejected with {@link Error} <b>error</b>.
          */
         this.getCommits = function (before, number, callback) {
@@ -360,7 +387,8 @@ define([
          * Creates a new tag pointing to the provided commit hash.
          * @param {string} tagName - Name of tag to create.
          * @param {module:Storage~CommitHash} commitHash - Commit hash tag will point to.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
          *
          * @return {external:Promise}  On success the promise will be resolved with nothing.<br>
          * On error the promise will be rejected with {@link Error} <b>error</b>.
@@ -372,7 +400,8 @@ define([
         /**
          * Deletes the given tag.
          * @param {string} tagName - Name of tag to delete.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
          *
          * @return {external:Promise}  On success the promise will be resolved with nothing.<br>
          * On error the promise will be rejected with {@link Error} <b>error</b>.
@@ -383,10 +412,12 @@ define([
 
         /**
          * Retrieves all tags and their commits hashes within the project.
-         * @param {function} [callback] - if provided no promise will be returned.
-         *
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {Object.<string, module:Storage~CommitHash>} callback.tags - An object with tag names as keys and
+         * their commit-hashes as values.
          * @return {external:Promise}  On success the promise will be resolved with
-         * Object.<string, {@link module:Storage~CommitHash}> <b>result</b>.<br>
+         * Object.<string, {@link module:Storage~CommitHash}> <b>tags</b>.<br>
          * On error the promise will be rejected with {@link Error} <b>error</b>.
          */
         this.getTags = function (callback) {
@@ -398,10 +429,13 @@ define([
          *
          * @param {module:Storage~CommitHash} commitA - Commit hash.
          * @param {module:Storage~CommitHash} commitB - Commit hash.
-         * @param {function} [callback] - if provided no promise will be returned.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution (will be non-null if e.g. the commits do
+         * not exist or have no common ancestor).
+         * @param {module:Storage~CommitHash} callback.commitHash - The commit hash of the common ancestor.
          *
          * @return {external:Promise}  On success the promise will be resolved with
-         * {@link module:Storage~CommitHash} <b>commonCommitHash</b>.<br>
+         * {@link module:Storage~CommitHash} <b>commitHash</b>.<br>
          * On error the promise will be rejected with {@link Error} <b>error</b>.
          */
         this.getCommonAncestorCommit = function (commitA, commitB, callback) {

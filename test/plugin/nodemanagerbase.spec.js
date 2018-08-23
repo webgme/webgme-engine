@@ -693,4 +693,46 @@ describe('climanager', function () {
             })
             .nodeify(done);
     });
+
+    it('should addFile/addArtifact and add to the plugin results and then getFile/getArtifact', function (done) {
+        var manager = new PluginCliManager(libContext.project, logger, gmeConfig),
+            pluginConfig = {},
+            context = {
+                commitHash: libContext.commitHash,
+            },
+            files = {'test.txt': 'Hello World', 'test2.txt': 'Hello World2'},
+            plugin;
+
+        manager.initializePlugin(pluginName)
+            .then(function (plugin_) {
+                plugin = plugin_;
+
+                return manager.configurePlugin(plugin, pluginConfig, context);
+            })
+            .then(function () {
+                return plugin.addFile('test.txt', 'Hello World');
+            })
+            .then(function (metadataHash) {
+                expect(typeof metadataHash).to.equal('string');
+                expect(metadataHash.length).to.equal(40);
+                expect(plugin.result.artifacts[0]).to.equal(metadataHash);
+            })
+            .then(function () {
+                return plugin.addArtifact('artie', files);
+            })
+            .then(function (metadataHash) {
+                expect(typeof metadataHash).to.equal('string');
+                expect(metadataHash.length).to.equal(40);
+                expect(plugin.result.artifacts[1]).to.equal(metadataHash);
+                return Q.allDone([
+                    plugin.getFile(plugin.result.artifacts[0]),
+                    plugin.getArtifact(plugin.result.artifacts[1])
+                ]);
+            })
+            .then(function (res) {
+                expect(res[0]).to.equal('Hello World');
+                expect(res[1]).to.deep.equal(files);
+            })
+            .nodeify(done);
+    });
 });

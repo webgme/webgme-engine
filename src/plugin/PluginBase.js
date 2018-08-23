@@ -363,18 +363,7 @@
      * @param {string} severity - severity level of the message: 'debug', 'info' (default), 'warning', 'error'.
      */
     PluginBase.prototype.createMessage = function (node, message, severity) {
-        var severityLevel = severity || 'info',
-            nodeDescriptor = {
-                name: '',
-                id: ''
-            };
-
-        //FIXME: Use a proper check for determining if it is a Core node or not.
-        if (node && node.hasOwnProperty('parent') && node.hasOwnProperty('relid')) {
-            nodeDescriptor.name = this.core.getAttribute(node, 'name');
-            nodeDescriptor.id = this.core.getPath(node);
-        }
-        //this occurrence of the function will always handle a single node
+        var severityLevel = severity || 'info';
 
         var descriptor = new PluginNodeDescription({
             name: node ? this.core.getAttribute(node, 'name') : '',
@@ -795,6 +784,93 @@
 
         return deferred.promise.nodeify(callback);
     };
+
+    /**
+     * Adds a file to the blob storage and adds it to the plugin-result.
+     * @param {string} name - file name.
+     * @param {string|Buffer|ArrayBuffer} data - file content.
+     * @param {function} [callback] - if provided no promise will be returned.
+     * @param {null|Error} callback.err - status of the call
+     * @param {string} callback.metadataHash - the "id" of the uploaded file
+     * @return {external:Promise} If no callback is given, the result will be provided in a promise
+     */
+    PluginBase.prototype.addFile = function (name, content, callback) {
+        var self = this;
+
+        return this.blobClient.putFile(name, content)
+            .then(function (metadataHash) {
+                self.result.addArtifact(metadataHash);
+                return metadataHash;
+            })
+            .nodeify(callback);
+    };
+
+    /**
+     * Adds multiple files to the blob storage and bundles them as an artifact of which the hash is added to the
+     * plugin-result.
+     * @param {string} name - name of the file bundle.
+     * @param {object.<string, string|Buffer|ArrayBuffer>} files - Keys are file names and values the content.
+     * @param {function} [callback] - if provided no promise will be returned.
+     * @param {null|Error} callback.err - status of the call.
+     * @param {string} callback.metadataHash - the "id" of the uploaded artifact.
+     * @return {external:Promise} If no callback is given, the result will be provided in a promise.
+     */
+    PluginBase.prototype.addArtifact = function (name, files, callback) {
+        var self = this,
+            artifact = this.blobClient.createArtifact(name);
+
+        return artifact.addFilesAsSoftLinks(files)
+            .then(function () {
+                return artifact.save();
+            })
+            .then(function (metadataHash) {
+                self.result.addArtifact(metadataHash);
+                return metadataHash;
+            })
+            .nodeify(callback);
+    };
+
+    /**
+     * Retrieves the file from blob storage.
+     * @param {string} metadataHash - the "id" of the file to retrieve.
+     * @param {null|Error} callback.err - status of the call.
+     * @param {string} callback.content - the file content.
+     * @return {external:Promise} If no callback is given, the result will be provided in a promise.
+     */
+    PluginBase.prototype.getFile = function (metadataHash, callback) {
+        return this.blobClient.getObjectAsString(metadataHash).nodeify(callback);
+    };
+
+    /**
+     * Retrieves all the files in the artifact from the blob storage.
+     * @param {string} metadataHash - the "id" of the artifact to retrieve.
+     * @param {null|Error} callback.err - status of the call.
+     * @param {object.<string, string>} callback.files - Keys are file names, and values the content.
+     * @return {external:Promise} If no callback is given, the result will be provided in a promise.
+     */
+    PluginBase.prototype.getArtifact = function (metadataHash, callback) {
+        var self = this,
+            result = {};
+
+        return this.blobClient.getMetadata(metadataHash)
+            .then(function (metadata) {
+                var promises = Object.keys(metadata.content)
+                    .map(function (fileName) {
+                        return self.blobClient.getObjectAsString(metadata.content[fileName].content)
+                            .then(function (content) {
+                                result[fileName] = content;
+                            });
+                    });
+
+                return Q.all(promises);
+            })
+            .then(function () {
+                return result;
+            })
+            .nodeify(callback);
+    };
+
+
     //</editor-fold>
     //<editor-fold desc="Methods that are used by the Plugin Manager. Derived classes should not use these methods">
 
