@@ -181,7 +181,7 @@ describe('standalone server', function () {
             {code: 200, url: '/plugin/PluginGenerator/PluginGenerator/PluginGenerator'},
             {code: 404, url: '/plugin/PluginGenerator/PluginGenerator'},
             {code: 200, url: '/plugin/PluginGenerator/PluginGenerator/PluginGenerator.js'},
-            {code: 200, url: '/plugin/PluginGenerator/PluginGenerator/Templates/plugin.js.ejs'},
+            {code: 200, url: '/plugin/PluginGenerator/PluginGenerator/plugin_js.ejs'},
             {code: 200, url: '/assets/decoratorSVGList.json'},
             {code: 200, url: '/api/decorators'},
             {code: 200, url: '/api/plugins'},
