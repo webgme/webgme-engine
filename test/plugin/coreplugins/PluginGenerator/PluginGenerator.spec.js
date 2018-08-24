@@ -12,6 +12,7 @@ describe('PluginGenerator', function () {
         requirejs = testFixture.requirejs,
         expect = testFixture.expect,
         esprima = require('esprima'),
+        ejs = require('ejs'),
         pluginConfig = {
             pluginID: 'NewPlugin',
             pluginName: 'New Plugin',
@@ -104,20 +105,19 @@ describe('PluginGenerator', function () {
     }
 
 
-
-    it ('test esprima', function () {
+    it('test esprima', function () {
         expect(isValidJs('var a = {x: 1, y: 2};')).to.equal(null);
         expect(isValidJs('var a = [{x: 1, x: 2};')).to.not.equal(null);
     });
 
-    it ('test getName and version', function () {
+    it('test getName and version', function () {
         var Plugin = requirejs('plugin/coreplugins/PluginGenerator/PluginGenerator'),
             plugin = new Plugin();
         expect(plugin.getName()).to.equal('Plugin Generator');
         expect(typeof plugin.getVersion()).to.equal('string');
     });
 
-    it ('pluginConfig up to date', function () {
+    it('pluginConfig up to date', function () {
         var Plugin = requirejs('plugin/coreplugins/PluginGenerator/PluginGenerator'),
             plugin = new Plugin(),
             pluginStructure = plugin.getConfigStructure(),
@@ -248,5 +248,16 @@ describe('PluginGenerator', function () {
                 done(e);
             }
         });
+    });
+
+    it('passing classImpl to __init___py.ejs should add the class', function () {
+        var template = testFixture.fs.readFileSync('./src/plugin/coreplugins/PluginGenerator/__init___py.ejs', 'utf8');
+        var classImpl = 'class NewPlugin(PluginBase):\n    def main(self):\n        core = self.core\n';
+        var res = ejs.render(template, {
+            pluginID: 'NewPlugin',
+            classImpl: classImpl
+        });
+
+        expect(res).to.include(classImpl);
     });
 });

@@ -15,7 +15,9 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-
+<% if(typeof classImpl === 'string') {%>
+<%-classImpl%>
+<%} else {%>
 class <%-pluginID%>(PluginBase):
     def main(self):
         core = self.core
@@ -30,3 +32,4 @@ class <%-pluginID%>(PluginBase):
 
         commit_info = self.util.save(root_node, self.commit_hash, 'master', 'Python plugin updated the model')
         logger.info('committed :{0}'.format(commit_info))
+<%}%>
