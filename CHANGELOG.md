@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.21.0](https://github.com/webgme/webgme-engine/tree/v2.21.0) (2018-08-24)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.4...v2.21.0)
+
+**Implemented enhancements:**
+
+- At PluginBase API, add addFile/Artifact and getFile/Artifact methods [\#122](https://github.com/webgme/webgme-engine/issues/122)
+- Add option to generate python plugin from PluginGenerator [\#124](https://github.com/webgme/webgme-engine/pull/124) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#121, Fixes \#122 and adds core.createChild and harmonizes jsdoc documentation [\#123](https://github.com/webgme/webgme-engine/pull/123) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- core.isInstanceOf always returns false if path of base node provided [\#121](https://github.com/webgme/webgme-engine/issues/121)
+
 ## [v2.20.4](https://github.com/webgme/webgme-engine/tree/v2.20.4) (2018-08-09)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.3...v2.20.4)
 
