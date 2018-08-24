@@ -12,14 +12,13 @@ describe('PluginGenerator', function () {
         requirejs = testFixture.requirejs,
         expect = testFixture.expect,
         esprima = require('esprima'),
+        ejs = require('ejs'),
         pluginConfig = {
             pluginID: 'NewPlugin',
             pluginName: 'New Plugin',
             description: '',
-            test: true,
-            templateType: 'None', // "JavaScript", "Python", "CSharp",
-            configStructure: false,
-            meta: true
+            language: 'JavaScript',
+            configStructure: false
         };
 
     function isValidJs(testString, logError) {
@@ -106,20 +105,19 @@ describe('PluginGenerator', function () {
     }
 
 
-
-    it ('test esprima', function () {
+    it('test esprima', function () {
         expect(isValidJs('var a = {x: 1, y: 2};')).to.equal(null);
         expect(isValidJs('var a = [{x: 1, x: 2};')).to.not.equal(null);
     });
 
-    it ('test getName and version', function () {
+    it('test getName and version', function () {
         var Plugin = requirejs('plugin/coreplugins/PluginGenerator/PluginGenerator'),
             plugin = new Plugin();
         expect(plugin.getName()).to.equal('Plugin Generator');
         expect(typeof plugin.getVersion()).to.equal('string');
     });
 
-    it ('pluginConfig up to date', function () {
+    it('pluginConfig up to date', function () {
         var Plugin = requirejs('plugin/coreplugins/PluginGenerator/PluginGenerator'),
             plugin = new Plugin(),
             pluginStructure = plugin.getConfigStructure(),
@@ -140,7 +138,7 @@ describe('PluginGenerator', function () {
                 keys = Object.keys(files),
                 i;
 
-            expect(keys.length).to.equal(4);
+            expect(keys.length).to.equal(3);
             for (i = 0; i < keys.length; i += 1) {
                 logger.debug(files[keys[i]]);
                 if (keys[i] === 'src/plugins/null/I have a space/meta.js' ||
@@ -155,14 +153,14 @@ describe('PluginGenerator', function () {
         });
     });
 
-    it('default settings should generate three valid js files', function (done) {
+    it('default settings should generate two valid js files', function (done) {
         runPlugin('PluginGenerator', pluginConfig, function (err, result) {
             var files = result.artifact.addedFiles,
                 keys = Object.keys(files),
                 i;
 
             expect(err).to.equal(null);
-            expect(keys.length).to.equal(4);
+            expect(keys.length).to.equal(3);
             for (i = 0; i < keys.length; i += 1) {
                 if (keys[i].indexOf('.json') > -1) {
                     JSON.parse(files[keys[i]]);
@@ -171,35 +169,16 @@ describe('PluginGenerator', function () {
                     expect(isValidJs(files[keys[i]])).to.equal(null);
                 }
             }
+
+            expect(JSON.parse(files['src/plugins/null/NewPlugin/metadata.json']).disableBrowserSideExecution)
+                .to.equal(false);
             done();
         });
     });
 
-    it('configStructure = true should generate three valid js files', function (done) {
+    it('configStructure = true should generate two valid js files', function (done) {
         var config = Object.create(pluginConfig);
         config.configStructure = true;
-        runPlugin('PluginGenerator', config, function (err, result) {
-            var files = result.artifact.addedFiles,
-                keys = Object.keys(files),
-                i;
-
-            expect(err).to.equal(null);
-            expect(keys.length).to.equal(4);
-            for (i = 0; i < keys.length; i += 1) {
-                if (keys[i].indexOf('.json') > -1) {
-                    JSON.parse(files[keys[i]]);
-                } else {
-                    logger.debug(files[keys[i]]);
-                    expect(isValidJs(files[keys[i]])).to.equal(null);
-                }
-            }
-            done();
-        });
-    });
-
-    it('meta = false should generate two valid js files', function (done) {
-        var config = Object.create(pluginConfig);
-        config.meta = false;
         runPlugin('PluginGenerator', config, function (err, result) {
             var files = result.artifact.addedFiles,
                 keys = Object.keys(files),
@@ -219,7 +198,7 @@ describe('PluginGenerator', function () {
         });
     });
 
-    it('meta = false, configStructure = true should generate two valid js files', function (done) {
+    it('configStructure = true should generate two valid js files', function (done) {
         var config = Object.create(pluginConfig);
         config.meta = false;
         config.configStructure = true;
@@ -242,122 +221,43 @@ describe('PluginGenerator', function () {
         });
     });
 
-    it('test = false should generate two valid js files', function (done) {
+    it('language = Python should generate 2 valid js files and three py-files', function (done) {
         var config = Object.create(pluginConfig);
-        config.test = false;
+        config.language = 'Python';
         runPlugin('PluginGenerator', config, function (err, result) {
             var files = result.artifact.addedFiles,
-                keys = Object.keys(files),
-                i;
-
-            expect(err).to.equal(null);
-            expect(keys.length).to.equal(3);
-            for (i = 0; i < keys.length; i += 1) {
-                if (keys[i].indexOf('.json') > -1) {
-                    JSON.parse(files[keys[i]]);
-                } else {
-                    logger.debug(files[keys[i]]);
-                    expect(isValidJs(files[keys[i]])).to.equal(null);
-                }
-            }
-            done();
-        });
-    });
-
-    it('templateType = Python should generate four valid js files', function (done) {
-        var config = Object.create(pluginConfig);
-        config.templateType = 'Python';
-        runPlugin('PluginGenerator', config, function (err, result) {
-            var files = result.artifact.addedFiles,
-                keys = Object.keys(files),
-                i;
+                keys = Object.keys(files);
 
             expect(err).to.equal(null);
             expect(keys.length).to.equal(6);
-            for (i = 0; i < keys.length; i += 1) {
-                logger.debug(files[keys[i]]);
-                if (keys[i].indexOf('.json') > -1) {
-                    JSON.parse(files[keys[i]]);
-                } else if (keys[i] === 'src/plugins/null/NewPlugin/Templates/Python.py.ejs') {
-                    expect(isValidJs(files[keys[i]])).to.not.equal(null);
-                } else {
-                    expect(isValidJs(files[keys[i]])).to.equal(null);
-                }
+            expect(keys).to.have.members([
+                'test/plugins/null/NewPlugin/NewPlugin.spec.js',
+                'src/plugins/null/NewPlugin/metadata.json',
+                'src/plugins/null/NewPlugin/run_debug.py',
+                'src/plugins/null/NewPlugin/run_plugin.py',
+                'src/plugins/null/NewPlugin/NewPlugin/__init__.py',
+                'src/plugins/null/NewPlugin/NewPlugin.js'
+            ]);
+
+            try {
+                expect(isValidJs(files['src/plugins/null/NewPlugin/NewPlugin.js'])).to.equal(null);
+                expect(JSON.parse(files['src/plugins/null/NewPlugin/metadata.json']).disableBrowserSideExecution)
+                    .to.equal(true);
+                done();
+            } catch (e) {
+                done(e);
             }
-            done();
         });
     });
 
-    it('templateType = Python and meta = false should generate three valid js files', function (done) {
-        var config = Object.create(pluginConfig);
-        config.templateType = 'Python';
-        config.meta = false;
-        runPlugin('PluginGenerator', config, function (err, result) {
-            var files = result.artifact.addedFiles,
-                keys = Object.keys(files),
-                i;
-
-            expect(err).to.equal(null);
-            expect(keys.length).to.equal(5);
-            for (i = 0; i < keys.length; i += 1) {
-                logger.debug(files[keys[i]]);
-                if (keys[i].indexOf('.json') > -1) {
-                    JSON.parse(files[keys[i]]);
-                } else if (keys[i] === 'src/plugins/null/NewPlugin/Templates/Python.py.ejs') {
-                    expect(isValidJs(files[keys[i]])).to.not.equal(null);
-                } else {
-                    expect(isValidJs(files[keys[i]])).to.equal(null);
-                }
-            }
-            done();
+    it('passing classImpl to __init___py.ejs should add the class', function () {
+        var template = testFixture.fs.readFileSync('./src/plugin/coreplugins/PluginGenerator/__init___py.ejs', 'utf8');
+        var classImpl = 'class NewPlugin(PluginBase):\n    def main(self):\n        core = self.core\n';
+        var res = ejs.render(template, {
+            pluginID: 'NewPlugin',
+            classImpl: classImpl
         });
-    });
 
-    it('templateType = JavaScript should generate four valid js files', function (done) {
-        var config = Object.create(pluginConfig);
-        config.templateType = 'JavaScript';
-        runPlugin('PluginGenerator', config, function (err, result) {
-            var files = result.artifact.addedFiles,
-                keys = Object.keys(files),
-                i;
-
-            expect(err).to.equal(null);
-            expect(keys.length).to.equal(6);
-            for (i = 0; i < keys.length; i += 1) {
-                logger.debug(files[keys[i]]);
-                if (keys[i].indexOf('.json') > -1) {
-                    JSON.parse(files[keys[i]]);
-                } else if (keys[i] === 'src/plugins/null/NewPlugin/Templates/JavaScript.js.ejs') {
-                    expect(isValidJs(files[keys[i]])).to.not.equal(null);
-                } else {
-                    expect(isValidJs(files[keys[i]])).to.equal(null);
-                }
-            }
-            done();
-        });
-    });
-
-    it('templateType = CSharp should generate four valid js files', function (done) {
-        var config = Object.create(pluginConfig);
-        config.templateType = 'CSharp';
-        runPlugin('PluginGenerator', config, function (err, result) {
-            var files = result.artifact.addedFiles,
-                keys = Object.keys(files),
-                i;
-
-            expect(err).to.equal(null);
-            expect(keys.length).to.equal(6);
-            for (i = 0; i < keys.length; i += 1) {
-                logger.debug(files[keys[i]]);
-                if (keys[i].indexOf('.json') > -1) {
-                    JSON.parse(files[keys[i]]);
-                } else if (keys[i] === 'src/plugins/null/NewPlugin/Templates/CSharp.cs.ejs') {
-                    expect(isValidJs(files[keys[i]])).to.not.equal(null);
-                } else {
-                    expect(isValidJs(files[keys[i]])).to.equal(null);
-                }
-            }
-            done();
-        });
+        expect(res).to.include(classImpl);
     });
 });

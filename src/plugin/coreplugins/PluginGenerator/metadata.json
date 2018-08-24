@@ -1,7 +1,7 @@
 {
   "id": "PluginGenerator",
   "name": "Plugin Generator",
-  "version": "2.16.0",
+  "version": "2.20.5",
   "description": "Generates a functional plugin that extends the PluginBase.",
   "icon": {
     "src": "",
@@ -38,40 +38,22 @@
       "readOnly": false
     },
     {
-      "name": "test",
-      "displayName": "Include testing script",
-      "description": "Generate template for unit-tests.",
-      "value": true,
-      "valueType": "boolean",
-      "readOnly": false
-    },
-    {
-      "name": "templateType",
-      "displayName": "Example template",
-      "description": "Ejs template for code generation, also illustrates how to save artifacts using the blobClient.",
-      "value": "None",
+      "name": "language",
+      "displayName": "Programming Language",
+      "description": "Language the generated plugin should target, JavaScript(=default) and Python available",
+      "value": "JavaScript",
       "valueType": "string",
+      "readOnly": false,
       "valueItems": [
-        "None",
         "JavaScript",
-        "Python",
-        "CSharp"
-      ],
-      "readOnly": false
+        "Python"
+      ]
     },
     {
       "name": "configStructure",
       "displayName": "Include Configuration Structure.",
       "description": "Configuration structure will populate this GUI with controls.",
       "value": false,
-      "valueType": "boolean",
-      "readOnly": false
-    },
-    {
-      "name": "meta",
-      "displayName": "Generate META",
-      "description": "Generates a static listing of the meta objects to facilitate coding.",
-      "value": true,
       "valueType": "boolean",
       "readOnly": false
     }
