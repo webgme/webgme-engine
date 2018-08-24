@@ -41,7 +41,7 @@
       "name": "language",
       "displayName": "Programming Language",
       "description": "Language the generated plugin should target, JavaScript(=default) and Python available",
-      "value": "Python",
+      "value": "JavaScript",
       "valueType": "string",
       "readOnly": false,
       "valueItems": [
