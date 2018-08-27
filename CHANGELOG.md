@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.21.1](https://github.com/webgme/webgme-engine/tree/v2.21.1) (2018-08-27)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.21.0...v2.21.1)
+
+**Fixed bugs:**
+
+- FIX the template for generated plugin calling python [\#125](https://github.com/webgme/webgme-engine/pull/125) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.21.0](https://github.com/webgme/webgme-engine/tree/v2.21.0) (2018-08-24)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.20.4...v2.21.0)
 
