@@ -48,7 +48,7 @@ define([
 
     // Prototypical inheritance from PluginBase.
     <%= pluginID %>.prototype = Object.create(PluginBase.prototype);
-    <%= pluginID %>.prototype.constructor = PythonBindings;
+    <%= pluginID %>.prototype.constructor = <%= pluginID %>;
 
     /**
      * Main function for the plugin to execute. This will perform the execution.
@@ -60,7 +60,6 @@ define([
      * @param {function(null|Error|string, plugin.PluginResult)} callback - the result callback
      */
     <%= pluginID %>.prototype.main = function (callback) {
-        const path = require('path');
         const CoreZMQ = require('webgme-bindings').CoreZMQ;
         const cp = require('child_process');
         const logger = this.logger;
@@ -120,11 +119,11 @@ define([
             .catch((err) => {
                 this.logger.error(err.stack);
                 corezmq.stopServer()
-                .finally(() => {
-                    // Result success is false at invocation.
-                    callback(err, this.result);
-                });
-        });
+                    .finally(() => {
+                        // Result success is false at invocation.
+                        callback(err, this.result);
+                    });
+            });
     };
 
     return <%= pluginID %>;
