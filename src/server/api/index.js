@@ -2206,7 +2206,7 @@ function createAPI(app, mountPath, middlewareOpts) {
                         .then(function (token) {
                             webgmeToken = token;
 
-                            return Q.ninvoke(fs, 'readFile', seedDictionary[seedName], 'utf-8');
+                            return Q.ninvoke(fs, 'readFile', seedDictionary[seedName]);
                         })
                         .then(function (content) {
                             var blobClient = new BlobClientClass({
