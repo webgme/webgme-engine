@@ -1,5 +1,13 @@
 # Change Log
 
+## [v2.21.2](https://github.com/webgme/webgme-engine/tree/v2.21.2) (2018-08-29)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.21.1...v2.21.2)
+
+**Fixed bugs:**
+
+- client.addLibrary fails with 'Invalid CEN Header \(Bad Signature\)' [\#126](https://github.com/webgme/webgme-engine/issues/126)
+- Fixes \#126 Seeds are uploaded to blob correctly at /api/seeds/:seedName [\#127](https://github.com/webgme/webgme-engine/pull/127) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.21.1](https://github.com/webgme/webgme-engine/tree/v2.21.1) (2018-08-27)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.21.0...v2.21.1)
 
