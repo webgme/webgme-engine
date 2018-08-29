@@ -9,13 +9,16 @@
 var testFixture = require('../../_globals.js');
 
 
-describe('ORGANIZATION REST API', function () {
+describe('VARIOUS REST API', function () {
     'use strict';
 
     var gmeConfig = testFixture.getGmeConfig(),
         WebGME = testFixture.WebGME,
         expect = testFixture.expect,
         Q = testFixture.Q,
+        AdmZip = require('adm-zip'),
+        BlobClient = testFixture.BlobClient,
+        logger = testFixture.logger.fork('various-rest-api'),
         superagent = require('superagent');
 
     describe('ORGANIZATION SPECIFIC API', function () {
@@ -1187,7 +1190,23 @@ describe('ORGANIZATION REST API', function () {
                         expect(res.status).equal(200, err);
                         expect(typeof res.body).equal('object', err);
                         expect(typeof res.body.blobHash).equal('string', err);
-                        done();
+
+                        var bc = new BlobClient({
+                            serverPort: gmeConfig.server.port,
+                            httpsecure: false,
+                            server: '127.0.0.1',
+                            logger: logger.fork('BlobClient')
+                        });
+
+                        bc.getObject(res.body.blobHash)
+                            .then(function (content) {
+                                var zip = new AdmZip(content);
+
+                                var entries = zip.getEntries();
+                                expect(entries.length).to.equal(1);
+                                expect(entries[0].name).to.equal('project.json');
+                            })
+                            .nodeify(done);
                     } catch (e) {
                         done(e);
                     }

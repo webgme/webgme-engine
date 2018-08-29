@@ -13,7 +13,7 @@
     "test": "node ./node_modules/mocha/bin/mocha --exit --recursive test",
     "test_ci": "node ./node_modules/mocha/bin/mocha  --exit -R dot --timeout 10000 --recursive test",
     "test_cover": "node ./node_modules/istanbul/lib/cli.js --hook-run-in-context cover node_modules/mocha/bin/_mocha --  --exit -R spec --timeout 10000 --recursive test",
-    "test_browser": "node ./node_modules/karma/bin/karma start karma.conf.js --browsers Firefox --single-run --no-auto-watch",
+    "test_browser": "node ./node_modules/karma/bin/karma start karma.conf.js --browsers Chrome --single-run --no-auto-watch",
     "docs": "./node_modules/.bin/jsdoc -c jsdoc_conf.json",
     "apply": "node ./src/bin/apply.js",
     "diff": "node ./src/bin/diff.js",
