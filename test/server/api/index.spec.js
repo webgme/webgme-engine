@@ -16,6 +16,7 @@ describe('ORGANIZATION REST API', function () {
         WebGME = testFixture.WebGME,
         expect = testFixture.expect,
         Q = testFixture.Q,
+        AdmZip = require('adm-zip'),
         superagent = require('superagent');
 
     describe('ORGANIZATION SPECIFIC API', function () {
@@ -1187,7 +1188,19 @@ describe('ORGANIZATION REST API', function () {
                         expect(res.status).equal(200, err);
                         expect(typeof res.body).equal('object', err);
                         expect(typeof res.body.blobHash).equal('string', err);
-                        done();
+                        agent.get(server.getUrl() + '/rest/blob/download/' + res.body.blobHash)
+                            .end(function (err, res) {
+                                try {
+                                    expect(res.status).equal(200, err);
+                                    var zip = new AdmZip(res.body);
+
+                                    var entries = zip.getEntries();
+                                    expect(entries).to.deep.equal([]);
+                                    done();
+                                } catch (e) {
+                                    done(e);
+                                }
+                            });
                     } catch (e) {
                         done(e);
                     }

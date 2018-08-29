@@ -15,22 +15,27 @@ describe('Server worker requests', function () {
         },
         Q,
         client,
+        superagent,
         gmeConfig;
 
     before(function (done) {
         this.timeout(10000);
-        requirejs(['q', 'client/client', 'text!gmeConfig.json'], function (Q_, Client, gmeConfigJSON) {
-            Q = Q_;
-            gmeConfig = JSON.parse(gmeConfigJSON);
-            client = new Client(gmeConfig);
+        requirejs(['q', 'client/client', 'text!gmeConfig.json', 'superagent'],
+            function (Q_, Client,
+                      gmeConfigJSON,
+                      superagent_) {
+                Q = Q_;
+                gmeConfig = JSON.parse(gmeConfigJSON);
+                client = new Client(gmeConfig);
+                superagent = superagent_;
 
-            Q.ninvoke(client, 'connectToDatabase')
-                .then(function () {
-                    return Q.ninvoke(client, 'selectProject',
-                        projectName2Id('ServerWorkerRequests', gmeConfig, client));
-                })
-                .nodeify(done);
-        });
+                Q.ninvoke(client, 'connectToDatabase')
+                    .then(function () {
+                        return Q.ninvoke(client, 'selectProject',
+                            projectName2Id('ServerWorkerRequests', gmeConfig, client));
+                    })
+                    .nodeify(done);
+            });
     });
 
     it('should checkMetaRules starting from the rootNode', function (done) {
@@ -60,6 +65,21 @@ describe('Server worker requests', function () {
                 expect(result.status).to.equal('SYNCED');
             })
             .nodeify(done);
+    });
+
+    it('should addLibrary from blob-hash', function (done) {
+        superagent.get('/api/seeds/EmptyProject', function (err, res) {
+            if (err) {
+                done(err);
+                return;
+            }
+
+            Q.ninvoke(client.workerRequests, 'addLibrary', 'myLib2', res.body.blobHash)
+                .then(function (result) {
+                    expect(result.status).to.equal('SYNCED');
+                })
+                .nodeify(done);
+        });
     });
 
     it('should updateLibrary from seed', function (done) {
