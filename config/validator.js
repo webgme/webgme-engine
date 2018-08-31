@@ -237,16 +237,15 @@ function validateConfig(configOrFileName) {
         assertString('config.seedProjects.createAtStartup[' + index + '].seedId',
             config.seedProjects.createAtStartup[index].seedId);
         assertString('config.seedProjects.createAtStartup[' + index + '].projectName', seedInfo.projectName);
-        assertObject('config.seedProjects.createAtStartup[' + index + '].rights', seedInfo.rights);
+        assertObject('config.seedProjects.createAtStartup[' + index + '].rights', seedInfo.rights, true);
         if (seedInfo.creatorId) {
             assertString('config.seedProjects.createAtStartup[' + index + '].creatorId', seedInfo.creatorId);
         } else if (typeof config.authentication.adminAccount !== 'string') {
             throw new Error('Either config.seedProjects.createAtStartup[' + index +
                 '].creatorId or config.authentication.adminAccount should exists!');
         }
-        if (seedInfo.ownerId) {
-            assertString('config.seedProjects.createAtStartup[' + index + '].ownerId', seedInfo.ownerId);
-        }
+
+        assertString('config.seedProjects.createAtStartup[' + index + '].ownerId', seedInfo.ownerId, true);
     });
 
     // server configuration
