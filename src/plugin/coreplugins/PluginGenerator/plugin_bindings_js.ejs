@@ -97,7 +97,7 @@ define([
             });
 
             childProc.on('error', (err) => {
-                deferred.resolve(err);
+                logger.error(err);
             });
 
             return deferred.promise;

@@ -2096,9 +2096,8 @@ function createAPI(app, mountPath, middlewareOpts) {
         }
     });
 
-    router.post('/plugin/:pluginId/execute', function (req, res, next) {
-        var resultId = GUID(),
-            userId = getUserId(req),
+    function getPluginContext(req) {
+        var userId = getUserId(req),
             pluginContext = {
                 managerConfig: {
                     project: req.body.projectId,
@@ -2115,11 +2114,21 @@ function createAPI(app, mountPath, middlewareOpts) {
                 context: pluginContext
             };
 
-        getNewJWToken(userId)
+        return getNewJWToken(userId)
             .then(function (token) {
                 workerParameters.webgmeToken = token;
 
-                middlewareOpts.workerManager.request(workerParameters, function (err, result) {
+                return workerParameters;
+            });
+    }
+
+    router.post('/plugin/:pluginId/execute', function (req, res, next) {
+        var resultId = GUID();
+
+        getPluginContext(req)
+            .then(function (context) {
+
+                middlewareOpts.workerManager.request(context, function (err, result) {
                     if (err) {
                         runningPlugins[resultId].status = PLUGIN_CONSTANTS.ERROR;
                         runningPlugins[resultId].err = err.message;
@@ -2143,6 +2152,21 @@ function createAPI(app, mountPath, middlewareOpts) {
                 };
 
                 res.send({resultId: resultId});
+            })
+            .catch(next);
+    });
+
+    router.post('/plugin/:pluginId/run',  function (req, res, next) {
+        getPluginContext(req)
+            .then(function (context) {
+
+                middlewareOpts.workerManager.request(context, function (err, result) {
+                    if (err && !result) {
+                        next(err);
+                    } else {
+                        res.send(result);
+                    }
+                });
             })
             .catch(next);
     });
