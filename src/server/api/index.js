@@ -56,7 +56,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     function getFullUrl(req, name) {
-        return req.protocol + '://' + req.headers.host + req.baseUrl + name;
+        return req.protocol + '://' + req.headers.host + middlewareOpts.getMountedPath(req) + req.baseUrl + name;
     }
 
     function getNewJWToken(userId, callback) {
