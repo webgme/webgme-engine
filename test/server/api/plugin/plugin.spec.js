@@ -391,7 +391,6 @@ describe('PLUGIN REST API', function () {
             it('should execute ExportImport [pluginId, projectId, branchName]' +
                 ' /api/plugin/ConfigurationArtifact/execute', function (done) {
                 var requestBody = {
-                    pluginId: 'ConfigurationArtifact',
                     projectId: importResult.project.projectId,
                     branchName: 'master'
                 };
@@ -507,8 +506,9 @@ describe('PLUGIN REST API', function () {
             it('should 404 when ExportImport [pluginId, projectId, branchName] /api/plugin/ExportImport/execute ' +
                 'and timeout passed /api/v1/plugin/ExportImport/results/%RESULT_ID%', function (done) {
                 var requestBody = {
-                    pluginId: 'ExportImport',
+                    //pluginId: 'ExportImport',
                     projectId: importResult.project.projectId,
+                    branchName: 'master',
                     pluginConfig: {
                         type: 'Import'
                     }
@@ -556,6 +556,52 @@ describe('PLUGIN REST API', function () {
                         }, 100);
                     });
             });
+
+            it('should 200 at /api/plugin/MinimalWorkingExample/run and return results', function (done) {
+                agent.post(server.getUrl() + '/api/v1/plugin/MinimalWorkingExample/run')
+                    .send({
+                        projectId: importResult.project.projectId,
+                        branchName: 'master',
+                        pluginConfig: {
+                            save: false,
+                        }
+                    })
+                    .end(function (err, res) {
+                        try {
+                            expect(err).to.equal(null);
+                            expect(res.status).to.equal(200);
+                            expect(res.body.success).to.equal(true);
+                            expect(res.body.pluginId).to.equal('MinimalWorkingExample');
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+            });
+
+            it('should 200 at /api/plugin/MinimalWorkingExample/run and return results (success=false)',
+                function (done) {
+                    agent.post(server.getUrl() + '/api/v1/plugin/MinimalWorkingExample/run')
+                        .send({
+                            projectId: importResult.project.projectId,
+                            branchName: 'master',
+                            pluginConfig: {
+                                shouldFail: true,
+                            }
+                        })
+                        .end(function (err, res) {
+                            try {
+                                expect(err).to.equal(null);
+                                expect(res.status).to.equal(200);
+                                expect(res.body.success).to.equal(false);
+                                expect(res.body.pluginId).to.equal('MinimalWorkingExample');
+                                done();
+                            } catch (e) {
+                                done(e);
+                            }
+                        });
+                }
+            );
         });
     });
 });

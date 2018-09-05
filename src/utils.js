@@ -543,13 +543,14 @@ function createStartUpProjects(gmeConfig, gmeAuth, storage, logger, url) {
             createdProjects.forEach(function (projectInfo) {
                 var userOrOrg,
                     id = storageUtils.getProjectIdFromOwnerIdAndProjectName(projectInfo.ownerId,
-                        projectInfo.projectName);
+                        projectInfo.projectName),
+                    rights = projectInfo.rights || {};
 
-                for (userOrOrg in projectInfo.rights) {
+                for (userOrOrg in rights) {
                     logger.info('Authorizing \'' + userOrOrg + '\' to use \'' + projectInfo.projectName +
                         '\' of \'' + projectInfo.ownerId + '.');
                     authorizationRequests.push(gmeAuth.authorizer.setAccessRights(userOrOrg,
-                        id, projectInfo.rights[userOrOrg], projectAuthParams));
+                        id, rights[userOrOrg], projectAuthParams));
                 }
             });
 

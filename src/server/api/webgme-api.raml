@@ -785,8 +785,19 @@ resourceTypes:
           200:
             body:
               application/json:
-                example: !include webgme-api-plugin-execute.json   
-    
+                example: !include webgme-api-plugin-execute.json
+    /run:
+      post:
+        description: Runs a plugin on the server side and waits for it to finish.
+        body:
+          application/json:
+            example: !include webgme-api-plugin-execute-post.json   
+        
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include webgme-api-plugin-run.json  
     /results/{resultId}:
       get:
         description: Gets a result for this plugin by resultId.
