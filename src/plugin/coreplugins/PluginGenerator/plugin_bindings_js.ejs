@@ -11,20 +11,22 @@ define([
     'q',
     'plugin/PluginConfig',
     'text!./metadata.json',
-    'plugin/PluginBase'
+    'plugin/PluginBase',
+    'module'
 ], function (
     Q,
     PluginConfig,
     pluginMetadata,
-    PluginBase) {
+    PluginBase,
+    module) {
     'use strict';
 
     pluginMetadata = JSON.parse(pluginMetadata);
-
+    const path = require('path');
     // Modify these as needed..
     const START_PORT = 5555;
     const COMMAND = '<%= command %>';
-    const SCRIPT_FILE = 'src/plugins/<%= pluginID %>/<%= scriptFile %>';
+    const SCRIPT_FILE = path.join(path.dirname(module.uri), '<%= scriptFile %>');
 
     /**
      * Initializes a new instance of PythonBindings.
@@ -97,7 +99,7 @@ define([
             });
 
             childProc.on('error', (err) => {
-                logger.error(err);
+                deferred.reject(err);
             });
 
             return deferred.promise;
