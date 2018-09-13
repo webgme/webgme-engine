@@ -1,5 +1,16 @@
 # Change Log
 
+## [v2.21.3](https://github.com/webgme/webgme-engine/tree/v2.21.3) (2018-09-13)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.21.2...v2.21.3)
+
+**Implemented enhancements:**
+
+- Add api/plugin/:pluginId/run endpoint for short running plugins [\#129](https://github.com/webgme/webgme-engine/pull/129) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Generated link in /api json should take mounted path into consideration [\#128](https://github.com/webgme/webgme-engine/pull/128) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.21.2](https://github.com/webgme/webgme-engine/tree/v2.21.2) (2018-08-29)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.21.1...v2.21.2)
 
@@ -49,7 +60,7 @@
 **Implemented enhancements:**
 
 - JSON Payload Sizing [\#113](https://github.com/webgme/webgme-engine/issues/113)
-- Expose bodyParser.json 'limit' configuration option, verify within co… [\#114](https://github.com/webgme/webgme-engine/pull/114) ([nawgszy](https://github.com/nawgszy))
+- Expose bodyParser.json 'limit' configuration option, verify within co… [\#114](https://github.com/webgme/webgme-engine/pull/114) ([nawgz](https://github.com/nawgz))
 - Make sure gmeConfig is loaded correctly in classes.build [\#110](https://github.com/webgme/webgme-engine/pull/110) ([pmeijer](https://github.com/pmeijer))
 - Add generation of minified build classes [\#109](https://github.com/webgme/webgme-engine/pull/109) ([pmeijer](https://github.com/pmeijer))
 
