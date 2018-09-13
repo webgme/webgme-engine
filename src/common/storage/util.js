@@ -171,6 +171,7 @@ define([
         return deferred.promise;
     }
 
+
     return {
         CONSTANTS: CONSTANTS,
         getProjectFullNameFromProjectId: function (projectId) {
@@ -325,6 +326,16 @@ define([
 
             return deferred.promise.nodeify(callback);
         },
-        getRootHash: getRootHash
+        getRootHash: getRootHash,
+        getRawObjects: function (project, hashes, callback) {
+            var deferred = Q.defer();
+
+            _collectObjects(project, hashes)
+                .then(function (objects) {
+                    deferred.resolve(objects);
+                })
+                .catch(deferred.reject);
+            return deferred.promise.nodeify(callback);
+        }
     };
 });

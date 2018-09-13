@@ -44,7 +44,7 @@ define([
      * @param {string} callback.result.fileName - The name of the exported webgmex-file
      * @returns {Promise}
      */
-    exports.exportProjectToFile = function exportProjectToFile(project, blobClient, parameters, callback) {
+    exports._exportProjectToFile = function exportProjectToFile(project, blobClient, parameters, callback) {
         var fileName;
 
         return storageUtils.getProjectJson(project, {
@@ -71,6 +71,70 @@ define([
                 return {
                     hash: blobHash,
                     downloadUrl: blobClient.getRelativeDownloadURL(blobHash),
+                    fileName: fileName
+                };
+            })
+            .nodeify(callback);
+    };
+    exports.exportProjectToFile = function exportProjectToFile(project, blobClient, parameters, callback) {
+        var projectPackage,
+            fileName;
+
+        return storageUtils.getProjectJsonDictionary(project, {
+            branchName: parameters.branchName,
+            commitHash: parameters.commitHash,
+            rootHash: parameters.rootHash,
+            tagName: parameters.tagName,
+            kind: parameters.kind
+        })
+            .then(function (projectCollectionJson) {
+                projectPackage = blobClient.createArtifact(projectCollectionJson.projectId +
+                    '_' + (projectCollectionJson.branchName || projectCollectionJson.commitHash));
+
+                fileName = typeof parameters.outName === 'string' ?
+                    parameters.outName :
+                    rawJson.projectId + '_' + (rawJson.commitHash || '').substr(1, 6);
+                fileName += '.webgmex';
+
+                projectPackage.descriptor.name = fileName;
+
+                var objectHashes = projectCollectionJson.hashes.objects.keys(),
+                    chunks = [];
+
+                if (parameters.chunkSize && typeof parameters.chunkSize === 'number') {
+                    while (objectHashes.length > parameters.chunkSize) {
+                        chunks.push(objectHashes.splice(0, parameters.chunkSize));
+                    }
+
+                }
+                chunks.push(objectHashes);
+
+                return Q.all(chunks.map(function (chunk, index) {
+                    if (index === 0) {
+                        return storageUtils.getRawObjects(project, chunk)
+                            .then(function (objects) {
+                                projectCollectionJson.objects = objects;
+                                return projectPackage.addFile('project.json', JSON.stringify(projectCollectionJson));
+                            });
+                    } else {
+                        return storageUtils.getRawObjects(project, chunk)
+                            .then(function (objects) {
+                                return projectPackage.addFile('data_' + index + '.json', JSON.stringify(objects));
+                            });
+                    }
+                }));
+            })
+            .then(function () {
+                return blobUtil.addAssetsToProjectPackage(project.logger.fork('blobUtil'), blobClient,
+                    projectPackage, projectCollectionJson.hashes.assets);
+            })
+            .then(function () {
+                return projectPackage.save();
+            })
+            .then(function (packageHash) {
+                return {
+                    hash: packageHash,
+                    downloadUrl: blobClient.getRelativeDownloadURL(packageHash),
                     fileName: fileName
                 };
             })

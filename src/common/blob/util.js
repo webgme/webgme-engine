@@ -228,8 +228,59 @@ define(['q', './BlobMetadata'], function (Q, BlobMetadata) {
         return deferred.promise.nodeify(callback);
     }
 
+    function addAssetsToProjectPackage(logger, blobClient, artifact, assetHashes, skip, callback){
+        var deferred = Q.defer;
+
+        if(skip){
+            assetHashes = [];
+        }
+
+        function getMetadataSafely(assetHash) {
+            return blobClient.getMetadata(assetHash)
+                .catch(function (err) {
+                    logger.warn('When building project package could not retrieve metadata for attribute with value',
+                        assetHash, '. Will continue assuming it is not an asset attribute...');
+                    logger.debug('Returned error when getMetadata', err);
+                    return null;
+                });
+        }
+
+        Q.allSettled(assetHashes.map(function (assetHash) {
+            return getMetadataSafely(assetHash)
+                .then(function (metadata) {
+                    if (metadata) {
+                        return _gatherFilesFromMetadataHashRec(logger, blobClient, metadata, assetHash, artie);
+                    } else {
+                        return Q();
+                    }
+                });
+        }))
+            .then(function (result) {
+                var error,
+                    i;
+
+                for (i = 0; i < result.length; i += 1) {
+                    if (result[i].state === 'rejected') {
+                        error = result[i].reason;
+                        logger.debug('Gathering returned with error', assets[i], error);
+                        if (error.message.indexOf('Another content with the same name was already added.') === -1) {
+                            //some real error
+                            throw new Error('gathering assets [' + assets[i] + '] failed:' + error.message);
+                        }
+                    }
+                }
+            })
+            .then(deferred.resolve)
+            .catch(deferred.reject);
+
+        return deferred.promise.nodeify(callback);
+
+
+    }
+
     return {
         addAssetsFromExportedProject: addAssetsFromExportedProject,
-        buildProjectPackage: buildProjectPackage
+        buildProjectPackage: buildProjectPackage,
+        addAssetsToProjectPackage: addAssetsToProjectPackage
     };
 });
