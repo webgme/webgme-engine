@@ -171,6 +171,59 @@ define([
         return deferred.promise;
     }
 
+    /**
+     * Extracts a json structure that contains project information and the collection all of the hashes.
+     * To specify starting point set one of the four options. If more than one is set the order of precedence is:
+     * branchName, commitHash, tagName and rootHash.
+     *
+     * @param {ProjectInterface} project
+     * @param {object} parameters - Specifies which project tree should be serialized:
+     * @param {string} [parameters.rootHash] - The hash of the tree root.
+     * @param {string} [parameters.commitHash] - The tree associated with the commitHash.
+     * @param {string} [parameters.tagName] - The tree at the given tag.
+     * @param {string} [parameters.branchName] - The tree at the given branch.
+     * @param {string} [parameters.kind] - If not given will assign the one in project.
+     * @param {function} callback
+     */
+    function getProjectJsonDictionary(project, parameters, callback) {
+        var deferred = Q.defer(),
+            projectJsonDictionary;
+
+        getRootHash(project, parameters || {})
+            .then(function (rootHash) {
+                return Q.all([
+                    _collectObjectAndAssetHashes(project, rootHash),
+                    project.getProjectInfo()
+                ]);
+            })
+            .then(function (res) {
+                var hashes = res[0],
+                    info = res[1];
+                projectJsonDictionary = {
+                    rootHash: parameters.rootHash,
+                    projectId: project.projectId,
+                    kind: typeof parameters.kind === 'string' ? parameters.kind : info.info.kind,
+                    branchName: parameters.branchName,
+                    commitHash: parameters.commitHash,
+                    hashes: hashes
+                };
+                deferred.resolve(projectJsonDictionary);
+            })
+            .catch(deferred.reject);
+
+        return deferred.promise.nodeify(callback);
+    }
+
+    function _insertExtraItemsIntoProject(project, projectJson, options, callback) {
+        var deferred = Q.defer();
+
+        if (!projectJson.extraDataDescriptor) {
+            deferred.resolve();
+            return;
+        }
+        
+        return deferred.promise.nodeify(callback);
+    }
 
     return {
         CONSTANTS: CONSTANTS,
@@ -258,26 +311,12 @@ define([
             var deferred = Q.defer(),
                 rawJson;
 
-            getRootHash(project, parameters || {})
-                .then(function (rootHash) {
-                    return Q.all([
-                        _collectObjectAndAssetHashes(project, rootHash),
-                        project.getProjectInfo()
-                    ]);
-                })
-                .then(function (res) {
-                    var hashes = res[0],
-                        info = res[1];
-                    rawJson = {
-                        rootHash: parameters.rootHash,
-                        projectId: project.projectId,
-                        kind: typeof parameters.kind === 'string' ? parameters.kind : info.info.kind,
-                        branchName: parameters.branchName,
-                        commitHash: parameters.commitHash,
-                        hashes: hashes,
-                        objects: null
-                    };
-                    return _collectObjects(project, hashes.objects);
+            getProjectJsonDictionary(project, parameters)
+                .then(function (projectJsonDictionary) {
+                    rawJson = projectJsonDictionary;
+                    rawJson.objects = null;
+
+                    return _collectObjects(project, projectJsonDictionary.hashes.objects);
                 })
                 .then(function (objects) {
                     rawJson.objects = objects;
@@ -287,6 +326,8 @@ define([
 
             return deferred.promise.nodeify(callback);
         },
+
+        getProjectJsonDictionary: getProjectJsonDictionary,
 
         /**
          * Inserts a serialized project tree into the storage and associates it with a commitHash.
@@ -316,6 +357,7 @@ define([
 
             options.branch = options.branch || null;
             options.parentCommit = options.parentCommit || [];
+
 
             project.makeCommit(options.branch, options.parentCommit,
                 rootHash, toPersist, options.commitMessage || defaultCommitMessage)

@@ -273,6 +273,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
     function _extractProjectJsonAndAddAssets(filenameOrBuffer, blobClient, callback) {
         var zip = new AdmZip(filenameOrBuffer),
             artifact = blobClient.createArtifact('files'),
+            dataArtifact = blobClient.createArtifact('extraData'),
+            dataFileRegExp = new RegExp(/^data_[0-9]+\.json/),
+            hasExtraData = false,
             projectStr;
 
         return Q.all(zip.getEntries()
@@ -280,6 +283,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 var entryName = entry.entryName;
                 if (entryName === 'project.json') {
                     projectStr = zip.readAsText(entry);
+                } else if (dataFileRegExp.test(entryName)) {
+                    hasExtraData = true;
+                    return dataArtifact.addFileAsSoftLink(entryName, zip.readFile(entry));
                 } else {
                     return artifact.addFileAsSoftLink(entryName, zip.readFile(entry));
                 }
@@ -290,7 +296,11 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return blobUtil.addAssetsFromExportedProject(logger, blobClient, metadata);
             })
             .then(function () {
-                return JSON.parse(projectStr);
+                var projectJson = JSON.parse(projectStr);
+                if (hasExtraData) {
+                    projectJson.extraDataDescriptor = dataArtifact.descriptor;
+                }
+                return projectJson;
             })
             .nodeify(callback);
     }

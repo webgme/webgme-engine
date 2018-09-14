@@ -229,7 +229,7 @@ define(['q', './BlobMetadata'], function (Q, BlobMetadata) {
     }
 
     function addAssetsToProjectPackage(logger, blobClient, artifact, assetHashes, skip, callback){
-        var deferred = Q.defer;
+        var deferred = Q.defer();
 
         if(skip){
             assetHashes = [];

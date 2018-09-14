@@ -78,6 +78,7 @@ define([
     };
     exports.exportProjectToFile = function exportProjectToFile(project, blobClient, parameters, callback) {
         var projectPackage,
+            projectJson,
             fileName;
 
         return storageUtils.getProjectJsonDictionary(project, {
@@ -88,17 +89,18 @@ define([
             kind: parameters.kind
         })
             .then(function (projectCollectionJson) {
-                projectPackage = blobClient.createArtifact(projectCollectionJson.projectId +
-                    '_' + (projectCollectionJson.branchName || projectCollectionJson.commitHash));
+                projectJson = projectCollectionJson;
+                projectPackage = blobClient.createArtifact(projectJson.projectId +
+                    '_' + (projectJson.branchName || projectJson.commitHash));
 
                 fileName = typeof parameters.outName === 'string' ?
                     parameters.outName :
-                    rawJson.projectId + '_' + (rawJson.commitHash || '').substr(1, 6);
+                    projectJson.projectId + '_' + (projectJson.commitHash || '').substr(1, 6);
                 fileName += '.webgmex';
 
                 projectPackage.descriptor.name = fileName;
 
-                var objectHashes = projectCollectionJson.hashes.objects.keys(),
+                var objectHashes = projectJson.hashes.objects,
                     chunks = [];
 
                 if (parameters.chunkSize && typeof parameters.chunkSize === 'number') {
@@ -113,8 +115,8 @@ define([
                     if (index === 0) {
                         return storageUtils.getRawObjects(project, chunk)
                             .then(function (objects) {
-                                projectCollectionJson.objects = objects;
-                                return projectPackage.addFile('project.json', JSON.stringify(projectCollectionJson));
+                                projectJson.objects = objects;
+                                return projectPackage.addFile('project.json', JSON.stringify(projectJson));
                             });
                     } else {
                         return storageUtils.getRawObjects(project, chunk)
@@ -126,7 +128,7 @@ define([
             })
             .then(function () {
                 return blobUtil.addAssetsToProjectPackage(project.logger.fork('blobUtil'), blobClient,
-                    projectPackage, projectCollectionJson.hashes.assets);
+                    projectPackage, projectJson.hashes.assets, parameters.withAssets !== true);
             })
             .then(function () {
                 return projectPackage.save();
