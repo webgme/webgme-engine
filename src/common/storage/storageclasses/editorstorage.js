@@ -50,6 +50,30 @@ define([
             self.dispatchEvent(CONSTANTS.NETWORK_STATUS_CHANGED, connectionState);
         }
 
+        /**
+         * Dig out the context for the server-worker request. Needed to determine if
+         * the request needs be queued on the current commit-queue.
+         * @param {object} swmParams
+         * @returns {object|null} If the request contains a projectId and branchName. It
+         * will return an object with projectId, branchName and optionally a commitHash.
+         */
+        function extractSMWContext(swmParams) {
+            var result = {};
+
+            // TODO: This needs elaboration for e.g. plugins..
+            if (swmParams.projectId) {
+                result.projectId = swmParams.projectId;
+                if (swmParams.branchName || swmParams.branch || swmParams.commitHash || swmParams.commit) {
+                    result.branchName = swmParams.branchName || swmParams.branch;
+                    result.commitHash = swmParams.commitHash || swmParams.commit;
+
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
         this.open = function (networkHandler) {
             webSocket.connect(function (err, connectionState) {
                 if (err) {
@@ -505,6 +529,66 @@ define([
             }
         };
 
+        this.simpleRequest = function (parameters, callback) {
+            // This method is overridden here in order to avoid worker-requests
+            // to be sent out referencing commits that haven't made it to the server yet.
+            var context = extractSMWContext(parameters),
+                commitHash,
+                deferred,
+                queuedInBranch;
+
+            if (context && projects[context.projectId]) {
+                // The request deals with a currently opened project.
+                if (context.commitHash) {
+                    commitHash = context.commitHash;
+
+                    if (context.branchName &&
+                        projects[context.projectId].branches[context.branchName].getQueuedHashes()
+                            .indexOf(context.commitHash) > -1) {
+                        // Since both commitHash and branchName was specified - pick that branch immediately.
+                        queuedInBranch = context.branchName;
+                    }
+
+                    Object.keys(projects[context.projectId].branches)
+                        .forEach(function (branchName) {
+                            if (!queuedInBranch && projects[context.projectId].branches[branchName].getQueuedHashes()
+                                .indexOf(context.commitHash) > -1) {
+                                queuedInBranch = branchName;
+                            }
+                        });
+                } else if (projects[context.projectId].branches[context.branchName]) {
+                    // There is no specific commit-associated with request. However since branchName was passed
+                    // we can only assume that it should run on the last commit in that branch.
+
+                    commitHash = projects[context.projectId].branches[context.branchName].getQueuedHashes()[0];
+
+                    if (commitHash) {
+                        queuedInBranch = context.branchName;
+                    }
+                }
+
+                if (queuedInBranch) {
+                    deferred = Q.defer();
+
+                    projects[context.projectId].branches[queuedInBranch].queueWorkerRequest(commitHash, {
+                        release: function () {
+                            StorageObjectLoaders.prototype.simpleRequest.call(self, parameters)
+                                .then(deferred.resolve)
+                                .catch(deferred.reject);
+                        },
+                        abort: function () {
+                            deferred.reject(new Error('Queued worker request was aborted. Commit ' + commitHash +
+                                ' in branch [' + queuedInBranch + '] never made it to the server.'));
+                        }
+                    });
+
+                    return deferred.promise.nodeify(callback);
+                }
+            }
+
+            return StorageObjectLoaders.prototype.simpleRequest.call(self, parameters).nodeify(callback);
+        };
+
         this._commitToBranch = function (projectId, branchName, commitData, oldCommitHash, callback) {
             var project = projects[projectId],
                 newCommitHash = commitData.commitObject._id,
@@ -577,6 +661,7 @@ define([
                 if (branch.isOpen) {
                     branch.callbackQueue[0](err, result);
                     if (!err && result) {
+                        branch.commitInserted(result.hash);
                         if (result.status === CONSTANTS.SYNCED) {
                             branch.inSync = true;
                             branch.updateHashes(null, result.hash);
@@ -628,7 +713,8 @@ define([
                             branch.dispatchBranchStatus(CONSTANTS.BRANCH_STATUS.ERROR, err);
                         }
                     } else {
-                        branch.dispatchBranchStatus(CONSTANTS.BRANCH_STATUS.ERROR, err);
+                        branch.dispatchBranchStatus(CONSTANTS.BRANCH_STATUS.ERROR,
+                            err || new Error('No result at commit.'));
                     }
                 } else {
                     logger.error('_pushNextQueuedCommit returned from server but the branch was closed, ' +
@@ -807,7 +893,7 @@ define([
                                     .catch(function (err) {
                                         try {
                                             if (err.message.indexOf('Commit object does not exist [' +
-                                                    queuedCommitHash) > -1) {
+                                                queuedCommitHash) > -1) {
                                                 // Commit never made it to the server - push it.
                                                 logger.debug('First queued commit never made it to the server - push!');
                                                 self._pushNextQueuedCommit(projectId, branchName);

@@ -25,6 +25,8 @@ define(['common/storage/constants'], function (CONSTANTS) {
         this.hashUpdateHandlers = [];
         this.callbackQueue = [];
 
+        this.pendingWorkerRequests = {};
+
         /**
          * @type {Error[]}
          */
@@ -60,6 +62,13 @@ define(['common/storage/constants'], function (CONSTANTS) {
 
         this.getOriginHash = function () {
             return originHash;
+        };
+
+        this.getQueuedHashes = function () {
+            return commitQueue
+                .map(function (commitData) {
+                    return commitData.commitObject[CONSTANTS.MONGO_ID];
+                });
         };
 
         this.updateHashes = function (newLocal, newOrigin) {
@@ -260,6 +269,20 @@ define(['common/storage/constants'], function (CONSTANTS) {
             for (i = 0; i < self.hashUpdateHandlers.length; i += 1) {
                 self.hashUpdateHandlers[i](data, commitQueue, updateQueue, counterCallback);
             }
+        };
+
+        this.queueWorkerRequest = function (commitHash, release, abort) {
+            this.pendingWorkerRequests[commitHash] = this.pendingWorkerRequests[commitHash] || [];
+
+            this.pendingWorkerRequests[commitHash].push({release: release, abort: abort});
+        };
+
+        this.commitInserted = function (commitHash) {
+            (this.pendingWorkerRequests[commitHash] || []).forEach(function (action) {
+                action.release();
+            });
+
+            delete this.pendingWorkerRequests[commitHash];
         };
     }
 
