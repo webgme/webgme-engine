@@ -1,7 +1,7 @@
 {
   "id": "ConfigurationArtifact",
   "name": "Configuration and Artifacts",
-  "version": "1.7.0",
+  "version": "2.22.0",
   "description": "Illustrates how to setup a configuration for the plugin and how to generate and return artifacts.",
   "icon": {
     "src": "",
@@ -78,6 +78,27 @@
       "value": "#FF0000",
       "regex": "^#([A-Fa-f0-9]{6})$",
       "valueType": "string"
+    },
+    {
+      "name": "food",
+      "displayName": "Food",
+      "description": "Food preference ordered",
+      "readOnly": false,
+      "value": [
+        "Grass",
+        "Mushrooms",
+        "Leaves",
+        "Antilope",
+        "Rabbit"
+      ],
+      "valueType": "sortable",
+      "valueItems": [
+        "Grass",
+        "Mushrooms",
+        "Leaves",
+        "Antilope",
+        "Rabbit"
+      ]
     },
     {
       "name": "file",
