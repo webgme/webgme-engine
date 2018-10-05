@@ -635,7 +635,8 @@ describe('climanager', function () {
                 throw new Error('Should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.include('Given namespace does not exist among the available:');
+                expect(err.message).to.include('Given namespace');
+                expect(err.message).to.include('does not exist among the available');
             })
             .nodeify(done);
     });
