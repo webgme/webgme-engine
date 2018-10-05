@@ -930,8 +930,13 @@ describe('Simple worker', function () {
                 done(new Error('missing error handling'));
             })
             .catch(function (err) {
-                expect(err.message).to.include('Given namespace does not exist');
-                done();
+                try {
+                    expect(err.message).to.include('Given namespace');
+                    expect(err.message).to.include('does not exist among the available');
+                    done();
+                } catch (e) {
+                    done(e);
+                }
             })
             .finally(restoreProcessFunctions)
             .done();
