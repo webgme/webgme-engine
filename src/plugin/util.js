@@ -38,8 +38,8 @@
 
         if (namespace) {
             if (libraryNames.indexOf(namespace) === -1) {
-                throw new Error('Given namespace does not exist among the available: "' +
-                    libraryNames + '".');
+                throw new Error('Given namespace "' + namespace + '" does not exist among the available: [' +
+                    libraryNames + '].');
             }
 
             for (path in paths2MetaNodes) {
