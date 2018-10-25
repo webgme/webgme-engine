@@ -11,12 +11,10 @@ describe('Invoke scenarios', function () {
     var pluginName = 'InvokerPlugin',
         projectName = 'InvokePluginScenariosProject',
         Q = testFixture.Q,
-        blobClient,
         gmeConfig,
         storage,
         expect,
         project,
-        core,
         commitHash,
         gmeAuth,
         importResult,
@@ -24,11 +22,9 @@ describe('Invoke scenarios', function () {
 
     before(function (done) {
         var logger = testFixture.logger.fork(pluginName),
-            PluginCliManager = require('../../../src/plugin/climanager'),
-            BlobClient = require('../../../src/server/middleware/blob/BlobClientWithFSBackend');
+            PluginCliManager = require('../../../src/plugin/climanager');
 
         gmeConfig = testFixture.getGmeConfig();
-        blobClient = new BlobClient(gmeConfig, logger);
 
         expect = testFixture.expect;
 
@@ -52,7 +48,6 @@ describe('Invoke scenarios', function () {
                 importResult = importResult_;
                 project = importResult.project;
                 commitHash = importResult.commitHash;
-                core = importResult.core;
 
                 pluginManager = new PluginCliManager(project, logger, gmeConfig);
 
