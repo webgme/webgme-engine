@@ -59,7 +59,10 @@ if (typeof define !== 'undefined') {
                 root = core.getRoot(self.activeNode);
 
             core.createNode({relid: 'I', parent: root, base: self.META.FCO});
-            this.invokePlugin('InvokedPlugin', {namespace: config.useNamespace ? 'sm' : ''}, function (err, result) {
+            this.invokePlugin('InvokedPlugin', {
+                namespace: config.useNamespace ? 'sm' : '',
+                pluginConfig: {doCheck: true}
+            }, function (err, result) {
                 if (result.success) {
                     self.result.setSuccess(true);
                     self.createMessage(root, JSON.stringify(Object.keys(self.META)), 'debug');

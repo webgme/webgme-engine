@@ -11,5 +11,14 @@
   "disableBrowserSideExecution": false,
   "dependencies": [],
   "writeAccessRequired": false,
-  "configStructure": []
+  "configStructure": [
+    {
+      "name": "doCheck",
+      "displayName": "do check",
+      "description": "check if the modifications of the invoker plugin exsist",
+      "value": false,
+      "valueType": "boolean",
+      "readOnly": false
+    }
+  ]
 }

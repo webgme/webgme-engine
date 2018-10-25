@@ -55,6 +55,7 @@ if (typeof define !== 'undefined') {
         InvokedPlugin.prototype.main = function (callback) {
             var activeNode = this.activeNode,
                 core = this.core,
+                config = this.getCurrentConfig(),
                 root = core.getRoot(activeNode),
                 relids;
 
@@ -63,6 +64,9 @@ if (typeof define !== 'undefined') {
             if (relids.indexOf('I') === -1) {
                 this.result.setSuccess(false);
             } else {
+                this.result.setSuccess(true);
+            }
+            if (config.doCheck !== true) {
                 this.result.setSuccess(true);
             }
             this.createMessage(root, JSON.stringify(Object.keys(this.META)), 'debug');

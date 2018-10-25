@@ -39,7 +39,9 @@ describe('CorePlugins', function () {
             'GuidCollider',
             'GenerateAll',
             'SavingDependency',
-            'OTAttributeEditing'
+            'OTAttributeEditing',
+            'InvokerPlugin',
+            'InvokedPlugin'
         ],
 
         pluginsShouldFail = [
