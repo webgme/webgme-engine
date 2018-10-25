@@ -85,12 +85,13 @@ describe('Invoke scenarios', function () {
             })
             .nodeify(done);
     });
-    it('initiated should have the limited META object if called with namespace', function (done) {
+
+    it('initiated should have the limited META object if called with namespace sm', function (done) {
         var pluginContext = {
                 branchName: 't2'
             },
             pluginConfig = {
-                useNamespace: true
+                useNamespace: 'sm'
             };
 
         Q.ninvoke(pluginManager, 'executePlugin', pluginName, pluginConfig, pluginContext)
@@ -98,8 +99,66 @@ describe('Invoke scenarios', function () {
                 expect(result.success).to.equal(true);
                 expect(result.messages.length).to.equal(2);
                 expect(JSON.parse(result.messages[0].message)).to.include
-                    .members(['sm.SM', 'sm.FCO', 'sm.state', 'sm.transition']);
-                expect(JSON.parse(result.messages[1].message)).to.have.members(['SM', 'FCO', 'state', 'transition']);
+                    .members(['sm.sm.SM', 'sm.sm.FCO', 'sm.sm.state', 'sm.sm.transition']);
+                expect(JSON.parse(result.messages[1].message))
+                    .to.include.members(['sm.SM', 'sm.FCO', 'sm.state', 'sm.transition']);
+            })
+            .nodeify(done);
+    });
+
+    it('initiator and initiated recursively should have the same META by default', function (done) {
+        var pluginContext = {
+                branchName: 't1'
+            },
+            pluginConfig = {callSelf: true};
+
+        Q.ninvoke(pluginManager, 'executePlugin', pluginName, pluginConfig, pluginContext)
+            .then(function (result) {
+                expect(result.success).to.equal(true);
+                expect(result.messages.length).to.equal(3);
+                expect(JSON.parse(result.messages[0].message)).to.have.members(JSON.parse(result.messages[1].message));
+                expect(JSON.parse(result.messages[0].message)).to.have.members(JSON.parse(result.messages[2].message));
+            })
+            .nodeify(done);
+    });
+
+    it('initiated should have the limited META object recursively if called with namespace sm', function (done) {
+        var pluginContext = {
+                branchName: 't2'
+            },
+            pluginConfig = {
+                useNamespace: 'sm',
+                callSelf: true
+            };
+
+        Q.ninvoke(pluginManager, 'executePlugin', pluginName, pluginConfig, pluginContext)
+            .then(function (result) {
+                expect(result.success).to.equal(true);
+                expect(result.messages.length).to.equal(3);
+                expect(JSON.parse(result.messages[0].message)).to.include
+                    .members(['sm.sm.SM', 'sm.sm.FCO', 'sm.sm.state', 'sm.sm.transition']);
+                expect(JSON.parse(result.messages[1].message))
+                    .to.include.members(['sm.SM', 'sm.FCO', 'sm.state', 'sm.transition']);
+                expect(JSON.parse(result.messages[2].message))
+                    .to.have.members(['SM', 'FCO', 'state', 'transition']);
+            })
+            .nodeify(done);
+    });
+
+    it('initiated should have the limited META object when initiator called with sm.sm', function (done) {
+        var pluginContext = {
+                branchName: 't2'
+            },
+            pluginConfig = {
+                useNamespace: 'sm.sm'
+            };
+
+        Q.ninvoke(pluginManager, 'executePlugin', pluginName, pluginConfig, pluginContext)
+            .then(function (result) {
+                expect(result.success).to.equal(true);
+                expect(result.messages.length).to.equal(2);
+                expect(JSON.parse(result.messages[1].message)).to.have
+                    .members(['SM', 'FCO', 'state', 'transition']);
             })
             .nodeify(done);
     });

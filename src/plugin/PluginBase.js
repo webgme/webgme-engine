@@ -735,15 +735,13 @@
 
                 if (context.namespace) {
                     pluginInstance.namespace = self.namespace === '' ?
-                        context : self.namespace + '.' + context.namespace;
+                        context.namespace : self.namespace + '.' + context.namespace;
 
-                    pluginInstance.META = {};
-                    for (metaName in self.META) {
-                        if (metaName.indexOf('.') > -1 &&
-                            metaName.substring(0, metaName.indexOf('.')) === context.namespace) {
-                            pluginInstance.META[metaName.substring(metaName.indexOf('.') + 1)] = self.META[metaName];
-                        }
-                    }
+                    pluginInstance.META = pluginUtil
+                        .getMetaNodesMap(pluginInstance.core,
+                            pluginInstance.core.getRoot(pluginInstance.activeNode),
+                            pluginInstance.logger,
+                            pluginInstance.namespace);
                 } else {
                     pluginInstance.namespace = self.namespace;
                     pluginInstance.META = self.META;

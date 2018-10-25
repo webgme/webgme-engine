@@ -58,25 +58,47 @@ if (typeof define !== 'undefined') {
                 core = self.core,
                 root = core.getRoot(self.activeNode);
 
-            core.createNode({relid: 'I', parent: root, base: self.META.FCO});
-            this.invokePlugin('InvokedPlugin', {
-                namespace: config.useNamespace ? 'sm' : '',
-                pluginConfig: {doCheck: true}
-            }, function (err, result) {
-                if (result.success) {
-                    self.result.setSuccess(true);
-                    self.createMessage(root, JSON.stringify(Object.keys(self.META)), 'debug');
+            if (config.callSelf) {
+                core.createNode({relid: 'I0', parent: root, base: self.META.FCO});
+                this.invokePlugin('InvokerPlugin', {
+                    namespace: config.useNamespace,
+                    pluginConfig: {callSelf: false, useNamespace: config.useNamespace}
+                }, function (err, result) {
+                    if (result.success) {
+                        self.result.setSuccess(true);
+                        self.createMessage(root, JSON.stringify(Object.keys(self.META)), 'debug');
 
-                    result.messages.forEach(function (message) {
-                        self.createMessage(root, message.message, message.severity);
-                    });
-                    callback(null, self.result);
-                } else {
-                    self.result.setSuccess(false);
-                    callback(null, self.result);
-                }
+                        result.messages.forEach(function (message) {
+                            self.createMessage(root, message.message, message.severity);
+                        });
+                        callback(null, self.result);
+                    } else {
+                        self.result.setSuccess(false);
+                        callback(null, self.result);
+                    }
+                });
+            } else {
+                core.createNode({relid: 'I', parent: root, base: self.META.FCO});
+                this.invokePlugin('InvokedPlugin', {
+                    namespace: config.useNamespace,
+                    pluginConfig: {doCheck: true}
+                }, function (err, result) {
+                    if (result.success) {
+                        self.result.setSuccess(true);
+                        self.createMessage(root, JSON.stringify(Object.keys(self.META)), 'debug');
 
-            });
+                        result.messages.forEach(function (message) {
+                            self.createMessage(root, message.message, message.severity);
+                        });
+                        callback(null, self.result);
+                    } else {
+                        self.result.setSuccess(false);
+                        callback(null, self.result);
+                    }
+
+                });
+            }
+
 
         };
 

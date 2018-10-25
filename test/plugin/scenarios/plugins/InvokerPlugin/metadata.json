@@ -20,7 +20,15 @@
     {
       "name": "useNamespace",
       "displayName": "should invoke with namespace",
-      "description": "if true the invoke will go with a namespace",
+      "description": "the namespace that the initiated should be called with",
+      "value": "",
+      "valueType": "string",
+      "readOnly": false
+    },
+    {
+      "name": "callSelf",
+      "displayName": "call itself first",
+      "description": "if true the invoke will invoke itself first",
       "value": false,
       "valueType": "boolean",
       "readOnly": false
