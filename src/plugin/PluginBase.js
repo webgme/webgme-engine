@@ -220,34 +220,34 @@
      * Example:
      *
      * [{
-         *    "name": "logChildrenNames",
-         *    "displayName": "Log Children Names",
-         *    "description": '',
-         *    "value": true, // this is the 'default config'
-         *    "valueType": "boolean",
-         *    "readOnly": false
-         * },{
-         *    "name": "logLevel",
-         *    "displayName": "Logger level",
-         *    "description": '',
-         *    "value": "info",
-         *    "valueType": "string",
-         *    "valueItems": [
-         *          "debug",
-         *          "info",
-         *          "warn",
-         *          "error"
-         *      ],
-         *    "readOnly": false
-         * },{
-         *    "name": "maxChildrenToLog",
-         *    "displayName": "Maximum children to log",
-         *    "description": 'Set this parameter to blabla',
-         *    "value": 4,
-         *    "minValue": 1,
-         *    "valueType": "number",
-         *    "readOnly": false
-         * }]
+     *    "name": "logChildrenNames",
+     *    "displayName": "Log Children Names",
+     *    "description": '',
+     *    "value": true, // this is the 'default config'
+     *    "valueType": "boolean",
+     *    "readOnly": false
+     * },{
+     *    "name": "logLevel",
+     *    "displayName": "Logger level",
+     *    "description": '',
+     *    "value": "info",
+     *    "valueType": "string",
+     *    "valueItems": [
+     *          "debug",
+     *          "info",
+     *          "warn",
+     *          "error"
+     *      ],
+     *    "readOnly": false
+     * },{
+     *    "name": "maxChildrenToLog",
+     *    "displayName": "Maximum children to log",
+     *    "description": 'Set this parameter to blabla',
+     *    "value": 4,
+     *    "minValue": 1,
+     *    "valueType": "number",
+     *    "readOnly": false
+     * }]
      *
      * @returns {object[]}
      */
@@ -739,8 +739,9 @@
 
                     pluginInstance.META = {};
                     for (metaName in self.META) {
-                        if (metaName.indexOf('.') > -1) {
-                            self.META[metaName.substring(metaName.indexOf('.') + 1)] = self.META[metaName];
+                        if (metaName.indexOf('.') > -1 &&
+                            metaName.substring(0, metaName.indexOf('.')) === context.namespace) {
+                            pluginInstance.META[metaName.substring(metaName.indexOf('.') + 1)] = self.META[metaName];
                         }
                     }
                 } else {

@@ -1,0 +1,111 @@
+/*eslint-env node, mocha*/
+/**
+ * @author pmeijer / https://github.com/pmeijer
+ */
+
+var testFixture = require('../../_globals');
+
+describe('Invoke scenarios', function () {
+    'use strict';
+
+    var pluginName = 'InvokerPlugin',
+        projectName = 'InvokePluginScenariosProject',
+        Q = testFixture.Q,
+        blobClient,
+        gmeConfig,
+        storage,
+        expect,
+        project,
+        core,
+        commitHash,
+        gmeAuth,
+        importResult,
+        pluginManager;
+
+    before(function (done) {
+        var logger = testFixture.logger.fork(pluginName),
+            PluginCliManager = require('../../../src/plugin/climanager'),
+            BlobClient = require('../../../src/server/middleware/blob/BlobClientWithFSBackend');
+
+        gmeConfig = testFixture.getGmeConfig();
+        blobClient = new BlobClient(gmeConfig, logger);
+
+        expect = testFixture.expect;
+
+        var importParam = {
+            projectSeed: './test/plugin/scenarios/seeds/namespaces.webgmex',
+            projectName: projectName,
+            logger: logger,
+            gmeConfig: gmeConfig
+        };
+
+        testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
+            .then(function (gmeAuth_) {
+                gmeAuth = gmeAuth_;
+                storage = testFixture.getMemoryStorage(logger, gmeConfig, gmeAuth);
+                return storage.openDatabase();
+            })
+            .then(function () {
+                return testFixture.importProject(storage, importParam);
+            })
+            .then(function (importResult_) {
+                importResult = importResult_;
+                project = importResult.project;
+                commitHash = importResult.commitHash;
+                core = importResult.core;
+
+                pluginManager = new PluginCliManager(project, logger, gmeConfig);
+
+                return Q.allDone([
+                    project.createBranch('t1', commitHash),
+                    project.createBranch('t2', commitHash)
+                ]);
+            })
+            .nodeify(done);
+    });
+
+    beforeEach(function (done) {
+        testFixture.rimraf('./test-tmp/blob-local-storage', done);
+    });
+
+    after(function (done) {
+        Q.allDone([
+            storage.closeDatabase(),
+            gmeAuth.unload()
+        ])
+            .nodeify(done);
+    });
+
+    it('initiator and initiated should have the same META by default', function (done) {
+        var pluginContext = {
+                branchName: 't1'
+            },
+            pluginConfig = {};
+
+        Q.ninvoke(pluginManager, 'executePlugin', pluginName, pluginConfig, pluginContext)
+            .then(function (result) {
+                expect(result.success).to.equal(true);
+                expect(result.messages.length).to.equal(2);
+                expect(JSON.parse(result.messages[0].message)).to.have.members(JSON.parse(result.messages[1].message));
+            })
+            .nodeify(done);
+    });
+    it('initiated should have the limited META object if called with namespace', function (done) {
+        var pluginContext = {
+                branchName: 't2'
+            },
+            pluginConfig = {
+                useNamespace: true
+            };
+
+        Q.ninvoke(pluginManager, 'executePlugin', pluginName, pluginConfig, pluginContext)
+            .then(function (result) {
+                expect(result.success).to.equal(true);
+                expect(result.messages.length).to.equal(2);
+                expect(JSON.parse(result.messages[0].message)).to.include
+                    .members(['sm.SM', 'sm.FCO', 'sm.state', 'sm.transition']);
+                expect(JSON.parse(result.messages[1].message)).to.have.members(['SM', 'FCO', 'state', 'transition']);
+            })
+            .nodeify(done);
+    });
+});
