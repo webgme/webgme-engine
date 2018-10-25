@@ -1,6 +1,6 @@
 /*eslint-env node, mocha*/
 /**
- * @author pmeijer / https://github.com/pmeijer
+ * @author kecso / https://github.com/kecso
  */
 
 var testFixture = require('../../_globals');
