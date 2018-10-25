@@ -739,7 +739,7 @@
 
                     pluginInstance.META = pluginUtil
                         .getMetaNodesMap(pluginInstance.core,
-                            pluginInstance.core.getRoot(pluginInstance.activeNode),
+                            pluginInstance.rootNode,
                             pluginInstance.logger,
                             pluginInstance.namespace);
                 } else {
