@@ -716,7 +716,6 @@
         getPluginClass()
             .then(function (PluginClass) {
                 var pluginConfig,
-                    metaName,
                     cfgKey;
 
                 pluginInstance = new PluginClass();
