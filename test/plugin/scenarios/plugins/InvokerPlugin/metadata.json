@@ -1,0 +1,37 @@
+{
+  "id": "InvokerPlugin",
+  "name": "Invoker Plugin",
+  "version": "0.1.0",
+  "description": "",
+  "icon": {
+    "class": "glyphicon glyphicon-cog",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": false,
+  "dependencies": [
+    {
+      "id": "InvokedPlugin",
+      "propagateConfig": false
+    }
+  ],
+  "writeAccessRequired": false,
+  "configStructure": [
+    {
+      "name": "useNamespace",
+      "displayName": "should invoke with namespace",
+      "description": "the namespace that the initiated should be called with",
+      "value": "",
+      "valueType": "string",
+      "readOnly": false
+    },
+    {
+      "name": "callSelf",
+      "displayName": "call itself first",
+      "description": "if true the invoke will invoke itself first",
+      "value": false,
+      "valueType": "boolean",
+      "readOnly": false
+    }
+  ]
+}

@@ -220,34 +220,34 @@
      * Example:
      *
      * [{
-         *    "name": "logChildrenNames",
-         *    "displayName": "Log Children Names",
-         *    "description": '',
-         *    "value": true, // this is the 'default config'
-         *    "valueType": "boolean",
-         *    "readOnly": false
-         * },{
-         *    "name": "logLevel",
-         *    "displayName": "Logger level",
-         *    "description": '',
-         *    "value": "info",
-         *    "valueType": "string",
-         *    "valueItems": [
-         *          "debug",
-         *          "info",
-         *          "warn",
-         *          "error"
-         *      ],
-         *    "readOnly": false
-         * },{
-         *    "name": "maxChildrenToLog",
-         *    "displayName": "Maximum children to log",
-         *    "description": 'Set this parameter to blabla',
-         *    "value": 4,
-         *    "minValue": 1,
-         *    "valueType": "number",
-         *    "readOnly": false
-         * }]
+     *    "name": "logChildrenNames",
+     *    "displayName": "Log Children Names",
+     *    "description": '',
+     *    "value": true, // this is the 'default config'
+     *    "valueType": "boolean",
+     *    "readOnly": false
+     * },{
+     *    "name": "logLevel",
+     *    "displayName": "Logger level",
+     *    "description": '',
+     *    "value": "info",
+     *    "valueType": "string",
+     *    "valueItems": [
+     *          "debug",
+     *          "info",
+     *          "warn",
+     *          "error"
+     *      ],
+     *    "readOnly": false
+     * },{
+     *    "name": "maxChildrenToLog",
+     *    "displayName": "Maximum children to log",
+     *    "description": 'Set this parameter to blabla',
+     *    "value": 4,
+     *    "minValue": 1,
+     *    "valueType": "number",
+     *    "readOnly": false
+     * }]
      *
      * @returns {object[]}
      */
@@ -716,7 +716,6 @@
         getPluginClass()
             .then(function (PluginClass) {
                 var pluginConfig,
-                    metaName,
                     cfgKey;
 
                 pluginInstance = new PluginClass();
@@ -735,14 +734,13 @@
 
                 if (context.namespace) {
                     pluginInstance.namespace = self.namespace === '' ?
-                        context : self.namespace + '.' + context.namespace;
+                        context.namespace : self.namespace + '.' + context.namespace;
 
-                    pluginInstance.META = {};
-                    for (metaName in self.META) {
-                        if (metaName.indexOf('.') > -1) {
-                            self.META[metaName.substring(metaName.indexOf('.') + 1)] = self.META[metaName];
-                        }
-                    }
+                    pluginInstance.META = pluginUtil
+                        .getMetaNodesMap(pluginInstance.core,
+                            pluginInstance.rootNode,
+                            pluginInstance.logger,
+                            pluginInstance.namespace);
                 } else {
                     pluginInstance.namespace = self.namespace;
                     pluginInstance.META = self.META;
