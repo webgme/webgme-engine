@@ -1,5 +1,22 @@
 # Change Log
 
+## [v2.22.0](https://github.com/webgme/webgme-engine/tree/v2.22.0) (2018-10-29)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.21.3...v2.22.0)
+
+**Implemented enhancements:**
+
+- More descriptive error message when given plugin nsp does not exist [\#132](https://github.com/webgme/webgme-engine/pull/132) ([pmeijer](https://github.com/pmeijer))
+- Add example of sortable plugin configs [\#131](https://github.com/webgme/webgme-engine/pull/131) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- META object with namespace in invoked plugin is empty [\#134](https://github.com/webgme/webgme-engine/issues/134)
+- Fixes \#134 META object with namespace in invoked plugin is empty [\#135](https://github.com/webgme/webgme-engine/pull/135) ([kecso](https://github.com/kecso))
+
+**Closed issues:**
+
+- Strategies for checking if a seed can be updated? [\#133](https://github.com/webgme/webgme-engine/issues/133)
+
 ## [v2.21.3](https://github.com/webgme/webgme-engine/tree/v2.21.3) (2018-09-13)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.21.2...v2.21.3)
 
