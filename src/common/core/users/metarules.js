@@ -269,30 +269,39 @@ define(['q', 'common/core/constants'], function (Q, CONSTANTS) {
             },
             names = core.getAttributeNames(node),
             validNames = core.getValidAttributeNames(node),
+            ownVal,
             i;
+
+        function checkValidValue(attrName) {
+            try {
+                if (!core.isValidAttributeValueOf(node, attrName, core.getAttribute(node, attrName))) {
+                    result.hasViolation = true;
+                    result.messages.push('Attribute "' + attrName + '" has invalid value "' +
+                        core.getAttribute(node, attrName) + '".');
+                }
+            } catch (e) {
+                if (e.message.indexOf('Invalid regular expression') > -1) {
+                    result.messages.push('Invalid regular expression defined for attribute "' + attrName + '"!');
+                    result.hasViolation = true;
+                } else {
+                    throw e;
+                }
+            }
+        }
 
         for (i = 0; i < names.length; i++) {
             if (validNames.indexOf(names[i]) !== -1) {
-                if (meta.attributes[names[i]].readonly === true && core.getOwnAttribute(node, names[i]) !== undefined &&
-                    core.isMetaNode(node) === false) {
-                    result.messages.push('Read-only attribute "' + names[i] +
-                        '" value has been set for a non-meta node!');
-                    result.hasViolation = true;
-                }
-
-                try {
-                    if (!core.isValidAttributeValueOf(node, names[i], core.getAttribute(node, names[i]))) {
+                if (meta.attributes[names[i]].readonly === true) {
+                    ownVal = core.getOwnAttribute(node, names[i]);
+                    if (ownVal !== undefined && core.isMetaNode(node) === false) {
+                        result.messages.push('Read-only attribute "' + names[i] +
+                            '" value has been set for a non-meta node!');
                         result.hasViolation = true;
-                        result.messages.push('Attribute "' + names[i] + '" has invalid value "' +
-                            core.getAttribute(node, names[i]) + '".');
+                    } else if (core.isMetaNode(node)) {
+                        checkValidValue(names[i]);
                     }
-                } catch (e) {
-                    if (e.message.indexOf('Invalid regular expression') > -1) {
-                        result.messages.push('Invalid regular expression defined for attribute "' + names[i] + '"!');
-                        result.hasViolation = true;
-                    } else {
-                        throw e;
-                    }
+                } else {
+                    checkValidValue(names[i]);
                 }
             } else {
                 result.hasViolation = true;
