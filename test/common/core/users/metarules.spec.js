@@ -847,5 +847,63 @@ describe('Meta Rules', function () {
                 })
                 .nodeify(done);
         });
+
+        it('should return violation for readonly attributes for non-meta node', function (done) {
+            getContext()
+                .then(function (c) {
+                    var n = c.core.createNode({parent: c.root, base: c.fco});
+
+                    c.core.setAttributeMeta(c.fco, 'readOnly', {
+                        type: 'string',
+                        readonly: true,
+                        default: 'hello there'
+                    });
+
+                    c.core.setAttribute(n, 'readOnly', 'VIOLATION');
+
+                    return checkNode(c.core, n);
+                })
+                .then(function (result) {
+                    expect(result.hasViolation).to.equal(true);
+                    expect(result.message).to.include('Read-only attribute "readOnly"');
+                })
+                .nodeify(done);
+        });
+
+        it('should NOT return violation for readonly attributes at meta node', function (done) {
+            getContext()
+                .then(function (c) {
+                    c.core.setAttributeMeta(c.fco, 'readOnly', {
+                        type: 'string',
+                        readonly: true,
+                        default: 'hello there'
+                    });
+
+                    return checkNode(c.core, c.fco);
+                })
+                .then(function (result) {
+                    expect(result.hasViolation).to.equal(false);
+                })
+                .nodeify(done);
+        });
+
+        it('should NOT return violation for readonly attributes #136', function (done) {
+            getContext()
+                .then(function (c) {
+                    var n = c.core.createNode({parent: c.root, base: c.fco});
+
+                    c.core.setAttributeMeta(c.fco, 'readOnly', {
+                        type: 'string',
+                        readonly: true,
+                        default: 'hello there'
+                    });
+
+                    return checkNode(c.core, n);
+                })
+                .then(function (result) {
+                    expect(result.hasViolation).to.equal(false, result.message);
+                })
+                .nodeify(done);
+        });
     });
 });
