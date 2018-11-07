@@ -19,8 +19,10 @@ function getClientConfig(gmeConfig) {
     delete clientConfig.authentication.jwt.renewBeforeExpires;
     delete clientConfig.authentication.jwt.privateKey;
     delete clientConfig.authentication.jwt.publicKey;
+    delete clientConfig.authentication.jwt.tokenGenerator;
     delete clientConfig.authentication.salts;
     delete clientConfig.authentication.authorizer;
+    delete clientConfig.authentication.adminAccount;
 
     delete clientConfig.executor.nonce;
     delete clientConfig.mongo;
