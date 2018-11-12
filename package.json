@@ -93,7 +93,7 @@
     "esprima": "^4.0.0",
     "http-proxy": "^1.17.0",
     "istanbul": "^0.4.5",
-    "karma": "^2.0.5",
+    "karma": "^3.1.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.1",
@@ -108,6 +108,6 @@
     "pkginfo": "^0.4.1",
     "rimraf": "^2.6.2",
     "ssl-root-cas": "^1.2.5",
-    "webgme-executor-worker": "^3.0.1"
+    "webgme-executor-worker": "^3.0.2"
   }
 }
