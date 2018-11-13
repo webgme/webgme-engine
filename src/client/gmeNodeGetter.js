@@ -375,7 +375,8 @@ define([], function () {
                 children: [],
                 sensitive: !noFilter,
                 multiplicity: false,
-                aspect: aspect
+                aspect: aspect,
+                cache: {}
             },
             fullList,
             filteredList,

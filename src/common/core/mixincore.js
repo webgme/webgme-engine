@@ -301,7 +301,7 @@ define([
             return ['containment'];
         }
 
-        function isTypeOf(node, typeNodeOrPath, alreadyVisited) {
+        function isTypeOf(node, typePath, alreadyVisited) {
             var base, mixins, i,
                 path = self.getPath(node);
 
@@ -311,18 +311,18 @@ define([
 
             alreadyVisited[path] = true;
 
-            if (innerCore.isTypeOf(node, typeNodeOrPath)) {
+            if (path === typePath) {
                 return true;
             }
 
             base = self.getBase(node);
-            if (base && isTypeOf(base, typeNodeOrPath, alreadyVisited)) {
+            if (base && isTypeOf(base, typePath, alreadyVisited)) {
                 return true;
             }
 
             mixins = getOrderedMixinList(node);
             for (i = 0; i < mixins.length; i += 1) {
-                if (isTypeOf(mixins[i], typeNodeOrPath, alreadyVisited)) {
+                if (isTypeOf(mixins[i], typePath, alreadyVisited)) {
                     return true;
                 }
             }
@@ -359,10 +359,12 @@ define([
                 return false;
             }
 
-            return isTypeOf(node, typeNodeOrPath, {});
+            return isTypeOf(node,
+                typeof typeNodeOrPath === 'string' ? typeNodeOrPath : innerCore.getPath(typeNodeOrPath),
+                {});
         };
 
-        this.isValidChildOf = function (node, parentNode) {
+        this.isValidChildOf = function (node, parentNode, cache) {
             if (!realNode(node)) {
                 return true;
             }
@@ -370,19 +372,21 @@ define([
                 metaNodes,
                 i;
 
-            if (innerCore.isValidChildOf(node, parentNode)) {
-                return true;
-            }
+            // FIXME: Isn' this covered by the logic below?
+            // if (innerCore.isValidChildOf(node, parentNode)) {
+            //     return true;
+            // }
 
             // Now we have to look deeper as containment rule may come from a mixin
-            childrenPaths = self.getValidChildrenPaths(parentNode);
+            childrenPaths = self.getValidChildrenPaths(parentNode, cache);
             metaNodes = self.getAllMetaNodes(node);
 
             for (i = 0; i < childrenPaths.length; i += 1) {
-                if (metaNodes[childrenPaths[i]] && self.isTypeOf(node, metaNodes[childrenPaths[i]])) {
+                if (metaNodes[childrenPaths[i]] && self.isTypeOf(node, childrenPaths[i])) {
                     return true;
                 }
             }
+
             return false;
         };
 
@@ -528,8 +532,18 @@ define([
             return jsonMeta;
         };
 
-        this.getValidChildrenPaths = function (node) {
-            return getValidNames(node, innerCore.getValidChildrenPaths, {});
+        this.getValidChildrenPaths = function (node, cache) {
+            cache = cache || {};
+            function wrapper(testNode) {
+                var path = innerCore.getPath(testNode);
+                if (!cache[path]) {
+                    cache[path] = innerCore.getValidChildrenPaths(testNode); // getOwnValidChildrenPaths is slower
+                }
+
+                return cache[path];
+            }
+
+            return getValidNames(node, wrapper, {});
         };
 
         this.getChildrenMeta = function (node) {

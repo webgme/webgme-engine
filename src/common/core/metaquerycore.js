@@ -60,13 +60,14 @@ define([
                 i, j,
                 typeCounters = {},
                 children = parameters.children || [],
+                cache = parameters.cache || {},
                 rules,
                 inAspect;
 
             rules = innerCore.getChildrenMeta(node) || {};
 
             for (i = 0; i < keys.length; i += 1) {
-                if (self.isValidChildOf(metaNodes[keys[i]], node)) {
+                if (innerCore.isValidChildOf(metaNodes[keys[i]], node, cache)) {
                     validNodes.push(metaNodes[keys[i]]);
                 }
             }
