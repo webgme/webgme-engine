@@ -57,6 +57,7 @@ define([
                 node = parameters.node,
                 metaNodes = self.getAllMetaNodes(node),
                 keys = Object.keys(metaNodes || {}),
+                validChildren = innerCore.getValidChildrenPaths(node),
                 i, j,
                 typeCounters = {},
                 children = parameters.children || [],
@@ -67,8 +68,10 @@ define([
             rules = innerCore.getChildrenMeta(node) || {};
 
             for (i = 0; i < keys.length; i += 1) {
-                if (innerCore.isValidChildOf(metaNodes[keys[i]], node, cache)) {
-                    validNodes.push(metaNodes[keys[i]]);
+                for (j = 0; j < validChildren.length; j += 1) {
+                    if (innerCore.isTypeOf(metaNodes[keys[i]], validChildren[j], cache)) {
+                        validNodes.push(metaNodes[keys[i]]);
+                    }
                 }
             }
 

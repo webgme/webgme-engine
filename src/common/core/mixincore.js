@@ -416,9 +416,10 @@ define([
                 metaNodes,
                 i;
 
-            if (innerCore.isValidTargetOf(node, source, name)) {
-                return true;
-            }
+            // FIXME: Isn' this covered by the logic below?
+            // if (innerCore.isValidTargetOf(node, source, name)) {
+            //     return true;
+            // }
 
             // Now we have to look deeper as pointer rule may come from a mixin
             targetPaths = self.getValidTargetPaths(source, name);
