@@ -3337,11 +3337,12 @@ define([
          * Retrieves the valid META nodes that can be base of a child of the node.
          * @param {object} parameters - the input parameters of the query.
          * @param {module:Core~Node} parameters.node - the node in question.
-         * @param {module:Core~Node[]} [parameters.children] - the current children of the node in question.
          * @param {bool} [parameters.sensitive=false] - if true, the query filters out the abstract and connection-like
          * nodes.
          * @param {bool} [parameters.multiplicity=false] - if true, the query tries to filter out even more
-         * nodes according to the multiplicity rules (the check is only meaningful if all the children were passed)
+         * nodes according to the multiplicity rules.
+         * @param {module:Core~Node[]} [parameters.children=[]] - the current children of the node in question
+         * (must be passed if multiplicity=true)
          * @param {string|null} [parameters.aspect=undefined] - if given, the query filters to contain only types that
          * are visible in the given aspect.
          * @return {module:Core~Node[]} The function returns a list of valid nodes that can be instantiated as a
@@ -3377,11 +3378,11 @@ define([
          * @param {object} parameters - the input parameters of the query.
          * @param {module:Core~Node} parameters.node - the node in question.
          * @param {string} parameters.name - the name of the set.
-         * @param {module:Core~Node[]} [parameters.members] - the current members of the set of the node in question.
          * @param {bool} [parameters.sensitive=false] - if true, the query filters out the abstract and connection-like
          * nodes.
          * @param {bool} [parameters.multiplicity=false] - if true, the query tries to filter out even more nodes
          * according to the multiplicity rules (the check is only meaningful if all the members were passed)
+         * @param {module:Core~Node[]} [parameters.members=[]] - the current members of the set of the node in question.
          *
          * @return {module:Core~Node[]} The function returns a list of valid nodes that can be instantiated as a
          * member of the set of the node.

@@ -456,10 +456,12 @@ define([
         };
 
         this.getValidPointerNames = function (node) {
+            //console.count('getValidPointerNames');
             return getValidNames(node, innerCore.getOwnValidPointerNames, {});
         };
 
         this.getValidSetNames = function (node) {
+            //console.count('getValidSetNames');
             return getValidNames(node, innerCore.getOwnValidSetNames, {});
         };
 
@@ -472,6 +474,7 @@ define([
         };
 
         this.getValidAspectNames = function (node) {
+            //console.count('getValidAspectNames');
             return getValidNames(node, innerCore.getOwnValidAspectNames, {});
         };
 
