@@ -37,33 +37,44 @@ define([
             return true;
         }
 
-        function getOrderedMixinList(node) {
-            var paths = innerCore.getOwnMemberPaths(node, CONSTANTS.MIXINS_SET),
+        function getOrderedMixinList(node, cache) {
+            var path = innerCore.getPath(node),
+                paths,
                 metaNodes,
-                helper = {},
-                orderedList = [],
+                helper,
+                orderedList,
                 guid,
                 i;
 
-            if (paths.length === 0) {
-                return orderedList;
+            if (cache && cache.orderedMixinList && cache.orderedMixinList[path]) {
+                return cache.orderedMixinList[path];
             }
 
-            metaNodes = self.getAllMetaNodes(node);
+            paths = innerCore.getOwnMemberPaths(node, CONSTANTS.MIXINS_SET);
+            helper = {};
+            orderedList = [];
 
-            for (i = 0; i < paths.length; i += 1) {
-                if (metaNodes[paths[i]]) {
-                    guid = self.getGuid(metaNodes[paths[i]]);
-                    helper[guid] = paths[i];
-                    orderedList.push(guid);
+            if (paths.length > 0) {
+                metaNodes = self.getAllMetaNodes(node);
+
+                for (i = 0; i < paths.length; i += 1) {
+                    if (metaNodes[paths[i]]) {
+                        guid = self.getGuid(metaNodes[paths[i]]);
+                        helper[guid] = paths[i];
+                        orderedList.push(guid);
+                    }
+
                 }
 
+                orderedList.sort();
+
+                for (i = 0; i < orderedList.length; i += 1) {
+                    orderedList[i] = metaNodes[helper[orderedList[i]]];
+                }
             }
 
-            orderedList.sort();
-
-            for (i = 0; i < orderedList.length; i += 1) {
-                orderedList[i] = metaNodes[helper[orderedList[i]]];
+            if (cache && cache.orderedMixinList) {
+                cache.orderedMixinList[path] = orderedList;
             }
 
             return orderedList;
@@ -301,7 +312,7 @@ define([
             return ['containment'];
         }
 
-        function isTypeOf(node, typePath, alreadyVisited) {
+        function isTypeOf(node, typePath, alreadyVisited, cache) {
             var base, mixins, i,
                 path = self.getPath(node);
 
@@ -316,13 +327,13 @@ define([
             }
 
             base = self.getBase(node);
-            if (base && isTypeOf(base, typePath, alreadyVisited)) {
+            if (base && isTypeOf(base, typePath, alreadyVisited, cache)) {
                 return true;
             }
 
-            mixins = getOrderedMixinList(node);
+            mixins = getOrderedMixinList(node, cache);
             for (i = 0; i < mixins.length; i += 1) {
-                if (isTypeOf(mixins[i], typePath, alreadyVisited)) {
+                if (isTypeOf(mixins[i], typePath, alreadyVisited, cache)) {
                     return true;
                 }
             }
@@ -354,14 +365,18 @@ define([
 
         //<editor-fold=Modified Methods>
 
-        this.isTypeOf = function (node, typeNodeOrPath) {
+        this.isTypeOf = function (node, typeNodeOrPath, cache) {
             if (!realNode(node)) {
                 return false;
             }
 
+            cache = cache || {};
+            cache.orderedMixinList = cache.orderedMixinList || {};
+
             return isTypeOf(node,
                 typeof typeNodeOrPath === 'string' ? typeNodeOrPath : innerCore.getPath(typeNodeOrPath),
-                {});
+                {},
+                cache);
         };
 
         this.isValidChildOf = function (node, parentNode, cache) {
@@ -371,6 +386,8 @@ define([
             var childrenPaths,
                 metaNodes,
                 i;
+
+            cache = cache || cache;
 
             // FIXME: Isn' this covered by the logic below?
             // if (innerCore.isValidChildOf(node, parentNode)) {
@@ -382,7 +399,7 @@ define([
             metaNodes = self.getAllMetaNodes(node);
 
             for (i = 0; i < childrenPaths.length; i += 1) {
-                if (metaNodes[childrenPaths[i]] && self.isTypeOf(node, childrenPaths[i])) {
+                if (metaNodes[childrenPaths[i]] && self.isTypeOf(node, childrenPaths[i], cache)) {
                     return true;
                 }
             }
@@ -534,13 +551,16 @@ define([
 
         this.getValidChildrenPaths = function (node, cache) {
             cache = cache || {};
+            cache.validChildrenPaths = cache.validChildrenPaths || {};
+
             function wrapper(testNode) {
                 var path = innerCore.getPath(testNode);
-                if (!cache[path]) {
-                    cache[path] = innerCore.getValidChildrenPaths(testNode); // getOwnValidChildrenPaths is slower
+                if (!cache.validChildrenPaths[path]) {
+                    // getOwnValidChildrenPaths is slower
+                    cache.validChildrenPaths[path] = innerCore.getValidChildrenPaths(testNode);
                 }
 
-                return cache[path];
+                return cache.validChildrenPaths[path];
             }
 
             return getValidNames(node, wrapper, {});
