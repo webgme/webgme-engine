@@ -400,12 +400,18 @@ define([], function () {
     GMENode.prototype.getValidChildrenMetaIds = function (parameters) {
         var coreParams = {
                 node: this._state.nodes[this._id].node,
-                sensitive: parameters.sensitive,
-                aspect: parameters.aspect,
                 cache: parameters.cache || {}
             },
             self = this,
             i;
+
+        if (parameters.sensitive) {
+            coreParams.sensitive = parameters.sensitive;
+        }
+
+        if (parameters.aspect) {
+            coreParams.aspect = parameters.aspect;
+        }
 
         if (parameters.childrenIds && parameters.multiplicity) {
             coreParams.multiplicity = true;
@@ -458,11 +464,14 @@ define([], function () {
         var coreParams = {
                 node: this._state.nodes[this._id].node,
                 name: parameters.name,
-                sensitive: parameters.sensitive,
                 cache: parameters.cache || {}
             },
             self = this,
             i;
+
+        if (parameters.sensitive) {
+            coreParams.sensitive = parameters.sensitive;
+        }
 
         if (parameters.memberIds && parameters.multiplicity) {
             coreParams.multiplicity = true;
