@@ -37,33 +37,44 @@ define([
             return true;
         }
 
-        function getOrderedMixinList(node) {
-            var paths = innerCore.getOwnMemberPaths(node, CONSTANTS.MIXINS_SET),
+        function getOrderedMixinList(node, cache) {
+            var path = innerCore.getPath(node),
+                paths,
                 metaNodes,
-                helper = {},
-                orderedList = [],
+                helper,
+                orderedList,
                 guid,
                 i;
 
-            if (paths.length === 0) {
-                return orderedList;
+            if (cache && cache.orderedMixinList && cache.orderedMixinList[path]) {
+                return cache.orderedMixinList[path];
             }
 
-            metaNodes = self.getAllMetaNodes(node);
+            paths = innerCore.getOwnMemberPaths(node, CONSTANTS.MIXINS_SET);
+            helper = {};
+            orderedList = [];
 
-            for (i = 0; i < paths.length; i += 1) {
-                if (metaNodes[paths[i]]) {
-                    guid = self.getGuid(metaNodes[paths[i]]);
-                    helper[guid] = paths[i];
-                    orderedList.push(guid);
+            if (paths.length > 0) {
+                metaNodes = self.getAllMetaNodes(node);
+
+                for (i = 0; i < paths.length; i += 1) {
+                    if (metaNodes[paths[i]]) {
+                        guid = self.getGuid(metaNodes[paths[i]]);
+                        helper[guid] = paths[i];
+                        orderedList.push(guid);
+                    }
+
                 }
 
+                orderedList.sort();
+
+                for (i = 0; i < orderedList.length; i += 1) {
+                    orderedList[i] = metaNodes[helper[orderedList[i]]];
+                }
             }
 
-            orderedList.sort();
-
-            for (i = 0; i < orderedList.length; i += 1) {
-                orderedList[i] = metaNodes[helper[orderedList[i]]];
+            if (cache && cache.orderedMixinList) {
+                cache.orderedMixinList[path] = orderedList;
             }
 
             return orderedList;
@@ -301,7 +312,7 @@ define([
             return ['containment'];
         }
 
-        function isTypeOf(node, typeNodeOrPath, alreadyVisited) {
+        function isTypeOf(node, typePath, alreadyVisited, cache) {
             var base, mixins, i,
                 path = self.getPath(node);
 
@@ -311,18 +322,18 @@ define([
 
             alreadyVisited[path] = true;
 
-            if (innerCore.isTypeOf(node, typeNodeOrPath)) {
+            if (path === typePath) {
                 return true;
             }
 
             base = self.getBase(node);
-            if (base && isTypeOf(base, typeNodeOrPath, alreadyVisited)) {
+            if (base && isTypeOf(base, typePath, alreadyVisited, cache)) {
                 return true;
             }
 
-            mixins = getOrderedMixinList(node);
+            mixins = getOrderedMixinList(node, cache);
             for (i = 0; i < mixins.length; i += 1) {
-                if (isTypeOf(mixins[i], typeNodeOrPath, alreadyVisited)) {
+                if (isTypeOf(mixins[i], typePath, alreadyVisited, cache)) {
                     return true;
                 }
             }
@@ -354,15 +365,21 @@ define([
 
         //<editor-fold=Modified Methods>
 
-        this.isTypeOf = function (node, typeNodeOrPath) {
+        this.isTypeOf = function (node, typeNodeOrPath, cache) {
             if (!realNode(node)) {
                 return false;
             }
 
-            return isTypeOf(node, typeNodeOrPath, {});
+            cache = cache || {};
+            cache.orderedMixinList = cache.orderedMixinList || {};
+
+            return isTypeOf(node,
+                typeof typeNodeOrPath === 'string' ? typeNodeOrPath : innerCore.getPath(typeNodeOrPath),
+                {},
+                cache);
         };
 
-        this.isValidChildOf = function (node, parentNode) {
+        this.isValidChildOf = function (node, parentNode, cache) {
             if (!realNode(node)) {
                 return true;
             }
@@ -370,19 +387,24 @@ define([
                 metaNodes,
                 i;
 
+            cache = cache || cache;
+
+            // TODO: this is only needed when the containment definition is outside of meta..
+            // TODO: (That is when it's defined between non-meta nodes)
             if (innerCore.isValidChildOf(node, parentNode)) {
                 return true;
             }
 
             // Now we have to look deeper as containment rule may come from a mixin
-            childrenPaths = self.getValidChildrenPaths(parentNode);
+            childrenPaths = self.getValidChildrenPaths(parentNode, cache);
             metaNodes = self.getAllMetaNodes(node);
 
             for (i = 0; i < childrenPaths.length; i += 1) {
-                if (metaNodes[childrenPaths[i]] && self.isTypeOf(node, metaNodes[childrenPaths[i]])) {
+                if (metaNodes[childrenPaths[i]] && self.isTypeOf(node, childrenPaths[i], cache)) {
                     return true;
                 }
             }
+
             return false;
         };
 
@@ -395,6 +417,8 @@ define([
                 metaNodes,
                 i;
 
+            // TODO: this is only needed when the set/pointer definition is outside of meta..
+            // TODO: (That is when it's defined between non-meta nodes)
             if (innerCore.isValidTargetOf(node, source, name)) {
                 return true;
             }
@@ -434,10 +458,12 @@ define([
         };
 
         this.getValidPointerNames = function (node) {
+            //console.count('getValidPointerNames');
             return getValidNames(node, innerCore.getOwnValidPointerNames, {});
         };
 
         this.getValidSetNames = function (node) {
+            //console.count('getValidSetNames');
             return getValidNames(node, innerCore.getOwnValidSetNames, {});
         };
 
@@ -450,6 +476,7 @@ define([
         };
 
         this.getValidAspectNames = function (node) {
+            //console.count('getValidAspectNames');
             return getValidNames(node, innerCore.getOwnValidAspectNames, {});
         };
 
@@ -528,8 +555,21 @@ define([
             return jsonMeta;
         };
 
-        this.getValidChildrenPaths = function (node) {
-            return getValidNames(node, innerCore.getValidChildrenPaths, {});
+        this.getValidChildrenPaths = function (node, cache) {
+            cache = cache || {};
+            cache.validChildrenPaths = cache.validChildrenPaths || {};
+
+            function wrapper(testNode) {
+                var path = innerCore.getPath(testNode);
+                if (!cache.validChildrenPaths[path]) {
+                    // getOwnValidChildrenPaths is slower
+                    cache.validChildrenPaths[path] = innerCore.getValidChildrenPaths(testNode);
+                }
+
+                return cache.validChildrenPaths[path];
+            }
+
+            return getValidNames(node, wrapper, {});
         };
 
         this.getChildrenMeta = function (node) {

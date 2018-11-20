@@ -120,6 +120,11 @@ describe('meta core', function () {
         core.isTypeOf(attrNode, setNode).should.be.false;
     });
 
+    it('node should be isTypeOf itself', function () {
+        core.isTypeOf(attrNode, attrNode).should.be.true;
+        core.isTypeOf(attrNode, core.getPath(attrNode)).should.be.true;
+    });
+
     it('checking types using paths', function () {
         core.isTypeOf(attrNode, core.getPath(base)).should.be.true;
         core.isTypeOf(attrNode, core.getPath(setNode)).should.be.false;

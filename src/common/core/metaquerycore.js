@@ -57,17 +57,21 @@ define([
                 node = parameters.node,
                 metaNodes = self.getAllMetaNodes(node),
                 keys = Object.keys(metaNodes || {}),
+                validChildren = innerCore.getValidChildrenPaths(node),
                 i, j,
                 typeCounters = {},
                 children = parameters.children || [],
+                cache = parameters.cache || {},
                 rules,
                 inAspect;
 
             rules = innerCore.getChildrenMeta(node) || {};
 
             for (i = 0; i < keys.length; i += 1) {
-                if (self.isValidChildOf(metaNodes[keys[i]], node)) {
-                    validNodes.push(metaNodes[keys[i]]);
+                for (j = 0; j < validChildren.length; j += 1) {
+                    if (innerCore.isTypeOf(metaNodes[keys[i]], validChildren[j], cache)) {
+                        validNodes.push(metaNodes[keys[i]]);
+                    }
                 }
             }
 

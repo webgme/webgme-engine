@@ -371,80 +371,125 @@ define([], function () {
 
     GMENode.prototype.getValidChildrenTypesDetailed = function (aspect, noFilter) {
         var parameters = {
-                node: this._state.nodes[this._id].node,
-                children: [],
+                childrenIds: this.getChildrenIds(),
                 sensitive: !noFilter,
                 multiplicity: false,
-                aspect: aspect
+                aspect: aspect,
+                cache: {}
             },
+            result = {},
             fullList,
             filteredList,
-            validTypes = {},
-            keys = this.getChildrenIds(),
             i;
 
-        for (i = 0; i < keys.length; i++) {
-            if (this._state.nodes[keys[i]]) {
-                parameters.children.push(this._state.nodes[keys[i]].node);
-            } else {
-                this._logger.warn('Child node, ' + keys[i] + ', not loaded at getValidChildrenTypes' +
-                    'Detailed invocation - cardinality constraints will not be enforced properly.');
-            }
-        }
-
-        fullList = this._state.core.getValidChildrenMetaNodes(parameters);
-
+        fullList = this.getValidChildrenMetaIds(parameters);
         parameters.multiplicity = true;
-        filteredList = this._state.core.getValidChildrenMetaNodes(parameters);
+        filteredList = this.getValidChildrenMetaIds(parameters);
 
         for (i = 0; i < fullList.length; i += 1) {
-            validTypes[this._state.core.getPath(fullList[i])] = false;
+            result[fullList[i]] = false;
         }
 
         for (i = 0; i < filteredList.length; i += 1) {
-            validTypes[this._state.core.getPath(filteredList[i])] = true;
+            result[filteredList[i]] = true;
         }
 
-        return validTypes;
+        return result;
+    };
+
+    GMENode.prototype.getValidChildrenMetaIds = function (parameters) {
+        var coreParams = {
+                node: this._state.nodes[this._id].node,
+                cache: parameters.cache || {}
+            },
+            self = this,
+            i;
+
+        if (parameters.sensitive) {
+            coreParams.sensitive = parameters.sensitive;
+        }
+
+        if (parameters.aspect) {
+            coreParams.aspect = parameters.aspect;
+        }
+
+        if (parameters.childrenIds && parameters.multiplicity) {
+            coreParams.multiplicity = true;
+            coreParams.children = [];
+            for (i = 0; i < parameters.childrenIds.length; i++) {
+                if (this._state.nodes[parameters.childrenIds[i]]) {
+                    coreParams.children.push(this._state.nodes[parameters.childrenIds[i]].node);
+                } else {
+                    this._logger.warn('Child node [' + parameters.childrenIds[i] + '] not loaded at ' +
+                        'getValidChildrenMetaIds - cardinality constraints will not be enforced properly.');
+                }
+            }
+        }
+
+        return this._state.core.getValidChildrenMetaNodes(coreParams)
+            .map(function (coreNode) {
+                return self._state.core.getPath(coreNode);
+            });
     };
 
     GMENode.prototype.getValidSetMemberTypesDetailed = function (setName) {
         var parameters = {
                 node: this._state.nodes[this._id].node,
-                members: [],
+                memberIds: this.getMemberIds(setName),
                 sensitive: true,
                 multiplicity: false,
                 name: setName
             },
+            result = {},
             fullList,
             filteredList,
-            validTypes = {},
-            keys = this.getMemberIds(setName),
             i;
 
-        for (i = 0; i < keys.length; i++) {
-            if (this._state.nodes[keys[i]]) {
-                parameters.members.push(this._state.nodes[keys[i]].node);
-            } else {
-                this._logger.warn('Member node, ' + keys[i] + ', not loaded at getValidSetMemberTypes' +
-                    'Detailed invocation - cardinality constraints will not be enforced properly.');
-            }
-        }
-
-        fullList = this._state.core.getValidSetElementsMetaNodes(parameters);
-
+        fullList = this.getValidSetElementsMetaIds(parameters);
         parameters.multiplicity = true;
-        filteredList = this._state.core.getValidSetElementsMetaNodes(parameters);
+        filteredList = this.getValidSetElementsMetaIds(parameters);
 
         for (i = 0; i < fullList.length; i += 1) {
-            validTypes[this._state.core.getPath(fullList[i])] = false;
+            result[fullList[i]] = false;
         }
 
         for (i = 0; i < filteredList.length; i += 1) {
-            validTypes[this._state.core.getPath(filteredList[i])] = true;
+            result[filteredList[i]] = true;
         }
 
-        return validTypes;
+        return result;
+    };
+
+    GMENode.prototype.getValidSetElementsMetaIds = function (parameters) {
+        var coreParams = {
+                node: this._state.nodes[this._id].node,
+                name: parameters.name,
+                cache: parameters.cache || {}
+            },
+            self = this,
+            i;
+
+        if (parameters.sensitive) {
+            coreParams.sensitive = parameters.sensitive;
+        }
+
+        if (parameters.memberIds && parameters.multiplicity) {
+            coreParams.multiplicity = true;
+            coreParams.members = [];
+            for (i = 0; i < parameters.memberIds.length; i++) {
+                if (this._state.nodes[parameters.memberIds[i]]) {
+                    coreParams.members.push(this._state.nodes[parameters.memberIds[i]].node);
+                } else {
+                    this._logger.warn('Member node [' + parameters.memberIds[i] + '] not loaded at ' +
+                        'getValidSetElementsMetaIds - cardinality constraints will not be enforced properly.');
+                }
+            }
+        }
+
+        return this._state.core.getValidSetElementsMetaNodes(coreParams)
+            .map(function (coreNode) {
+                return self._state.core.getPath(coreNode);
+            });
     };
 
     GMENode.prototype.getMetaTypeId = GMENode.prototype.getBaseTypeId = function () {

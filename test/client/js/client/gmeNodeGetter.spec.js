@@ -160,6 +160,8 @@ describe('gmeNodeGetter', function () {
         expect(typeof node.getCrosscutsInfo).to.equal('function');
         expect(typeof node.getValidChildrenTypesDetailed).to.equal('function');
         expect(typeof node.getValidSetMemberTypesDetailed).to.equal('function');
+        expect(typeof node.getValidChildrenMetaIds).to.equal('function');
+        expect(typeof node.getValidSetElementsMetaIds).to.equal('function');
         expect(typeof node.getMetaTypeId).to.equal('function');
         expect(typeof node.isMetaNode).to.equal('function');
         expect(typeof node.isTypeOf).to.equal('function');
@@ -698,7 +700,10 @@ describe('gmeNodeGetter', function () {
     });
 
     it('should return a detailed information about valid children types of the node', function () {
-        var node = getNode('', logger, basicState, basicStoreNode);
+        var node = getNode('', logger, basicState, basicStoreNode),
+            res = ['/1', '/175547009', '/175547009/1104061497', '/175547009/1817665259', '/175547009/471466181',
+                '/175547009/871430202'];
+
 
         expect(node.getValidChildrenTypesDetailed(null, false)).to.eql({
             '/1': true,
@@ -718,13 +723,20 @@ describe('gmeNodeGetter', function () {
             '/175547009/871430202': true
         });
 
+        expect(node.getValidChildrenMetaIds({nodeId: node.getId()})).to.have.members(res);
+
         expect(node.getValidChildrenTypesDetailed('any', false)).to.eql({});
+        expect(node.getValidChildrenMetaIds({nodeId: node.getId(), aspect: 'any'})).to.deep.equal([]);
     });
 
     it('should return a detailed information about valid member types of the set of the node', function () {
         var node = getNode('/1303043463/2119137141', logger, basicState, basicStoreNode);
 
         expect(node.getValidSetMemberTypesDetailed('setPtr')).to.eql({'/175547009/871430202': true});
+        expect(node.getValidSetElementsMetaIds({
+            nodeId: node.getId(),
+            name: 'setPtr'
+        })).to.deep.eql(['/175547009/871430202']);
     });
 
     it('should return the id of the meta type of the node', function () {
