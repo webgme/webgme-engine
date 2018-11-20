@@ -389,10 +389,11 @@ define([
 
             cache = cache || cache;
 
-            // FIXME: Isn' this covered by the logic below?
-            // if (innerCore.isValidChildOf(node, parentNode)) {
-            //     return true;
-            // }
+            // TODO: this is only needed when the containment definition is outside of meta..
+            // TODO: (That is when it's defined between non-meta nodes)
+            if (innerCore.isValidChildOf(node, parentNode)) {
+                return true;
+            }
 
             // Now we have to look deeper as containment rule may come from a mixin
             childrenPaths = self.getValidChildrenPaths(parentNode, cache);
@@ -416,10 +417,11 @@ define([
                 metaNodes,
                 i;
 
-            // FIXME: Isn' this covered by the logic below?
-            // if (innerCore.isValidTargetOf(node, source, name)) {
-            //     return true;
-            // }
+            // TODO: this is only needed when the set/pointer definition is outside of meta..
+            // TODO: (That is when it's defined between non-meta nodes)
+            if (innerCore.isValidTargetOf(node, source, name)) {
+                return true;
+            }
 
             // Now we have to look deeper as pointer rule may come from a mixin
             targetPaths = self.getValidTargetPaths(source, name);
