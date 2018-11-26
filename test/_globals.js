@@ -67,6 +67,7 @@ var WebGME = require('../index'),
     _BlobClient,
     _Project,
     _STORAGE_CONSTANTS,
+    _CONSTANTS,
 
     _should,
     _expect,
@@ -223,6 +224,14 @@ Object.defineProperties(exports, {
                 _STORAGE_CONSTANTS = requireJS('common/storage/constants');
             }
             return _STORAGE_CONSTANTS;
+        }
+    },
+    CONSTANTS: {
+        get: function () {
+            if (!_CONSTANTS) {
+                _CONSTANTS = requireJS('common/Constants');
+            }
+            return _CONSTANTS;
         }
     },
     storageUtil: {

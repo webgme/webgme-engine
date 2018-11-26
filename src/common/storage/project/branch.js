@@ -35,8 +35,10 @@ define(['common/storage/constants'], function (CONSTANTS) {
         this._remoteUpdateHandler = null;
 
         this.cleanUp = function () {
-            var i,
+            var commitHash,
+                i,
                 commitResult;
+
             self.isOpen = false;
             self.branchStatusHandlers = [];
             self.hashUpdateHandlers = [];
@@ -50,7 +52,17 @@ define(['common/storage/constants'], function (CONSTANTS) {
                 };
                 self.callbackQueue[i](null, commitResult);
             }
+
             self.callbackQueue = [];
+
+            for (commitHash in self.pendingWorkerRequests) {
+                (this.pendingWorkerRequests[commitHash] || [])
+                    .forEach(function (action) {
+                        action.abort();
+                    });
+            }
+
+            self.pendingWorkerRequests = {};
             commitQueue = [];
             updateQueue = [];
         };
@@ -271,10 +283,10 @@ define(['common/storage/constants'], function (CONSTANTS) {
             }
         };
 
-        this.queueWorkerRequest = function (commitHash, release, abort) {
+        this.queueWorkerRequest = function (commitHash, action) {
             this.pendingWorkerRequests[commitHash] = this.pendingWorkerRequests[commitHash] || [];
 
-            this.pendingWorkerRequests[commitHash].push({release: release, abort: abort});
+            this.pendingWorkerRequests[commitHash].push(action);
         };
 
         this.commitInserted = function (commitHash) {

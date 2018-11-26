@@ -640,7 +640,7 @@ define([
                             logger.debug('_commitToBranch, commit was NOT first in queue');
                         }
                     } else {
-                        callback(new Error('Commit halted when loaded in users: ' + err));
+                        callback(new Error('Commit halted when loaded in users (proceed was not true).'));
                     }
                 });
             } else {
