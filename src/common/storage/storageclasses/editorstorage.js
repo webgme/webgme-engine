@@ -54,13 +54,12 @@ define([
          * Dig out the context for the server-worker request. Needed to determine if
          * the request needs be queued on the current commit-queue.
          * @param {object} swmParams
-         * @returns {object|null} If the request contains a projectId and branchName. It
-         * will return an object with projectId, branchName and optionally a commitHash.
+         * @returns {object|null} If the request contains a projectId and (branchName and/or commitHash). It
+         * will return an object with projectId and (branchName and/or commitHash).
          */
-        function extractSMWContext(swmParams) {
+        function extractSWMContext(swmParams) {
             var result = {};
 
-            // TODO: This needs elaboration for e.g. plugins..
             if (swmParams.projectId) {
                 result.projectId = swmParams.projectId;
                 if (swmParams.branchName || swmParams.branch || swmParams.commitHash || swmParams.commit) {
@@ -69,6 +68,13 @@ define([
 
                     return result;
                 }
+            } else if (swmParams.context &&
+                swmParams.context.managerConfig &&
+                swmParams.context.managerConfig.project) {
+                // This is a plugin request..
+                result.projectId = swmParams.context.managerConfig.project;
+                result.commitHash = swmParams.context.managerConfig.commitHash;
+                result.branchName = swmParams.context.managerConfig.branchName;
             }
 
             return null;
@@ -532,31 +538,36 @@ define([
         this.simpleRequest = function (parameters, callback) {
             // This method is overridden here in order to avoid worker-requests
             // to be sent out referencing commits that haven't made it to the server yet.
-            var context = extractSMWContext(parameters),
+            var context = extractSWMContext(parameters),
                 commitHash,
                 deferred,
                 queuedInBranch;
 
             if (context && projects[context.projectId]) {
-                // The request deals with a currently opened project.
+                // The request deals with a currently opened project - let's see if there is
+                // a commitHash and/or branch associated with the request..
                 if (context.commitHash) {
                     commitHash = context.commitHash;
 
                     if (context.branchName &&
+                        projects[context.projectId].branches[context.branchName] &&
                         projects[context.projectId].branches[context.branchName].getQueuedHashes()
                             .indexOf(context.commitHash) > -1) {
-                        // Since both commitHash and branchName was specified - pick that branch immediately.
+                        // Since both commitHash and branchName was specified and the commitHash was queued
+                        // in that branch - this is the branch to pick.
                         queuedInBranch = context.branchName;
+                    } else {
+                        // No branch was specified - let's see if the commit is queued in any opened branch.
+                        // (Typically there's really only one open.)
+                        Object.keys(projects[context.projectId].branches)
+                            .forEach(function (branchName) {
+                                if (projects[context.projectId].branches[branchName].getQueuedHashes()
+                                    .indexOf(context.commitHash) > -1) {
+                                    queuedInBranch = branchName;
+                                }
+                            });
                     }
-
-                    Object.keys(projects[context.projectId].branches)
-                        .forEach(function (branchName) {
-                            if (!queuedInBranch && projects[context.projectId].branches[branchName].getQueuedHashes()
-                                .indexOf(context.commitHash) > -1) {
-                                queuedInBranch = branchName;
-                            }
-                        });
-                } else if (projects[context.projectId].branches[context.branchName]) {
+                } else if (context.branchName && projects[context.projectId].branches[context.branchName]) {
                     // There is no specific commit-associated with request. However since branchName was passed
                     // we can only assume that it should run on the last commit in that branch.
 
