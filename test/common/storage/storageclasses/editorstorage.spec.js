@@ -105,6 +105,10 @@ describe('storage storageclasses editorstorage', function () {
                         importResult.project.createBranch('b5', importResult.commitHash),
                         importResult.project.createBranch('b6', importResult.commitHash),
                         importResult.project.createBranch('b7', importResult.commitHash),
+                        importResult.project.createBranch('b8', importResult.commitHash),
+                        importResult.project.createBranch('b9', importResult.commitHash),
+                        importResult.project.createBranch('b10', importResult.commitHash),
+                        importResult.project.createBranch('b11', importResult.commitHash),
                     ]);
                 })
                 .then(function () {
@@ -969,15 +973,24 @@ describe('storage storageclasses editorstorage', function () {
 
     // SimpleRequest queuing
 
-    function getSimpleRequestParams(commitHash) {
-        return {
+    function getSimpleRequestParams(commitHash, branchName) {
+        var params = {
             command: testFixture.CONSTANTS.SERVER_WORKER_REQUESTS.CHECK_CONSTRAINTS,
             checkType: 'META',
             includeChildren: false,
             nodePaths: ['/1'],
-            commitHash: commitHash,
             projectId: projectName2Id(projectName)
         };
+
+        if (commitHash) {
+            params.commitHash = commitHash;
+        }
+
+        if (branchName) {
+            params.branchName = branchName;
+        }
+
+        return params;
     }
 
     it('should not initiate request until queued commit was inserted at server', function (done) {
@@ -995,6 +1008,8 @@ describe('storage storageclasses editorstorage', function () {
                                 done();
                             }
                         });
+
+                        // This is needed to reduce the risk of false positives when requests weren't queued.
                         setTimeout(function () {
                             callback(null, true);
                         }, 1000);
@@ -1055,6 +1070,124 @@ describe('storage storageclasses editorstorage', function () {
                 } else {
                     // 4) close the branch
                     storage.closeBranch(projectName2Id(projectName), 'b7').catch(done);
+                }
+            });
+    });
+
+    it('should proceed as normal if referring to a commit that is not queued', function (done) {
+        // This is mainly to increase the coverage.
+        storage.openProject(projectName2Id(projectName))
+            .then(function () {
+                function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
+                    if (data.local) {
+                        storage.simpleRequest(getSimpleRequestParams(originalHash), function (err) {
+                            if (err) {
+                                done(err);
+                            } else {
+                                done();
+                            }
+                        });
+
+                        callback(null, true);
+                    } else {
+                        callback(null, true);
+                    }
+                }
+
+                return storage.openBranch(projectName2Id(projectName), 'b8', hashUpdateHandler, testFixture.noop);
+            })
+            .then(function () {
+                return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b8', [originalHash],
+                    importResult.rootHash, {}, 'queued commit with no relation to the request');
+            })
+            .catch(done);
+    });
+
+    it('should queue commit when branchName and commitHash specified', function (done) {
+        storage.openProject(projectName2Id(projectName))
+            .then(function () {
+                function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
+                    var params;
+
+                    if (data.local) {
+                        params = getSimpleRequestParams(data.commitData.commitObject._id, 'b9');
+                        storage.simpleRequest(params, function (err) {
+                            try {
+
+                                expect(!!err).to.equal(true);
+                                expect(err.message).to.include('Queued worker request was aborted');
+                                done();
+                            } catch (e) {
+                                done(e);
+                            }
+                        });
+
+                        callback(null, false);
+                    } else {
+                        callback(null, true);
+                    }
+                }
+
+                return storage.openBranch(projectName2Id(projectName), 'b9', hashUpdateHandler, testFixture.noop);
+            })
+            .then(function () {
+                return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b9', [originalHash],
+                    importResult.rootHash, {}, 'queued and aborted commit');
+            })
+            .catch(function (err) {
+                if (err.message.indexOf('Commit halted') < 0) {
+                    done(err);
+                } else {
+                    storage.closeBranch(projectName2Id(projectName), 'b9').catch(done);
+                }
+            });
+    });
+
+    it('should queue a plugin execution', function (done) {
+        storage.openProject(projectName2Id(projectName))
+            .then(function () {
+                function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
+                    var params;
+
+                    if (data.local) {
+                        params = {
+                            command: testFixture.CONSTANTS.SERVER_WORKER_REQUESTS.EXECUTE_PLUGIN,
+                            name: 'MinimalWorkingExample',
+                            context: {
+                                managerConfig: {
+                                    project: projectName2Id(projectName),
+                                    activeNode: '',
+                                    branchName: 'b11'
+                                }
+                            }
+                        };
+                        storage.simpleRequest(params, function (err) {
+                            try {
+                                expect(!!err).to.equal(true);
+                                expect(err.message).to.include('Queued worker request was aborted');
+                                done();
+                            } catch (e) {
+                                done(e);
+                            }
+                        });
+
+                        callback(null, false);
+                    } else {
+                        callback(null, true);
+                    }
+                }
+
+                return storage.openBranch(projectName2Id(projectName), 'b11', hashUpdateHandler, testFixture.noop);
+            })
+            .then(function () {
+                return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b11', [originalHash],
+                    importResult.rootHash, {}, 'queued and aborted commit');
+            })
+            .catch(function (err) {
+                if (err.message.indexOf('Commit halted') < 0) {
+                    done(err);
+                } else {
+                    storage.closeBranch(projectName2Id(projectName), 'b11').catch(done);
                 }
             });
     });

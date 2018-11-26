@@ -54,7 +54,7 @@ define([
          * Dig out the context for the server-worker request. Needed to determine if
          * the request needs be queued on the current commit-queue.
          * @param {object} swmParams
-         * @returns {object|null} If the request contains a projectId and (branchName and/or commitHash). It
+         * @returns {object} If the request contains a projectId and (branchName and/or commitHash). It
          * will return an object with projectId and (branchName and/or commitHash).
          */
         function extractSWMContext(swmParams) {
@@ -63,10 +63,9 @@ define([
             if (swmParams.projectId) {
                 result.projectId = swmParams.projectId;
                 if (swmParams.branchName || swmParams.branch || swmParams.commitHash || swmParams.commit) {
+                    // Add any of these.
                     result.branchName = swmParams.branchName || swmParams.branch;
                     result.commitHash = swmParams.commitHash || swmParams.commit;
-
-                    return result;
                 }
             } else if (swmParams.context &&
                 swmParams.context.managerConfig &&
@@ -77,7 +76,7 @@ define([
                 result.branchName = swmParams.context.managerConfig.branchName;
             }
 
-            return null;
+            return result;
         }
 
         this.open = function (networkHandler) {
@@ -543,7 +542,7 @@ define([
                 deferred,
                 queuedInBranch;
 
-            if (context && projects[context.projectId]) {
+            if (context.projectId && projects[context.projectId]) {
                 // The request deals with a currently opened project - let's see if there is
                 // a commitHash and/or branch associated with the request..
                 if (context.commitHash) {
