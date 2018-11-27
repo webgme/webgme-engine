@@ -9,8 +9,9 @@
 define([
     'plugin/managerbase',
     'blob/BlobClient',
-    'common/storage/project/project'
-], function (PluginManagerBase, BlobClient, Project) {
+    'common/storage/project/project',
+    'common/Constants',
+], function (PluginManagerBase, BlobClient, Project, CONSTANTS) {
     'use strict';
 
     var ROOT_PATH = '';
@@ -132,7 +133,11 @@ define([
                 context.managerConfig.project = context.managerConfig.project.projectId;
             }
 
-            storage.simpleRequest({command: 'executePlugin', name: pluginId, context: context}, function (err, result) {
+            storage.simpleRequest({
+                command: CONSTANTS.SERVER_WORKER_REQUESTS.EXECUTE_PLUGIN,
+                name: pluginId,
+                context: context
+            }, function (err, result) {
                 if (err) {
                     callback(err, err.result);
                 } else {

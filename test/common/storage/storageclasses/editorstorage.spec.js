@@ -1,14 +1,13 @@
 /*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
+ * @author pmeijer / https://github.com/pmeijer
  */
-
-
-var testFixture = require('../../../_globals.js');
 
 describe('storage storageclasses editorstorage', function () {
     'use strict';
-    var NodeStorage = testFixture.requirejs('common/storage/nodestorage'),
+    var testFixture = require('../../../_globals.js'),
+        NodeStorage = testFixture.requirejs('common/storage/nodestorage'),
         STORAGE_CONSTANTS = testFixture.requirejs('common/storage/constants'),
         gmeConfig = testFixture.getGmeConfig(),
         WebGME = testFixture.WebGME,
@@ -103,7 +102,13 @@ describe('storage storageclasses editorstorage', function () {
                         importResult.project.createBranch('b2', importResult.commitHash),
                         importResult.project.createBranch('b3', importResult.commitHash),
                         importResult.project.createBranch('b4', importResult.commitHash),
-                        importResult.project.createBranch('b5', importResult.commitHash)
+                        importResult.project.createBranch('b5', importResult.commitHash),
+                        importResult.project.createBranch('b6', importResult.commitHash),
+                        importResult.project.createBranch('b7', importResult.commitHash),
+                        importResult.project.createBranch('b8', importResult.commitHash),
+                        importResult.project.createBranch('b9', importResult.commitHash),
+                        importResult.project.createBranch('b10', importResult.commitHash),
+                        importResult.project.createBranch('b11', importResult.commitHash),
                     ]);
                 })
                 .then(function () {
@@ -135,6 +140,7 @@ describe('storage storageclasses editorstorage', function () {
     });
 
     beforeEach(function (done) {
+        var wasConnected = false;
         agent = superagent.agent();
         openSocketIo(server, agent, guestAccount, guestAccount)
             .then(function (result) {
@@ -146,8 +152,9 @@ describe('storage storageclasses editorstorage', function () {
                     gmeConfig);
                 storage.open(function (networkState) {
                     if (networkState === STORAGE_CONSTANTS.CONNECTED) {
+                        wasConnected = true;
                         done();
-                    } else {
+                    } else if (wasConnected === false) {
                         throw new Error('Unexpected network state: ' + networkState);
                     }
                 });
@@ -962,5 +969,226 @@ describe('storage storageclasses editorstorage', function () {
                 expect(commit.commitObject._id).to.equal(newCommitHash);
             })
             .nodeify(done);
+    });
+
+    // SimpleRequest queuing
+
+    function getSimpleRequestParams(commitHash, branchName) {
+        var params = {
+            command: testFixture.CONSTANTS.SERVER_WORKER_REQUESTS.CHECK_CONSTRAINTS,
+            checkType: 'META',
+            includeChildren: false,
+            nodePaths: ['/1'],
+            projectId: projectName2Id(projectName)
+        };
+
+        if (commitHash) {
+            params.commitHash = commitHash;
+        }
+
+        if (branchName) {
+            params.branchName = branchName;
+        }
+
+        return params;
+    }
+
+    it('should not initiate request until queued commit was inserted at server', function (done) {
+        this.timeout(3000);
+        storage.openProject(projectName2Id(projectName))
+            .then(function () {
+                function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
+                    // This is invoked after makeCommit and this point the commit hasn't been sent to the
+                    // server. It has been queued so the simple-request should be added
+                    if (data.local) {
+                        storage.simpleRequest(getSimpleRequestParams(data.commitData.commitObject._id), function (err) {
+                            if (err) {
+                                done(err);
+                            } else {
+                                done();
+                            }
+                        });
+
+                        // This is needed to reduce the risk of false positives when requests weren't queued.
+                        setTimeout(function () {
+                            callback(null, true);
+                        }, 1000);
+                    } else {
+                        // This is the initial load at branch open.
+                        callback(null, true);
+                    }
+                }
+
+                return storage.openBranch(projectName2Id(projectName), 'b6', hashUpdateHandler, testFixture.noop);
+            })
+            .then(function () {
+                // Branch opened and commit-loaded - make a commit to trigger hashUpdateHandler
+                return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b6', [originalHash],
+                    importResult.rootHash, {}, 'queued commit');
+            })
+            .catch(done);
+    });
+
+    it('should abort a queued simpleRequest is the branch is closed before the commit was made', function (done) {
+        storage.openProject(projectName2Id(projectName))
+            .then(function () {
+                function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
+                    // This is invoked after makeCommit and this point the commit hasn't been sent to the
+                    // server. It has been queued so the simple-request should be added
+                    if (data.local) {
+                        // 3) Initiate the simpleRequest (will be queued at the commit).
+                        storage.simpleRequest(getSimpleRequestParams(data.commitData.commitObject._id), function (err) {
+                            try {
+                                // 5) The worker-request is aborted since the queued commit was flushed when
+                                // the branch was closed.
+                                expect(!!err).to.equal(true);
+                                expect(err.message).to.include('Queued worker request was aborted');
+                                done();
+                            } catch (e) {
+                                done(e);
+                            }
+                        });
+
+                        // Abort the commit -> makeCommit returns error
+                        callback(null, false);
+                    } else {
+                        // 1) This is the initial load at branch open.
+                        callback(null, true);
+                    }
+                }
+
+                return storage.openBranch(projectName2Id(projectName), 'b7', hashUpdateHandler, testFixture.noop);
+            })
+            .then(function () {
+                // 2) Branch opened and commit-loaded - make a commit to trigger hashUpdateHandler
+                return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b7', [originalHash],
+                    importResult.rootHash, {}, 'queued and aborted commit');
+            })
+            .catch(function (err) {
+                if (err.message.indexOf('Commit halted') < 0) {
+                    done(err);
+                } else {
+                    // 4) close the branch
+                    storage.closeBranch(projectName2Id(projectName), 'b7').catch(done);
+                }
+            });
+    });
+
+    it('should proceed as normal if referring to a commit that is not queued', function (done) {
+        // This is mainly to increase the coverage.
+        storage.openProject(projectName2Id(projectName))
+            .then(function () {
+                function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
+                    if (data.local) {
+                        storage.simpleRequest(getSimpleRequestParams(originalHash), function (err) {
+                            if (err) {
+                                done(err);
+                            } else {
+                                done();
+                            }
+                        });
+
+                        callback(null, true);
+                    } else {
+                        callback(null, true);
+                    }
+                }
+
+                return storage.openBranch(projectName2Id(projectName), 'b8', hashUpdateHandler, testFixture.noop);
+            })
+            .then(function () {
+                return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b8', [originalHash],
+                    importResult.rootHash, {}, 'queued commit with no relation to the request');
+            })
+            .catch(done);
+    });
+
+    it('should queue commit when branchName and commitHash specified', function (done) {
+        storage.openProject(projectName2Id(projectName))
+            .then(function () {
+                function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
+                    var params;
+
+                    if (data.local) {
+                        params = getSimpleRequestParams(data.commitData.commitObject._id, 'b9');
+                        storage.simpleRequest(params, function (err) {
+                            try {
+
+                                expect(!!err).to.equal(true);
+                                expect(err.message).to.include('Queued worker request was aborted');
+                                done();
+                            } catch (e) {
+                                done(e);
+                            }
+                        });
+
+                        callback(null, false);
+                    } else {
+                        callback(null, true);
+                    }
+                }
+
+                return storage.openBranch(projectName2Id(projectName), 'b9', hashUpdateHandler, testFixture.noop);
+            })
+            .then(function () {
+                return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b9', [originalHash],
+                    importResult.rootHash, {}, 'queued and aborted commit');
+            })
+            .catch(function (err) {
+                if (err.message.indexOf('Commit halted') < 0) {
+                    done(err);
+                } else {
+                    storage.closeBranch(projectName2Id(projectName), 'b9').catch(done);
+                }
+            });
+    });
+
+    it('should queue a plugin execution', function (done) {
+        storage.openProject(projectName2Id(projectName))
+            .then(function () {
+                function hashUpdateHandler(data, commitQueue, updateQueue, callback) {
+                    var params;
+
+                    if (data.local) {
+                        params = {
+                            command: testFixture.CONSTANTS.SERVER_WORKER_REQUESTS.EXECUTE_PLUGIN,
+                            name: 'MinimalWorkingExample',
+                            context: {
+                                managerConfig: {
+                                    project: projectName2Id(projectName),
+                                    activeNode: '',
+                                    branchName: 'b11'
+                                }
+                            }
+                        };
+                        storage.simpleRequest(params, function (err) {
+                            try {
+                                expect(!!err).to.equal(true);
+                                expect(err.message).to.include('Queued worker request was aborted');
+                                done();
+                            } catch (e) {
+                                done(e);
+                            }
+                        });
+
+                        callback(null, false);
+                    } else {
+                        callback(null, true);
+                    }
+                }
+
+                return storage.openBranch(projectName2Id(projectName), 'b11', hashUpdateHandler, testFixture.noop);
+            })
+            .then(function () {
+                return Q.ninvoke(storage, 'makeCommit', projectName2Id(projectName), 'b11', [originalHash],
+                    importResult.rootHash, {}, 'queued and aborted commit');
+            })
+            .catch(function (err) {
+                if (err.message.indexOf('Commit halted') < 0) {
+                    done(err);
+                } else {
+                    storage.closeBranch(projectName2Id(projectName), 'b11').catch(done);
+                }
+            });
     });
 });
