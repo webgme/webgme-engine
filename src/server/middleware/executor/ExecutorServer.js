@@ -76,7 +76,7 @@ function ExecutorServer(options) {
         if (self.gmeConfig.executor.nonce) {
             workerNonce = req.headers['x-executor-nonce'];
             if (workerNonce) {
-                isAuth = bufferEqual(new Buffer(workerNonce), new Buffer(self.gmeConfig.executor.nonce));
+                isAuth = bufferEqual(Buffer.from(workerNonce), Buffer.from(self.gmeConfig.executor.nonce));
             } else {
                 isAuth = false;
             }

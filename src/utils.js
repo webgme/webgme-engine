@@ -46,7 +46,7 @@ function requestWebGMEToken(gmeConfig, userId, password, serverUrl, callback) {
             return Q.reject(new Error('password was not provided!'));
         }
 
-        req.set('Authorization', 'Basic ' + new Buffer(userId + ':' + password).toString('base64'));
+        req.set('Authorization', 'Basic ' + Buffer.from(userId + ':' + password).toString('base64'));
     }
 
     deferred = Q.defer();

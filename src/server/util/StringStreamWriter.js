@@ -11,14 +11,14 @@ var Stream = require('stream'),
 
 function StringStreamWriter(str, opt) {
     Stream.Writable.call(this, opt);
-    this._buffer = new Buffer(0);
+    this._buffer = Buffer.alloc(0);
 }
 
 util.inherits(StringStreamWriter, Stream.Writable);
 
 StringStreamWriter.prototype._write = function (chunk, encoding, callback) {
     // FIXME: This might be slow for big files.
-    this._buffer = Buffer.concat([this._buffer, new Buffer(chunk)]);
+    this._buffer = Buffer.concat([this._buffer, Buffer.from(chunk)]);
     callback(null);
 };
 
