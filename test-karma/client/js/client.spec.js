@@ -4364,9 +4364,7 @@ describe('GME client', function () {
             });
         });
 
-        //TODO something is just not right with the karma framework, at some point the database screws up
-        //FIXME
-        it.skip('should allow to undo if we modified the project', function (done) {
+        it('should allow to undo if we modified the project', function (done) {
             this.timeout(20000);
             var testId = 'basicUndoTest',
                 testSate = 'init',
@@ -4375,18 +4373,36 @@ describe('GME client', function () {
                 undoAvailable = function (clientObject, isAvailable) {
                     if (isAvailable && !undoExecuted) {
                         undoExecuted = true;
-                        client.undo(client.getActiveBranchName(), function (err) {
-                            expect(err).to.equal(null);
-
-                            client.removeEventListener(client.events.UNDO_AVAILABLE, undoAvailable);
-                            client.removeUI(testId);
-                            done();
+                        client.undo(client.getActiveBranchName(), function (err, commitResult) {
+                            try {
+                                client.removeEventListener(client.CONSTANTS.UNDO_AVAILABLE, undoAvailable);
+                                client.removeUI(testId);
+                                expect(err).to.equal(null);
+                                expect(commitResult.status).to.equal(client.CONSTANTS.STORAGE.SYNCED);
+                                //expect(client.getActiveCommitHash()).to.equal(baseCommitHash);
+                                client.getHistory(client.getActiveProjectId(),
+                                    client.getActiveBranchName(),
+                                    100,
+                                    function (err, res) {
+                                        try {
+                                            expect(err).to.equal(null);
+                                            expect(res.length).to.equal(1);
+                                            expect(res[0]._id).to.equal(baseCommitHash);
+                                            expect(res[0].parents).to.deep.equal([]);
+                                            done();
+                                        } catch (e) {
+                                            done(e);
+                                        }
+                                    });
+                            } catch (e) {
+                                done(e);
+                            }
                         });
                     }
                 };
 
             //first we add an event listener for the undo event
-            client.addEventListener(client.events.UNDO_AVAILABLE, undoAvailable);
+            client.addEventListener(client.CONSTANTS.UNDO_AVAILABLE, undoAvailable);
 
             buildUpForTest(testId, {'/323573539': {children: 0}}, function (events) {
                 if (testSate === 'init') {
@@ -4397,7 +4413,7 @@ describe('GME client', function () {
 
                     node = client.getNode(events[1].eid);
                     expect(node).not.to.equal(null);
-                    expect(node.getOwnEditableAttribute('name')).to.equal('check');
+                    expect(node.getOwnAttribute('name')).to.equal('check');
 
                     client.setAttribute(events[1].eid, 'name', 'cm', 'undo test - modify something');
                     return;
@@ -4410,18 +4426,17 @@ describe('GME client', function () {
 
                     node = client.getNode(events[1].eid);
                     expect(node).not.to.equal(null);
-                    expect(node.getOwnEditableAttribute('name')).to.equal('cm');
+                    expect(node.getOwnAttribute('name')).to.equal('cm');
                     return;
                 }
 
                 if (testSate === 'undo') {
-                    //console.warn('we were here');
                     testSate = null;
                     expect(events).to.have.length(2);
                     expect(events[1]).to.deep.equal({eid: '/323573539', etype: 'update'});
                     node = client.getNode(events[1].eid);
                     expect(node).not.to.equal(null);
-                    expect(node.getOwnEditableAttribute('name')).to.equal('check');
+                    expect(node.getOwnAttribute('name')).to.equal('check');
 
                     return;
                 }

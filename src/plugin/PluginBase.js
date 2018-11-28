@@ -438,7 +438,7 @@
      * @param {string|null} message - commit message
      * @param {function} [callback] - the result callback
      * @param {null|Error} callback.err - status of the call
-     * @param {module:Storage~commitResult} callback.commitResult - status of the commit made
+     * @param {module:Storage~CommitResult} callback.commitResult - status of the commit made
      * @return {external:Promise} If no callback is given, the result will be provided in a promise
      */
     PluginBase.prototype.save = function (message, callback) {

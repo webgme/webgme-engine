@@ -1115,15 +1115,6 @@ define([
                     return;
                 }
 
-                //undo-redo
-                addModification(commitData.commitObject, clearUndoRedo);
-                self.dispatchEvent(CONSTANTS.UNDO_AVAILABLE, canUndo());
-                self.dispatchEvent(CONSTANTS.REDO_AVAILABLE, canRedo());
-                self.dispatchEvent(CONSTANTS.NEW_COMMIT_STATE, {
-                    data: data,
-                    uiState: typeof self.uiStateGetter === 'function' ? self.uiStateGetter() : null
-                });
-
                 logger.debug('loading commitHash, local?', commitHash, data.local);
                 loading(commitData.commitObject.root, commitHash, commitData.changedNodes, function (err, aborted) {
                     if (err) {
@@ -1137,6 +1128,14 @@ define([
                     } else {
                         logger.debug('loading complete for incoming rootHash', commitData.commitObject.root);
                         logState('debug', 'hashUpdateHandler');
+                        //undo-redo
+                        addModification(commitData.commitObject, clearUndoRedo);
+                        self.dispatchEvent(CONSTANTS.UNDO_AVAILABLE, canUndo());
+                        self.dispatchEvent(CONSTANTS.REDO_AVAILABLE, canRedo());
+                        self.dispatchEvent(CONSTANTS.NEW_COMMIT_STATE, {
+                            data: data,
+                            uiState: typeof self.uiStateGetter === 'function' ? self.uiStateGetter() : null
+                        });
                         callback(null, true); // proceed: true
                     }
                 });
@@ -1468,14 +1467,14 @@ define([
 
             logState('info', 'undo [before setBranchHash]');
             storage.setBranchHash(state.project.projectId, branchName, state.undoRedoChain.commitHash, state.commitHash,
-                function (err) {
+                function (err, commitResult) {
                     if (err) {
                         //TODO do we need to handle this? How?
                         callback(err);
                         return;
                     }
                     logState('info', 'undo [after setBranchHash]');
-                    callback(null);
+                    callback(null, commitResult);
                 }
             );
 
@@ -1491,14 +1490,14 @@ define([
 
             logState('info', 'redo [before setBranchHash]');
             storage.setBranchHash(state.project.projectId, branchName, state.undoRedoChain.commitHash, state.commitHash,
-                function (err) {
+                function (err, commitResult) {
                     if (err) {
                         //TODO do we need to handle this? How?
                         callback(err);
                         return;
                     }
                     logState('info', 'redo [after setBranchHash]');
-                    callback(null);
+                    callback(null, commitResult);
                 }
             );
         };

@@ -597,6 +597,7 @@
  * @param {string} branchName - Must match the active branch.
  * @param {function} callback - Invoked when request completed.
  * @param {null|Error} callback.err - If the request failed.
+ * @param {module:Storage~CommitResult} callback.commitResult - The status of the commit made.
  * @instance
  */
 
@@ -608,6 +609,7 @@
  * @param {string} branchName - Must match the active branch.
  * @param {function} callback - Invoked when request completed.
  * @param {null|Error} callback.err - If the request failed.
+ * @param {module:Storage~CommitResult} callback.commitResult - The status of the commit made.
  * @instance
  */
 
