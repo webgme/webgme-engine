@@ -18,7 +18,7 @@ var StringStreamReader = function (str, opt) {
 util.inherits(StringStreamReader, Stream.Readable);
 
 StringStreamReader.prototype._read = function () {
-    var buf = new Buffer(this._str, 'utf-8');
+    var buf = Buffer.from(this._str, 'utf-8');
     this.push(buf);
     this.push(null);
 };

@@ -253,7 +253,7 @@ define([
             blob = new Blob([JSON.stringify(metadata.serialize(), null, 4)], {type: 'text/plain'});
             contentLength = blob.size;
         } else {
-            blob = new Buffer(JSON.stringify(metadata.serialize(), null, 4), 'utf8');
+            blob = Buffer.from(JSON.stringify(metadata.serialize(), null, 4), 'utf8');
             contentLength = blob.length;
         }
 

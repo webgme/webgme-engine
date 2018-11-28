@@ -153,7 +153,8 @@ function ConnectedHandler(options) {
 
         if (!webgmeToken) {
             // Only use credentials for the first request (password may change)..
-            req.set('Authorization', 'Basic ' + new Buffer(options.userId + ':' + options.password).toString('base64'));
+            req.set('Authorization', 'Basic ' +
+                Buffer.from(options.userId + ':' + options.password).toString('base64'));
         } else {
             req.set('Authorization', 'Bearer ' + webgmeToken);
         }

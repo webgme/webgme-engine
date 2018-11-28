@@ -377,7 +377,7 @@ function StandAloneServer(gmeConfig) {
         if (authorization && authorization.indexOf('Basic ') === 0) {
             logger.debug('Basic authentication request');
             // FIXME: ':' should not be in username nor in password
-            split = new Buffer(authorization.substr('Basic '.length), 'base64').toString('utf8').split(':');
+            split = Buffer.from(authorization.substr('Basic '.length), 'base64').toString('utf8').split(':');
             username = split[0];
             password = split[1];
             if (username && password) {

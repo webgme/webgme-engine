@@ -53,7 +53,7 @@ function AddOnHandler(options) {
         } else if (options.credentials) {
             logger.info('Credentials were given.. ');
             req = superagent.get(webgmeUrl + '/api/user/token')
-                .set('Authorization', 'Basic ' + new Buffer(options.credentials).toString('base64'));
+                .set('Authorization', 'Basic ' + Buffer.from(options.credentials).toString('base64'));
         } else {
             deferred.resolve();
             return deferred.promise;
