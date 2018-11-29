@@ -656,9 +656,8 @@ SafeStorage.prototype.getHistory = function (data, callback) {
     rejected = check(data !== null && typeof data === 'object', deferred, 'data is not an object.') ||
         check(typeof data.projectId === 'string', deferred, 'data.projectId is not a string.') ||
         check(REGEXP.PROJECT.test(data.projectId), deferred, 'data.projectId failed regexp: ' + data.projectId) ||
-        check(typeof data.start === 'string' ||
-            (typeof data.start === 'object' && data.start instanceof Array),
-        deferred, 'data.start is not a string or array') ||
+        check(typeof data.start === 'string' || (typeof data.start === 'object' && data.start instanceof Array),
+            deferred, 'data.start is not a string or array') ||
         check(typeof data.number === 'number', deferred, 'data.number is not a number');
 
     if (data.hasOwnProperty('username')) {
@@ -789,9 +788,11 @@ SafeStorage.prototype.makeCommit = function (data, callback) {
                 'data.commitObject._id is not a valid hash: ' + data.commitObject._id) ||
             check(data.commitObject.parents instanceof Array, deferred,
                 'data.commitObject.parents is not an array.') ||
-            check(typeof data.commitObject.parents[0] === 'string', deferred,
+            check(data.commitObject.parents.length === 0 || typeof data.commitObject.parents[0] === 'string', deferred,
                 'data.commitObject.parents[0] is not a string.') ||
-            check(data.commitObject.parents[0] === '' || REGEXP.HASH.test(data.commitObject.parents[0]), deferred,
+            check(
+                data.commitObject.parents.length === 0 || data.commitObject.parents[0] === '' ||
+                REGEXP.HASH.test(data.commitObject.parents[0]), deferred,
                 'data.commitObject.parents[0] is not a valid hash: ' + data.commitObject.parents[0]) ||
             check(REGEXP.HASH.test(data.commitObject.root), deferred,
                 'data.commitObject.root is not a valid hash: ' + data.commitObject.root);
