@@ -26,6 +26,9 @@ var webgme = require('../../index'),
 function _addPackageArtifacts(blobClient, packageHash) {
     var zip = new AdmZip(),
         artifact = blobClient.createArtifact('files'),
+        dataArtifact = blobClient.createArtifact('extraData'),
+        hasExtraData = false,
+        dataFileRegExp = new RegExp(/^data_[0-9]+\.json/),
         projectStr,
         deferred = Q.defer();
 
@@ -41,8 +44,11 @@ function _addPackageArtifacts(blobClient, packageHash) {
                     var entryName = entry.entryName;
                     if (entryName === 'project.json') {
                         projectStr = zip.readAsText(entry);
+                    } else if (dataFileRegExp.test(entryName)) {
+                        hasExtraData = true;
+                        return dataArtifact.addFileAsSoftLink(entryName, zip.readFile(entry));
                     } else {
-                        return Q.ninvoke(artifact, 'addFileAsSoftLink', entryName, zip.readFile(entry));
+                        return artifact.addFileAsSoftLink(entryName, zip.readFile(entry));
                     }
                 })
             );
@@ -55,7 +61,11 @@ function _addPackageArtifacts(blobClient, packageHash) {
             return blobUtil.addAssetsFromExportedProject(logger, blobClient, metadata);
         })
         .then(function () {
-            deferred.resolve(JSON.parse(projectStr));
+            var projectJson = JSON.parse(projectStr);
+            if (hasExtraData) {
+                projectJson.extraDataDescriptor = dataArtifact.descriptor;
+            }
+            deferred.resolve(projectJson);
         })
         .catch(deferred.reject);
 
@@ -84,8 +94,8 @@ main = function (argv) {
         cliStorage,
         project,
         params,
-        makeCommitParams = {commitMessage: 'loading project from package'},
         blobClient = new FSBlobClient(gmeConfig, logger.fork('BlobClient')),
+        makeCommitParams = {commitMessage: 'loading project from package', blobClient: blobClient},
         finishUp = function (error) {
             var ended = function () {
                 if (error) {

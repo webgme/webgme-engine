@@ -170,7 +170,7 @@ define(['q', './BlobMetadata'], function (Q, BlobMetadata) {
      */
     function buildProjectPackage(logger, blobClient, jsonExport, addAssets, filename, callback) {
         var artie = blobClient.createArtifact(jsonExport.projectId +
-                '_' + (jsonExport.branchName || jsonExport.commitHash)),
+            '_' + (jsonExport.branchName || jsonExport.commitHash)),
             assets = jsonExport.hashes.assets || [],
             deferred = Q.defer();
 
@@ -228,10 +228,10 @@ define(['q', './BlobMetadata'], function (Q, BlobMetadata) {
         return deferred.promise.nodeify(callback);
     }
 
-    function addAssetsToProjectPackage(logger, blobClient, artifact, assetHashes, skip, callback){
+    function addAssetsToProjectPackage(logger, blobClient, artifact, assetHashes, skip, callback) {
         var deferred = Q.defer();
 
-        if(skip){
+        if (skip) {
             assetHashes = [];
         }
 
@@ -249,7 +249,7 @@ define(['q', './BlobMetadata'], function (Q, BlobMetadata) {
             return getMetadataSafely(assetHash)
                 .then(function (metadata) {
                     if (metadata) {
-                        return _gatherFilesFromMetadataHashRec(logger, blobClient, metadata, assetHash, artie);
+                        return _gatherFilesFromMetadataHashRec(logger, blobClient, metadata, assetHash, artifact);
                     } else {
                         return Q();
                     }
@@ -262,10 +262,10 @@ define(['q', './BlobMetadata'], function (Q, BlobMetadata) {
                 for (i = 0; i < result.length; i += 1) {
                     if (result[i].state === 'rejected') {
                         error = result[i].reason;
-                        logger.debug('Gathering returned with error', assets[i], error);
+                        logger.debug('Gathering returned with error', result[i], error);
                         if (error.message.indexOf('Another content with the same name was already added.') === -1) {
                             //some real error
-                            throw new Error('gathering assets [' + assets[i] + '] failed:' + error.message);
+                            throw new Error('gathering assets [' + result[i] + '] failed:' + error.message);
                         }
                     }
                 }
@@ -274,7 +274,6 @@ define(['q', './BlobMetadata'], function (Q, BlobMetadata) {
             .catch(deferred.reject);
 
         return deferred.promise.nodeify(callback);
-
 
     }
 

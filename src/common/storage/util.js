@@ -9,8 +9,9 @@ define([
     'common/util/jsonPatcher',
     'q',
     'common/regexp',
-    'common/util/key'
-], function (CONSTANTS, jsonPatcher, Q, REGEXP, generateKey) {
+    'common/util/key',
+    'blob/BlobClient'
+], function (CONSTANTS, jsonPatcher, Q, REGEXP, generateKey, BlobClient) {
     'use strict';
 
     /**
@@ -215,13 +216,66 @@ define([
     }
 
     function _insertExtraItemsIntoProject(project, projectJson, options, callback) {
-        var deferred = Q.defer();
+        var deferred = Q.defer(),
+            bc = options.blobClient,
+            saveDataChunk = function (chunkHash) {
+                var promise = Q.defer();
 
+                bc.getObjectAsJSON(chunkHash)
+                    .then(function (chunk) {
+                        var savePromises = [];
+                        chunk.forEach(function (item) {
+                            savePromises.push(project.insertObject(item));
+                        });
+                        return Q.allSettled(savePromises);
+                    })
+                    .then(function (results) {
+                        var failed = false;
+                        results.forEach(function (result) {
+                            if (result.state !== 'fulfilled') {
+                                project.logger.error(result.reason);
+                                failed = true;
+                            }
+                        });
+
+                        if (failed) {
+                            promise.reject(new Error('Failed to insert all objects.'));
+                        } else {
+                            promise.resolve();
+                        }
+                    })
+                    .catch(promise.reject);
+
+                return promise.promise;
+            };
         if (!projectJson.extraDataDescriptor) {
             deferred.resolve();
-            return;
+        } else if (!bc) {
+            deferred.reject(new Error('To insert chunked project data, a BlobClient should be passed in options!'));
+        } else {
+            var dataFileKeys = Object.keys(projectJson.extraDataDescriptor.content);
+
+            Q.allSettled(dataFileKeys.map(function (key) {
+                return saveDataChunk(projectJson.extraDataDescriptor.content[key].content);
+            }))
+                .then(function (results) {
+                    var failed = false;
+                    results.forEach(function (result) {
+                        if (result.state !== 'fulfilled') {
+                            project.logger.error(result.reason);
+                            failed = true;
+                        }
+                    });
+
+                    if (failed) {
+                        deferred.reject(new Error('Failed to process all data chunks.'));
+                    } else {
+                        deferred.resolve();
+                    }
+                })
+                .catch(deferred.reject);
         }
-        
+
         return deferred.promise.nodeify(callback);
     }
 
@@ -328,7 +382,6 @@ define([
         },
 
         getProjectJsonDictionary: getProjectJsonDictionary,
-
         /**
          * Inserts a serialized project tree into the storage and associates it with a commitHash.
          *
@@ -348,19 +401,21 @@ define([
                 objects = projectJson.objects,
                 i;
 
-            for (i = 0; i < objects.length; i += 1) {
-                // we have to patch the object right before import, for smoother usage experience
-                toPersist[objects[i]._id] = objects[i];
-            }
+            _insertExtraItemsIntoProject(project, projectJson, options)
+                .then(function () {
+                    for (i = 0; i < objects.length; i += 1) {
+                        // we have to patch the object right before import, for smoother usage experience
+                        toPersist[objects[i]._id] = objects[i];
+                    }
 
-            options = options || {};
+                    options = options || {};
 
-            options.branch = options.branch || null;
-            options.parentCommit = options.parentCommit || [];
+                    options.branch = options.branch || null;
+                    options.parentCommit = options.parentCommit || [];
 
-
-            project.makeCommit(options.branch, options.parentCommit,
-                rootHash, toPersist, options.commitMessage || defaultCommitMessage)
+                    return project.makeCommit(options.branch, options.parentCommit,
+                        rootHash, toPersist, options.commitMessage || defaultCommitMessage)
+                })
                 .then(function (commitResult) {
                     deferred.resolve(commitResult);
                 })

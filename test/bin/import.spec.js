@@ -66,9 +66,9 @@ describe('import CLI tests', function () {
 
     after(function (done) {
         Q.allDone([
-                gmeAuth.unload(),
-                storage.closeDatabase()
-            ])
+            gmeAuth.unload(),
+            storage.closeDatabase()
+        ])
             .nodeify(done);
     });
 
@@ -122,9 +122,9 @@ describe('import CLI tests', function () {
         projectId = null;
 
         importCLI.main(['node', filename,
-                importPath,
-                '-p', 'someProject',
-                '-c', '#wrongCommitFormat'])
+            importPath,
+            '-p', 'someProject',
+            '-c', '#wrongCommitFormat'])
             .then(function () {
                 done(new Error('missing error handling'));
             })
@@ -141,11 +141,11 @@ describe('import CLI tests', function () {
         projectId = null;
 
         importCLI.main(['node', filename,
-                importPath,
-                '-p', existingProjectName,
-                '-o', 'badOwner',
-                '-u', 'badOwner'
-            ])
+            importPath,
+            '-p', existingProjectName,
+            '-o', 'badOwner',
+            '-u', 'badOwner'
+        ])
             .then(function () {
                 done(new Error('missing error handling'));
             })
@@ -162,11 +162,11 @@ describe('import CLI tests', function () {
         projectId = testFixture.projectName2Id(projectName);
 
         importCLI.main(['node', filename,
-                importPath,
-                '-m', gmeConfig.mongo.uri,
-                '-p', projectName,
-                '-u', gmeConfig.authentication.guestAccount,
-            ])
+            importPath,
+            '-m', gmeConfig.mongo.uri,
+            '-p', projectName,
+            '-u', gmeConfig.authentication.guestAccount,
+        ])
             .then(function () {
                 return checkBranch(projectId, ['master']);
             })
@@ -181,12 +181,12 @@ describe('import CLI tests', function () {
         projectId = null;
 
         importCLI.main(['node', filename,
-                importPath,
-                '-m', gmeConfig.mongo.uri,
-                '-p', existingProjectName,
-                '-o', gmeConfig.authentication.guestAccount,
-                '-b', 'second'
-            ])
+            importPath,
+            '-m', gmeConfig.mongo.uri,
+            '-p', existingProjectName,
+            '-o', gmeConfig.authentication.guestAccount,
+            '-b', 'second'
+        ])
             .then(function () {
                 return checkBranch(existingProjectId, ['master', 'second']);
             })
@@ -201,12 +201,12 @@ describe('import CLI tests', function () {
         projectId = testFixture.projectName2Id(projectName);
 
         importCLI.main(['node', filename,
-                importPath,
-                '-m', gmeConfig.mongo.uri,
-                '-p', projectName,
-                '-o', gmeConfig.authentication.guestAccount,
-                '-b', 'master'
-            ])
+            importPath,
+            '-m', gmeConfig.mongo.uri,
+            '-p', projectName,
+            '-o', gmeConfig.authentication.guestAccount,
+            '-b', 'master'
+        ])
             .then(function () {
                 return importCLI.main(['node', filename,
                     importPath,
@@ -351,11 +351,11 @@ describe('import CLI tests', function () {
         projectId = null;
 
         importCLI.main(['node', filename,
-                importPath,
-                '-m', gmeConfig.mongo.uri,
-                '-p', existingProjectName,
-                '-o', gmeConfig.authentication.guestAccount,
-                '-c', '#00009fd10000a0ed000012ea000033750000c336'])
+            importPath,
+            '-m', gmeConfig.mongo.uri,
+            '-p', existingProjectName,
+            '-o', gmeConfig.authentication.guestAccount,
+            '-c', '#00009fd10000a0ed000012ea000033750000c336'])
             .then(function () {
                 done(new Error('missing error handling'));
             })
@@ -367,18 +367,19 @@ describe('import CLI tests', function () {
             .done();
     });
 
-    it('should import chunked project file', function (done) {
+    it.only('should import chunked project file', function (done) {
+        this.timeout(50000);
         var chunkPath = './test/bin/import/chunk.webgmex';
 
         projectName = 'importChunkCliTest';
         projectId = testFixture.projectName2Id(projectName);
 
         importCLI.main(['node', filename,
-                chunkPath,
-                '-m', gmeConfig.mongo.uri,
-                '-p', projectName,
-                '-u', gmeConfig.authentication.guestAccount,
-            ])
+            chunkPath,
+            '-m', gmeConfig.mongo.uri,
+            '-p', projectName,
+            '-u', gmeConfig.authentication.guestAccount,
+        ])
             .then(function () {
                 return checkBranch(projectId, ['master']);
             })

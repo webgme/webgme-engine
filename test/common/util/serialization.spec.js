@@ -20,8 +20,6 @@ describe('Serialization', function () {
         logger = testFixture.logger.fork('serialization.spec'),
         BlobClient = testFixture.getBlobTestClient(),
         bc = new BlobClient(gmeConfig, logger, {}),
-        superagent = testFixture.superagent,
-        Q = testFixture.Q,
         expect = testFixture.expect,
         storage,
         gmeAuth;
@@ -54,7 +52,6 @@ describe('Serialization', function () {
         exports.exportProjectToFile(project, bc, {rootHash: core.getHash(rootNode)})
             .then(function (result) {
                 expect(result).not.to.eql(null);
-                console.log(result);
 
                 return bc.getObject(result.hash);
             })
@@ -76,7 +73,6 @@ describe('Serialization', function () {
         exports.exportProjectToFile(project, bc, {rootHash: core.getHash(rootNode), chunkSize: 10})
             .then(function (result) {
                 expect(result).not.to.eql(null);
-                console.log(result);
 
                 return bc.getObject(result.hash);
             })
@@ -101,7 +97,6 @@ describe('Serialization', function () {
         exports.exportProjectToFile(project, bc, {rootHash: core.getHash(rootNode), chunkSize: 17})
             .then(function (result) {
                 expect(result).not.to.eql(null);
-                console.log(result);
 
                 return bc.getObject(result.hash);
             })
@@ -123,7 +118,6 @@ describe('Serialization', function () {
         exports.exportProjectToFile(project, bc, {rootHash: core.getHash(rootNode), chunkSize: 1})
             .then(function (result) {
                 expect(result).not.to.eql(null);
-                console.log(result);
 
                 return bc.getObject(result.hash);
             })

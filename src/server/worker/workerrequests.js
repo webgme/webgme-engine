@@ -399,7 +399,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             });
     }
 
-    function _createProjectFromRawJson(storage, projectName, ownerId, branchName, projectJson, msg, callback) {
+    function _createProjectFromRawJson(storage, projectName, ownerId, branchName, projectJson, msg, bc, callback) {
         var result = {
                 projectId: null,
                 branchName: branchName,
@@ -416,7 +416,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             .then(function (res) {
                 project = res[0];
                 return storageUtils.insertProjectJson(project, projectJson, {
-                    commitMessage: msg
+                    commitMessage: msg,
+                    blobClient: bc
                 });
             })
             .then(function (commitResult) {
@@ -507,7 +508,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 }
 
                 return _createProjectFromRawJson(storage, projectName, ownerId,
-                    parameters.branchName || 'master', res.projectJson, commitMessage);
+                    parameters.branchName || 'master', res.projectJson, commitMessage, getBlobClient(webgmeToken));
             })
             .nodeify(finish);
     }
@@ -902,7 +903,10 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 return storageUtils.insertProjectJson(context.project,
                     contentJson,
-                    {commitMessage: 'commit that represents the selection content'});
+                    {
+                        commitMessage: 'commit that represents the selection content',
+                        blobClient: getBlobClient(webgmeToken)
+                    });
             })
             .then(function (commitResult) {
                 logger.debug('Selection content was persisted [' + commitResult.hash + ']');
@@ -933,7 +937,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             })
             .nodeify(finish);
     }
-
 
     function _persistLibrary(context, libraryName, branchName, update) {
         var persisted = context.core.persist(context.rootNode),
@@ -1036,7 +1039,10 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 projectJson = res.projectJson;
 
                 return storageUtils.insertProjectJson(context.project, projectJson,
-                    {commitMessage: 'commit that represents the library to be imported'});
+                    {
+                        commitMessage: 'commit that represents the library to be imported',
+                        blobClient: getBlobClient(webgmeToken)
+                    });
             })
             .then(function (/*commitResult*/) {
 
@@ -1136,7 +1142,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             .then(function (res) {
                 projectJson = res.projectJson;
                 return storageUtils.insertProjectJson(context.project, projectJson, {
-                    commitMessage: 'commit that represents the library to be updated'
+                    commitMessage: 'commit that represents the library to be updated',
+                    blobClient: getBlobClient(webgmeToken)
                 });
             })
             .then(function (/*commitResult*/) {
@@ -1215,7 +1222,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return storageUtils.insertProjectJson(context.project, projectJson, {
                     branch: parameters.branchName,
                     parentCommit: [context.commitObject[STORAGE_CONSTANTS.MONGO_ID]],
-                    commitMessage: 'update project from file'
+                    commitMessage: 'update project from file',
+                    blobClient: getBlobClient(webgmeToken)
                 });
             })
             .nodeify(finish);
