@@ -650,6 +650,42 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     });
             });
 
+            socket.on('insertObjects', function (data, callback) {
+                var commitStatus;
+                getUserIdFromToken(socket, data && data.webgmeToken)
+                    .then(function (userId) {
+                        var roomName;
+                        if (data.branchName) {
+                            roomName = data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName;
+                            if (socket.rooms.hasOwnProperty(roomName)) {
+                                logger.debug('Updater is in the branch-room', userId, roomName);
+                                data.socket = socket;
+                            }
+                        }
+
+                        data.username = userId;
+                        return storage.insertObjects(data);
+                    })
+                    .then(function (status) {
+                        var now = (new Date()).toISOString();
+
+                        commitStatus = status;
+                        return metadataStorage.updateProjectInfo(data.projectId, {
+                            modifiedAt: now,
+                            viewedAt: now,
+                            viewer: data.username,
+                            modifier: data.username
+                        });
+                    })
+                    .then(function () {
+                        callback(null, commitStatus);
+                    })
+                    .catch(function (err) {
+                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                        callback(err.message);
+                    });
+            });
+
             // Project operations and getters
             socket.on('getProjects', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
@@ -1021,7 +1057,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             } else if (documents[docId].disconnectedUsers.hasOwnProperty(data.sessionId) === false) {
                                 throw new Error('Document room was closed ' + docId + ' and then reopened.');
                             } else if (documents[docId].disconnectedUsers[data.sessionId].indexOf(
-                                data.watcherId) === -1) {
+                                    data.watcherId) === -1) {
                                 throw new Error('Document room to rejoin ' + docId + ' did not have current watcher.');
                             }
 

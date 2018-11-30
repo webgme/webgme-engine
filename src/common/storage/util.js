@@ -304,6 +304,7 @@ define([
                 defaultCommitMessage = 'Importing contents of [' +
                     projectJson.projectId + '@' + rootHash + ']',
                 objects = projectJson.objects,
+                cRes,
                 i;
 
             for (i = 0; i < objects.length; i += 1) {
@@ -319,7 +320,15 @@ define([
             project.makeCommit(options.branch, options.parentCommit,
                 rootHash, toPersist, options.commitMessage || defaultCommitMessage)
                 .then(function (commitResult) {
-                    deferred.resolve(commitResult);
+                    cRes = commitResult;
+                    console.log('was here'); //TODO this is how it is done...
+                    return project.insertObjects([
+                        {_id: '#blabla1', num: 42, str: '35', arr: ['', 'ss']},
+                        {_id: '#blabla2', num: 42, str: '35', arr: ['', 'ss']},
+                        {_id: '#blabla3', num: 42, str: '35', arr: ['', 'ss']}]);
+                })
+                .then(function () {
+                    deferred.resolve(cRes);
                 })
                 .catch(deferred.reject);
 

@@ -109,6 +109,11 @@ define([
             return storage.userId;
         };
 
+        this.insertObjects = function (coreObjects, callback) {
+            return Q.ninvoke(storage, 'insertObjects', self.projectId, coreObjects)
+                .nodeify(callback);
+        };
+
         /**
          * Start watching the document at the provided context.
          * @param {object} data

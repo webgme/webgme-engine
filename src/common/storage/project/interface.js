@@ -449,6 +449,24 @@ define([
         this.getUserId = function () {
             throw new Error('getUserId must be overridden in derived class');
         };
+
+        /**
+         * Pushes a collection of objects into the project's store. It is intended for advanced users only.
+         * Whenever a single batch cannot handle the amount of data this can help out by just adding known records to
+         * a new collection.
+         *
+         * @param {[module:Core~DataObject]} coreObjects - Core objects that needs to be inserted into the database.
+         * @param {function} [callback] - If provided no promise will be returned.
+         * @param {null|Error} callback.error - The result of the execution.
+         * @param {module:Storage~CommitResult} callback.result - Status about the commit and branch update.
+         *
+         * @return {external:Promise}  On success the promise will be resolved with
+         * {@link module:Storage~CommitResult} <b>result</b>.<br>
+         * On error the promise will be rejected with {Error} <b>error</b>.
+         */
+        this.insertObjects = function (coreObjects, callback) {
+            throw new Error('insertObjects must be overridden in derived class');
+        };
     }
 
     return ProjectInterface;

@@ -301,6 +301,14 @@ define([
                 .nodeify(callback);
         };
 
+        this.insertObjects = function (data, callback) {
+            return emitWithToken(data, 'insertObjects')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
+        };
+
         // REST like functions
         this.getProjects = function (data, callback) {
             return emitWithToken(data, 'getProjects')

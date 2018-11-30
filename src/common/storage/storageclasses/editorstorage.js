@@ -502,6 +502,10 @@ define([
             return commitData.commitObject;
         };
 
+        this.insertObjects = function (projectId, coreObjects, callback) {
+            webSocket.insertObjects({projectId: projectId, objects: coreObjects}, callback);
+        };
+
         this.setBranchHash = function (projectId, branchName, newHash, oldHash, callback) {
             var project = projects[projectId];
 
@@ -561,7 +565,7 @@ define([
                         Object.keys(projects[context.projectId].branches)
                             .forEach(function (branchName) {
                                 if (projects[context.projectId].branches[branchName].getQueuedHashes()
-                                    .indexOf(context.commitHash) > -1) {
+                                        .indexOf(context.commitHash) > -1) {
                                     queuedInBranch = branchName;
                                 }
                             });
@@ -903,7 +907,7 @@ define([
                                     .catch(function (err) {
                                         try {
                                             if (err.message.indexOf('Commit object does not exist [' +
-                                                queuedCommitHash) > -1) {
+                                                    queuedCommitHash) > -1) {
                                                 // Commit never made it to the server - push it.
                                                 logger.debug('First queued commit never made it to the server - push!');
                                                 self._pushNextQueuedCommit(projectId, branchName);

@@ -114,6 +114,7 @@ define(["common/util/assert", "common/storage/mongo", "common/storage/cache", "c
         p.setBranchHash = TASYNC.wrap(p.setBranchHash);
         p.getBranchHash = TASYNC.wrap(p.getBranchHash);
         p.makeCommit = TASYNC.wrap(p.makeCommit);
+        delete p.insertObjects; // should not be used via core
 
         project = p;
 

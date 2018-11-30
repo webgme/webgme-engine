@@ -276,6 +276,17 @@ function UserProject(dbProject, storage, mainLogger, gmeConfig) {
     this.getUserId = function () {
         return this.userName;
     };
+
+    this.insertObjects = function (coreObjects, callback) {
+        var data = {
+            username: self.userName,
+            projectId: self.projectId,
+            objects: coreObjects
+        };
+
+        return storage.insertObjects(data)
+            .nodeify(callback);
+    };
 }
 
 UserProject.prototype = Object.create(ProjectInterface.prototype);

@@ -885,4 +885,12 @@ Storage.prototype.traverse = function (data, callback) {
         .nodeify(callback);
 };
 
+Storage.prototype.insertObjects = function (data, callback) {
+    return this.database.openProject(data.projectId)
+        .then(function (project) {
+            return project.insertObjects(data.objects);
+        })
+        .nodeify(callback);
+};
+
 module.exports = Storage;
