@@ -14,7 +14,8 @@ var mongodb = require('mongodb'),
 
     CONSTANTS = requireJS('common/storage/constants'),
     CANON = requireJS('common/util/canon'),
-    REGEXP = requireJS('common/regexp');
+    REGEXP = requireJS('common/regexp'),
+    ERROR_DUPLICATE_KEY = 11000; // insertDocument :: caused by :: 11000 E11000 duplicate key error...
 
 function Mongo(mainLogger, gmeConfig) {
     var self = this,
@@ -85,7 +86,7 @@ function Mongo(mainLogger, gmeConfig) {
             if (rejected === false) {
                 collection.insertOne(object, function (err) {
                     // manually check duplicate keys
-                    if (err && err.code === 11000) {
+                    if (err && err.code === ERROR_DUPLICATE_KEY) {
                         collection.findOne({
                             _id: object._id
                         }, function (err2, data) {
@@ -194,8 +195,7 @@ function Mongo(mainLogger, gmeConfig) {
                     hash: newhash
                 }, function (err) {
                     if (err) {
-                        if (err.code === 11000) {
-                            // insertDocument :: caused by :: 11000 E11000 duplicate key error...
+                        if (err.code === ERROR_DUPLICATE_KEY) {
                             deferred.reject(new Error('branch hash mismatch'));
                         } else {
                             deferred.reject(err);
@@ -261,7 +261,7 @@ function Mongo(mainLogger, gmeConfig) {
 
             collection.updateOne(query, update, {upsert: true}, function (err/*, num*/) {
                 if (err) {
-                    if (err.code === 11000) {
+                    if (err.code === ERROR_DUPLICATE_KEY) {
                         deferred.reject(new Error('Tag already exists [' + name + ']'));
                     } else {
                         deferred.reject(err);
@@ -352,6 +352,95 @@ function Mongo(mainLogger, gmeConfig) {
                     }
                 }
             });
+
+            return deferred.promise.nodeify(callback);
+        };
+
+        this.insertObjects = function (objects, callback) {
+            var deferred = Q.defer(),
+                rejected = false;
+            if (objects === null || typeof objects !== 'object' ||
+                Array.isArray(objects) !== true || objects.length === 0) {
+                deferred.reject(new Error('objects should be a non-empty collection of objects'));
+                rejected = true;
+            }
+
+            if (rejected === false) {
+                objects.forEach(function (object, index) {
+                    if (object === null || typeof object !== 'object') {
+                        if (!rejected) {
+                            deferred.reject(new Error('object @position[' + index + '] is not an object'));
+                            rejected = true;
+                        }
+                    } else if (typeof object._id !== 'string' || !REGEXP.HASH.test(object._id)) {
+                        if (!rejected) {
+                            deferred.reject(new Error('object._id @position[' + index + '] is not a valid hash.'));
+                            rejected = true;
+                        }
+                    }
+                });
+            }
+
+
+            if (rejected === false) {
+                collection.insertMany(objects, {
+                    ordered: false,
+                    bypassDocumentValidation: true
+                }, function (err, result) {
+                    if (err && err.code === ERROR_DUPLICATE_KEY) {
+                        if (!err.writeErrors) {
+                            //Only a single object had duplicated key
+                            err.writeErrors = [{code: err.code, index: err.index}];
+                        }
+                        Q.allSettled(err.writeErrors.map(function (writeError) {
+                            var promise = Q.defer();
+                            if (writeError.code !== ERROR_DUPLICATE_KEY) {
+                                rejected = true;
+                                logger.error(new Error(writeError.errmsg));
+                                promise.resolve();
+                            } else {
+                                collection.findOne({
+                                    _id: objects[writeError.index]._id
+                                }, function (err2, data) {
+                                    var errMsg;
+                                    if (err2) {
+                                        rejected = true;
+                                        logger.error(err2);
+                                    } else {
+                                        if (CANON.stringify(objects[writeError.index]) === CANON.stringify(data)) {
+                                            logger.debug('tried to insert existing hash - the two objects were equal',
+                                                objects[writeError.index]._id);
+                                        } else {
+                                            errMsg = 'tried to insert existing hash - the two objects were NOT equal ';
+                                            logger.error(errMsg, {
+                                                metadata: {
+                                                    newObject: objects[writeError.index],
+                                                    oldObject: data
+                                                }
+                                            });
+                                            logger.error(new Error(errMsg + objects[writeError.index]._id));
+                                            rejected = true;
+                                        }
+                                    }
+                                    promise.resolve();
+                                });
+                            }
+                            return promise.promise;
+                        }))
+                            .then(function () {
+                                if (rejected) {
+                                    deferred.reject(new Error('object data mismatch happened'));
+                                } else {
+                                    deferred.resolve();
+                                }
+                            });
+                    } else if (err) {
+                        deferred.reject(err);
+                    } else {
+                        deferred.resolve();
+                    }
+                });
+            }
 
             return deferred.promise.nodeify(callback);
         };
@@ -490,7 +579,7 @@ function Mongo(mainLogger, gmeConfig) {
                     deferred.resolve(new MongoProject(projectId, collection));
                 })
                 .catch(function (err) {
-                    if (err.code === 11000) {
+                    if (err.code === ERROR_DUPLICATE_KEY) {
                         deferred.reject(new Error('Project already exists ' + projectId));
                     } else {
                         deferred.reject(err);

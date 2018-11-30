@@ -658,5 +658,114 @@ describe('Mongo storage', function () {
                 })
                 .done();
         });
+
+        it('should insert multiple objects in a batch', function (done) {
+            project.insertObjects([
+                {_id: '#blabla1', num: 42, str: '35', arr: ['', 'ss']},
+                {_id: '#blabla2', num: 42, str: '35', arr: ['', 'ss']},
+                {_id: '#blabla3', num: 42, str: '35', arr: ['', 'ss']}])
+                .then(done)
+                .catch(done);
+        });
+
+        it('should insert multiple objects multiple times in a batch', function (done) {
+            project.insertObjects([
+                {_id: '#blabla1', num: 42, str: '35', arr: ['', 'ss']},
+                {_id: '#blabla2', num: 42, str: '35', arr: ['', 'ss']},
+                {_id: '#blabla3', num: 42, str: '35', arr: ['', 'ss']}])
+                .then(function () {
+                    return project.insertObjects([
+                        {_id: '#blabla1', num: 42, str: '35', arr: ['', 'ss']},
+                        {_id: '#blabla2', num: 42, str: '35', arr: ['', 'ss']},
+                        {_id: '#blabla3', num: 42, str: '35', arr: ['', 'ss']}]);
+                })
+                .then(function () {
+                    return project.insertObjects([
+                        {_id: '#blabla1', num: 42, str: '35', arr: ['', 'ss']},
+                        {_id: '#blabla4', num: 42, str: '35', arr: ['', 'ss']}]);
+                })
+                .then(done)
+                .catch(done);
+        });
+
+        it('should fail if input parameter is not array', function (done) {
+            project.insertObjects('string')
+                .then(function () {
+                    done(new Error('should have failed with bad input'));
+                })
+                .catch(function (err) {
+                    if (err.message.indexOf('objects should be a non-empty collection of objects') === -1) {
+                        done(new Error('wrong error occured'));
+                    } else {
+                        done();
+                    }
+                });
+        });
+
+        it('should fail if input array has a wrong element', function (done) {
+            project.insertObjects([
+                {_id: '#blabla1', num: 42, str: '35', arr: ['', 'ss']},
+                null])
+                .then(function () {
+                    done(new Error('should have failed with bad input element'));
+                })
+                .catch(function (err) {
+                    if (err.message.indexOf('object @position') === -1) {
+                        done(new Error('wrong error occured'));
+                    } else {
+                        done();
+                    }
+                });
+        });
+
+        it('should fail if input array has a wrong keyed element', function (done) {
+            project.insertObjects([
+                {_id: '#blabla1', num: 42, str: '35', arr: ['', 'ss']},
+                {_id: 'notgood', num: 42, str: '35', arr: ['', 'ss']}])
+                .then(function () {
+                    done(new Error('should have failed with bad input element'));
+                })
+                .catch(function (err) {
+                    if (err.message.indexOf('object._id @position') === -1) {
+                        done(new Error('wrong error occured'));
+                    } else {
+                        done();
+                    }
+                });
+        });
+
+        it('should fail to insert multiple content with identical keys in the same batch', function (done) {
+            project.insertObjects([
+                {_id: '#blabla1', num: 42, str: '35', arr: ['', 'ss']},
+                {_id: '#blabla1', num: 43, str: '35', arr: ['', 'ss']}])
+                .then(function () {
+                    done(new Error('should have failed to add same keyed objects'));
+                })
+                .catch(function (err) {
+                    if (err.message.indexOf('object data mismatch happened') === -1) {
+                        done(new Error('wrong error occured'));
+                    } else {
+                        done();
+                    }
+                });
+        });
+
+        it('should fail to insert multiple content with identical keys', function (done) {
+            project.insertObjects([
+                {_id: '#blabla1', num: 42, str: '35', arr: ['', 'ss']},
+                {_id: '#blabla2', num: 43, str: '35', arr: ['', 'ss']}])
+                .then(function () {
+                    return project.insertObjects([
+                        {_id: '#blabla1', num: 42, str: '36', arr: ['', 'ss']},
+                        {_id: '#blabla2', num: 43, str: '36', arr: ['', 'ss']}]);
+                })
+                .then(function () {
+                    done(new Error('should have failed to add same keyed objects'));
+                })
+                .catch(function (err) {
+                    expect(err.message).to.contain('object data mismatch happened');
+                    done();
+                });
+        });
     });
 });
