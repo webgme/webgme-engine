@@ -4,20 +4,28 @@
 /**
  * Updates the passed in gmeConfig with values from environment variables starting with GME_.
  * See https://github.com/webgme/webgme-engine/issues/144 for details
+ *
+ * @author pmeijer / https://github.com/pmeijer
+ *
+ */
+
+/**
  * Note that the passed in config is mutated!
  * @param {object} config
  */
 function overrideFromEnv(config) {
-    var env = process.env;
+    var env = process.env,
+        hadEnv = false;
 
     Object.keys(env)
         .forEach(function (key) {
-            if (key.indexOf('GME_') === 0) {
+            if (key.indexOf('WEBGME_') === 0) {
                 var configPath,
                     subConfig,
                     wasCreated,
                     value;
 
+                hadEnv = true;
                 try {
                     value = JSON.parse(env[key]);
                 } catch (e) {
@@ -43,8 +51,9 @@ function overrideFromEnv(config) {
                             subConfig[cfgName] = {};
                         } else if (typeof subConfig[cfgName] !== 'object' ||
                             subConfig[cfgName] === null ||
-                            subConfig instanceof Array) {
-                            throw new Error(key + ' would override non-object config path at ' + [cfgName]);
+                            subConfig[cfgName] instanceof Array) {
+                            throw new Error(key + ' would override non-object config at "config.' +
+                                configPath.slice(0, idx + 1).join('.') + '".');
                         }
 
                         subConfig  = subConfig[cfgName];
@@ -53,13 +62,5 @@ function overrideFromEnv(config) {
             }
         });
 }
-
-// var myConfig = {
-//     authentication: {
-//         allowGuests: true,
-//     }
-// };
-// overrideFromEnv(myConfig);
-// console.log(myConfig);
 
 module.exports = overrideFromEnv;
