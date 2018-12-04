@@ -5,6 +5,8 @@
  * Updates the passed in gmeConfig with values from environment variables starting with GME_.
  * See https://github.com/webgme/webgme-engine/issues/144 for details
  *
+ * This needs to be included and called inside the config/index.js of the repository using webgme(engine).
+ *
  * @author pmeijer / https://github.com/pmeijer
  *
  */
@@ -14,8 +16,7 @@
  * @param {object} config
  */
 function overrideFromEnv(config) {
-    var env = process.env,
-        hadEnv = false;
+    var env = process.env;
 
     Object.keys(env)
         .forEach(function (key) {
