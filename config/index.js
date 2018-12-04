@@ -8,10 +8,12 @@
 var env = process.env.NODE_ENV || 'default',
     configFilename = __dirname + '/config.' + env + '.js',
     config = require(configFilename),
-    validateConfig = require(__dirname + '/validator').validateConfig;
+    validateConfig = require(__dirname + '/validator').validateConfig,
+    overrideFromEnv = require('./overridefromenv');
 
 console.info('Using configuration from ' + configFilename);
-validateConfig(configFilename);
+overrideFromEnv(config);
+validateConfig(config);
 
 module.exports = config;
 

@@ -42,6 +42,14 @@ describe('configuration and components', function () {
         unloadConfigs();
     });
 
+    afterEach(function () {
+        Object.keys(process.env).forEach(function (key) {
+            if (key.indexOf('WEBGME_') === 0) {
+                delete process.env[key];
+            }
+        });
+    });
+
     after(function () {
         process.chdir(oldCwd);
         unloadConfigs();
@@ -268,5 +276,91 @@ describe('configuration and components', function () {
                 expect(json).to.deep.equal({});
             })
             .nodeify(done);
+    });
+
+    // Using WEBGME_* environment variables.
+
+    it('should change server port and it should be an integer when passed via WEBGME_env', function () {
+        process.env.NODE_ENV = 'default';
+        var configOrg = require('../../config');
+        unloadConfigs();
+        process.env['WEBGME_server_port'] = '8008';
+        var configEnv = require('../../config');
+
+        expect(configEnv.server.port).to.not.equal(configOrg.server.port);
+        expect(configEnv.server.port).to.equal(8008);
+    });
+
+    it('should change authentication enable and it should be a boolean when passed via WEBGME_env', function () {
+        process.env.NODE_ENV = 'default';
+        var configOrg = require('../../config');
+        unloadConfigs();
+        process.env['WEBGME_authentication_enable'] = 'true';
+        var configEnv = require('../../config');
+
+        expect(configEnv.authentication.enable).to.not.equal(configOrg.authentication.enable);
+        expect(configEnv.authentication.enable).to.equal(true);
+    });
+
+    it('should change defaultSeed and it should be a string when passed via WEBGME_env', function () {
+        process.env.NODE_ENV = 'default';
+        var configOrg = require('../../config');
+        unloadConfigs();
+        process.env['WEBGME_seedProjects_defaultProject'] = 'MyLittleSeed';
+        var configEnv = require('../../config');
+
+        expect(configEnv.seedProjects.defaultProject).to.not.equal(configOrg.seedProjects.defaultProject);
+        expect(configEnv.seedProjects.defaultProject).to.equal('MyLittleSeed');
+    });
+
+    it('should throw if encountering non-object (bool) in config path passed via WEBGME_env', function () {
+        process.env.NODE_ENV = 'default';
+        unloadConfigs();
+        process.env['WEBGME_authentication_enable_doIt'] = 'true';
+        try {
+            require('../../config');
+            throw new Error('Should have failed!');
+        } catch (e) {
+            if (e.message.indexOf('WEBGME_authentication_enable_doIt would override non-object config at') === -1) {
+                throw e;
+            }
+        }
+    });
+
+    it('should throw if encountering non-object (array) in config path passed via WEBGME_env', function () {
+        process.env.NODE_ENV = 'default';
+        unloadConfigs();
+        process.env['WEBGME_addOn_basePaths_12'] = './attempt/to/mess/up/array';
+        try {
+            require('../../config');
+            throw new Error('Should have failed!');
+        } catch (e) {
+            if (e.message.indexOf('WEBGME_addOn_basePaths_12 would override non-object config at') === -1) {
+                throw e;
+            }
+        }
+    });
+
+    it('should create sub-configs when passed via WEBGME_env and not colliding with non object.', function () {
+        process.env.NODE_ENV = 'default';
+        var configOrg = require('../../config');
+        unloadConfigs();
+        process.env['WEBGME_rest_components_myRouter_mount'] = 'myRoute';
+        process.env['WEBGME_rest_components_myRouter_src'] = 'my-route-module';
+        process.env['WEBGME_rest_components_myRouter_options_subOptions_someCfg1'] = true;
+        process.env['WEBGME_rest_components_myRouter_options_subOptions_someCfg2'] = true;
+        var configEnv = require('../../config');
+
+        expect(typeof configOrg.rest.components.myRouter).to.equal('undefined');
+        expect(configEnv.rest.components.myRouter).to.deep.equal({
+            mount: 'myRoute',
+            src: 'my-route-module',
+            options: {
+                subOptions: {
+                    someCfg1: true,
+                    someCfg2: true,
+                }
+            }
+        });
     });
 });

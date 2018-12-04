@@ -1,5 +1,10 @@
-# WebGME-Engine
-This is the "engine" of the webgme app containing all server code, common-modules and client-api.
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/webgme/webgme-engine.svg?branch=master)](https://travis-ci.org/webgme/webgme-engine)
+[![Version](https://badge.fury.io/js/webgme-engine.svg)](https://www.npmjs.com/package/webgme-engine)
+[![Downloads](http://img.shields.io/npm/dm/webgme-engine.svg?style=flat)](http://img.shields.io/npm/dm/webgme-engine.svg?style=flat)
+
+# webgme-engine
+This is the "engine" of the [webgme application](https://github.com/webgme/webgme/) and contains all server code, common-modules and client-api.
 If this is your first encounter with webgme the [webgme/webgme](https://github.com/webgme/webgme/) is probably what you're looking for.
 
 The webgme-engine was forked off from webgme/webgme at [version v2.17.0](https://github.com/webgme/webgme/releases/tag/v2.17.0) and since then is released separately from webgme starting off from v2.18.0.
@@ -33,7 +38,7 @@ Each script supports the `--help` or `-h` command line parameter, which will lis
 * `manage_webhooks.js`: add/update/remove webhooks to and from projects.
 * `blob_fs_clean_up.js`: cleans up blobs from the filesystem that are not referenced from any projects.
 * `plugin_hook.js`: plugin developer utility for triggering plugin on changes made to a project.
-* `storage_stats.js`: outputs statistics about the projects in the database. 
+* `storage_stats.js`: outputs statistics about the projects in the database.
 * `connected_webhook_handler.js`: webhook example illustrating how to create an authenticated remote connection to the storage (models).
 
 
