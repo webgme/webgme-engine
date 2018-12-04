@@ -331,12 +331,11 @@ describe('configuration and components', function () {
         process.env.NODE_ENV = 'default';
         unloadConfigs();
         process.env['WEBGME_addOn_basePaths_12'] = './attempt/to/mess/up/array';
-        process.env['WEBGME_addOn_basePaths_10'] = './attempt/to/mess/up/array2';
         try {
             require('../../config');
             throw new Error('Should have failed!');
         } catch (e) {
-            if (e.message.indexOf('WEBGME_addOn_basePaths_10 would override non-object config at') === -1) {
+            if (e.message.indexOf('WEBGME_addOn_basePaths_12 would override non-object config at') === -1) {
                 throw e;
             }
         }

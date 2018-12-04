@@ -26,7 +26,6 @@ function overrideFromEnv(config) {
                     wasCreated,
                     value;
 
-                hadEnv = true;
                 try {
                     value = JSON.parse(env[key]);
                 } catch (e) {
