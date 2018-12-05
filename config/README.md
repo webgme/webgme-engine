@@ -16,7 +16,7 @@ config.addOns.basePaths.push('C:/addons');
 module.exports = config;
 ```
 
-### Which configuration file is being used?
+## Which configuration file is being used?
 To use any other configuration than the default you need to set the environment variable `NODE_ENV`. When the server starts the configuration file at `config/config.%NODE_ENV%.js` will be loaded. If `NODE_ENV` is not set it falls back to loading `config/config.default.js`.
 
 To start the server using the configuration above,
@@ -29,7 +29,20 @@ ubuntu
 
 `NODE_ENV=mine npm start`
 
-### Configuration groups
+## Setting parameters via WEBGME_* env vars
+Since [v2.22.2](https://github.com/webgme/webgme-engine/blob/master/CHANGELOG.md#v2222-2018-12-11) individual configuration parameters can be set using environment variables.
+
+Important! - before attempting to set any of these make sure the `config/index.js` in your repository requires and calls `overrideFromEnv(config)` (was not generated in `webgme-cli < 2.8.2`). If not you can copy the content of this [index.js](https://github.com/webgme/bindings/blob/master/config/index.js) and override your file.
+
+To set a configuration variable `config.<configGroup>.<configSubGroup1>.<configSubGroup2>.<cfgName>=<value>` defined the env var `WEBGME_<configGroup>_<configSubGroup1>_<configSubGroup2>_<cfgName>=<value>`. For example:
+
+- `config.server.port=8888` -> `WEBGME_server_port=8888`
+- `config.seedProjects.defaultProject='myProject'` -> `WEBGME_seedProjects_defaultProject=myProject`
+- `config.authentication.allowGuests=false` -> `WEBGME_authentication_allowGuests=false`
+
+Modification of arrays is not support, but non-existing config sub-group (objects) are created. For more details see #144.
+
+## Configuration groups
 
 ##### addOn
 
