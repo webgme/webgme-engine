@@ -16,9 +16,7 @@ define([
 ) {
     'use strict';
 
-    var <%= visualizerID %>Panel;
-
-    <%= visualizerID %>Panel = function (layoutManager, params) {
+    function <%= visualizerID %>Panel(layoutManager, params) {
         var options = {};
         //set properties from options
         options[PanelBaseWithHeader.OPTIONS.LOGGER_INSTANCE_NAME] = '<%= visualizerID %>Panel';
@@ -33,7 +31,7 @@ define([
         this._initialize();
 
         this.logger.debug('ctor finished');
-    };
+    }
 
     //inherit from PanelBaseWithHeader
     _.extend(<%= visualizerID %>Panel.prototype, PanelBaseWithHeader.prototype);

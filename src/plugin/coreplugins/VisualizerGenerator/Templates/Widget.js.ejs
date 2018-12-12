@@ -7,10 +7,9 @@
 define(['css!./styles/<%= visualizerID %>Widget.css'], function () {
     'use strict';
 
-    var <%= visualizerID %>Widget,
-        WIDGET_CLASS = '<%= widgetClass %>';
+    var WIDGET_CLASS = '<%= widgetClass %>';
 
-    <%= visualizerID %>Widget = function (logger, container) {
+    function <%= visualizerID %>Widget(logger, container) {
         this._logger = logger.fork('Widget');
 
         this._el = container;
@@ -19,7 +18,7 @@ define(['css!./styles/<%= visualizerID %>Widget.css'], function () {
         this._initialize();
 
         this._logger.debug('ctor finished');
-    };
+    }
 
     <%= visualizerID %>Widget.prototype._initialize = function () {
         var width = this._el.width(),
@@ -29,7 +28,7 @@ define(['css!./styles/<%= visualizerID %>Widget.css'], function () {
         // set widget class
         this._el.addClass(WIDGET_CLASS);
 
-        // Create a dummy header 
+        // Create a dummy header
         this._el.append('<h3><%= visualizerID %> Events:</h3>');
 
         // Registering to events can be done with jQuery (as normal)
@@ -56,7 +55,7 @@ define(['css!./styles/<%= visualizerID %>Widget.css'], function () {
             }
 
             this.nodes[desc.id] = desc;
-            node.innerHTML = 'Adding node "' + desc.name + '" (click to view). It has ' + 
+            node.innerHTML = 'Adding node "' + desc.name + '" (click to view). It has ' +
                 desc.childrenIds.length + ' ' + label + '.';
 
             this._el.append(node);

@@ -37,6 +37,7 @@ define([
 
         // general notification event
         NOTIFICATION: 'NOTIFICATION',
+        PLUGIN_NOTIFICATION: 'PLUGIN_NOTIFICATION',
         CONNECTED_USERS_CHANGED: 'CONNECTED_USERS_CHANGED',
 
         // Constraint Checking

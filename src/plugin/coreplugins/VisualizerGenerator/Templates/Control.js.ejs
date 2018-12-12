@@ -15,9 +15,7 @@ define([
 
     'use strict';
 
-    var <%= visualizerID %>Control;
-
-    <%= visualizerID %>Control = function (options) {
+    function <%= visualizerID %>Control(options) {
 
         this._logger = options.logger.fork('Control');
 
@@ -32,7 +30,7 @@ define([
         this._initWidgetEventHandlers();
 
         this._logger.debug('ctor finished');
-    };
+    }
 
     <%= visualizerID %>Control.prototype._initWidgetEventHandlers = function () {
         this._widget.onNodeClick = function (id) {
