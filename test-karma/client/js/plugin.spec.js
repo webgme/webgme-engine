@@ -169,9 +169,25 @@ describe('Plugin', function () {
             },
             prevStatus,
             eventHandler,
+            wasNotified = false,
             removeHandler = function () {
                 client.removeEventListener(client.CONSTANTS.BRANCH_STATUS_CHANGED, eventHandler);
             };
+
+        function notificationHandler(_client, data) {
+            wasNotified = true;
+            client.removeEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
+
+            try {
+                expect(data.type).to.equal(client.CONSTANTS.PLUGIN_NOTIFICATION);
+                expect(data.pluginId).to.equal(pluginId);
+                expect(data.notification.message).to.include('A plugin notification');
+            } catch (e) {
+                done(e);
+            }
+        }
+
+        client.addEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
 
         currentBranchName = 'MinimalWorkingExample1';
 
@@ -226,6 +242,9 @@ describe('Plugin', function () {
                     try {
                         expect(err).to.equal(null);
                         expect(Object.keys(branches).length).to.equal(2);
+                        if (!wasNotified) {
+                            throw new Error('Was never notified from plugin.');
+                        }
                         done();
                     } catch (e) {
                         done(e);
@@ -237,6 +256,7 @@ describe('Plugin', function () {
 
     it('should run MinimalWorkingExample on the server and return results even though it failed', function (done) {
         var pluginId = 'MinimalWorkingExample',
+            wasNotified = false,
             context = {
                 managerConfig: {
                     project: client.getActiveProjectId(),
@@ -251,6 +271,21 @@ describe('Plugin', function () {
                 }
             };
 
+        function notificationHandler(_client, data) {
+            wasNotified = true;
+            client.removeEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
+
+            try {
+                expect(data.type).to.equal(client.CONSTANTS.PLUGIN_NOTIFICATION);
+                expect(data.pluginId).to.equal(pluginId);
+                expect(data.notification.message).to.include('A plugin notification');
+            } catch (e) {
+                done(e);
+            }
+        }
+
+        client.addEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
+
         client.runServerPlugin(pluginId, context, function (err, pluginResult) {
             try {
                 expect(err instanceof Error).to.equal(true);
@@ -258,6 +293,9 @@ describe('Plugin', function () {
                 expect(pluginResult).to.have.keys(['artifacts', 'commits', 'error', 'finishTime', 'messages',
                     'pluginName', 'pluginId', 'projectId', 'startTime', 'success']);
                 expect(pluginResult.success).to.equal(false);
+                if (!wasNotified) {
+                    throw new Error('Was never notified from plugin.');
+                }
                 done();
             } catch (e) {
                 done(e);
