@@ -78,6 +78,8 @@
             self.logger.info('The new node\'s base type is on the meta sheet.');
         }
 
+        self.sendNotification('A plugin notification');
+
         // This will save the changes. If you don't want to save;
         // exclude self.save and call callback directly from this scope.
         if (currentConfiguration.save === true) {
