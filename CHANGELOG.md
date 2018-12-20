@@ -1,5 +1,30 @@
 # Change Log
 
+## [v2.22.2](https://github.com/webgme/webgme-engine/tree/v2.22.2) (2018-12-20)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.22.1...v2.22.2)
+
+**Implemented enhancements:**
+
+- Bump mongodb to 4.x and use ubuntu xenial for travis tests [\#149](https://github.com/webgme/webgme-engine/pull/149) ([pmeijer](https://github.com/pmeijer))
+- Minor improvements in component templates for plugin generators [\#147](https://github.com/webgme/webgme-engine/pull/147) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#140 Replace all usages of new Buffer\(\*\*\) as it is shown to be unsafe [\#142](https://github.com/webgme/webgme-engine/pull/142) ([kecso](https://github.com/kecso))
+- Queue worker requests while client has local changes that haven't reached the server [\#141](https://github.com/webgme/webgme-engine/pull/141) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- PLUGIN\_NOTIFICATION not dispatched from client [\#146](https://github.com/webgme/webgme-engine/issues/146)
+- Replace all usages of new Buffer\(\*\*\) as it is shown to be unsafe [\#140](https://github.com/webgme/webgme-engine/issues/140)
+- Fix exception when undoing to first commit made [\#143](https://github.com/webgme/webgme-engine/pull/143) ([pmeijer](https://github.com/pmeijer))
+
+**Closed issues:**
+
+- Add script for parsing env vars overwriting config settings [\#144](https://github.com/webgme/webgme-engine/issues/144)
+
+**Merged pull requests:**
+
+- Bump browserify to v16.2.3 [\#148](https://github.com/webgme/webgme-engine/pull/148) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#144 By parsing WEBGME\_\* environment variables [\#145](https://github.com/webgme/webgme-engine/pull/145) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.22.1](https://github.com/webgme/webgme-engine/tree/v2.22.1) (2018-11-20)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.22.0...v2.22.1)
 
