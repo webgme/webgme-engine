@@ -8,7 +8,7 @@ sudo: false
 addons:
   apt:
     sources:
-      - mongodb-3.2-precise
+      - mongodb-4.0-xenial
 
     packages:
       - mongodb-org-server
