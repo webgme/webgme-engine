@@ -105,7 +105,8 @@ Modification of arrays is not support, but non-existing config sub-group (object
  - Logger settings when running bin scripts.
 
 ##### blob
-
+- `config.blob.compressionLevel = 0`
+ - Compression level of DEFLATE (between 0 and 9) to use when serving bundled complex artifacts.
 - `config.blob.type = 'FS'`
  - Type of storage, available options: `'FS'` (File System), `'S3'` (Simple Storage Service).
 - `config.blob.fsDir = './blob-local-storage'`
@@ -143,7 +144,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
  - Set to false to disable channels for document editing.
 - `config.documentEditing.disconnectTimeout = 20000`
  - In milliseconds, the amount of time to keep a document channel with only disconnected users open.
- 
+
 ##### executor
 
 - `config.executor.enable = false`
@@ -186,7 +187,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 
 ##### rest
 - `config.rest.components = {}`
- - Collection of external rest routes index by their (unique) ids. The value is an object with keys; `src` file-path (or name) 
+ - Collection of external rest routes index by their (unique) ids. The value is an object with keys; `src` file-path (or name)
  to the module defining the router, `mount` where the router will be mounted relative the <host>, `options` an object with setting for the specific router.
  Use the `RestRouterGenerator` plugin to generate a template router (see the generated file for more info).
 
@@ -226,14 +227,14 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.server.workerManager.path = 'src/server/worker/serverworkermanager'`
  - Path to module (implementing `src/server/worker/WorkerManagerBase`) handling worker requests.
 - `config.server.workerManager.options = {}`
- - Options for non-default workerManager (valid fields depend on type of worker-manager). 
+ - Options for non-default workerManager (valid fields depend on type of worker-manager).
 - `config.server.log = see config`
  - Transports and options for the server (winston) logger.
 - `config.server.extlibExcludes = ['.\.pem$', 'config\/config\..*\.js$']`
  - Array of regular expressions that will hinder access to files via the '/extlib/' route. Requests to files matching any of the provided pattern will result in 403.
 - `config.server.behindSecureProxy = false`
  - Indicate if the webgme server is behind a secure proxy (needed for adding correct OG Metadata in index.html).
- 
+
 ##### socketIO
 - `config.socketIO.clientOptions = see config`
  - Options passed to the [socketIO client](https://github.com/socketio/socket.io-client#managerurlstring-optsobject) when connecting to the sever.
