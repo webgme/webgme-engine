@@ -140,6 +140,13 @@ function validateConfig(configOrFileName) {
     // blob
     expectedKeys.push('blob');
     assertObject('config.blob', config.blob);
+    assertNumber('config.blob.compressionLevel', config.blob.compressionLevel);
+
+    if (config.blob.compressionLevel < 0 || config.blob.compressionLevel > 9) {
+        throw new Error('config.blob.compressionLevel must be an integer between 0 and 9. Got: ' +
+            config.blob.compressionLevel);
+    }
+
     assertString('config.blob.type', config.blob.type);
     assertString('config.blob.fsDir', config.blob.fsDir);
     assertObject('config.blob.s3', config.blob.s3);

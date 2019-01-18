@@ -31,6 +31,8 @@ var BlobBackendBase = function (gmeConfig, logger) {
         this.tempBucket = 'wg-temp';
     }
 
+    this.gmeConfig = gmeConfig;
+
     this.shaMethod = BlobConfig.hashMethod;
     this.logger = logger.fork('BlobBackend');
 };
@@ -208,7 +210,7 @@ BlobBackendBase.prototype.getFile = function (metadataHash, subpath, writeStream
                 // return with the full content as a zip package
                 contentKeys = Object.keys(metadata.content);
                 archive = archiver('zip', {
-                    zlib: {level: 0}
+                    zlib: {level: self.gmeConfig.blob.compressionLevel}
                 });
 
                 archive.pipe(writeStream);

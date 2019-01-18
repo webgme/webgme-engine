@@ -944,6 +944,72 @@ describe('BlobClient', function () {
         });
     });
 
+    describe('[http - compression level]', function () {
+        before(function (done) {
+            // we have to set the config here
+            var gmeConfig = testFixture.getGmeConfig();
+            gmeConfig.blob.compressionLevel = 9;
+            bcParam.serverPort = gmeConfig.server.port;
+            bcParam.server = '127.0.0.1';
+            bcParam.httpsecure = false;
+            bcParam.logger = testFixture.logger.fork('Blob');
+            server = testFixture.WebGME.standaloneServer(gmeConfig);
+            server.start(function () {
+                done();
+            });
+        });
+
+        beforeEach(function (done) {
+            rimraf('./test-tmp/blob-storage', function (err) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                done();
+            });
+        });
+
+        after(function (done) {
+            server.stop(done);
+        });
+
+        it('should create artifact and downloading it should create compressed zip', function (done) {
+            var filesToAdd = {
+                    'a.txt': 'Hello there,Hello there,Hello there,Hello there,Hello there,Hello there,Hello there,',
+                    'b.txt': 'Hello there,Hello there,Hello there,Hello there,Hello there,Hello there,Hello there,',
+                    'c.txt': 'Hello there,Hello there,Hello there,Hello there,Hello there,Hello there,Hello there,',
+                    'd.txt': 'Hello there,Hello there,Hello there,Hello there,Hello there,Hello there,Hello there,',
+                },
+                bc = new BlobClient(bcParam),
+                artifact = bc.createArtifact('compressedAtDl');
+
+            artifact.addFiles(filesToAdd)
+                .then(function () {
+                    return artifact.save();
+                })
+                .then(function (hash) {
+                    var dlUrl = bc.getDownloadURL(hash),
+                        output = fs.createWriteStream('./test-tmp/blob-storage/zipped.zip');
+
+                    superagent.get(dlUrl).pipe(output);
+
+                    output.on('close', function () {
+                        // console.log(output.bytesWritten);
+                        try {
+                            // Set compressionLevel to 0 to check reference value.
+                            expect(output.bytesWritten < 766).to.equal(true);
+                            expect(output.bytesWritten > 50).to.equal(true); // Shouldn't be empty (9 on windows)
+
+                            done();
+                        } catch (e) {
+                            done(e);
+                        }
+                    });
+                })
+                .catch(done);
+        });
+    });
+
     function createZip(data, done) {
         var bc = new BlobClient(bcParam);
         bc.putFile('testzip.zip', data, function (err, hash) {
