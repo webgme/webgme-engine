@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.22.3](https://github.com/webgme/webgme-engine/tree/v2.22.3) (2019-01-21)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.22.2...v2.22.3)
+
+**Implemented enhancements:**
+
+- Add configuration parameter for compression level of blob artifacts [\#150](https://github.com/webgme/webgme-engine/pull/150) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.22.2](https://github.com/webgme/webgme-engine/tree/v2.22.2) (2018-12-20)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.22.1...v2.22.2)
 
