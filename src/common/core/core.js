@@ -395,10 +395,11 @@ define([
         };
 
         /**
-         * Returns the common parent node of all supplied nodes.
+         * Returns the common parent node of all supplied nodes. If a node and its parent are passed, the method will
+         * return the parent of the parent.
          * @param {...module:Core~Node} nodes - a variable number of nodes to compare
          *
-         * @return {module:Core~Node|null} The common base or null if no nodes were passed.
+         * @return {module:Core~Node|null} The common parent. Will be null whenever the root-node is passed in.
          * @example
          * core.getCommonParent(node1, node2, node3);
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -417,6 +418,10 @@ define([
 
             for (i = 1; i < nodesArr.length; i += 1) {
                 result = getCommonAncestor(result, nodesArr[i], core.getParent);
+            }
+
+            if (result && nodesArr.indexOf(result) > -1) {
+                result = core.getParent(result);
             }
 
             return result || null;
@@ -1298,7 +1303,7 @@ define([
          * Returns the common base node of all supplied nodes.
          * @param {...module:Core~Node} nodes - a variable number of nodes to compare
          *
-         * @return {module:Core~Node|null} The common base or null if e.g. the root node was passed.
+         * @return {module:Core~Node|null} The common base or null if e.g. the root node was passed or the fco.
          * @example
          * core.getCommonBase(node1, node2, node3);
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
@@ -1317,6 +1322,10 @@ define([
 
             for (i = 1; i < nodesArr.length; i += 1) {
                 result = getCommonAncestor(result, nodesArr[i], core.getBase);
+            }
+
+            if (result && nodesArr.indexOf(result) > -1) {
+                result = core.getBase(result);
             }
 
             return result || null;
