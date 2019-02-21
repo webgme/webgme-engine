@@ -538,11 +538,11 @@ define([], function () {
         }
     };
 
-    GMENode.prototype.isValidMemberOf = function (setOwnerPath, name) {
+    GMENode.prototype.isValidSetMemberOf = function (setOwnerPath, name) {
         var setOwner = _getNode(this._state.nodes, setOwnerPath);
 
         if (setOwner) {
-            return this._state.core.isValidMemberOf(this._state.nodes[this._id].node, setOwner, name);
+            return this._state.core.isValidSetMemberOf(this._state.nodes[this._id].node, setOwner, name);
         } else {
             return false;
         }

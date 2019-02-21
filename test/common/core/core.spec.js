@@ -103,7 +103,7 @@ describe('core', function () {
                 'setMemberRegistry', 'delMemberRegistry', 'isMemberOf', 'getGuid',
                 'setGuid', 'getConstraint', 'setConstraint', 'delConstraint', 'getConstraintNames',
                 'getOwnConstraintNames', 'isTypeOf', 'isValidChildOf', 'getValidPointerNames',
-                'getValidSetNames', 'isValidTargetOf', 'isValidMemberOf', 'getValidAttributeNames',
+                'getValidSetNames', 'isValidTargetOf', 'isValidSetMemberOf', 'getValidAttributeNames',
                 'getOwnValidAttributeNames', 'isValidAttributeValueOf', 'getValidAspectNames',
                 'getOwnValidAspectNames', 'getAspectMeta', 'getJsonMeta', 'getOwnJsonMeta',
                 'clearMetaRules', 'setAttributeMeta', 'delAttributeMeta', 'getAttributeMeta',
@@ -2841,11 +2841,11 @@ describe('core', function () {
         }
     });
 
-    it('should throw @isValidMemberOf if not valid parameters are given', function () {
+    it('should throw @isValidSetMemberOf if not valid parameters are given', function () {
         var myError;
 
         try {
-            core.isValidMemberOf('string');
+            core.isValidSetMemberOf('string');
         } catch (e) {
             myError = e;
         } finally {
@@ -2854,7 +2854,7 @@ describe('core', function () {
         }
 
         try {
-            core.isValidMemberOf(rootNode, 'notnode');
+            core.isValidSetMemberOf(rootNode, 'notnode');
         } catch (e) {
             myError = e;
         } finally {
@@ -2863,7 +2863,7 @@ describe('core', function () {
         }
 
         try {
-            core.isValidMemberOf(rootNode, rootNode, {});
+            core.isValidSetMemberOf(rootNode, rootNode, {});
         } catch (e) {
             myError = e;
         } finally {

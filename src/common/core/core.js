@@ -2586,7 +2586,7 @@ define([
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreInternalError} If some internal error took place inside the core layers.
          */
-        this.isValidMemberOf = function (node, setOwner, name) {
+        this.isValidSetMemberOf = function (node, setOwner, name) {
             ensureNode(node, 'node');
             ensureNode(setOwner, 'setOwner');
             ensureType(name, 'name', 'string');
