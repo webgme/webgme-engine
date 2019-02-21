@@ -755,8 +755,15 @@ resourceTypes:
         body:
           application/json:
             example: !include webgme-api-plugins.json
-  
-  /{pluginName}:
+  /metadata:
+      get:
+        description: Get an array of all metadata associated with the available plugins.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include webgme-api-plugins-metadata.json
+  /{pluginId}:
     /config:
       get:
         description: Gets the default configuration for the plugin.
@@ -773,7 +780,15 @@ resourceTypes:
           200:
             body:
               application/json:
-                example: !include webgme-api-plugin-configStructure.json                
+                example: !include webgme-api-plugin-configStructure.json
+    /metadata:
+      get:
+        description: Gets the metadata associated with the given plugin.
+        responses:
+          200:
+            body:
+              application/json:
+                example: !include webgme-api-plugin-metadata.json
     /execute:
       post:
         description: Executes a plugin on server side. Returns with a result id.
