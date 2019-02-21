@@ -7,7 +7,9 @@
  * @description The Client class represents the Client API which is the way to communicate
  * with your project from your user-defined UI pieces. It allows project selection, project tracking,
  * model interpretation and model manipulation.
- * !!! Documentation of the class is incomplete !!!
+ *
+ * !! Documentation of the class is incomplete !!
+ *
  * What is mainly missing are the node setters. Until added here use the [Core documentation]{@link Core}
  * and simply replace any Core nodes in the arguments with the id/path of the nodes instead.
  *
@@ -354,22 +356,26 @@
  */
 
 /**
- * @description Establishes a ws-connection to the storage/database on the server. If already connected - it will
+ * @description Establishes a websocket-connection to the storage/database on the server. If already connected - it will
  * resolve immediately. Note that the client itself attempts to reconnect on unintended disconnections. To monitor the
  * status register for the client.CONSTANTS.NETWORK_STATUS_CHANGED event.
  * @function connectToDatabase
  * @memberOf Client
  * @param {function} callback - Invoked when request completed.
  * @param {null|Error} callback.err - If the request failed.
+ *
+ * @fires Client#NETWORK_STATUS_CHANGED
  * @instance
  */
 
 /**
- * @description Ends the ws-connection to the storage/database on the server.
+ * @description Ends the websocket-connection to the storage/database on the server.
  * @function disconnectFromDatabase
  * @memberOf Client
  * @param {function} callback - Invoked when request completed.
  * @param {null|Error} callback.err - If the request failed.
+ *
+ * @fires Client#NETWORK_STATUS_CHANGED
  * @instance
  */
 
@@ -389,6 +395,12 @@
  * @param {string} [branchName='master'] - branch to open
  * @param {function} callback - Invoked when request completed.
  * @param {null|Error} callback.err - If the request failed.
+ *
+ * @fires Client#PROJECT_OPENED
+ * @fires Client#PROJECT_CLOSED
+ * @fires Client#BRANCH_OPENED
+ * @fires Client#BRANCH_CLOSED
+ * @fires Client#BRANCH_CHANGED
  * @instance
  */
 
@@ -400,6 +412,10 @@
  * @param {function} callback - Invoked when request completed.
  * @param {null|Error} callback.err - If the request failed.
  * @instance
+ *
+ * @fires Client#PROJECT_CLOSED
+ * @fires Client#BRANCH_CLOSED
+ * @fires Client#BRANCH_CHANGED
  */
 
 /**
@@ -410,6 +426,9 @@
  * @param {string} branchName - Name of branch to open.
  * @param {function} callback - Invoked when request completed.
  * @param {null|Error} callback.err - If the request failed.
+ * @fires Client#BRANCH_OPENED
+ * @fires Client#BRANCH_CLOSED
+ * @fires Client#BRANCH_CHANGED
  * @instance
  */
 
@@ -422,6 +441,9 @@
  * @param {string} commitHash - Unique id for the commit to select.
  * @param {function} callback - Invoked when request completed.
  * @param {null|Error} callback.err - If the request failed.
+ *
+ * @fires Client#BRANCH_CLOSED
+ * @fires Client#BRANCH_CHANGED
  * @instance
  */
 
@@ -631,6 +653,77 @@
  * @param {string} branchName - Must match the active branch.
  * @instance
  * @returns {boolean} True if it's fine to call client.redo()
+ */
+
+
+// EVENTS
+/**
+ * Fired when the network status changes.
+ * The returned value is one of:
+ *
+ * - `'CONNECTED'` - The websocket connection has been established (a project can be selected)
+ * - `'DISCONNECTED'` - The websocket connection is broken, the user can continue offline and any commits will be pushed
+ *  automatically by the client when reconnected.
+ * - `'RECONNECTED'` - After a disconnect, the connection has been established again.
+ * - `'INCOMPATIBLE_CONNECTION'` - If the version of webgme-engine the server is different from the one loaded
+ * in the client at this point the browser must be refreshed.
+ * - `'CONNECTION_ERROR'` - Some unexpected error happened and the browser needs to be refreshed.
+ *
+ * @event Client#NETWORK_STATUS_CHANGED
+ * @type {string}
+ */
+
+/**
+ * Fired when a project is opened.
+ *
+ * @event Client#PROJECT_OPENED
+ * @type {string}
+ */
+
+/**
+ * Fired when the currently opened project is closed.
+ *
+ * @event Client#PROJECT_CLOSED
+ * @type {string}
+ */
+
+/**
+ * Fired when a branch is opened.
+ *
+ * @event Client#BRANCH_OPENED
+ * @type {string}
+ */
+
+/**
+ * Fired when the currently opened branch is closed.
+ *
+ * @event Client#BRANCH_CLOSED
+ * @type {string}
+ */
+
+/**
+ * Fired when the open branch changed. The event could either return the name of the newly opened branch
+ * or null if there no longer is a branch opened.
+ *
+ * @event Client#BRANCH_CHANGED
+ * @type {string|null}
+ */
+
+/**
+ * Fired when the branch status changes.
+ * The returned value is one of:
+ *
+ * - `'SYNC'` - The local branch is in sync with the server.
+ * - `'AHEAD_SYNC'` - There are changes in the local branch that has not been sent to the server. The latest commit
+ * was synchronized.
+ * - `'AHEAD_NOT_SYNC'` - There are changes in the local branch that has not been sent to the server. The latest commit
+ * did not update the branch head. An action is required.
+ * - `'PULLING'` - External changes to the branch are being pulled into the branch.
+ * - `'ERROR'` - Some unexpected error happened.
+ * - (`'MERGING'` - a forked commit is attempted to be merged by the server (this is disabled by default))
+ *
+ * @event Client#BRANCH_STATUS_CHANGED
+ * @type {object}
  */
 
 /**
