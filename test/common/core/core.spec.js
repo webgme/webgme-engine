@@ -103,7 +103,7 @@ describe('core', function () {
                 'setMemberRegistry', 'delMemberRegistry', 'isMemberOf', 'getGuid',
                 'setGuid', 'getConstraint', 'setConstraint', 'delConstraint', 'getConstraintNames',
                 'getOwnConstraintNames', 'isTypeOf', 'isValidChildOf', 'getValidPointerNames',
-                'getValidSetNames', 'isValidTargetOf', 'getValidAttributeNames',
+                'getValidSetNames', 'isValidTargetOf', 'isValidMemberOf', 'getValidAttributeNames',
                 'getOwnValidAttributeNames', 'isValidAttributeValueOf', 'getValidAspectNames',
                 'getOwnValidAspectNames', 'getAspectMeta', 'getJsonMeta', 'getOwnJsonMeta',
                 'clearMetaRules', 'setAttributeMeta', 'delAttributeMeta', 'getAttributeMeta',
@@ -2833,6 +2833,37 @@ describe('core', function () {
 
         try {
             core.isValidTargetOf(rootNode, rootNode, {});
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
+    });
+
+    it('should throw @isValidMemberOf if not valid parameters are given', function () {
+        var myError;
+
+        try {
+            core.isValidMemberOf('string');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
+
+        try {
+            core.isValidMemberOf(rootNode, 'notnode');
+        } catch (e) {
+            myError = e;
+        } finally {
+            expect(myError.name).to.eql('CoreIllegalArgumentError');
+            myError = null;
+        }
+
+        try {
+            core.isValidMemberOf(rootNode, rootNode, {});
         } catch (e) {
             myError = e;
         } finally {

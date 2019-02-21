@@ -538,6 +538,16 @@ define([], function () {
         }
     };
 
+    GMENode.prototype.isValidMemberOf = function (setOwnerPath, name) {
+        var setOwner = _getNode(this._state.nodes, setOwnerPath);
+
+        if (setOwner) {
+            return this._state.core.isValidMemberOf(this._state.nodes[this._id].node, setOwner, name);
+        } else {
+            return false;
+        }
+    };
+
     GMENode.prototype.getValidAspectNames = function () {
         return this._state.core.getValidAspectNames(this._state.nodes[this._id].node);
     };

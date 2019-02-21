@@ -2574,6 +2574,28 @@ define([
         };
 
         /**
+         * Checks if the node can be a member of the given set at the provided set-owner node. This does not take
+         * cardinality rules into account.
+         * @param {module:Core~Node} node - the node in question.
+         * @param {module:Core~Node} setOwner - the owner of the set.
+         * @param {string} name - the name of the set.
+         *
+         * @return {bool} The function returns true if according to the META rules, the given node is a valid
+         * member of set of the given set-owner.
+         *
+         * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
+         * @throws {CoreInternalError} If some internal error took place inside the core layers.
+         */
+        this.isValidMemberOf = function (node, setOwner, name) {
+            ensureNode(node, 'node');
+            ensureNode(setOwner, 'setOwner');
+            ensureType(name, 'name', 'string');
+
+            // This is not a typo - the isValidTargetOf method can be reused.
+            return core.isValidTargetOf(node, setOwner, name);
+        };
+
+        /**
          * Returns the list of the META defined attribute names of the node.
          * @param {module:Core~Node} node - the node in question.
          *
