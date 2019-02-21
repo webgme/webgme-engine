@@ -395,8 +395,8 @@ define([
         };
 
         /**
-         * Returns the common parent node of all supplied nodes. If a node and its parent are passed, the method will
-         * return the parent of the parent.
+         * Returns the common parent node of all supplied nodes. Note that if a node and its parent are passed,
+         * the method will return the parent of the parent.
          * @param {...module:Core~Node} nodes - a variable number of nodes to compare
          *
          * @return {module:Core~Node|null} The common parent. Will be null whenever the root-node is passed in.
@@ -1300,7 +1300,8 @@ define([
         };
 
         /**
-         * Returns the common base node of all supplied nodes.
+         * Returns the common base node of all supplied nodes. Note that if a node and its base are passed,
+         * the method will return the base of the base.
          * @param {...module:Core~Node} nodes - a variable number of nodes to compare
          *
          * @return {module:Core~Node|null} The common base or null if e.g. the root node was passed or the fco.
