@@ -122,8 +122,8 @@ describe('PLUGIN REST API', function () {
                 }
             );
 
-            it('should get metadata for /api/plugin/AddOnGenerator/metadata', function (done) {
-                agent.get(server.getUrl() + '/api/v1/plugin/AddOnGenerator/metadata')
+            function getMetadata(route, done) {
+                agent.get(server.getUrl() + '/api/v1/' + route + '/AddOnGenerator/metadata')
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(typeof res.body === 'object').to.equal(true);
@@ -140,6 +140,14 @@ describe('PLUGIN REST API', function () {
 
                         done();
                     });
+            }
+
+            it('should get metadata for /api/plugins/AddOnGenerator/metadata', function (done) {
+                getMetadata('plugins', done);
+            });
+
+            it('should get metadata for /api/plugin/AddOnGenerator/metadata', function (done) {
+                getMetadata('plugin', done);
             });
 
             it('should 404 for non-existing plugin /api/plugin/DoesNotExist/metadata', function (done) {
@@ -158,8 +166,8 @@ describe('PLUGIN REST API', function () {
                     });
             });
 
-            it('should get config via /api/plugin/ImportV1/config', function (done) {
-                agent.get(server.getUrl() + '/api/v1/plugin/ImportV1/config')
+            function getConfig(route, done) {
+                agent.get(server.getUrl() + '/api/v1/' + route + '/ImportV1/config')
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({
@@ -168,10 +176,18 @@ describe('PLUGIN REST API', function () {
                         });
                         done();
                     });
+            }
+
+            it('should get config via /api/plugins/ImportV1/config', function (done) {
+                getConfig('plugins', done);
             });
 
-            it('should get configStructure via /api/plugin/ImportV1/configStructure', function (done) {
-                agent.get(server.getUrl() + '/api/v1/plugin/ImportV1/configStructure')
+            it('should get config via /api/plugin/ImportV1/config', function (done) {
+                getConfig('plugin', done);
+            });
+
+            function getConfigStructure(route, done) {
+                agent.get(server.getUrl() + '/api/v1/' + route + '/ImportV1/configStructure')
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body instanceof Array).to.equal(true);
@@ -180,6 +196,15 @@ describe('PLUGIN REST API', function () {
                         expect(res.body[1]).to.include.keys('name', 'value', 'description', 'valueType', 'displayName');
                         done();
                     });
+            }
+
+            it('should get configStructure via /api/plugins/ImportV1/configStructure', function (done) {
+                getConfigStructure('plugins', done);
+            });
+
+
+            it('should get configStructure via /api/plugin/ImportV1/configStructure', function (done) {
+                getConfigStructure('plugin', done);
             });
 
             it('should 404 when getting config for non-existing plugin /api/plugin/EE/config', function (done) {
@@ -210,22 +235,21 @@ describe('PLUGIN REST API', function () {
                 }
             );
 
-            it('should execute ConfigurationArtifact [pluginId, projectId, branchName]' +
-                ' /api/plugin/ConfigurationArtifact/execute', function (done) {
+            function executePlugin(route, done) {
                 var requestBody = {
                     pluginId: 'ConfigurationArtifact',
                     projectId: importResult.project.projectId,
                     branchName: 'master'
                 };
-                this.timeout(4000);
-                agent.post(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/execute')
+
+                agent.post(server.getUrl() + '/api/v1/' + route + '/ConfigurationArtifact/execute')
                     .send(requestBody)
                     .end(function (err, res) {
                         var resultId = res.body.resultId;
                         expect(res.status).equal(200, err);
                         expect(typeof resultId).to.equal('string');
 
-                        agent.get(server.getUrl() + '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                        agent.get(server.getUrl() + '/api/v1/' + route + '/ConfigurationArtifact/results/' + resultId)
                             .end(function (err, res) {
                                 var cnt = 0,
                                     intervalId;
@@ -234,7 +258,7 @@ describe('PLUGIN REST API', function () {
 
                                 intervalId = setInterval(function () {
                                     agent.get(server.getUrl() +
-                                        '/api/v1/plugin/ConfigurationArtifact/results/' + resultId)
+                                        '/api/v1/' + route + '/ConfigurationArtifact/results/' + resultId)
                                         .end(function (err, res) {
                                             expect(res.status).equal(200, err);
                                             if (res.body.status === 'FINISHED') {
@@ -243,7 +267,7 @@ describe('PLUGIN REST API', function () {
                                                     'success'); //etc.
                                                 expect(res.body.result.success).to.equal(true);
                                                 agent.get(server.getUrl() +
-                                                    '/api/v1/plugin/ExportImport/results/' + resultId)
+                                                    '/api/v1/' + route + '/ExportImport/results/' + resultId)
                                                     .end(function (err, res) {
                                                         expect(res.status).equal(404, err);
                                                         done();
@@ -263,6 +287,18 @@ describe('PLUGIN REST API', function () {
                                 }, 200);
                             });
                     });
+            }
+
+            it('should execute ConfigurationArtifact [pluginId, projectId, branchName]' +
+                ' /api/plugins/ConfigurationArtifact/execute', function (done) {
+                this.timeout(4000);
+                executePlugin('plugins', done);
+            });
+
+            it('should execute ConfigurationArtifact [pluginId, projectId, branchName]' +
+                ' /api/plugin/ConfigurationArtifact/execute', function (done) {
+                this.timeout(4000);
+                executePlugin('plugins', done);
             });
 
             it('should execute with ERROR status ConfigurationArtifact [pluginId] ' +

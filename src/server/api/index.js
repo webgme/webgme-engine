@@ -2053,48 +2053,51 @@ function createAPI(app, mountPath, middlewareOpts) {
             .catch(next);
     });
 
-    router.get('/plugin/:pluginId/metadata', ensureAuthenticated, function (req, res, next) {
-        var basePath = webgmeUtils.getBasePathByName(req.params.pluginId, gmeConfig.plugin.basePaths);
+    router.get(['/plugins/:pluginId/metadata', '/plugin/:pluginId/metadata'],
+        ensureAuthenticated, function (req, res, next) {
+            var basePath = webgmeUtils.getBasePathByName(req.params.pluginId, gmeConfig.plugin.basePaths);
 
-        if (!basePath) {
-            res.sendStatus(404);
-            return;
-        }
+            if (!basePath) {
+                res.sendStatus(404);
+                return;
+            }
 
-        Q.nfcall(fs.readFile, path.join(basePath, req.params.pluginId, 'metadata.json'), 'utf8')
-            .then(function (content) {
-                res.json(JSON.parse(content));
-            })
-            .catch(function (err) {
-                if (err.code === 'ENOENT') {
-                    res.sendStatus(404);
-                } else {
-                    next(err);
-                }
-            });
-    });
+            Q.nfcall(fs.readFile, path.join(basePath, req.params.pluginId, 'metadata.json'), 'utf8')
+                .then(function (content) {
+                    res.json(JSON.parse(content));
+                })
+                .catch(function (err) {
+                    if (err.code === 'ENOENT') {
+                        res.sendStatus(404);
+                    } else {
+                        next(err);
+                    }
+                });
+        });
 
-    router.get('/plugin/:pluginId/config', ensureAuthenticated, function (req, res) {
-        var plugin = getPlugin(req.params.pluginId);
-        // TODO: In next release this should use metadata
-        if (plugin instanceof Error) {
-            logger.error(plugin);
-            res.sendStatus(404);
-        } else {
-            res.send(plugin.getDefaultConfig());
-        }
-    });
+    router.get(['/plugins/:pluginId/config', '/plugin/:pluginId/config'],
+        ensureAuthenticated, function (req, res) {
+            var plugin = getPlugin(req.params.pluginId);
+            // TODO: In next release this should use metadata
+            if (plugin instanceof Error) {
+                logger.error(plugin);
+                res.sendStatus(404);
+            } else {
+                res.send(plugin.getDefaultConfig());
+            }
+        });
 
-    router.get('/plugin/:pluginId/configStructure', ensureAuthenticated, function (req, res) {
-        var plugin = getPlugin(req.params.pluginId);
-        // TODO: In next release this should use metadata
-        if (plugin instanceof Error) {
-            logger.error(plugin);
-            res.sendStatus(404);
-        } else {
-            res.send(plugin.getConfigStructure());
-        }
-    });
+    router.get(['/plugins/:pluginId/configStructure', '/plugin/:pluginId/configStructure'],
+        ensureAuthenticated, function (req, res) {
+            var plugin = getPlugin(req.params.pluginId);
+            // TODO: In next release this should use metadata
+            if (plugin instanceof Error) {
+                logger.error(plugin);
+                res.sendStatus(404);
+            } else {
+                res.send(plugin.getConfigStructure());
+            }
+        });
 
     function getPluginContext(req) {
         var userId = getUserId(req),
@@ -2122,73 +2125,76 @@ function createAPI(app, mountPath, middlewareOpts) {
             });
     }
 
-    router.post('/plugin/:pluginId/execute', function (req, res, next) {
-        var resultId = GUID();
+    router.post(['/plugins/:pluginId/execute', '/plugin/:pluginId/execute'],
+        function (req, res, next) {
+            var resultId = GUID();
 
-        getPluginContext(req)
-            .then(function (context) {
+            getPluginContext(req)
+                .then(function (context) {
 
-                middlewareOpts.workerManager.request(context, function (err, result) {
-                    if (err) {
-                        runningPlugins[resultId].status = PLUGIN_CONSTANTS.ERROR;
-                        runningPlugins[resultId].err = err.message;
-                    } else {
-                        runningPlugins[resultId].status = PLUGIN_CONSTANTS.FINISHED;
-                    }
+                    middlewareOpts.workerManager.request(context, function (err, result) {
+                        if (err) {
+                            runningPlugins[resultId].status = PLUGIN_CONSTANTS.ERROR;
+                            runningPlugins[resultId].err = err.message;
+                        } else {
+                            runningPlugins[resultId].status = PLUGIN_CONSTANTS.FINISHED;
+                        }
 
-                    runningPlugins[resultId].result = result;
-                    runningPlugins[resultId].timeoutId = setTimeout(function () {
-                        logger.warn('Plugin result timed out: ' + gmeConfig.plugin.serverResultTimeout + '[ms]',
-                            resultId);
-                        delete runningPlugins[resultId];
-                    }, gmeConfig.plugin.serverResultTimeout);
-                });
+                        runningPlugins[resultId].result = result;
+                        runningPlugins[resultId].timeoutId = setTimeout(function () {
+                            logger.warn('Plugin result timed out: ' + gmeConfig.plugin.serverResultTimeout + '[ms]',
+                                resultId);
+                            delete runningPlugins[resultId];
+                        }, gmeConfig.plugin.serverResultTimeout);
+                    });
 
-                runningPlugins[resultId] = {
-                    status: PLUGIN_CONSTANTS.RUNNING,
-                    //timeoutId: will be added after plugin finished
-                    //result: null,
-                    //error: null
-                };
+                    runningPlugins[resultId] = {
+                        status: PLUGIN_CONSTANTS.RUNNING,
+                        //timeoutId: will be added after plugin finished
+                        //result: null,
+                        //error: null
+                    };
 
-                res.send({resultId: resultId});
-            })
-            .catch(next);
-    });
+                    res.send({resultId: resultId});
+                })
+                .catch(next);
+        });
 
-    router.post('/plugin/:pluginId/run',  function (req, res, next) {
-        getPluginContext(req)
-            .then(function (context) {
+    router.post(['/plugins/:pluginId/run', '/plugin/:pluginId/run'],
+        function (req, res, next) {
+            getPluginContext(req)
+                .then(function (context) {
 
-                middlewareOpts.workerManager.request(context, function (err, result) {
-                    if (err && !result) {
-                        next(err);
-                    } else {
-                        res.send(result);
-                    }
-                });
-            })
-            .catch(next);
-    });
+                    middlewareOpts.workerManager.request(context, function (err, result) {
+                        if (err && !result) {
+                            next(err);
+                        } else {
+                            res.send(result);
+                        }
+                    });
+                })
+                .catch(next);
+        });
 
-    router.get('/plugin/:pluginId/results/:resultId', ensureAuthenticated, function (req, res) {
-        var pluginExecution = runningPlugins[req.params.resultId];
-        logger.debug('Plugin-result request for ', req.params.pluginId, req.params.resultId);
-        if (pluginExecution) {
-            if (pluginExecution.status === PLUGIN_CONSTANTS.RUNNING) {
-                res.send(pluginExecution);
+    router.get(['/plugins/:pluginId/results/:resultId', '/plugin/:pluginId/results/:resultId'],
+        ensureAuthenticated, function (req, res) {
+            var pluginExecution = runningPlugins[req.params.resultId];
+            logger.debug('Plugin-result request for ', req.params.pluginId, req.params.resultId);
+            if (pluginExecution) {
+                if (pluginExecution.status === PLUGIN_CONSTANTS.RUNNING) {
+                    res.send(pluginExecution);
+                } else {
+                    // Remove the pluginExecution when it has finished or an error occurred.
+                    clearTimeout(pluginExecution.timeoutId);
+                    pluginExecution.timeoutId = undefined;
+                    delete runningPlugins[req.params.resultId];
+
+                    res.send(pluginExecution);
+                }
             } else {
-                // Remove the pluginExecution when it has finished or an error occurred.
-                clearTimeout(pluginExecution.timeoutId);
-                pluginExecution.timeoutId = undefined;
-                delete runningPlugins[req.params.resultId];
-
-                res.send(pluginExecution);
+                res.sendStatus(404);
             }
-        } else {
-            res.sendStatus(404);
-        }
-    });
+        });
 
     // AddOns
     router.get(['/add-ons', '/addOns'], ensureAuthenticated, function (req, res) {
