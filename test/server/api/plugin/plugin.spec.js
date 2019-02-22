@@ -298,7 +298,7 @@ describe('PLUGIN REST API', function () {
             it('should execute ConfigurationArtifact [pluginId, projectId, branchName]' +
                 ' /api/plugin/ConfigurationArtifact/execute', function (done) {
                 this.timeout(4000);
-                executePlugin('plugins', done);
+                executePlugin('plugin', done);
             });
 
             it('should execute with ERROR status ConfigurationArtifact [pluginId] ' +
