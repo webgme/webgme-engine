@@ -874,7 +874,18 @@ describe('gmeNodeGetter', function () {
         getNode('/1303043463/2119137141', logger, basicState, basicStoreNode);
         getNode('', logger, basicState, basicStoreNode);
 
-        expect(node.getCommonParentId('/175547009/1817665259', '/1303043463/2119137141', '')).to.eql('');
+        expect(node.getCommonParentId('/175547009/1817665259', '/1303043463/2119137141')).to.eql('');
+    });
+
+    it('should return null if root path is passed to getCommonParentId', function () {
+        var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode);
+
+        // Ensure the node are loaded
+        getNode('/175547009/1817665259', logger, basicState, basicStoreNode);
+        getNode('/1303043463/2119137141', logger, basicState, basicStoreNode);
+        getNode('', logger, basicState, basicStoreNode);
+
+        expect(node.getCommonParentId('/175547009/1817665259', '/1303043463/2119137141', '')).to.eql(null);
     });
 
     it('should throw at getCommonParentId if compare node not loaded/does not exist', function () {

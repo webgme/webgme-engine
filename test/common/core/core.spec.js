@@ -5107,22 +5107,21 @@ describe('core', function () {
         expect(core.getCommonBase()).to.equal(null);
     });
 
-    it('getCommonBase should return same node if only one provided', function () {
-        expect(core.getCommonBase(ir.rootNode)).to.equal(ir.rootNode);
-        expect(core.getCommonBase(ir.FCO)).to.equal(ir.FCO);
+    it('getCommonBase should return null for both ROOT and FCO node if only one provided', function () {
+        expect(core.getCommonBase(ir.rootNode)).to.equal(null);
+        expect(core.getCommonBase(ir.FCO)).to.equal(null);
     });
 
-    it('getCommonParent should return same node if only one provided', function () {
-        expect(core.getCommonParent(ir.rootNode)).to.equal(ir.rootNode);
-        expect(core.getCommonParent(ir.FCO)).to.equal(ir.FCO);
+    it('getCommonParent should return parent only one provided', function () {
+        expect(core.getCommonParent(ir.FCO)).to.equal(ir.rootNode);
     });
 
     it('getCommonBase should return null if ROOT provided', function () {
         expect(core.getCommonBase(ir.rootNode, ir.FCO)).to.equal(null);
     });
 
-    it('getCommonParent should return ROOT if ROOT provided', function () {
-        expect(core.getCommonParent(ir.rootNode, ir.FCO)).to.equal(ir.rootNode);
+    it('getCommonParent should return null if ROOT provided', function () {
+        expect(core.getCommonParent(ir.rootNode, ir.FCO)).to.equal(null);
     });
 
     it('getCommonBase for more than two nodes', function (done) {
@@ -5132,17 +5131,20 @@ describe('core', function () {
 
                 var child1 = core.createNode({base: fco, parent: rootNode});
                 var child2 = core.createNode({base: child1, parent: rootNode});
+                var child21 = core.createNode({base: child1, parent: rootNode});
                 var child3 = core.createNode({base: fco, parent: rootNode});
                 var child4 = core.createNode({base: child3, parent: rootNode});
 
 
-                expect(core.getCommonBase(child1, child2, fco)).to.equal(fco);
-                expect(core.getCommonBase(fco, child1, child2)).to.equal(fco);
-                expect(core.getCommonBase(child2, fco, child1)).to.equal(fco);
+                expect(core.getCommonBase(child1, child2, fco)).to.equal(null);
+
+                expect(core.getCommonBase(fco, child1, child2)).to.equal(null);
+                expect(core.getCommonBase(child2, fco, child1)).to.equal(null);
 
                 expect(core.getCommonBase(child4, child2)).to.equal(fco);
 
-                expect(core.getCommonBase(child4, child3)).to.equal(child3);
+                expect(core.getCommonBase(child21, child2)).to.equal(child1);
+                expect(core.getCommonBase(child4, child3)).to.equal(fco);
 
                 expect(core.getCommonBase(child2, fco, child1, rootNode)).to.equal(null);
             })
@@ -5155,22 +5157,29 @@ describe('core', function () {
                 var fco = core.getFCO(rootNode);
 
                 var child1 = core.createNode({base: fco, parent: rootNode});
-                var child2 = core.createNode({base: fco, parent: child1});
-                var child3 = core.createNode({base: fco, parent: child2});
+                var child12 = core.createNode({base: fco, parent: child1});
+                var child121 = core.createNode({base: fco, parent: child12});
+                var child122 = core.createNode({base: fco, parent: child12});
+                var child1221 = core.createNode({base: fco, parent: child122});
+                var child1222 = core.createNode({base: fco, parent: child122});
 
-                var child4 = core.createNode({base: fco, parent: rootNode});
-                var child5 = core.createNode({base: fco, parent: child4});
+                var child2 = core.createNode({base: fco, parent: rootNode});
+                var child21 = core.createNode({base: fco, parent: child2});
 
 
-                expect(core.getCommonParent(child1, child2, fco)).to.equal(rootNode);
-                expect(core.getCommonParent(fco, child1, child2)).to.equal(rootNode);
-                expect(core.getCommonParent(child2, fco, child1)).to.equal(rootNode);
+                expect(core.getCommonParent(child1, child12, fco)).to.equal(rootNode);
+                expect(core.getCommonParent(fco, child1, child12)).to.equal(rootNode);
+                expect(core.getCommonParent(child12, fco, child1)).to.equal(rootNode);
 
-                expect(core.getCommonParent(child2, child3)).to.equal(child2);
+                expect(core.getCommonParent(child122, child121, child1221)).to.equal(child12);
+                expect(core.getCommonParent(child122, child121, child1221)).to.equal(child12);
+                expect(core.getCommonParent(child122, child122)).to.equal(child12);
 
-                expect(core.getCommonParent(child4, child5)).to.equal(child4);
+                expect(core.getCommonParent(child1222, child1221)).to.equal(child122);
 
-                expect(core.getCommonParent(child3, child5)).to.equal(rootNode);
+                expect(core.getCommonParent(child2, child21)).to.equal(rootNode);
+
+                expect(core.getCommonParent(child121, child21)).to.equal(rootNode);
             })
             .nodeify(done);
     });
