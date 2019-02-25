@@ -813,6 +813,13 @@ describe('gmeNodeGetter', function () {
         expect(node.isValidTargetOf('/1303043463/1448030591', 'setPtr')).to.eql(false);
     });
 
+    it('should check if the node is a valid member of the given set', function () {
+        var node = getNode('/1303043463/1044885565', logger, basicState, basicStoreNode);
+
+        expect(node.isValidSetMemberOf('/1303043463/2119137141', 'setPtr')).to.eql(true);
+        expect(node.isValidSetMemberOf('/1303043463', 'setPtr')).to.eql(false);
+    });
+
 
     it('should return the common base', function () {
         var node = getNode('/175547009/871430202', logger, basicState, basicStoreNode);
