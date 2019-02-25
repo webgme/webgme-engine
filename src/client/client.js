@@ -751,7 +751,7 @@ define([
         // Main API functions (with helpers) for connecting, selecting project and branches etc.
 
         function closeProject(projectId, callback) {
-
+            var prevBranchName = state.branchName;
             state.project = null;
             state.projectAccess = null;
             state.projectInfo = null;
@@ -765,6 +765,7 @@ define([
 
                 state.core = null;
                 state.branchName = null;
+                state.commitHash = null;
                 //self.dispatchEvent(null);
                 state.patterns = {};
                 //state.gHash = 0;
@@ -778,6 +779,11 @@ define([
                 state.msg = '';
 
                 cleanUsersTerritories();
+                if (prevBranchName) {
+                    self.dispatchEvent(CONSTANTS.BRANCH_CLOSED, prevBranchName);
+                }
+
+                self.dispatchEvent(CONSTANTS.BRANCH_CHANGED, null);
                 self.dispatchEvent(CONSTANTS.PROJECT_CLOSED, projectId);
 
                 callback(null);
