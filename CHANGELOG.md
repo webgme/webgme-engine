@@ -1,5 +1,22 @@
 # Change Log
 
+## [v2.22.4](https://github.com/webgme/webgme-engine/tree/v2.22.4) (2019-02-25)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.22.3...v2.22.4)
+
+**Implemented enhancements:**
+
+- Missing API documentation for various plugin end-points [\#152](https://github.com/webgme/webgme-engine/issues/152)
+- Add isValidSetMember method to core API. [\#154](https://github.com/webgme/webgme-engine/pull/154) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- core.getCommonParent returns the node itself if only given rather than the parent [\#151](https://github.com/webgme/webgme-engine/issues/151)
+- Fixes \#151 and returns actual ancestor for core.getCommonParent/Base [\#153](https://github.com/webgme/webgme-engine/pull/153) ([pmeijer](https://github.com/pmeijer))
+
+**Merged pull requests:**
+
+- Documentation improvements [\#155](https://github.com/webgme/webgme-engine/pull/155) ([kecso](https://github.com/kecso))
+
 ## [v2.22.3](https://github.com/webgme/webgme-engine/tree/v2.22.3) (2019-01-21)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.22.2...v2.22.3)
 
