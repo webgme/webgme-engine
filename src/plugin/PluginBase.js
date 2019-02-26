@@ -148,6 +148,8 @@
         this.callDepth = 0;
 
         this.notificationHandlers = [];
+
+        this.invokedPlugins = [];
     }
 
     //<editor-fold desc="Methods must be overridden by the derived classes">
@@ -771,9 +773,16 @@
                 pluginInstance.isConfigured = true;
                 pluginInstance.callDepth = self.callDepth + 1;
 
+                self.invokedPlugins.push(pluginInstance);
                 return Q.ninvoke(pluginInstance, 'main');
             })
             .then(function (res) {
+                var i;
+                for (i = 0; i < self.invokedPlugins.length; i += 1) {
+                    if (pluginInstance === self.invokedPlugins[i]) {
+                        self.invokedPlugins.splice(i, 1);
+                    }
+                }
                 deferred.resolve(res || pluginInstance.result);
             })
             .catch(function (err) {
@@ -934,6 +943,13 @@
         this.addCommitToResult(STORAGE_CONSTANTS.SYNCED);
 
         this.isConfigured = true;
+
+        this.sendNotification({
+            toBranch: false,
+            message: 'Plugin initialized.',
+            progress: 0,
+            type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED
+        });
     };
 
     /**
@@ -983,6 +999,25 @@
                 });
         } else {
             return [];
+        }
+    };
+
+    /**
+     * Aborts the execution of a plugin.
+     */
+    PluginBase.prototype.onAbort = function () {
+        throw new Error('onAbort function is not implemented!');
+    };
+
+    /**
+     * Can send a message to the plugin.
+     * @param {string} messageType - string identifier of the message.
+     * @param {object} content - object that holds arbitrary content of the message.
+     */
+    PluginBase.prototype.onMessage = function (messageType, content) {
+        if (this.logger) {
+            this.logger.warn('Message [' + messageType + '] was received but no message handling is implemented!');
+            this.logger.debug('Unhandled [' + messageType + '] with content:', content);
         }
     };
     //</editor-fold>

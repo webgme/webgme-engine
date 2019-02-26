@@ -188,6 +188,7 @@ define([
 
                     plugin.initialize(pluginLogger, self.blobClient, gmeConfig);
 
+                    plugin.notificationHandlers = self.notificationHandlers;
                     return plugin;
                 })
                 .nodeify(callback);
@@ -285,8 +286,6 @@ define([
                     'Plugin is not configured.', project && project.projectId));
                 return;
             }
-
-            plugin.notificationHandlers = self.notificationHandlers;
 
             plugin.main(function (err, result) {
                 var stackTrace;

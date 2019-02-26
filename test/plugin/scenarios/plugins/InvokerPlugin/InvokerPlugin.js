@@ -79,7 +79,7 @@ if (typeof define !== 'undefined') {
                 });
             } else {
                 core.createNode({relid: 'I', parent: root, base: self.META.FCO});
-                this.invokePlugin('InvokedPlugin', {
+                this.invokePlugin('WaitForAbort', {
                     namespace: config.useNamespace,
                     pluginConfig: {doCheck: true}
                 }, function (err, result) {

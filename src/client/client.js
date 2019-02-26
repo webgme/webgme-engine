@@ -712,6 +712,9 @@ define([
         this.runServerPlugin = pluginManager.runServerPlugin;
         this.filterPlugins = pluginManager.filterPlugins;
         this.dispatchPluginNotification = pluginManager.dispatchPluginNotification;
+        this.getRunningPlugins = pluginManager.getRunningPlugins;
+        this.abortPlugin = pluginManager.abortPlugin;
+        this.sendMessageToPlugin = pluginManager.sendMessageToPlugin;
 
         function printCoreError(error) {
             logger.error('Faulty core usage raised an error', error);

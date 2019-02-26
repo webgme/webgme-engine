@@ -41,7 +41,7 @@ describe('CorePlugins', function () {
             'SavingDependency',
             'OTAttributeEditing',
             'InvokerPlugin',
-            'InvokedPlugin'
+            'WaitForAbort'
         ],
 
         pluginsShouldFail = [

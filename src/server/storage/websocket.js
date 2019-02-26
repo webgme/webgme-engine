@@ -27,6 +27,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         documents = {
             //<docId> : { otServer: DocumentServer, users: {}, disconnectedUsers: {} }
         }, // TODO: This is a single state on one server!
+        runningPlugins = {},
         webSocket;
 
     logger.debug('ctor');

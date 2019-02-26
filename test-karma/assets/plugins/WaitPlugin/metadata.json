@@ -1,0 +1,15 @@
+{
+  "id": "WaitPlugin",
+  "name": "Wait Plugin Plugin",
+  "version": "1.6.0",
+  "description": "Simple test plugin That only waits so the user can control abort execution.",
+  "icon": {
+    "src": "",
+    "class": "glyphicon glyphicon-cog"
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": false,
+  "writeAccessRequired": false,
+  "canBeAborted": true,
+  "configStructure": []
+}

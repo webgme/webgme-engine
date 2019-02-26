@@ -153,6 +153,7 @@ module.exports = function (config) {
             {pattern: 'src/plugin/*.js', included: false},
             {pattern: 'src/plugin/coreplugins/MinimalWorkingExample/**/*', included: false},
             {pattern: 'src/plugin/coreplugins/PluginGenerator/**/*', included: false},
+            {pattern: 'test-karma/assets/plugins/**/*', included: false},
             {pattern: 'src/*.js', included: false},
             {pattern: 'test/plugin/scenarios/plugins/**/*', included: false},
             {pattern: 'seeds/*.webgmex', included: false}, //seeds
@@ -219,7 +220,7 @@ module.exports = function (config) {
             '/base/gmeConfig.json': 'http://localhost:' + gmeConfig.server.port + '/gmeConfig.json',
             '/docs': 'http://localhost:' + gmeConfig.server.port + '/docs',
             '/rest': 'http://localhost:' + gmeConfig.server.port + '/rest',
-            '/api': 'http://localhost:' + gmeConfig.server.port + '/api'
+            '/api': 'http://localhost:' + gmeConfig.server.port + '/api'//
         }
     });
 };

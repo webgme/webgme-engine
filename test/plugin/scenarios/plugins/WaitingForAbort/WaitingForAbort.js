@@ -26,7 +26,7 @@ if (typeof define !== 'undefined') {
          * @classdesc This class represents the plugin WaitForAbort.
          * @constructor
          */
-        function InvokedPlugin() {
+        function WaitForAbort() {
             // Call base class' constructor.
             PluginBase.call(this);
             this.pluginMetadata = pluginMetadata;
@@ -37,11 +37,11 @@ if (typeof define !== 'undefined') {
          * This is also available at the instance at this.pluginMetadata.
          * @type {object}
          */
-        InvokedPlugin.metadata = pluginMetadata;
+        WaitForAbort.metadata = pluginMetadata;
 
         // Prototypical inheritance from PluginBase.
-        InvokedPlugin.prototype = Object.create(PluginBase.prototype);
-        InvokedPlugin.prototype.constructor = InvokedPlugin;
+        WaitForAbort.prototype = Object.create(PluginBase.prototype);
+        WaitForAbort.prototype.constructor = WaitForAbort;
 
         /**
          * Main function for the plugin to execute. This will perform the execution.
@@ -52,27 +52,38 @@ if (typeof define !== 'undefined') {
          *
          * @param {function(Error|null, plugin.PluginResult)} callback - the result callback
          */
-        InvokedPlugin.prototype.main = function (callback) {
-            var activeNode = this.activeNode,
-                core = this.core,
+        WaitForAbort.prototype.main = function (callback) {
+            var self = this,
                 config = this.getCurrentConfig(),
-                root = core.getRoot(activeNode),
-                relids;
+                aborted = false;
 
-            core.createNode({relid: 'Id', parent: root, base: this.META.FCO});
-            relids = core.getChildrenRelids(root);
-            if (relids.indexOf('I') === -1) {
-                this.result.setSuccess(false);
-            } else {
-                this.result.setSuccess(true);
-            }
-            if (config.doCheck !== true) {
-                this.result.setSuccess(true);
-            }
-            this.createMessage(root, JSON.stringify(Object.keys(this.META)), 'debug');
-            callback(null, this.result);
+
+            self.onAbort = function () {
+                aborted = true;
+                self.invokedPlugins.forEach(function (pluginInstance) {
+                    pluginInstance.onAbort();
+                });
+                self.result.setSuccess(false);
+                callback(new Error('Plugin was aborted.'), self.result);
+            };
+
+            config.setTimeout(function () {
+                if (config.invoke) {
+                    self.invokePlugin('WaitForAbort', {pluginConfig: {invoke: false, waitTime: 5000}})
+                        .then(function (result) {
+                            if (!aborted) {
+                                self.result.addArtifact('1');
+                                self.result.setSuccess(true);
+                                callback(null, self.result);
+                            }
+                        })
+                } else {
+                    this.result.setSuccess(true);
+                    callback(null, self.result);
+                }
+            }, config.waitTime);
         };
 
-        return InvokedPlugin;
+        return WaitForAbort;
     });
 }

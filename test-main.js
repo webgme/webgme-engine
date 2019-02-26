@@ -31,6 +31,8 @@ requirejs.config({
         // TODO: populate plugin list dynamically based on config.json
         'plugin/MinimalWorkingExample': './src/plugin/coreplugins',
         'plugin/PluginForked': './test/plugin/scenarios/plugins',
+        'plugin/AbortPlugin': './test-karma/assets/plugins',
+        'plugin/WaitPlugin': './test-karma/assets/plugins',
 
         executor: './src/common/executor',
         blob: './src/common/blob',

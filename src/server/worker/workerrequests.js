@@ -185,6 +185,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} [context.managerConfig.branchName] - branch which to save to.
      * @param {string} [context.namespace=''] - used namespace during execution ('' represents all namespaces).
      * @param {object} [context.pluginConfig=%defaultForPlugin%] - specific configuration for the plugin.
+     * @param {object} [context.executionId] - unique identifier of the execution necessary for proper messaging.
      * @param {function} callback
      */
     function executePlugin(webgmeToken, socketId, pluginName, context, callback) {
@@ -212,6 +213,21 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 } else {
                     callback(err, result);
                 }
+            },
+            plugin,
+            onNotification = function (emitter, event) {
+                if (event.type === storage.CONSTANTS.NOTIFICATION) {
+                    if (event.notification && event.notification.executionId === context.executionId) {
+                        if (event.notification.type === storage.CONSTANTS.PLUGIN_NOTIFICATION_TYPE.ABORT) {
+                            plugin.onAbort();
+                        } else if (event.notification.type === storage.CONSTANTS.PLUGIN_NOTIFICATION_TYPE.MESSAGE) {
+                            plugin.onMessage(event.notification.messageId, event.notification.content);
+                        }
+                    } else {
+                        logger.error('Mis-delivered notification:', {metadata: event});
+                    }
+
+                }
             };
 
         if (gmeConfig.plugin.allowServerExecution === false) {
@@ -236,6 +252,10 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
 
+
+                // storage.webSocket.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
+                storage.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
+
                 var pluginContext = JSON.parse(JSON.stringify(context.managerConfig));
 
                 pluginContext.project = res.project;
@@ -248,6 +268,12 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 if (typeof socketId === 'string') {
                     logger.debug('socketId provided for plugin execution - notifications available.');
                     pluginManager.notificationHandlers = [function (data, callback) {
+                        // console.log('notif from plugin:', data);
+                        if (data.notification.type && data.notification.type ===
+                            STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED) {
+                            data.executionId = context.executionId;
+                            data.pluginSocketId = storage.webSocket.socket.id;
+                        }
                         data.originalSocketId = socketId;
                         storage.sendNotification(data, callback);
                     }];
@@ -255,7 +281,25 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 pluginManager.projectAccess = res.access;
 
-                pluginManager.executePlugin(pluginName, context.pluginConfig, pluginContext, finish);
+                // pluginManager.executePlugin(pluginName, context.pluginConfig, pluginContext, finish);
+
+                pluginManager.initializePlugin(pluginName)
+                    .then(function (plugin_) {
+                        plugin = plugin_;
+                        return pluginManager.configurePlugin(plugin, context.pluginConfig, pluginContext);
+                    })
+                    .then(function () {
+                        pluginManager.runPluginMain(plugin, finish);
+                    })
+                    .catch(function (err) {
+                        var pluginResult = pluginManager.getPluginErrorResult(plugin.id,
+                            pluginName,
+                            'Exception was raised, err: ' + err.stack,
+                            plugin && plugin.projectId);
+
+                        pluginManager.logger.error(err.stack);
+                        finish(err.message, pluginResult);
+                    });
             })
             .catch(finish)
             .done();
@@ -1568,7 +1612,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                             context.core.delAspectMetaTarget(node, parameters.name, parameters.targetPath);
                         }
 
-                        if (typeof  parameters.targetPath !== 'string') {
+                        if (typeof parameters.targetPath !== 'string') {
                             context.core.delAspectMeta(node, parameters.name);
                         }
                 }
