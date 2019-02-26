@@ -63,6 +63,9 @@
             aborted = true;
             callback(new Error('Execution was aborted'));
         };
+        self.onMessage = function (type, data) {
+            self.sendNotification({msgType: type, msgData: data});
+        };
 
         setTimeout(function () {
             if (aborted) {

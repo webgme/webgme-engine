@@ -4,7 +4,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-describe.only('Plugin', function () {
+describe('Plugin', function () {
     'use strict';
     var Client,
         allPlugins = [],
@@ -545,7 +545,125 @@ describe.only('Plugin', function () {
         });
     });
 
-    it.skip('should receive all plugin events in order when plugin initiated from the client side', function(done){
+    it('should be able to send message to a plugin', function (done) {
+        var pluginId = 'WaitPlugin',
+            context = {
+                managerConfig: {
+                    project: client.getProjectObject(),
+                    activeNode: '',
+                    activeSelection: [],
+                    commit: null,
+                    branchName: 'master',
+                },
+                pluginConfig: {}
+            },
+            messageReceived = false,
+            prevStatus,
+            notificationHandler = function (sender, event) {
+                client.removeEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
+                expect(event).not.to.eql(null);
+                expect(event.type).to.equal(client.CONSTANTS.PLUGIN_NOTIFICATION);
+                expect(event.notification).to.eql({msgType: 'what', msgData: 'not'});
+                messageReceived = true;
+            },
+            initiatedHandler = function (sender, event) {
+                client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedHandler);
+                client.sendMessageToPlugin(event.executionId, 'what', 'not');
+            };
+
+
+        // WebGMEGlobal.Client = client;
+
+        client.addEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
+        client.addEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedHandler);
+        createSelectBranch('master', function (err) {
+            try {
+                expect(err).to.equal(null);
+
+                prevStatus = client.getBranchStatus();
+                expect(prevStatus).to.equal(client.CONSTANTS.BRANCH_STATUS.SYNC);
+
+                context.managerConfig.commitHash = client.getActiveCommitHash();
+                currentBranchHash = client.getActiveCommitHash();
+            } catch (e) {
+                done(e);
+                return;
+            }
+
+            client.runBrowserPlugin(pluginId, context, function (err, pluginResult) {
+                try {
+                    expect(err).to.equal(null);
+                    expect(messageReceived).to.equal(true);
+                } catch (e) {
+                    return done(e);
+                }
+
+                return done();
+            });
+        });
+    });
+
+    it.only('should be able to send message to a server plugin', function (done) {
+        var pluginId = 'WaitPlugin',
+            context = {
+                managerConfig: {
+                    project: client.getProjectObject(),
+                    activeNode: '',
+                    activeSelection: [],
+                    commit: null,
+                    branchName: 'master',
+                },
+                pluginConfig: {}
+            },
+            messageReceived = false,
+            prevStatus,
+            notificationHandler = function (sender, event) {
+            console.log('message...');
+                client.removeEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
+                expect(event).not.to.eql(null);
+                expect(event.type).to.equal(client.CONSTANTS.PLUGIN_NOTIFICATION);
+                expect(event.notification).to.eql({msgType: 'what', msgData: 'not'});
+                messageReceived = true;
+            },
+            initiatedHandler = function (sender, event) {
+            console.log('initiate...');
+                client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedHandler);
+                client.sendMessageToPlugin(event.executionId, 'what', 'not');
+            };
+
+
+        // WebGMEGlobal.Client = client;
+
+        client.addEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
+        client.addEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedHandler);
+        createSelectBranch('master', function (err) {
+            try {
+                expect(err).to.equal(null);
+
+                prevStatus = client.getBranchStatus();
+                expect(prevStatus).to.equal(client.CONSTANTS.BRANCH_STATUS.SYNC);
+
+                context.managerConfig.commitHash = client.getActiveCommitHash();
+                currentBranchHash = client.getActiveCommitHash();
+            } catch (e) {
+                done(e);
+                return;
+            }
+
+            client.runServerPlugin(pluginId, context, function (err, pluginResult) {
+                try {
+                    expect(err).to.equal(null);
+                    expect(messageReceived).to.equal(true);
+                } catch (e) {
+                    return done(e);
+                }
+
+                return done();
+            });
+        });
+    });
+
+    it.skip('should receive all plugin events in order when plugin initiated from the client side', function (done) {
         var pluginId = 'WaitPlugin',
             context = {
                 managerConfig: {
@@ -559,7 +677,7 @@ describe.only('Plugin', function () {
                     shouldAbort: true
                 }
             },
-            events= [],
+            events = [],
             initiatedEvent = function (emitter, event) {
                 client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
                 var plugins = client.getRunningPlugins(),
@@ -575,8 +693,7 @@ describe.only('Plugin', function () {
 
                 expect(executionIds).to.have.length(1);
                 client.abortPlugin(executionIds[0]);
-            },
-        ;
+            };
 
 
         WebGMEGlobal.Client = client;

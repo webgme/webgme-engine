@@ -124,7 +124,7 @@ define([
                 }),
                 pluginManager = new PluginManagerBase(blobClient, null, mainLogger, gmeConfig),
                 plugin,
-                executionKey;
+                executionId;
 
             pluginManager.browserSide = true;
 
@@ -147,22 +147,26 @@ define([
                         canBeAborted: plugin.pluginMetadata.canBeAborted,
                         start: Date.now(),
                         clientSide: true,
-                        executionKey: null
+                        executionId: null
                     };
 
-                    executionKey = generateKey({name: pluginEntry.name, start: pluginEntry.start}, gmeConfig);
-                    pluginEntry.executionKey = executionKey;
-                    runningPlugins[executionKey] = pluginEntry;
-                    // client.dispatchEvent(client.CONSTANTS.PLUGIN_INITIATED, pluginEntry);
+                    executionId = generateKey({name: pluginEntry.name, start: pluginEntry.start}, gmeConfig);
+                    pluginEntry.executionId = executionId;
+                    runningPlugins[executionId] = pluginEntry;
+                    //TODO it has to be a better way, but if everything is synchronous,
+                    // then there is no chance to get this right
+                    setTimeout(function () {
+                        client.dispatchEvent(client.CONSTANTS.PLUGIN_INITIATED, pluginEntry);
+                    }, 0)
                     return Q.ninvoke(pluginManager, 'runPluginMain', plugin);
                 })
                 .then(function (result) {
-                    delete runningPlugins[executionKey];
+                    delete runningPlugins[executionId];
                     client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, pluginEntry);
                     callback(null, result);
                 })
                 .catch(function (err) {
-                    delete runningPlugins[executionKey];
+                    delete runningPlugins[executionId];
                     client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, pluginEntry);
                     var pluginResult = pluginManager.getPluginErrorResult(
                         plugin.getId(),
@@ -189,8 +193,9 @@ define([
          * @param {function} callback
          */
         this.runServerPlugin = function (pluginIdOrClass, context, callback) {
+            console.log('RSP');
             var pluginEntry,
-                executionKey,
+                executionId,
                 pluginId = typeof pluginIdOrClass === 'string' ? pluginIdOrClass : pluginIdOrClass.metadata.id;
             if (context.managerConfig.project instanceof Project) {
                 context.managerConfig.project = context.managerConfig.project.projectId;
@@ -206,22 +211,22 @@ define([
                         canBeAborted: metadata.canBeAborted,
                         start: Date.now(),
                         clientSide: false,
-                        executionKey: null
+                        executionId: null
                     };
 
-                    executionKey = generateKey({name: pluginEntry.name, start: pluginEntry.start}, gmeConfig);
-                    pluginEntry.executionKey = executionKey;
-                    runningPlugins[executionKey] = pluginEntry;
+                    executionId = generateKey({name: pluginEntry.name, start: pluginEntry.start}, gmeConfig);
+                    pluginEntry.executionId = executionId;
+                    runningPlugins[executionId] = pluginEntry;
 
-                    context.executionId = executionKey;
+                    context.executionId = executionId;
 
                     storage.simpleRequest({
                         command: CONSTANTS.SERVER_WORKER_REQUESTS.EXECUTE_PLUGIN,
                         name: pluginId,
                         context: context,
-                        executionKey: executionKey
+                        executionId: executionId
                     }, function (err, result) {
-                        delete runningPlugins[executionKey];
+                        delete runningPlugins[executionId];
                         if (err) {
                             callback(err, err.result);
                         } else {
@@ -334,8 +339,18 @@ define([
             if (pluginEntry) {
                 if (pluginEntry.clientSide) {
                     pluginEntry.plugin.onMessage(messageId, content);
-                } else {
-                    //TODO need to send a notification through the storage layer
+                } else if (pluginEntry.socketId) {
+                    storage.sendNotification({
+                        type: CONSTANTS.STORAGE.PLUGIN_NOTIFICATION,
+                        notification: {
+                            toBranch: false,
+                            type: CONSTANTS.STORAGE.PLUGIN_NOTIFICATION_TYPE.MESSAGE,
+                            executionId: pluginExecutionId,
+                            messageId: messageId,
+                            content: content
+                        },
+                        originalSocketId: pluginEntry.socketId,
+                    });
                 }
             }
         };

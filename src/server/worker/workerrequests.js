@@ -216,6 +216,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             },
             plugin,
             onNotification = function (emitter, event) {
+                console.log(event.type, event.notification.type);
                 if (event.type === storage.CONSTANTS.NOTIFICATION) {
                     if (event.notification && event.notification.executionId === context.executionId) {
                         if (event.notification.type === storage.CONSTANTS.PLUGIN_NOTIFICATION_TYPE.ABORT) {
@@ -230,6 +231,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 }
             };
 
+        console.log('server execution');
         if (gmeConfig.plugin.allowServerExecution === false) {
             errResult = pluginManager.getPluginErrorResult(pluginName, pluginName,
                 'plugin execution on server side is disabled');
@@ -289,6 +291,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                         return pluginManager.configurePlugin(plugin, context.pluginConfig, pluginContext);
                     })
                     .then(function () {
+                        plugin.sendNotification({type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED});
                         pluginManager.runPluginMain(plugin, finish);
                     })
                     .catch(function (err) {
