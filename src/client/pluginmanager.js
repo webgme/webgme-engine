@@ -295,6 +295,7 @@ define([
             }
 
             // logger.debug('plugin notification', data);
+            console.log('plugin notification', data);
             if (data.notification && data.notification.type === CONSTANTS.STORAGE.PLUGIN_NOTIFICATION_TYPE.INITIATED) {
                 if (runningPlugins.hasOwnProperty(data.executionId)) {
                     runningPlugins[data.executionId].socketId = data.pluginSocketId;
@@ -340,6 +341,7 @@ define([
                 if (pluginEntry.clientSide) {
                     pluginEntry.plugin.onMessage(messageId, content);
                 } else if (pluginEntry.socketId) {
+                    console.log('whyyyyyyyu');
                     storage.sendNotification({
                         type: CONSTANTS.STORAGE.PLUGIN_NOTIFICATION,
                         notification: {

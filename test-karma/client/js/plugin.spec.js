@@ -4,7 +4,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-describe('Plugin', function () {
+describe.only('Plugin', function () {
     'use strict';
     var Client,
         allPlugins = [],
@@ -603,7 +603,7 @@ describe('Plugin', function () {
         });
     });
 
-    it.only('should be able to send message to a server plugin', function (done) {
+    it('should be able to send message to a server plugin', function (done) {
         var pluginId = 'WaitPlugin',
             context = {
                 managerConfig: {
