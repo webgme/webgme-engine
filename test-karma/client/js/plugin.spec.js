@@ -492,7 +492,7 @@ describe.only('Plugin', function () {
         });
     });
 
-    it('should abort the server plugin execution', function (done) {
+    it.only('should abort the server plugin execution', function (done) {
         var pluginId = 'WaitPlugin',
             context = {
                 managerConfig: {

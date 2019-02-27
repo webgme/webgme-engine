@@ -912,6 +912,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             // Notification handling
             socket.on('notification', function (data, callback) {
+                console.log('WSN:', data.type, data.originalSocketId, data.notification);
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
                         logger.debug('Incoming notification from', userId, {metadata: data});

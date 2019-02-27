@@ -216,8 +216,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             },
             plugin,
             onNotification = function (emitter, event) {
-                console.log(event.type, event.notification.type);
-                if (event.type === storage.CONSTANTS.NOTIFICATION) {
+                console.log('incomingPN:', event.type, event.notification.type);
+                if (event.type === storage.CONSTANTS.PLUGIN_NOTIFICATION) {
+                    console.log('checkingNotif:', event.notification.executionId, context.executionId);
                     if (event.notification && event.notification.executionId === context.executionId) {
                         if (event.notification.type === storage.CONSTANTS.PLUGIN_NOTIFICATION_TYPE.ABORT) {
                             plugin.onAbort();
@@ -231,7 +232,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 }
             };
 
-        console.log('server execution');
         if (gmeConfig.plugin.allowServerExecution === false) {
             errResult = pluginManager.getPluginErrorResult(pluginName, pluginName,
                 'plugin execution on server side is disabled');
@@ -255,8 +255,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     getNetworkStatusChangeHandler(finish));
 
 
-                // storage.webSocket.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
-                storage.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
+                storage.webSocket.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
+                // storage.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
 
                 var pluginContext = JSON.parse(JSON.stringify(context.managerConfig));
 
@@ -270,7 +270,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 if (typeof socketId === 'string') {
                     logger.debug('socketId provided for plugin execution - notifications available.');
                     pluginManager.notificationHandlers = [function (data, callback) {
-                        console.log('notif from plugin:', data);
                         if (data.notification.type && data.notification.type ===
                             STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED) {
                             data.executionId = context.executionId;
@@ -285,14 +284,12 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 // pluginManager.executePlugin(pluginName, context.pluginConfig, pluginContext, finish);
 
-                console.log('ready to rumble');
                 pluginManager.initializePlugin(pluginName)
                     .then(function (plugin_) {
                         plugin = plugin_;
                         return pluginManager.configurePlugin(plugin, context.pluginConfig, pluginContext);
                     })
                     .then(function () {
-                        console.log('shout out');
                         plugin.sendNotification({type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED});
                         pluginManager.runPluginMain(plugin, finish);
                     })
