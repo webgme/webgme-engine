@@ -216,9 +216,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             },
             plugin,
             onNotification = function (emitter, event) {
-                console.log('incomingPN:', event.type, event.notification.type);
                 if (event.type === storage.CONSTANTS.PLUGIN_NOTIFICATION) {
-                    console.log('checkingNotif:', event.notification.executionId, context.executionId);
                     if (event.notification && event.notification.executionId === context.executionId) {
                         if (event.notification.type === storage.CONSTANTS.PLUGIN_NOTIFICATION_TYPE.ABORT) {
                             plugin.onAbort();
@@ -290,7 +288,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                         return pluginManager.configurePlugin(plugin, context.pluginConfig, pluginContext);
                     })
                     .then(function () {
-                        plugin.sendNotification({type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED});
                         pluginManager.runPluginMain(plugin, finish);
                     })
                     .catch(function (err) {

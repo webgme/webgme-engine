@@ -4,7 +4,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-describe.only('Plugin', function () {
+describe('Plugin', function () {
     'use strict';
     var Client,
         allPlugins = [],
@@ -492,7 +492,7 @@ describe.only('Plugin', function () {
         });
     });
 
-    it.only('should abort the server plugin execution', function (done) {
+    it('should abort the server plugin execution', function (done) {
         var pluginId = 'WaitPlugin',
             context = {
                 managerConfig: {
@@ -618,7 +618,6 @@ describe.only('Plugin', function () {
             messageReceived = false,
             prevStatus,
             notificationHandler = function (sender, event) {
-            console.log('message...');
                 client.removeEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
                 expect(event).not.to.eql(null);
                 expect(event.type).to.equal(client.CONSTANTS.PLUGIN_NOTIFICATION);
@@ -626,7 +625,6 @@ describe.only('Plugin', function () {
                 messageReceived = true;
             },
             initiatedHandler = function (sender, event) {
-            console.log('initiate...');
                 client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedHandler);
                 client.sendMessageToPlugin(event.executionId, 'what', 'not');
             };
@@ -663,7 +661,7 @@ describe.only('Plugin', function () {
         });
     });
 
-    it.skip('should receive all plugin events in order when plugin initiated from the client side', function (done) {
+    it('should receive all plugin events in order when executing plugin on the client side', function (done) {
         var pluginId = 'WaitPlugin',
             context = {
                 managerConfig: {
@@ -679,26 +677,79 @@ describe.only('Plugin', function () {
             },
             events = [],
             initiatedEvent = function (emitter, event) {
-                client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
-                var plugins = client.getRunningPlugins(),
-                    executionIds = Object.keys(plugins);
-
-                expect(executionIds).to.have.length(1);
-                client.abortPlugin(executionIds[0]);
+                // client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+                // console.log('emitter:', emitter);
+                events.push(client.CONSTANTS.PLUGIN_INITIATED);
             },
             finishedEvent = function (emitter, event) {
-                client.removeEventListener(client.CONSTANTS.PLUGIN_FINISHED, finishedEvent);
-                var plugins = client.getRunningPlugins(),
-                    executionIds = Object.keys(plugins);
+                // client.removeEventListener(client.CONSTANTS.PLUGIN_FINISHED, finishedEvent);
+                events.push(client.CONSTANTS.PLUGIN_FINISHED);
 
-                expect(executionIds).to.have.length(1);
-                client.abortPlugin(executionIds[0]);
             };
 
 
         WebGMEGlobal.Client = client;
 
         client.addEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+        client.addEventListener(client.CONSTANTS.PLUGIN_FINISHED, finishedEvent);
+        createSelectBranch('master', function (err) {
+            try {
+                expect(err).to.equal(null);
+
+                context.managerConfig.commitHash = client.getActiveCommitHash();
+                // currentBranchHash = client.getActiveCommitHash();
+            } catch (e) {
+                done(e);
+                return;
+            }
+
+            client.runBrowserPlugin(pluginId, context, function (err, pluginResult) {
+                try {
+                    client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+                    client.removeEventListener(client.CONSTANTS.PLUGIN_FINISHED, finishedEvent);
+                    expect(err).to.equal(null);
+                    expect(pluginResult).not.to.equal(null);
+                    expect(events).to.eql([client.CONSTANTS.PLUGIN_INITIATED, client.CONSTANTS.PLUGIN_FINISHED]);
+                } catch (e) {
+                    return done(e);
+                }
+
+                return done();
+            });
+        });
+    });
+
+    it('should receive all plugin events in order when executing plugin on the server side', function (done) {
+        var pluginId = 'WaitPlugin',
+            context = {
+                managerConfig: {
+                    project: client.getProjectObject(),
+                    activeNode: '',
+                    activeSelection: [],
+                    commit: null,
+                    branchName: 'master',
+                },
+                pluginConfig: {
+                    shouldAbort: true
+                }
+            },
+            events = [],
+            initiatedEvent = function (emitter, event) {
+                // client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+                // console.log('emitter:', emitter);
+                events.push(client.CONSTANTS.PLUGIN_INITIATED);
+            },
+            finishedEvent = function (emitter, event) {
+                // client.removeEventListener(client.CONSTANTS.PLUGIN_FINISHED, finishedEvent);
+                events.push(client.CONSTANTS.PLUGIN_FINISHED);
+
+            };
+
+
+        WebGMEGlobal.Client = client;
+
+        client.addEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+        client.addEventListener(client.CONSTANTS.PLUGIN_FINISHED, finishedEvent);
         createSelectBranch('master', function (err) {
             try {
                 expect(err).to.equal(null);
@@ -712,10 +763,11 @@ describe.only('Plugin', function () {
 
             client.runServerPlugin(pluginId, context, function (err, pluginResult) {
                 try {
-                    expect(err).not.to.equal(null);
-                    // expect(err.message).to.contains('Execution was aborted');
-                    console.log(err);
+                    client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+                    client.removeEventListener(client.CONSTANTS.PLUGIN_FINISHED, finishedEvent);
+                    expect(err).to.equal(null);
                     expect(pluginResult).not.to.equal(null);
+                    expect(events).to.eql([client.CONSTANTS.PLUGIN_INITIATED, client.CONSTANTS.PLUGIN_FINISHED]);
                 } catch (e) {
                     return done(e);
                 }

@@ -918,6 +918,7 @@
      * @param {object} config - specific context: project, branch, core, active object and active selection.
      */
     PluginBase.prototype.configure = function (config) {
+        var self = this;
         this.core = config.core;
         this.project = config.project;
         this.branch = config.branch;  // This is only for client side.
@@ -944,12 +945,14 @@
 
         this.isConfigured = true;
 
-        this.sendNotification({
-            toBranch: false,
-            message: 'Plugin initialized.',
-            progress: 0,
-            type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED
-        });
+        setTimeout(function () {
+            self.sendNotification({
+                toBranch: false,
+                message: 'Plugin initialized.',
+                progress: 0,
+                type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED
+            });
+        }, 0);
     };
 
     /**

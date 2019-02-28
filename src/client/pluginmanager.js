@@ -32,11 +32,7 @@ define([
 
         var self = this,
             logger = mainLogger.fork('PluginManager'),
-            runningPlugins = {},
-            notificationHandlers = [function (data, callback) {
-                self.dispatchPluginNotification(data);
-                callback(null);
-            }];
+            runningPlugins = {};
 
         this.getCurrentPluginContext = function (pluginId, activeNodeId, activeSelectionIds) {
             var activeNode,
@@ -130,15 +126,17 @@ define([
 
             pluginManager.projectAccess = client.getProjectAccess();
 
-            pluginManager.notificationHandlers = notificationHandlers;
+            pluginManager.notificationHandlers = [function (data, callback) {
+                data.executionId = executionId;
+                self.dispatchPluginNotification(data);
+                callback(null);
+            }];
 
             // pluginManager.executePlugin(pluginIdOrClass, context.pluginConfig, context.managerConfig, callback);
             pluginManager.initializePlugin(pluginIdOrClass)
                 .then(function (plugin_) {
                     plugin = plugin_;
-                    return pluginManager.configurePlugin(plugin, context.pluginConfig, context.managerConfig);
-                })
-                .then(function () {
+                    
                     pluginEntry = {
                         name: plugin.getName(),
                         plugin: plugin,
@@ -153,11 +151,10 @@ define([
                     executionId = generateKey({name: pluginEntry.name, start: pluginEntry.start}, gmeConfig);
                     pluginEntry.executionId = executionId;
                     runningPlugins[executionId] = pluginEntry;
-                    //TODO it has to be a better way, but if everything is synchronous,
-                    // then there is no chance to get this right
-                    setTimeout(function () {
-                        client.dispatchEvent(client.CONSTANTS.PLUGIN_INITIATED, pluginEntry);
-                    }, 0)
+                    
+                    return pluginManager.configurePlugin(plugin, context.pluginConfig, context.managerConfig);
+                })
+                .then(function () {
                     return Q.ninvoke(pluginManager, 'runPluginMain', plugin);
                 })
                 .then(function (result) {
@@ -226,6 +223,7 @@ define([
                         executionId: executionId
                     }, function (err, result) {
                         delete runningPlugins[executionId];
+                        client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, pluginEntry);
                         if (err) {
                             callback(err, err.result);
                         } else {
