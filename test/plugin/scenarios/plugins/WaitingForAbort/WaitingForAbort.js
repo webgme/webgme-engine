@@ -78,7 +78,7 @@ if (typeof define !== 'undefined') {
                             }
                         });
                 } else {
-                    this.result.setSuccess(true);
+                    self.result.setSuccess(true);
                     callback(null, self.result);
                 }
             }, config.waitTime);
