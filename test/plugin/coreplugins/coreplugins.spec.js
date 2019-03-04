@@ -41,7 +41,10 @@ describe('CorePlugins', function () {
             'SavingDependency',
             'OTAttributeEditing',
             'InvokerPlugin',
-            'WaitForAbort'
+            'InvokedPlugin',
+            'WaitingForAbort',
+            'AbortPlugin',
+            'WaitPlugin'
         ],
 
         pluginsShouldFail = [
@@ -132,9 +135,7 @@ describe('CorePlugins', function () {
             // As pluginNames contains unique names, we can check that each is
             // in the response and the response is the proper length
             expect(res.body.length).to.equal(pluginNames.length);  // ensures that we test all available core plugins
-            for (var i = pluginNames.length; i--;) {
-                expect(res.body.indexOf(pluginNames[i])).to.not.equal(-1);
-            }
+            expect(res.body).to.have.members(pluginNames);
             done();
         });
     });

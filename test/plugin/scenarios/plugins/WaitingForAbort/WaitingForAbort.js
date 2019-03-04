@@ -67,7 +67,7 @@ if (typeof define !== 'undefined') {
                 callback(new Error('Plugin was aborted.'), self.result);
             };
 
-            config.setTimeout(function () {
+            setTimeout(function () {
                 if (config.invoke) {
                     self.invokePlugin('WaitForAbort', {pluginConfig: {invoke: false, waitTime: 5000}})
                         .then(function (/*result*/) {
