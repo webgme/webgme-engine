@@ -87,7 +87,7 @@ define([
         function getPluginMetadata(pluginId) {
             var deferred = Q.defer();
 
-            superagent.get('api/plugins/' + pluginId + '/metadata')
+            superagent.get(gmeConfig.client.mountedPath + '/api/plugins/' + pluginId + '/metadata')
                 .end(function (err, res) {
                     if (err) {
                         deferred.reject(err);
@@ -136,8 +136,9 @@ define([
             pluginManager.initializePlugin(pluginIdOrClass)
                 .then(function (plugin_) {
                     plugin = plugin_;
-                    
+
                     pluginEntry = {
+                        id: plugin.getId(),
                         name: plugin.getName(),
                         plugin: plugin,
                         metadata: plugin.pluginMetadata,
@@ -148,22 +149,38 @@ define([
                         executionId: null
                     };
 
-                    executionId = generateKey({name: pluginEntry.name, start: pluginEntry.start}, gmeConfig);
+                    executionId = generateKey({
+                        id: pluginEntry.id,
+                        name: pluginEntry.name,
+                        start: pluginEntry.start
+                    }, gmeConfig);
                     pluginEntry.executionId = executionId;
                     runningPlugins[executionId] = pluginEntry;
-                    
+
                     return pluginManager.configurePlugin(plugin, context.pluginConfig, context.managerConfig);
                 })
                 .then(function () {
                     return Q.ninvoke(pluginManager, 'runPluginMain', plugin);
                 })
                 .then(function (result) {
-                    delete runningPlugins[executionId];
+                    if (runningPlugins.hasOwnProperty(executionId)) {
+                        delete runningPlugins[executionId];
+                    } else {
+                        logger.error('Running plugin registry misses entry [' + pluginEntry.id +
+                            '][' + executionId + '].');
+                    }
+                    pluginEntry.result = result;
                     client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, pluginEntry);
                     callback(null, result);
                 })
                 .catch(function (err) {
-                    delete runningPlugins[executionId];
+                    if (runningPlugins.hasOwnProperty(executionId)) {
+                        delete runningPlugins[executionId];
+                    } else {
+                        logger.error('Running plugin registry misses entry [' + pluginEntry.id +
+                            '][' + executionId + '].');
+                    }
+                    pluginEntry.result = null;
                     client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, pluginEntry);
                     var pluginResult = pluginManager.getPluginErrorResult(
                         plugin.getId(),
@@ -172,7 +189,8 @@ define([
                     );
                     logger.error(err.stack);
                     callback(err.message, pluginResult);
-                });
+                })
+                .done();
         };
 
         /**
@@ -200,6 +218,7 @@ define([
             getPluginMetadata(pluginId)
                 .then(function (metadata) {
                     pluginEntry = {
+                        id: pluginId,
                         name: metadata.name,
                         plugin: null,
                         metadata: metadata,
@@ -210,7 +229,11 @@ define([
                         executionId: null
                     };
 
-                    executionId = generateKey({name: pluginEntry.name, start: pluginEntry.start}, gmeConfig);
+                    executionId = generateKey({
+                        id: pluginId,
+                        name: pluginEntry.name,
+                        start: pluginEntry.start
+                    }, gmeConfig);
                     pluginEntry.executionId = executionId;
                     runningPlugins[executionId] = pluginEntry;
 
@@ -222,7 +245,14 @@ define([
                         context: context,
                         executionId: executionId
                     }, function (err, result) {
-                        delete runningPlugins[executionId];
+                        if (runningPlugins.hasOwnProperty(executionId)) {
+                            delete runningPlugins[executionId];
+                        } else {
+                            logger.error('Running plugin registry misses entry [' + pluginEntry.id +
+                                '][' + executionId + '].');
+                        }
+
+                        pluginEntry.result = result;
                         client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, pluginEntry);
                         if (err) {
                             callback(err, err.result);

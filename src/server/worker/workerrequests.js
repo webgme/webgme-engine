@@ -224,7 +224,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                             plugin.onMessage(event.notification.messageId, event.notification.content);
                         }
                     } else {
-                        logger.error('Mis-delivered notification:', {metadata: event});
+                        logger.error('Unexpected plugin-notification', new Error(JSON.stringify(event)));
                     }
 
                 }
@@ -282,7 +282,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 // pluginManager.executePlugin(pluginName, context.pluginConfig, pluginContext, finish);
 
-                pluginManager.initializePlugin(pluginName)
+                return pluginManager.initializePlugin(pluginName)
                     .then(function (plugin_) {
                         plugin = plugin_;
                         return pluginManager.configurePlugin(plugin, context.pluginConfig, pluginContext);
@@ -291,14 +291,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                         pluginManager.runPluginMain(plugin, finish);
                     })
                     .catch(function (err) {
-                        var pluginResult = pluginManager.getPluginErrorResult(plugin.id,
-                            pluginName,
-                            'Exception was raised, err: ' + err.stack,
-                            plugin && plugin.projectId);
-
-                        pluginManager.logger.error(err.stack);
-                        finish(err.message, pluginResult);
-                    });
+                        finish(err.message);
+                    })
+                    .done();
             })
             .catch(finish)
             .done();
