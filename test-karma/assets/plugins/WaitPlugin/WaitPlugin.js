@@ -1,4 +1,4 @@
-/*globals define, WebGMEGlobal*/
+/*globals define*/
 /*eslint-env node, browser*/
 
 /**
@@ -42,7 +42,6 @@
 
     // Prototypical inheritance from PluginBase.
     WaitPlugin.prototype = Object.create(PluginBase.prototype);
-    WaitPlugin
     /**
      * Main function for the plugin to execute. This will perform the execution.
      * Notes:

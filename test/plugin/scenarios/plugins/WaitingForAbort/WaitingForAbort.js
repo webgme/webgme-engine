@@ -70,13 +70,13 @@ if (typeof define !== 'undefined') {
             config.setTimeout(function () {
                 if (config.invoke) {
                     self.invokePlugin('WaitForAbort', {pluginConfig: {invoke: false, waitTime: 5000}})
-                        .then(function (result) {
+                        .then(function (/*result*/) {
                             if (!aborted) {
                                 self.result.addArtifact('1');
                                 self.result.setSuccess(true);
                                 callback(null, self.result);
                             }
-                        })
+                        });
                 } else {
                     this.result.setSuccess(true);
                     callback(null, self.result);

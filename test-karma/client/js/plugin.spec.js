@@ -245,7 +245,7 @@ describe('Plugin', function () {
                 client.getBranches(projectId, function (err, branches) {
                     try {
                         expect(err).to.equal(null);
-                        console.log(branches);
+                        // console.log(branches);
                         // expect(Object.keys(branches).length).to.equal(2);
                         expect(branches).to.include.keys(['master', 'MinimalWorkingExample1']);
                         if (!wasNotified) {
@@ -506,7 +506,7 @@ describe('Plugin', function () {
                     shouldAbort: true
                 }
             },
-            initiatedEvent = function (emitter, event) {
+            initiatedEvent = function (/*emitter, event*/) {
                 client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
                 var plugins = client.getRunningPlugins(),
                     executionIds = Object.keys(plugins);
@@ -534,7 +534,7 @@ describe('Plugin', function () {
                 try {
                     expect(err).not.to.equal(null);
                     // expect(err.message).to.contains('Execution was aborted');
-                    console.log(err);
+                    // console.log(err);
                     expect(pluginResult).not.to.equal(null);
                 } catch (e) {
                     return done(e);
@@ -590,7 +590,7 @@ describe('Plugin', function () {
                 return;
             }
 
-            client.runBrowserPlugin(pluginId, context, function (err, pluginResult) {
+            client.runBrowserPlugin(pluginId, context, function (err/*, pluginResult*/) {
                 try {
                     expect(err).to.equal(null);
                     expect(messageReceived).to.equal(true);
@@ -648,7 +648,7 @@ describe('Plugin', function () {
                 return;
             }
 
-            client.runServerPlugin(pluginId, context, function (err, pluginResult) {
+            client.runServerPlugin(pluginId, context, function (err/*, pluginResult*/) {
                 try {
                     expect(err).to.equal(null);
                     expect(messageReceived).to.equal(true);
@@ -676,12 +676,12 @@ describe('Plugin', function () {
                 }
             },
             events = [],
-            initiatedEvent = function (emitter, event) {
+            initiatedEvent = function (/*emitter, event*/) {
                 // client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
                 // console.log('emitter:', emitter);
                 events.push(client.CONSTANTS.PLUGIN_INITIATED);
             },
-            finishedEvent = function (emitter, event) {
+            finishedEvent = function (/*emitter, event*/) {
                 // client.removeEventListener(client.CONSTANTS.PLUGIN_FINISHED, finishedEvent);
                 events.push(client.CONSTANTS.PLUGIN_FINISHED);
 
@@ -734,12 +734,12 @@ describe('Plugin', function () {
                 }
             },
             events = [],
-            initiatedEvent = function (emitter, event) {
+            initiatedEvent = function (/*emitter, event*/) {
                 // client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
                 // console.log('emitter:', emitter);
                 events.push(client.CONSTANTS.PLUGIN_INITIATED);
             },
-            finishedEvent = function (emitter, event) {
+            finishedEvent = function (/*emitter, event*/) {
                 // client.removeEventListener(client.CONSTANTS.PLUGIN_FINISHED, finishedEvent);
                 events.push(client.CONSTANTS.PLUGIN_FINISHED);
 

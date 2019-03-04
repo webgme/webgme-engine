@@ -346,9 +346,9 @@ define([
      * @alias Core
      * @description The Core defines the main API for model manipulation and traversal. It is important to note, that
      * all 'Path' function must be used with caution as the returned information is just an estimate and does not
-     * guarantee that the actual node will exist (as in certain scenarios they might become invalid and need to be removed,
-     * but said removal can only take place during their load). Try to always 'Load' every node before depending on their
-     * paths.
+     * guarantee that the actual node will exist (as in certain scenarios they might become invalid and need to
+     * be removed, but said removal can only take place during their load). Try to always 'Load' every
+     * node before depending on their paths.
      * @constructor
      */
     function Core(project, options) {
