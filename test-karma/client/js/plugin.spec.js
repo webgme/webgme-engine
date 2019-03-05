@@ -515,6 +515,7 @@ describe('Plugin', function () {
                 expect(executionIds).to.have.length(1);
                 expect(emitter).not.to.eql(null);
                 expect(event.context.managerConfig.project).to.eql(projectId);
+                expect(plugins[executionIds[0]]).to.eql(event);
                 client.abortPlugin(executionIds[0]);
             };
 
@@ -541,6 +542,81 @@ describe('Plugin', function () {
                 }
 
                 return done();
+            });
+        });
+    });
+
+    it('should abort be possible with multiple plugins running', function (done) {
+        var pluginId = 'WaitPlugin',
+            abortedId,
+            returnProcessed = 2,
+            numOfPlugins = 2,
+            context = {
+                managerConfig: {
+                    project: client.getProjectObject(),
+                    activeNode: '',
+                    activeSelection: [],
+                    commit: null,
+                    branchName: 'master',
+                },
+                pluginConfig: {
+                    shouldAbort: true
+                }
+            },
+            initiatedEvent = function (emitter, event) {
+                if (--numOfPlugins === 0) {
+                    client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+                    client.abortPlugin(event.executionId);
+                } else {
+                    var plugins = client.getRunningPlugins(),
+                        executionIds = Object.keys(plugins);
+
+                    expect(executionIds).to.have.length(2);
+                    expect(emitter).not.to.eql(null);
+                    expect(event.context.managerConfig.project).to.eql(projectId);
+                    expect(plugins[event.executionId]).to.eql(event);
+                }
+
+            };
+
+
+        WebGMEGlobal.Client = client;
+
+        client.addEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+        createSelectBranch('master', function (err) {
+            try {
+                expect(err).to.equal(null);
+
+                context.managerConfig.commitHash = client.getActiveCommitHash();
+            } catch (e) {
+                done(e);
+                return;
+            }
+
+            client.runBrowserPlugin(pluginId, context, function (err, pluginResult) {
+                try {
+                    expect(err).to.equal(null);
+                    expect(pluginResult).not.to.equal(null);
+                } catch (e) {
+                    return done(e);
+                }
+
+                if (--returnProcessed == 0) {
+                    return done();
+                }
+            });
+
+            client.runBrowserPlugin(pluginId, context, function (err, pluginResult) {
+                try {
+                    expect(err).not.to.equal(null);
+                    expect(pluginResult).not.to.equal(null);
+                } catch (e) {
+                    return done(e);
+                }
+
+                if (--returnProcessed == 0) {
+                    return done();
+                }
             });
         });
     });

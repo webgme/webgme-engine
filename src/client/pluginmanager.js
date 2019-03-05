@@ -396,7 +396,15 @@ define([
         };
 
         this.getRunningPlugins = function () {
-            return runningPlugins;
+            var sanitizedData = {},
+                executionIds = Object.keys(runningPlugins);
+
+            executionIds.forEach(function (executionId) {
+                if (runningPlugins.hasOwnProperty(executionId)) {
+                    sanitizedData[executionId] = getSanitizedPluginEntry(runningPlugins[executionId]);
+                }
+            });
+            return sanitizedData;
         };
 
         this.abortPlugin = function (pluginExecutionId) {
