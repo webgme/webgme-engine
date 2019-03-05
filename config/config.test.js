@@ -45,4 +45,6 @@ config.server.log = {
     }]
 };
 
+config.plugin.basePaths.push(path.join(__dirname, '../test-karma/assets/plugins'));
+
 module.exports = config;

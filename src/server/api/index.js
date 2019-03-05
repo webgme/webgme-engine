@@ -2188,7 +2188,6 @@ function createAPI(app, mountPath, middlewareOpts) {
                     clearTimeout(pluginExecution.timeoutId);
                     pluginExecution.timeoutId = undefined;
                     delete runningPlugins[req.params.resultId];
-
                     res.send(pluginExecution);
                 }
             } else {

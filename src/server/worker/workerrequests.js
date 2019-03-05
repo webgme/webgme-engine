@@ -185,11 +185,13 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} [context.managerConfig.branchName] - branch which to save to.
      * @param {string} [context.namespace=''] - used namespace during execution ('' represents all namespaces).
      * @param {object} [context.pluginConfig=%defaultForPlugin%] - specific configuration for the plugin.
+     * @param {object} [context.executionId] - unique identifier of the execution necessary for proper messaging.
      * @param {function} callback
      */
     function executePlugin(webgmeToken, socketId, pluginName, context, callback) {
         var storage,
             errResult,
+            pluginContext,
             pluginManager = new PluginNodeManager(webgmeToken, null, logger, gmeConfig, webgmeUrl),
             finish = function (err, result) {
                 if (err) {
@@ -211,6 +213,21 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     });
                 } else {
                     callback(err, result);
+                }
+            },
+            plugin,
+            onNotification = function (emitter, event) {
+                if (event.type === storage.CONSTANTS.PLUGIN_NOTIFICATION) {
+                    if (event.notification && event.notification.executionId === context.executionId) {
+                        if (event.notification.type === storage.CONSTANTS.PLUGIN_NOTIFICATION_TYPE.ABORT) {
+                            plugin.onAbort();
+                        } else if (event.notification.type === storage.CONSTANTS.PLUGIN_NOTIFICATION_TYPE.MESSAGE) {
+                            plugin.onMessage(event.notification.messageId, event.notification.content);
+                        }
+                    } else {
+                        logger.error('Unexpected plugin-notification', new Error(JSON.stringify(event)));
+                    }
+
                 }
             };
 
@@ -236,7 +253,11 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
 
-                var pluginContext = JSON.parse(JSON.stringify(context.managerConfig));
+
+                storage.webSocket.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
+                // storage.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
+
+                pluginContext = JSON.parse(JSON.stringify(context.managerConfig));
 
                 pluginContext.project = res.project;
                 if (typeof context.managerConfig.project !== 'string') {
@@ -248,6 +269,11 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 if (typeof socketId === 'string') {
                     logger.debug('socketId provided for plugin execution - notifications available.');
                     pluginManager.notificationHandlers = [function (data, callback) {
+                        if (data.notification.type && data.notification.type ===
+                            STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED) {
+                            data.executionId = context.executionId;
+                            data.pluginSocketId = storage.webSocket.socket.id;
+                        }
                         data.originalSocketId = socketId;
                         storage.sendNotification(data, callback);
                     }];
@@ -255,7 +281,16 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 pluginManager.projectAccess = res.access;
 
-                pluginManager.executePlugin(pluginName, context.pluginConfig, pluginContext, finish);
+                // pluginManager.executePlugin(pluginName, context.pluginConfig, pluginContext, finish);
+
+                return pluginManager.initializePlugin(pluginName);
+            })
+            .then(function (plugin_) {
+                plugin = plugin_;
+                return pluginManager.configurePlugin(plugin, context.pluginConfig, pluginContext);
+            })
+            .then(function () {
+                pluginManager.runPluginMain(plugin, finish);
             })
             .catch(finish)
             .done();
@@ -1568,7 +1603,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                             context.core.delAspectMetaTarget(node, parameters.name, parameters.targetPath);
                         }
 
-                        if (typeof  parameters.targetPath !== 'string') {
+                        if (typeof parameters.targetPath !== 'string') {
                             context.core.delAspectMeta(node, parameters.name);
                         }
                 }

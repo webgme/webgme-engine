@@ -11,7 +11,10 @@ define([
     'blob/BlobClient',
     'common/storage/project/project',
     'common/Constants',
-], function (PluginManagerBase, BlobClient, Project, CONSTANTS) {
+    'common/util/key',
+    'q',
+    'superagent'
+], function (PluginManagerBase, BlobClient, Project, CONSTANTS, generateKey, Q, superagent) {
     'use strict';
 
     var ROOT_PATH = '';
@@ -28,7 +31,8 @@ define([
     function PluginManager(client, storage, state, mainLogger, gmeConfig) {
 
         var self = this,
-            logger = mainLogger.fork('PluginManager');
+            logger = mainLogger.fork('PluginManager'),
+            runningPlugins = {};
 
         this.getCurrentPluginContext = function (pluginId, activeNodeId, activeSelectionIds) {
             var activeNode,
@@ -80,6 +84,79 @@ define([
             return context;
         };
 
+        function getPluginMetadata(pluginId) {
+            var deferred = Q.defer();
+
+            superagent.get(gmeConfig.client.mountedPath + '/api/plugins/' + pluginId + '/metadata')
+                .end(function (err, res) {
+                    if (err) {
+                        deferred.reject(err);
+                    }
+                    deferred.resolve(res.body);
+                });
+
+            return deferred.promise;
+        }
+
+        function getSanitizedManagerConfig(config) {
+            var sanitized = {},
+                keys = Object.keys(config);
+
+            keys.forEach(function (key) {
+                switch (key) {
+                    case 'project':
+                        if (typeof config.project === 'string') {
+                            sanitized.project = config.project;
+                        } else {
+                            sanitized.project = config.project.projectId;
+                        }
+                        break;
+                    default:
+                        sanitized[key] = config[key];
+
+                }
+            });
+
+            return sanitized;
+        }
+
+        function getSanitizedPluginContext(context) {
+            var sanitized = {},
+                keys = Object.keys(context);
+
+            keys.forEach(function (key) {
+                switch (key) {
+                    case 'managerConfig':
+                        sanitized.managerConfig = getSanitizedManagerConfig(context.managerConfig);
+                        break;
+                    default:
+                        sanitized[key] = context[key];
+
+                }
+            });
+
+            return sanitized;
+        }
+
+        function getSanitizedPluginEntry(pluginEntry) {
+            var sanitized = {},
+                keys = Object.keys(pluginEntry);
+
+            keys.forEach(function (key) {
+                switch (key) {
+                    case 'plugin':
+                        break;
+                    case 'context':
+                        sanitized.context = getSanitizedPluginContext(pluginEntry.context);
+                        break;
+                    default:
+                        sanitized[key] = pluginEntry[key];
+                }
+            });
+
+            return sanitized;
+        }
+
         /**
          * Run the plugin in the browser.
          * @param {string|function} pluginIdOrClass - id or class for plugin.
@@ -95,22 +172,85 @@ define([
          * @param {function(err, PluginResult)} callback
          */
         this.runBrowserPlugin = function (pluginIdOrClass, context, callback) {
-            var blobClient = new BlobClient({
+            var pluginEntry,
+                blobClient = new BlobClient({
                     logger: logger.fork('BlobClient'),
                     relativeUrl: gmeConfig.client.mountedPath + '/rest/blob/'
                 }),
-                pluginManager = new PluginManagerBase(blobClient, null, mainLogger, gmeConfig);
+                pluginManager = new PluginManagerBase(blobClient, null, mainLogger, gmeConfig),
+                plugin,
+                executionId;
 
             pluginManager.browserSide = true;
 
+            pluginManager.projectAccess = client.getProjectAccess();
+
             pluginManager.notificationHandlers = [function (data, callback) {
+                data.executionId = executionId;
                 self.dispatchPluginNotification(data);
                 callback(null);
             }];
 
-            pluginManager.projectAccess = client.getProjectAccess();
+            // pluginManager.executePlugin(pluginIdOrClass, context.pluginConfig, context.managerConfig, callback);
+            pluginManager.initializePlugin(pluginIdOrClass)
+                .then(function (plugin_) {
+                    plugin = plugin_;
 
-            pluginManager.executePlugin(pluginIdOrClass, context.pluginConfig, context.managerConfig, callback);
+                    pluginEntry = {
+                        id: plugin.getId(),
+                        name: plugin.getName(),
+                        plugin: plugin,
+                        metadata: plugin.pluginMetadata,
+                        context: context,
+                        canBeAborted: plugin.pluginMetadata.canBeAborted,
+                        start: Date.now(),
+                        clientSide: true,
+                        executionId: null,
+                        result: null
+                    };
+
+                    executionId = generateKey({
+                        id: pluginEntry.id,
+                        name: pluginEntry.name,
+                        start: pluginEntry.start
+                    }, gmeConfig);
+                    pluginEntry.executionId = executionId;
+                    runningPlugins[executionId] = pluginEntry;
+
+                    return pluginManager.configurePlugin(plugin, context.pluginConfig, context.managerConfig);
+                })
+                .then(function () {
+                    return Q.ninvoke(pluginManager, 'runPluginMain', plugin);
+                })
+                .then(function (result) {
+                    if (runningPlugins.hasOwnProperty(executionId)) {
+                        delete runningPlugins[executionId];
+                    } else {
+                        logger.error('Running plugin registry misses entry [' + pluginEntry.id +
+                            '][' + executionId + '].');
+                    }
+                    pluginEntry.result = result;
+                    client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, getSanitizedPluginEntry(pluginEntry));
+                    callback(null, result);
+                })
+                .catch(function (err) {
+                    if (runningPlugins.hasOwnProperty(executionId)) {
+                        delete runningPlugins[executionId];
+                    } else {
+                        logger.error('Running plugin registry misses entry [' + pluginEntry.id +
+                            '][' + executionId + '].');
+                    }
+                    pluginEntry.result = null;
+                    client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, getSanitizedPluginEntry(pluginEntry));
+                    var pluginResult = pluginManager.getPluginErrorResult(
+                        plugin.getId(),
+                        plugin.getName(),
+                        'Exception was raised, err: ' + err.stack, plugin && plugin.projectId
+                    );
+                    logger.error(err.stack);
+                    callback(err.message, pluginResult);
+                })
+                .done();
         };
 
         /**
@@ -128,22 +268,62 @@ define([
          * @param {function} callback
          */
         this.runServerPlugin = function (pluginIdOrClass, context, callback) {
-            var pluginId = typeof pluginIdOrClass === 'string' ? pluginIdOrClass : pluginIdOrClass.metadata.id;
+            var pluginEntry,
+                executionId,
+                pluginId = typeof pluginIdOrClass === 'string' ? pluginIdOrClass : pluginIdOrClass.metadata.id;
             if (context.managerConfig.project instanceof Project) {
                 context.managerConfig.project = context.managerConfig.project.projectId;
             }
 
-            storage.simpleRequest({
-                command: CONSTANTS.SERVER_WORKER_REQUESTS.EXECUTE_PLUGIN,
-                name: pluginId,
-                context: context
-            }, function (err, result) {
-                if (err) {
-                    callback(err, err.result);
-                } else {
-                    callback(null, result);
-                }
-            });
+            getPluginMetadata(pluginId)
+                .then(function (metadata) {
+                    pluginEntry = {
+                        id: pluginId,
+                        name: metadata.name,
+                        plugin: null,
+                        metadata: metadata,
+                        context: context,
+                        canBeAborted: metadata.canBeAborted,
+                        start: Date.now(),
+                        clientSide: false,
+                        executionId: null,
+                        result: null
+                    };
+
+                    executionId = generateKey({
+                        id: pluginId,
+                        name: pluginEntry.name,
+                        start: pluginEntry.start
+                    }, gmeConfig);
+                    pluginEntry.executionId = executionId;
+                    runningPlugins[executionId] = pluginEntry;
+
+                    context.executionId = executionId;
+
+                    storage.simpleRequest({
+                        command: CONSTANTS.SERVER_WORKER_REQUESTS.EXECUTE_PLUGIN,
+                        name: pluginId,
+                        context: context
+                    }, function (err, result) {
+                        if (runningPlugins.hasOwnProperty(executionId)) {
+                            delete runningPlugins[executionId];
+                        } else {
+                            logger.error('Running plugin registry misses entry [' + pluginEntry.id +
+                                '][' + executionId + '].');
+                        }
+
+                        pluginEntry.result = result;
+                        client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, getSanitizedPluginEntry(pluginEntry));
+                        if (err) {
+                            callback(err, err.result);
+                        } else {
+                            callback(null, result);
+                        }
+                    });
+                })
+                .catch(function (err) {
+                    callback(err, null);
+                });
         };
 
         /**
@@ -202,8 +382,73 @@ define([
             }
 
             logger.debug('plugin notification', data);
-            client.dispatchEvent(client.CONSTANTS.NOTIFICATION, notification);
-            client.dispatchEvent(client.CONSTANTS.PLUGIN_NOTIFICATION, data);
+            if (data.notification && data.notification.type === CONSTANTS.STORAGE.PLUGIN_NOTIFICATION_TYPE.INITIATED) {
+                if (runningPlugins.hasOwnProperty(data.executionId)) {
+                    runningPlugins[data.executionId].socketId = data.pluginSocketId;
+                    client.dispatchEvent(client.CONSTANTS.PLUGIN_INITIATED,
+                        getSanitizedPluginEntry(runningPlugins[data.executionId]));
+                }
+            } else {
+                client.dispatchEvent(client.CONSTANTS.NOTIFICATION, notification);
+                client.dispatchEvent(client.CONSTANTS.PLUGIN_NOTIFICATION, data);
+            }
+
+        };
+
+        this.getRunningPlugins = function () {
+            var sanitizedData = {},
+                executionIds = Object.keys(runningPlugins);
+
+            executionIds.forEach(function (executionId) {
+                if (runningPlugins.hasOwnProperty(executionId)) {
+                    sanitizedData[executionId] = getSanitizedPluginEntry(runningPlugins[executionId]);
+                }
+            });
+            return sanitizedData;
+        };
+
+        this.abortPlugin = function (pluginExecutionId) {
+            var pluginEntry = runningPlugins[pluginExecutionId];
+            if (pluginEntry) {
+                if (!pluginEntry.metadata.canBeAborted) {
+                    throw new Error('Aborting plugin [' + pluginEntry.name + '] is not allowed.');
+                }
+
+                if (pluginEntry.clientSide) {
+                    pluginEntry.plugin.onAbort();
+                } else if (pluginEntry.socketId) {
+                    storage.sendNotification({
+                        type: CONSTANTS.STORAGE.PLUGIN_NOTIFICATION,
+                        notification: {
+                            toBranch: false,
+                            type: CONSTANTS.STORAGE.PLUGIN_NOTIFICATION_TYPE.ABORT,
+                            executionId: pluginExecutionId
+                        },
+                        originalSocketId: pluginEntry.socketId,
+                    });
+                }
+            }
+        };
+
+        this.sendMessageToPlugin = function (pluginExecutionId, messageId, content) {
+            var pluginEntry = runningPlugins[pluginExecutionId];
+            if (pluginEntry) {
+                if (pluginEntry.clientSide) {
+                    pluginEntry.plugin.onMessage(messageId, content);
+                } else if (pluginEntry.socketId) {
+                    storage.sendNotification({
+                        type: CONSTANTS.STORAGE.PLUGIN_NOTIFICATION,
+                        notification: {
+                            toBranch: false,
+                            type: CONSTANTS.STORAGE.PLUGIN_NOTIFICATION_TYPE.MESSAGE,
+                            executionId: pluginExecutionId,
+                            messageId: messageId,
+                            content: content
+                        },
+                        originalSocketId: pluginEntry.socketId,
+                    });
+                }
+            }
         };
     }
 

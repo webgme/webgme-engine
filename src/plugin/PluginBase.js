@@ -148,6 +148,8 @@
         this.callDepth = 0;
 
         this.notificationHandlers = [];
+
+        this.invokedPlugins = [];
     }
 
     //<editor-fold desc="Methods must be overridden by the derived classes">
@@ -393,15 +395,24 @@
     PluginBase.prototype.sendNotification = function (message, callback) {
         var self = this,
             cnt = self.notificationHandlers.length,
+            notification = {},
             data = {
                 type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION,
-                notification: typeof message === 'string' ? {message: message} : message,
+                notification: notification,
                 projectId: self.projectId,
                 branchName: self.branchName,
                 pluginName: self.getName(),
                 pluginId: self.getId(),
                 pluginVersion: self.getVersion()
             };
+
+        if (typeof message === 'string') {
+            notification.message = message;
+            notification.severity = notification.severity || 'info';
+        } else {
+            data.notification = message;
+        }
+
 
         callback = callback || function (err) {
             if (err) {
@@ -771,9 +782,16 @@
                 pluginInstance.isConfigured = true;
                 pluginInstance.callDepth = self.callDepth + 1;
 
+                self.invokedPlugins.push(pluginInstance);
                 return Q.ninvoke(pluginInstance, 'main');
             })
             .then(function (res) {
+                var i;
+                for (i = 0; i < self.invokedPlugins.length; i += 1) {
+                    if (pluginInstance === self.invokedPlugins[i]) {
+                        self.invokedPlugins.splice(i, 1);
+                    }
+                }
                 deferred.resolve(res || pluginInstance.result);
             })
             .catch(function (err) {
@@ -909,6 +927,7 @@
      * @param {object} config - specific context: project, branch, core, active object and active selection.
      */
     PluginBase.prototype.configure = function (config) {
+        var self = this;
         this.core = config.core;
         this.project = config.project;
         this.branch = config.branch;  // This is only for client side.
@@ -934,6 +953,15 @@
         this.addCommitToResult(STORAGE_CONSTANTS.SYNCED);
 
         this.isConfigured = true;
+
+        setTimeout(function () {
+            self.sendNotification({
+                toBranch: false,
+                message: 'Plugin initialized.',
+                progress: 0,
+                type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION_TYPE.INITIATED
+            });
+        }, 0);
     };
 
     /**
@@ -983,6 +1011,25 @@
                 });
         } else {
             return [];
+        }
+    };
+
+    /**
+     * Aborts the execution of a plugin.
+     */
+    PluginBase.prototype.onAbort = function () {
+        throw new Error('onAbort function is not implemented!');
+    };
+
+    /**
+     * Can send a message to the plugin.
+     * @param {string} messageType - string identifier of the message.
+     * @param {object} content - object that holds arbitrary content of the message.
+     */
+    PluginBase.prototype.onMessage = function (messageType, content) {
+        if (this.logger) {
+            this.logger.warn('Message [' + messageType + '] was received but no message handling is implemented!');
+            this.logger.debug('Unhandled [' + messageType + '] with content:', content);
         }
     };
     //</editor-fold>
