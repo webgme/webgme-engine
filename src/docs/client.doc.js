@@ -95,7 +95,7 @@
  * @example
  * // The patterns are defined by using the ids of the nodes and optionally specifying a depth in the containment-
  * hierarchy from that node
-    client.updateTerritory('ae1b4f8e-32ea-f26f-93b3-ab9c8daa8a42', {
+ client.updateTerritory('ae1b4f8e-32ea-f26f-93b3-ab9c8daa8a42', {
         '/a/b': {
             children: 0 // Will only add '/a/b' to the territory
         },
@@ -171,6 +171,9 @@
  * @param {string} [context.managerConfig.namespace=''] - Used namespace ('' represents root namespace).
  * @param {object} [context.pluginConfig=%defaultForPlugin%] - Specific configuration for the plugin.
  * @param {function(err, PluginResult)} callback
+ *
+ *  @fires Client#PLUGIN_INITIATED
+ *  @fires Client#PLUGIN_FINISHED
  */
 
 /**
@@ -190,6 +193,9 @@
  * @param {string} [context.managerConfig.namespace=''] - Used namespace ('' represents root namespace).
  * @param {object} [context.pluginConfig=%defaultForPlugin%] - Specific configuration for the plugin.
  * @param {function} callback
+ *
+ *  @fires Client#PLUGIN_INITIATED
+ *  @fires Client#PLUGIN_FINISHED
  */
 
 // Transactions
@@ -655,6 +661,36 @@
  * @returns {boolean} True if it's fine to call client.redo()
  */
 
+/**
+ * @description Initiates the abort of the given plugin execution.
+ * @function abortPlugin
+ * @memberOf Client
+ * @param {string} executionId - unique identifier that identifies the plugin execution
+ * @instance
+ *
+ */
+
+/**
+ * @description Sends a message to a running plugin.
+ * @function sendMessageToPlugin
+ * @memberOf Client
+ * @param {string} executionId - unique identifier that identifies the plugin execution
+ * @param {string} messageId - the identifier of the message which has been specified by the plugin
+ * @param {any} content - the content of the message
+ * @instance
+ *
+ */
+
+/**
+ * @description Gathers the list of running plugins and information about them.
+ * @function sendMessageToPlugin
+ * @memberOf Client
+ * @param {string} executionId - unique identifier that identifies the plugin execution
+ * @param {string} messageId - the identifier of the message which has been specified by the plugin
+ * @param {any} content - the content of the message
+ * @instance
+ *
+ */
 
 // EVENTS
 /**
@@ -788,6 +824,65 @@
  * 'BRANCH_ROOM_SOCKETS' event in order to notify that new client that it has a user in the same room. But can also
  * be emitted from the GUI by invoking client.emitStateNotification() (which is invoked by the generic webgme UI
  * whenever its state changes). The state in the example below is specific for the generic webgme UI.
+ */
+
+/**
+ * Fired when the client initiates a plugin execution.
+ * The event data contains information about the executed plugin.
+ *
+ * @event Client#PLUGIN_INITIATED
+ * @type {object}
+ * @property {string} id - the id of the plugin
+ * @property {string} name - the name of the plugin
+ * @property {string} executionId -  unique identifier that can be used for managing the execution and communicating
+ * with the running plugin
+ * @property {object} metadata - the original metadata of the plugin
+ * @property {object} context - the context of the plugin that has information about the project, active object,
+ * and configuration settings for the run
+ * @property {boolean} canBeAborted - flag that show if the plugin can be aborted
+ * @property {string} start - the exact time of the initiation of the plugin
+ * @property {boolean} clientSide - flag showing if the execution is done on the client or the server side
+ * @property {object} result - the result of the plugin - once it became available
+ */
+
+/**
+ * Fired when the plugin sends a notification to the initiating client.
+ * The event data contains information about the executed plugin.
+ *
+ * @event Client#PLUGIN_NOTIFICATION
+ * @type {object}
+ * @property {string} pluginId - the id of the plugin
+ * @property {string} pluginName - the name of the plugin
+ * @property {string} pluginVersion - the version of the plugin normally in the form of x.y.z
+ * @property {string} executionId -  unique identifier that can be used for managing the execution and communicating
+ * with the running plugin
+ * @property {string} projectId - the id of the project context the plugin uses
+ * @property {string} [branchName] - the name of the branch the plugin runs in.
+ * @property {string} [commitHash] - the hash of the commit that represent the version that the plugin runs at.
+ * @property {object} notification - the content of the notification
+ * @property {string} notification.message - the text content of the notification
+ * @property {string} notification.severity - the severity of the notification
+ * ('debug', 'info' (default), 'warning', 'error').
+ * @property {string} type - the exact type of the notification which should always be 'PLUGIN_NOTIFICATION'.
+ */
+
+/**
+ * Fired when the execution of a plugin - initiated by this given client - finished.
+ * The event data contains information about the executed plugin.
+ *
+ * @event Client#PLUGIN_FINISHED
+ * @type {object}
+ * @property {string} id - the id of the plugin
+ * @property {string} name - the name of the plugin
+ * @property {string} executionId -  unique identifier that can be used for managing the execution and communicating
+ * with the running plugin
+ * @property {object} metadata - the original metadata of the plugin
+ * @property {object} context - the context of the plugin that has information about the project, active object,
+ * and configuration settings for the run
+ * @property {boolean} canBeAborted - flag that show if the plugin can be aborted
+ * @property {string} start - the exact time of the initiation of the plugin
+ * @property {boolean} clientSide - flag showing if the execution is done on the client or the server side
+ * @property {object} result - the result of the plugin - once it became available
  */
 
 /**

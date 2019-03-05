@@ -186,6 +186,7 @@ describe('Plugin', function () {
                 expect(data.type).to.equal(client.CONSTANTS.PLUGIN_NOTIFICATION);
                 expect(data.pluginId).to.equal(pluginId);
                 expect(data.notification.message).to.include('A plugin notification');
+                expect(data.notification.severity).to.equal('info');
             } catch (e) {
                 done(e);
             }

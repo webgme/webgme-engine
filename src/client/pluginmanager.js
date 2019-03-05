@@ -98,6 +98,19 @@ define([
             return deferred.promise;
         }
 
+        function getSanitizedPluginEntry(pluginEntry) {
+            var sanitized = {},
+                keys = Object.keys(pluginEntry);
+
+            keys.forEach(function (key) {
+                if (key !== 'plugin') {
+                    sanitized[key] = pluginEntry[key];
+                }
+            });
+
+            return sanitized;
+        }
+
         /**
          * Run the plugin in the browser.
          * @param {string|function} pluginIdOrClass - id or class for plugin.
@@ -146,7 +159,8 @@ define([
                         canBeAborted: plugin.pluginMetadata.canBeAborted,
                         start: Date.now(),
                         clientSide: true,
-                        executionId: null
+                        executionId: null,
+                        result: null
                     };
 
                     executionId = generateKey({
@@ -170,7 +184,7 @@ define([
                             '][' + executionId + '].');
                     }
                     pluginEntry.result = result;
-                    client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, pluginEntry);
+                    client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, getSanitizedPluginEntry(pluginEntry));
                     callback(null, result);
                 })
                 .catch(function (err) {
@@ -181,7 +195,7 @@ define([
                             '][' + executionId + '].');
                     }
                     pluginEntry.result = null;
-                    client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, pluginEntry);
+                    client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, getSanitizedPluginEntry(pluginEntry));
                     var pluginResult = pluginManager.getPluginErrorResult(
                         plugin.getId(),
                         plugin.getName(),
@@ -226,7 +240,8 @@ define([
                         canBeAborted: metadata.canBeAborted,
                         start: Date.now(),
                         clientSide: false,
-                        executionId: null
+                        executionId: null,
+                        result: null
                     };
 
                     executionId = generateKey({
@@ -253,7 +268,7 @@ define([
                         }
 
                         pluginEntry.result = result;
-                        client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, pluginEntry);
+                        client.dispatchEvent(client.CONSTANTS.PLUGIN_FINISHED, getSanitizedPluginEntry(pluginEntry));
                         if (err) {
                             callback(err, err.result);
                         } else {
@@ -325,7 +340,8 @@ define([
             if (data.notification && data.notification.type === CONSTANTS.STORAGE.PLUGIN_NOTIFICATION_TYPE.INITIATED) {
                 if (runningPlugins.hasOwnProperty(data.executionId)) {
                     runningPlugins[data.executionId].socketId = data.pluginSocketId;
-                    client.dispatchEvent(client.CONSTANTS.PLUGIN_INITIATED, runningPlugins[data.executionId]);
+                    client.dispatchEvent(client.CONSTANTS.PLUGIN_INITIATED,
+                        getSanitizedPluginEntry(runningPlugins[data.executionId]));
                 }
             } else {
                 client.dispatchEvent(client.CONSTANTS.NOTIFICATION, notification);

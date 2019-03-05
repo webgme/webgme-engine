@@ -395,15 +395,18 @@
     PluginBase.prototype.sendNotification = function (message, callback) {
         var self = this,
             cnt = self.notificationHandlers.length,
+            notification = typeof message === 'string' ? {message: message} : message,
             data = {
                 type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION,
-                notification: typeof message === 'string' ? {message: message} : message,
+                notification: notification,
                 projectId: self.projectId,
                 branchName: self.branchName,
                 pluginName: self.getName(),
                 pluginId: self.getId(),
                 pluginVersion: self.getVersion()
             };
+
+        notification.severity = notification.severity || 'info';
 
         callback = callback || function (err) {
             if (err) {
