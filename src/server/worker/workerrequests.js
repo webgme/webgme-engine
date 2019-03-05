@@ -191,6 +191,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
     function executePlugin(webgmeToken, socketId, pluginName, context, callback) {
         var storage,
             errResult,
+            pluginContext,
             pluginManager = new PluginNodeManager(webgmeToken, null, logger, gmeConfig, webgmeUrl),
             finish = function (err, result) {
                 if (err) {
@@ -256,7 +257,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 storage.webSocket.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
                 // storage.addEventListener(storage.CONSTANTS.NOTIFICATION, onNotification);
 
-                var pluginContext = JSON.parse(JSON.stringify(context.managerConfig));
+                pluginContext = JSON.parse(JSON.stringify(context.managerConfig));
 
                 pluginContext.project = res.project;
                 if (typeof context.managerConfig.project !== 'string') {
