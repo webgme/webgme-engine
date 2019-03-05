@@ -395,7 +395,7 @@
     PluginBase.prototype.sendNotification = function (message, callback) {
         var self = this,
             cnt = self.notificationHandlers.length,
-            notification = typeof message === 'string' ? {message: message} : message,
+            notification = {},
             data = {
                 type: STORAGE_CONSTANTS.PLUGIN_NOTIFICATION,
                 notification: notification,
@@ -406,7 +406,13 @@
                 pluginVersion: self.getVersion()
             };
 
-        notification.severity = notification.severity || 'info';
+        if (typeof message === 'string') {
+            notification.message = message;
+            notification.severity = notification.severity || 'info';
+        } else {
+            data.notification = message;
+        }
+
 
         callback = callback || function (err) {
             if (err) {

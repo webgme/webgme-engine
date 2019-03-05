@@ -859,9 +859,10 @@
  * @property {string} projectId - the id of the project context the plugin uses
  * @property {string} [branchName] - the name of the branch the plugin runs in.
  * @property {string} [commitHash] - the hash of the commit that represent the version that the plugin runs at.
- * @property {object} notification - the content of the notification
- * @property {string} notification.message - the text content of the notification
- * @property {string} notification.severity - the severity of the notification
+ * @property {object} notification - the content of the notification, as the plugin control the content
+ * there are no mandatory fields
+ * @property {string} [notification.message] - the text content of the notification
+ * @property {string} [notification.severity] - the severity of the notification
  * ('debug', 'info' (default), 'warning', 'error').
  * @property {string} type - the exact type of the notification which should always be 'PLUGIN_NOTIFICATION'.
  */
