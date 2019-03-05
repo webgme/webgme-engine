@@ -98,13 +98,59 @@ define([
             return deferred.promise;
         }
 
+        function getSanitizedManagerConfig(config) {
+            var sanitized = {},
+                keys = Object.keys(config);
+
+            keys.forEach(function (key) {
+                switch (key) {
+                    case 'project':
+                        if (typeof config.project === 'string') {
+                            sanitized.project = config.project;
+                        } else {
+                            sanitized.project = config.project.projectId;
+                        }
+                        break;
+                    default:
+                        sanitized[key] = config[key];
+
+                }
+            });
+
+            return sanitized;
+        }
+
+        function getSanitizedPluginContext(context) {
+            var sanitized = {},
+                keys = Object.keys(context);
+
+            keys.forEach(function (key) {
+                switch (key) {
+                    case 'managerConfig':
+                        sanitized.managerConfig = getSanitizedManagerConfig(context.managerConfig);
+                        break;
+                    default:
+                        sanitized[key] = context[key];
+
+                }
+            });
+
+            return sanitized;
+        }
+
         function getSanitizedPluginEntry(pluginEntry) {
             var sanitized = {},
                 keys = Object.keys(pluginEntry);
 
             keys.forEach(function (key) {
-                if (key !== 'plugin') {
-                    sanitized[key] = pluginEntry[key];
+                switch (key) {
+                    case 'plugin':
+                        break;
+                    case 'context':
+                        sanitized.context = getSanitizedPluginContext(pluginEntry.context);
+                        break;
+                    default:
+                        sanitized[key] = pluginEntry[key];
                 }
             });
 
@@ -257,8 +303,7 @@ define([
                     storage.simpleRequest({
                         command: CONSTANTS.SERVER_WORKER_REQUESTS.EXECUTE_PLUGIN,
                         name: pluginId,
-                        context: context,
-                        executionId: executionId
+                        context: context
                     }, function (err, result) {
                         if (runningPlugins.hasOwnProperty(executionId)) {
                             delete runningPlugins[executionId];

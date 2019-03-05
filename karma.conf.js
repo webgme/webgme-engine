@@ -220,7 +220,7 @@ module.exports = function (config) {
             '/base/gmeConfig.json': 'http://localhost:' + gmeConfig.server.port + '/gmeConfig.json',
             '/docs': 'http://localhost:' + gmeConfig.server.port + '/docs',
             '/rest': 'http://localhost:' + gmeConfig.server.port + '/rest',
-            '/api': 'http://localhost:' + gmeConfig.server.port + '/api'//
+            '/api': 'http://localhost:' + gmeConfig.server.port + '/api'
         }
     });
 };

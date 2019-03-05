@@ -282,18 +282,14 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 // pluginManager.executePlugin(pluginName, context.pluginConfig, pluginContext, finish);
 
-                return pluginManager.initializePlugin(pluginName)
-                    .then(function (plugin_) {
-                        plugin = plugin_;
-                        return pluginManager.configurePlugin(plugin, context.pluginConfig, pluginContext);
-                    })
-                    .then(function () {
-                        pluginManager.runPluginMain(plugin, finish);
-                    })
-                    .catch(function (err) {
-                        finish(err.message);
-                    })
-                    .done();
+                return pluginManager.initializePlugin(pluginName);
+            })
+            .then(function (plugin_) {
+                plugin = plugin_;
+                return pluginManager.configurePlugin(plugin, context.pluginConfig, pluginContext);
+            })
+            .then(function () {
+                pluginManager.runPluginMain(plugin, finish);
             })
             .catch(finish)
             .done();

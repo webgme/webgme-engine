@@ -493,6 +493,58 @@ describe('Plugin', function () {
         });
     });
 
+    it('should abort the plugin execution when listening to client events', function (done) {
+        var pluginId = 'WaitPlugin',
+            context = {
+                managerConfig: {
+                    project: client.getProjectObject(),
+                    activeNode: '',
+                    activeSelection: [],
+                    commit: null,
+                    branchName: 'master',
+                },
+                pluginConfig: {
+                    shouldAbort: true
+                }
+            },
+            initiatedEvent = function (emitter, event) {
+                client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+                var plugins = client.getRunningPlugins(),
+                    executionIds = Object.keys(plugins);
+
+                expect(executionIds).to.have.length(1);
+                expect(emitter).not.to.eql(null);
+                expect(event.context.managerConfig.project).to.eql(projectId);
+                client.abortPlugin(executionIds[0]);
+            };
+
+
+        WebGMEGlobal.Client = client;
+
+        client.addEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
+        createSelectBranch('master', function (err) {
+            try {
+                expect(err).to.equal(null);
+
+                context.managerConfig.commitHash = client.getActiveCommitHash();
+            } catch (e) {
+                done(e);
+                return;
+            }
+
+            client.runBrowserPlugin(pluginId, context, function (err, pluginResult) {
+                try {
+                    expect(err).not.to.equal(null);
+                    expect(pluginResult).not.to.equal(null);
+                } catch (e) {
+                    return done(e);
+                }
+
+                return done();
+            });
+        });
+    });
+
     it('should abort the server plugin execution', function (done) {
         var pluginId = 'WaitPlugin',
             context = {
@@ -507,12 +559,14 @@ describe('Plugin', function () {
                     shouldAbort: true
                 }
             },
-            initiatedEvent = function (/*emitter, event*/) {
+            initiatedEvent = function (emitter, event) {
                 client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedEvent);
                 var plugins = client.getRunningPlugins(),
                     executionIds = Object.keys(plugins);
 
                 expect(executionIds).to.have.length(1);
+                expect(emitter).not.to.eql(null);
+                expect(event.context.managerConfig.project).to.eql(projectId);
                 client.abortPlugin(executionIds[0]);
             };
 
@@ -568,6 +622,8 @@ describe('Plugin', function () {
                 messageReceived = true;
             },
             initiatedHandler = function (sender, event) {
+                expect(sender).not.to.eql(null);
+                expect(event.context.managerConfig.project).to.eql(projectId);
                 client.removeEventListener(client.CONSTANTS.PLUGIN_INITIATED, initiatedHandler);
                 client.sendMessageToPlugin(event.executionId, 'what', 'not');
             };
