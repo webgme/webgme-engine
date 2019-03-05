@@ -548,7 +548,6 @@ describe('Plugin', function () {
 
     it('should abort be possible with multiple plugins running', function (done) {
         var pluginId = 'WaitPlugin',
-            abortedId,
             returnProcessed = 2,
             numOfPlugins = 2,
             context = {
@@ -601,7 +600,7 @@ describe('Plugin', function () {
                     return done(e);
                 }
 
-                if (--returnProcessed == 0) {
+                if (--returnProcessed === 0) {
                     return done();
                 }
             });
@@ -614,7 +613,7 @@ describe('Plugin', function () {
                     return done(e);
                 }
 
-                if (--returnProcessed == 0) {
+                if (--returnProcessed === 0) {
                     return done();
                 }
             });
