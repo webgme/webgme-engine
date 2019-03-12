@@ -9,7 +9,7 @@
   },
   "disableServerSideExecution": false,
   "disableBrowserSideExecution": false,
-  "canAbort": true,
+  "canBeAborted": true,
   "dependencies": [],
   "writeAccessRequired": false,
   "configStructure": [

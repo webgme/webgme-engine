@@ -14,6 +14,7 @@ node_modules
 .sass-cache
 .DS_Store
 tmp
+*.tmp
 
 .project
 .settings
