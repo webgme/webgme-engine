@@ -1,5 +1,12 @@
 # Change Log
 
+## [v2.23.0](https://github.com/webgme/webgme-engine/tree/v2.23.0) (2019-03-13)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.22.4...v2.23.0)
+
+**Merged pull requests:**
+
+- Abort plugin [\#156](https://github.com/webgme/webgme-engine/pull/156) ([kecso](https://github.com/kecso))
+
 ## [v2.22.4](https://github.com/webgme/webgme-engine/tree/v2.22.4) (2019-02-25)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.22.3...v2.22.4)
 
