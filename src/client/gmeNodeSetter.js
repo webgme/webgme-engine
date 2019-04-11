@@ -77,13 +77,9 @@ define([], function () {
                     result[paths[i]] = copiedNodes[i];
                     resultArray.push(storeNode(copiedNodes[i]));
                 }
-
-                if (resultAsArray === true) {
-                    return resultArray;
-                }
             }
 
-            return result;
+            return resultAsArray ? resultArray : result;
         }
 
         function setAttribute(path, name, value, msg) {
