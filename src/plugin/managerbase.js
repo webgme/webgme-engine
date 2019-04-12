@@ -315,7 +315,7 @@ define([
                 } else {
                     result.setError(err);
                     plugin.notificationHandlers = [];
-                    callback(err, result);
+                    callback(typeof err === 'string' ? new Error(err) : err, result);
                 }
             });
         };
