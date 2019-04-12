@@ -159,6 +159,11 @@
      * @param {string} time
      */
     PluginResult.prototype.setError = function (error) {
+        if (this.error) {
+            // Do not overwrite user defined error.
+            return;
+        }
+
         if (error instanceof Error) {
             this.error = error.message;
         } else {

@@ -206,7 +206,7 @@ describe('Plugin MetaGMEParadigmImporter', function () {
             };
 
         pluginManager.executePlugin(pluginName, pluginConfig, pluginContext, function (err, result) {
-            expect(err).to.include('Error: Invalid xmpData: paradigm key does not exist.');
+            expect(err.message).to.include('Error: Invalid xmpData: paradigm key does not exist.');
             expect(result.success).to.equal(false);
             done();
         });
