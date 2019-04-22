@@ -1,5 +1,18 @@
 # Change Log
 
+## [v2.23.1](https://github.com/webgme/webgme-engine/tree/v2.23.1) (2019-04-22)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.23.0...v2.23.1)
+
+**Implemented enhancements:**
+
+- How to use client.copyNodes? [\#157](https://github.com/webgme/webgme-engine/issues/157)
+- Update nodejs version of travis and appveyor [\#159](https://github.com/webgme/webgme-engine/pull/159) ([pmeijer](https://github.com/pmeijer))
+- Fixes \#157 by adding doc strings for copyNode/copyNodes/copyMoreNodes [\#158](https://github.com/webgme/webgme-engine/pull/158) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Handle old string errors and make sure result.error isn't overwritten [\#160](https://github.com/webgme/webgme-engine/pull/160) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.23.0](https://github.com/webgme/webgme-engine/tree/v2.23.0) (2019-03-13)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.22.4...v2.23.0)
 
