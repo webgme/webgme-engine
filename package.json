@@ -1,6 +1,6 @@
 {
   "name": "webgme-engine",
-  "version": "2.23.1",
+  "version": "2.23.2",
   "description": "WebGME server and Client API without a GUI",
   "main": "index.js",
   "engines": {
