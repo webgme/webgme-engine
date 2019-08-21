@@ -1,5 +1,19 @@
 # Change Log
 
+## [v2.23.2](https://github.com/webgme/webgme-engine/tree/v2.23.2) (2019-08-21)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.23.1...v2.23.2)
+
+**Fixed bugs:**
+
+- Fix for issue \#165 [\#166](https://github.com/webgme/webgme-engine/pull/166) ([cahartsell](https://github.com/cahartsell))
+
+**Closed issues:**
+
+- Python-based plugin namespace is not set correctly [\#165](https://github.com/webgme/webgme-engine/issues/165)
+- How to use a server on a subpath? [\#164](https://github.com/webgme/webgme-engine/issues/164)
+- Plugin Api For Specific Plugin Returning Not Found [\#163](https://github.com/webgme/webgme-engine/issues/163)
+- Importing From GME [\#162](https://github.com/webgme/webgme-engine/issues/162)
+
 ## [v2.23.1](https://github.com/webgme/webgme-engine/tree/v2.23.1) (2019-04-22)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.23.0...v2.23.1)
 
