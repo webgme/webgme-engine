@@ -8,8 +8,9 @@
 define([
     'common/util/sha1',
     'common/util/assert',
-    'common/util/canon'
-], function (generateSHA1, ASSERT, CANON) {
+    'common/util/canon',
+    'webgme-rust'
+], function (generateSHA1, ASSERT, CANON, rust) {
     'use strict';
 
     var keyType = null;
@@ -32,6 +33,8 @@ define([
         switch (keyType) {
             case 'rand160Bits':
                 return rand160Bits();
+            case 'rustSHA1':
+                return rust.gen_sha1_key(CANON.stringify(object));
             default: //plainSHA1
                 return generateSHA1(CANON.stringify(object));
         }
