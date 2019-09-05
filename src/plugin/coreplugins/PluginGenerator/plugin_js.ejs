@@ -54,32 +54,34 @@ define([
      */
     <%= pluginID %>.prototype.main = <%if (typeof main === 'string' && main){%><%-main%><%}else{%>function (callback) {
         // Use this to access core, project, result, logger etc from PluginBase.
+        const self = this;
 
         // Using the logger.
-        this.logger.debug('This is a debug message.');
-        this.logger.info('This is an info message.');
-        this.logger.warn('This is a warning message.');
-        this.logger.error('This is an error message.');
+        self.logger.debug('This is a debug message.');
+        self.logger.info('This is an info message.');
+        self.logger.warn('This is a warning message.');
+        self.logger.error('This is an error message.');
 
         // Using the coreAPI to make changes.
-        this.core.setAttribute(nodeObject, 'name', 'My new obj');
-        this.core.setRegistry(nodeObject, 'position', {x: 70, y: 70});
+        const nodeObject = self.activeNode;
+        self.core.setAttribute(nodeObject, 'name', 'My new obj');
+        self.core.setRegistry(nodeObject, 'position', {x: 70, y: 70});
 
 <%if (configStructure) {%>
         // Obtain the current user configuration.
         var currentConfig = self.getCurrentConfig();
-        this.logger.info('Current configuration ' + JSON.stringify(currentConfig, null, 4));
+        self.logger.info('Current configuration ' + JSON.stringify(currentConfig, null, 4));
 <%}%>
         // This will save the changes. If you don't want to save;
         // exclude self.save and call callback directly from this scope.
-        this.save('<%= pluginName %> updated model.')
+        self.save('<%= pluginName %> updated model.')
             .then(() => {
-                this.result.setSuccess(true);
+                self.result.setSuccess(true);
                 callback(null, self.result);
             })
             .catch((err) => {
                 // Result success is false at invocation.
-                this.logger.error(err.stack);
+                self.logger.error(err.stack);
                 callback(err, self.result);
             });
     };
