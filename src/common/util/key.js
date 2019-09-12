@@ -8,12 +8,22 @@
 define([
     'common/util/sha1',
     'common/util/assert',
-    'common/util/canon',
-    'webgme-rust'
-], function (generateSHA1, ASSERT, CANON, rust) {
+    'common/util/canon'
+], function (generateSHA1, ASSERT, CANON) {
     'use strict';
 
-    var keyType = null;
+    function run() {
+        requirejs(['common/util/rust/sha1/web/wasm-sha1'], function () {
+            wasm_bindgen('common/util/rust/sha1/web/wasm-sha1_bg.wasm')
+                .then(function () {
+                    //nothing to do as wasm_bindgen holds the key
+                });
+        });
+    }
+
+    if (typeof window !== 'undefined') {
+        run();
+    }
 
     function rand160Bits() {
         var result = '',
@@ -27,14 +37,14 @@ define([
     }
 
     return function KeyGenerator(object, gmeConfig) {
-        keyType = gmeConfig.storage.keyType;
+        const keyType = gmeConfig.storage.keyType;
         ASSERT(typeof keyType === 'string');
 
         switch (keyType) {
             case 'rand160Bits':
                 return rand160Bits();
             case 'rustSHA1':
-                return rust.gen_sha1_key(CANON.stringify(object));
+                return wasm_bindgen.hash(CANON.stringify(object));
             default: //plainSHA1
                 return generateSHA1(CANON.stringify(object));
         }

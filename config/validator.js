@@ -297,7 +297,7 @@ function validateConfig(configOrFileName) {
     assertNumber('config.storage.cache', config.storage.cache);
     assertNumber('config.storage.loadBucketSize', config.storage.loadBucketSize);
     assertNumber('config.storage.loadBucketTimer', config.storage.loadBucketTimer);
-    assertEnum('config.storage.keyType', config.storage.keyType, 'rand160Bits', 'ZSSHA', 'plainSHA1');
+    assertEnum('config.storage.keyType', config.storage.keyType, 'rand160Bits', 'ZSSHA', 'plainSHA1', 'rustSHA1');
     assertObject('config.storage.database', config.storage.database);
     assertEnum('config.storage.database.type', config.storage.database.type.toLowerCase(), 'mongo', 'redis', 'memory');
     assertObject('config.storage.database.options', config.storage.database.options);

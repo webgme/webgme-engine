@@ -1,0 +1,10 @@
+{
+  "name": "webgme-rust",
+  "version": "0.1.0",
+  "files": [
+    "wasm-sha1-node_bg.wasm",
+    "wasm-sha1-node.js",
+    "wasm-sha1-node_bg.js"
+  ],
+  "main": "wasm-sha1-node.js"
+}
