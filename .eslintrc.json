@@ -1,5 +1,7 @@
 {
-  "env": {},
+  "env": {
+    "es6": true
+  },
   "globals": {},
   "extends": "eslint:recommended",
   "rules": {
@@ -30,12 +32,20 @@
         "functions": false
       }
     ],
-    "new-cap": [2, {
-      "newIsCap": true,
-      "capIsNew": true,
-      "capIsNewExceptions": ["Q", "ASSERT", "GUID", "Router"],
-      "newIsCapExceptions": []
-    }],
+    "new-cap": [
+      2,
+      {
+        "newIsCap": true,
+        "capIsNew": true,
+        "capIsNewExceptions": [
+          "Q",
+          "ASSERT",
+          "GUID",
+          "Router"
+        ],
+        "newIsCapExceptions": []
+      }
+    ],
     "no-caller": 2,
     "quotes": [
       2,

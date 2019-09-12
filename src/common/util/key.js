@@ -1,5 +1,6 @@
-/*globals define*/
+/*globals define, requirejs, wasm_bindgen*/
 /*eslint-env node, browser*/
+/*eslint camelcase: 0*/
 
 /**
  * @author kecso / https://github.com/kecso
