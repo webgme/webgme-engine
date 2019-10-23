@@ -683,11 +683,8 @@
 
 /**
  * @description Gathers the list of running plugins and information about them.
- * @function sendMessageToPlugin
+ * @function getRunningPlugins
  * @memberOf Client
- * @param {string} executionId - unique identifier that identifies the plugin execution
- * @param {string} messageId - the identifier of the message which has been specified by the plugin
- * @param {any} content - the content of the message
  * @instance
  *
  */
