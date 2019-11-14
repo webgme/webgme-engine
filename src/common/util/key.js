@@ -28,7 +28,7 @@ define([
     } else {
         //TODO why does it have to be static full path???
         const path = require('path');
-        wasm_node = require(path.join(process.cwd(),'src/common/util/rust/sha1/node/wasm-sha1-node'));
+        wasm_node = require(path.join(process.cwd(), 'src/common/util/rust/sha1/node/wasm-sha1-node'));
     }
 
     function rand160Bits() {
@@ -50,7 +50,7 @@ define([
             case 'rand160Bits':
                 return rand160Bits();
             case 'rustSHA1':
-                if(wasm_node){
+                if (wasm_node) {
                     return wasm_node.hash(CANON.stringify(object));
                 } else {
                     return wasm_bindgen.hash(CANON.stringify(object));

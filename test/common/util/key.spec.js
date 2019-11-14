@@ -141,7 +141,7 @@ describe('key generator', function () {
 
         const plainTime = end - start;
 
-        console.log(plainTime, rustTime);
+        // console.log(plainTime, rustTime);
         expect(plainTime).to.be.above(rustTime);
     });
 
@@ -165,7 +165,7 @@ describe('key generator', function () {
 
         const plainTime = end - start;
 
-        console.log(plainTime, rustTime);
+        // console.log(plainTime, rustTime);
         expect(plainTime).to.be.above(rustTime);
     });
 

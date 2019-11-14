@@ -8,7 +8,7 @@ var WebGMEGlobal = {}; //eslint-disable-line
 describe('Test the speed of different key generation methods', function () {
     var Client,
         gmeConfig,
-        KeyGenerator,
+        keyGenerator,
         client;
 
     function generateRandomObject(size) {
@@ -27,7 +27,7 @@ describe('Test the speed of different key generation methods', function () {
         requirejs(['client/client', 'text!gmeConfig.json', 'common/util/key'
         ], function (Client_, gmeConfigJSON, KeyGenerator_) {
             Client = Client_;
-            KeyGenerator = KeyGenerator_;
+            keyGenerator = KeyGenerator_;
             gmeConfig = JSON.parse(gmeConfigJSON);
 
             client = new Client(gmeConfig);
@@ -41,17 +41,17 @@ describe('Test the speed of different key generation methods', function () {
     it('should generate same hashes with different SHA1 methods', function () {
         let object = generateRandomObject(1000000);
         let myconfig = JSON.parse(JSON.stringify(gmeConfig));
-        let then;
+        // let then;
 
         myconfig.storage.keyType = 'plainSHA1';
-        then = Date.now();
-        let plainHash = KeyGenerator(object,myconfig);
-        console.log('plain:'+(Date.now()-then));
+        // then = Date.now();
+        let plainHash = keyGenerator(object, myconfig);
+        // console.log('plain:' + (Date.now() - then));
 
         myconfig.storage.keyType = 'rustSHA1';
-        then = Date.now();
-        let rustHash = KeyGenerator(object,myconfig);
-        console.log('wasm:'+(Date.now()-then));
+        // then = Date.now();
+        let rustHash = keyGenerator(object, myconfig);
+        // console.log('wasm:' + (Date.now() - then));
 
         expect(plainHash).to.equal(rustHash);
     });

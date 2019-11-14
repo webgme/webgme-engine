@@ -223,7 +223,8 @@ module.exports = function (config) {
             '/docs': 'http://localhost:' + gmeConfig.server.port + '/docs',
             '/rest': 'http://localhost:' + gmeConfig.server.port + '/rest',
             '/api': 'http://localhost:' + gmeConfig.server.port + '/api',
-            '/common/util/rust/sha1/web/wasm-sha1_bg.wasm': 'http://localhost:' +gmeConfig.server.port + '/common/util/rust/sha1/web/wasm-sha1_bg.wasm',
+            // eslint-disable-next-line max-len
+            '/common/util/rust/sha1/web/wasm-sha1_bg.wasm': 'http://localhost:' + gmeConfig.server.port + '/common/util/rust/sha1/web/wasm-sha1_bg.wasm',
         }
     });
 };
