@@ -7,7 +7,7 @@
 var testFixture = require('../../_globals.js');
 
 
-describe.only('key generator', function () {
+describe('key generator', function () {
     'use strict';
     var keyGenerator = testFixture.requirejs('common/util/key'),
         expect = testFixture.expect,
@@ -122,6 +122,7 @@ describe.only('key generator', function () {
     }
 
     it('it should be faster to use rust SHA1 than regular for large objects', function () {
+        this.timeout(10000);
         const size = 100000;
         const iterations = 100;
         let start = new Date().getTime();
@@ -140,11 +141,12 @@ describe.only('key generator', function () {
 
         const plainTime = end - start;
 
-        // console.log(plainTime, rustTime);
+        console.log(plainTime, rustTime);
         expect(plainTime).to.be.above(rustTime);
     });
 
     it('it should be faster to use rust SHA1 than regular small objects', function () {
+        this.timeout(10000);
         const size = 100;
         const iterations = 100000;
         let start = new Date().getTime();
@@ -163,7 +165,7 @@ describe.only('key generator', function () {
 
         const plainTime = end - start;
 
-        // console.log(plainTime, rustTime);
+        console.log(plainTime, rustTime);
         expect(plainTime).to.be.above(rustTime);
     });
 

@@ -134,6 +134,7 @@ module.exports = function (config) {
         basePath: '',
 
         client: {
+            captureConsole: true,
             mocha: {
                 timeout: 10000 // Increased from 2000 [ms]
             }
@@ -149,6 +150,7 @@ module.exports = function (config) {
         files: [
             // {pattern: 'src/**/*.js', included: false}, // THIS IS SLOW: SPECIFY EXPLICITLY WHAT WE NEED.
             {pattern: 'src/common/**/*.js', included: false},
+            {pattern: 'src/**/*.wasm', included: false},
             {pattern: 'src/client/*.js', included: false},
             {pattern: 'src/plugin/*.js', included: false},
             {pattern: 'src/plugin/coreplugins/MinimalWorkingExample/**/*', included: false},
@@ -208,11 +210,11 @@ module.exports = function (config) {
         // to avoid DISCONNECTED messages
         browserDisconnectTimeout: 10000, // default 2000
         browserDisconnectTolerance: 1, // default 0
-        browserNoActivityTimeout: 600000, //default 10000
+        browserNoActivityTimeout: 60000, //default 10000
 
         // Continuous Integration mode
         // if true, Karma captures browsers, runs the tests and exits
-        singleRun: false,
+        singleRun: true,
 
 
         // forward these requests to the webgme server. All other files are server by the karma web server
@@ -220,7 +222,8 @@ module.exports = function (config) {
             '/base/gmeConfig.json': 'http://localhost:' + gmeConfig.server.port + '/gmeConfig.json',
             '/docs': 'http://localhost:' + gmeConfig.server.port + '/docs',
             '/rest': 'http://localhost:' + gmeConfig.server.port + '/rest',
-            '/api': 'http://localhost:' + gmeConfig.server.port + '/api'
+            '/api': 'http://localhost:' + gmeConfig.server.port + '/api',
+            '/common/util/rust/sha1/web/wasm-sha1_bg.wasm': 'http://localhost:' +gmeConfig.server.port + '/common/util/rust/sha1/web/wasm-sha1_bg.wasm',
         }
     });
 };
