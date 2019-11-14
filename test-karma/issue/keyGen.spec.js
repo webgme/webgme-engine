@@ -41,7 +41,6 @@ describe('Test the speed of different key generation methods', function () {
     it('should generate same hashes with different SHA1 methods', function () {
         let object = generateRandomObject(1000000);
         let myconfig = JSON.parse(JSON.stringify(gmeConfig));
-        // let then;
 
         myconfig.storage.keyType = 'plainSHA1';
         // then = Date.now();
@@ -55,4 +54,23 @@ describe('Test the speed of different key generation methods', function () {
 
         expect(plainHash).to.equal(rustHash);
     });
+
+    /*it.skip('should be fast to use WASM based hash computation', function () {
+        let object = generateRandomObject(1000000);
+        let cycles = 10;
+        let myconfig = JSON.parse(JSON.stringify(gmeConfig));
+        let times = [];
+        let then;
+
+        // myconfig.storage.keyType = 'rustSHA1';
+        myconfig.storage.keyType = 'plainSHA1';
+        while (cycles--) {
+            then = Date.now();
+            let hash = keyGenerator(object, myconfig);
+            times.push(Date.now() - then);
+        }
+        console.log(Math.max(...times));
+        console.log(Math.min(...times));
+        console.log(times.reduce((a, b) => a + b, 0) / times.length);
+    });*/
 });
