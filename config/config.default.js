@@ -238,7 +238,7 @@ var path = require('path'),
             autoMerge: {
                 enable: false
             },
-            keyType: 'plainSHA1', // 'rand160Bits', 'ZSSHA', 'plainSHA1',
+            keyType: 'plainSHA1', // 'rand160Bits', 'plainSHA1', 'rustSHA1'
             database: {
                 type: 'mongo', // mongo, redis, memory
                 options: { // if mongo - settings will be used from config.mongo

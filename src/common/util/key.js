@@ -1,5 +1,6 @@
-/*globals define*/
+/*globals define, requirejs, wasm_bindgen*/
 /*eslint-env node, browser*/
+/*eslint camelcase: 0*/
 
 /**
  * @author kecso / https://github.com/kecso
@@ -12,7 +13,23 @@ define([
 ], function (generateSHA1, ASSERT, CANON) {
     'use strict';
 
-    var keyType = null;
+    var wasm_node = null;
+    function run() {
+        requirejs(['common/util/rust/sha1/web/wasm-sha1'], function () {
+            wasm_bindgen('common/util/rust/sha1/web/wasm-sha1_bg.wasm')
+                .then(function () {
+                    //nothing to do as wasm_bindgen holds the key
+                });
+        });
+    }
+
+    if (typeof window !== 'undefined') {
+        run();
+    } else {
+        //TODO why does it have to be static full path???
+        const path = require('path');
+        wasm_node = require(path.join(process.cwd(), 'src/common/util/rust/sha1/node/wasm-sha1-node'));
+    }
 
     function rand160Bits() {
         var result = '',
@@ -26,12 +43,18 @@ define([
     }
 
     return function KeyGenerator(object, gmeConfig) {
-        keyType = gmeConfig.storage.keyType;
+        const keyType = gmeConfig.storage.keyType;
         ASSERT(typeof keyType === 'string');
 
         switch (keyType) {
             case 'rand160Bits':
                 return rand160Bits();
+            case 'rustSHA1':
+                if (wasm_node) {
+                    return wasm_node.hash(CANON.stringify(object));
+                } else {
+                    return wasm_bindgen.hash(CANON.stringify(object));
+                }
             default: //plainSHA1
                 return generateSHA1(CANON.stringify(object));
         }

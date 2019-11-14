@@ -912,7 +912,8 @@ function StandAloneServer(gmeConfig) {
 
     logger.debug('creating basic static content related routing rules');
     //static contents
-    __app.get(/^\/(common|client)\/.*\.js$/, Express.static(__baseDir, {index: false}));
+    Express.static.mime.define({'application/wasm': ['wasm']});
+    __app.get(/^\/(common|client)\/.*\.(js|wasm)$/, Express.static(__baseDir, {index: false}));
 
     //TODO remove this part as this is only temporary!!!
     __app.get('/docs/*', Express.static(path.join(__baseDir, '..'), {index: false}));
