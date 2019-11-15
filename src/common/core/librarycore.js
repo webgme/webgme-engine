@@ -19,6 +19,7 @@ define([
         ASSERT(typeof options.globConf === 'object');
         ASSERT(typeof options.logger !== 'undefined');
 
+        var isOnMetaSheet = innerCore.isOnMetaSheet;
         var logger = options.logger,
             self = this,
             key;
@@ -26,6 +27,7 @@ define([
         for (key in innerCore) {
             this[key] = innerCore[key];
         }
+        delete this.isOnMetaSheet;
 
         logger.debug('initialized LibraryCore');
 
@@ -131,13 +133,15 @@ define([
             return TASYNC.call(function (libraryNodes) {
                 var info = {},
                     infoItem,
-                    i;
+                    i,
+                    inMeta = self.getMemberPaths(libraryNodes[0], CONSTANTS.META_SET_NAME);
 
                 for (i = 1; i < libraryNodes.length; i += 1) {
                     infoItem = {
                         path: getPath(libraryNodes[i]),
                         hash: self.getHash(libraryNodes[i]),
-                        fcn: getName(libraryNodes[i])
+                        fcn: getName(libraryNodes[i]),
+                        isMeta: inMeta.indexOf(self.getPath(libraryNodes[i])) !== -1,
                     };
 
                     info[getGuid(libraryNodes[i])] = infoItem;
@@ -991,6 +995,8 @@ define([
                     moves = [],
                     guid;
 
+                console.log(oldInfo);
+                console.log(newInfo);
                 for (guid in newInfo) {
                     if (!oldInfo[guid]) {
                         newNodePaths.push('/' + relid + newInfo[guid].path);
