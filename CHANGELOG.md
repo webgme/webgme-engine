@@ -1,15 +1,23 @@
 # Change Log
 
+## [v2.24.1](https://github.com/webgme/webgme-engine/tree/v2.24.1) (2019-11-15)
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.24.0...v2.24.1)
+
+**Fixed bugs:**
+
+- Cannot include webgme as a library [\#179](https://github.com/webgme/webgme-engine/issues/179)
+
 ## [v2.24.0](https://github.com/webgme/webgme-engine/tree/v2.24.0) (2019-11-15)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.23.2...v2.24.0)
 
 **Fixed bugs:**
 
-- Library not updated if only meta set changes [\#177](https://github.com/webgme/webgme-engine/issues/177)
 - Error in generated plugins [\#167](https://github.com/webgme/webgme-engine/issues/167)
-- Fixes \#177 Library not updated if only meta set changes [\#178](https://github.com/webgme/webgme-engine/pull/178) ([kecso](https://github.com/kecso))
+- Library not updated if only meta set changes [\#177](https://github.com/webgme/webgme-engine/issues/177)
 - Add getRunningPlugins to documentation. Fixes \#174 [\#175](https://github.com/webgme/webgme-engine/pull/175) ([brollb](https://github.com/brollb))
 - Defined nodeObject and use `this` instead of `self`. Fixes \#167 [\#168](https://github.com/webgme/webgme-engine/pull/168) ([brollb](https://github.com/brollb))
+- Fixes \#177 Library not updated if only meta set changes [\#178](https://github.com/webgme/webgme-engine/pull/178) ([kecso](https://github.com/kecso))
+- Fix for issue \#165 [\#166](https://github.com/webgme/webgme-engine/pull/166) ([cahartsell](https://github.com/cahartsell))
 
 **Closed issues:**
 
@@ -21,10 +29,6 @@
 
 ## [v2.23.2](https://github.com/webgme/webgme-engine/tree/v2.23.2) (2019-08-21)
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.23.1...v2.23.2)
-
-**Fixed bugs:**
-
-- Fix for issue \#165 [\#166](https://github.com/webgme/webgme-engine/pull/166) ([cahartsell](https://github.com/cahartsell))
 
 **Closed issues:**
 
