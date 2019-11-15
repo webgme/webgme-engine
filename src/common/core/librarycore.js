@@ -131,13 +131,15 @@ define([
             return TASYNC.call(function (libraryNodes) {
                 var info = {},
                     infoItem,
-                    i;
+                    i,
+                    inMeta = self.getMemberPaths(libraryNodes[0], CONSTANTS.META_SET_NAME);
 
                 for (i = 1; i < libraryNodes.length; i += 1) {
                     infoItem = {
                         path: getPath(libraryNodes[i]),
                         hash: self.getHash(libraryNodes[i]),
-                        fcn: getName(libraryNodes[i])
+                        fcn: getName(libraryNodes[i]),
+                        isMeta: inMeta.indexOf(self.getPath(libraryNodes[i])) !== -1,
                     };
 
                     info[getGuid(libraryNodes[i])] = infoItem;
@@ -987,6 +989,8 @@ define([
             return TASYNC.call(function (oldInfo, newInfo) {
                 var newNodePaths = [],
                     removedNodePaths = [],
+                    addedToMetaPaths = [],
+                    removedFromMetaPaths = [],
                     i,
                     moves = [],
                     guid;
@@ -1013,6 +1017,18 @@ define([
                     moveLibraryRelations(root, moves[i].from, moves[i].to);
                 }
 
+                //finally address the changes in the meta element of the library
+                for (guid in newInfo) {
+                    if (oldInfo[guid]) {
+                        if (newInfo[guid].isMeta && !oldInfo[guid].isMeta) {
+                            addedToMetaPaths.push('/' + relid + newInfo[guid].path);
+                        }
+                        if (!newInfo[guid].isMeta && oldInfo[guid].isMeta) {
+                            removedFromMetaPaths.push('/' + relid + newInfo[guid].path);
+                        }
+                    }
+                }
+
                 innerCore.setProperty(root, relid, updatedLibraryRootHash);
                 root = self.removeChildFromCache(root, relid);
                 return TASYNC.call(function (newLibraryRoot) {
@@ -1037,11 +1053,34 @@ define([
                             innerCore.deletePointer(libraryFCO, 'base');
                             innerCore.setBase(libraryFCO, FCO);
 
-                            //adding new nodes to the global META
                             for (i = 0; i < newLibraryNodes.length; i += 1) {
+                                //adding new nodes to the global META
                                 if (newNodePaths.indexOf(self.getPath(newLibraryNodes[i])) !== -1 &&
                                         inMeta.indexOf(self.getPath(newLibraryNodes[i])) !== -1) {
                                     innerCore.addMember(root, CONSTANTS.META_SET_NAME, newLibraryNodes[i]);
+                                }
+                                //adding existing nodes to the global META
+                                if (addedToMetaPaths.indexOf(self.getPath(newLibraryNodes[i])) !== -1) {
+                                    innerCore.addMember(root, CONSTANTS.META_SET_NAME, newLibraryNodes[i]);
+                                }
+                                //removing existing nodes from the global META
+                                if (removedFromMetaPaths.indexOf(self.getPath(newLibraryNodes[i])) !== -1) {
+                                    innerCore.delMember(
+                                        root, 
+                                        CONSTANTS.META_SET_NAME, 
+                                        self.getPath(newLibraryNodes[i])
+                                    );
+                                    let sets = self.isMemberOf(newLibraryNodes[i]);
+                                    sets = sets[''] || [];
+                                    sets.forEach((set) => {
+                                        if (set.indexOf(CONSTANTS.META_SET_NAME) === 0) {
+                                            innerCore.addMember(
+                                                root, 
+                                                CONSTANTS.META_SET_NAME, 
+                                                newLibraryNodes[i]
+                                            );                                            
+                                        }
+                                    });
                                 }
                             }
                         }
