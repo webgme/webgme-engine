@@ -28,7 +28,9 @@ define([
     } else {
         //TODO why does it have to be static full path???
         const path = require('path');
-        wasm_node = require(path.join(process.cwd(), 'src/common/util/rust/sha1/node/wasm-sha1-node'));
+        wasm_node = require(
+            path.join(requirejs.s.contexts._.config.baseUrl, 'common/util/rust/sha1/node/wasm-sha1-node')
+        );
     }
 
     function rand160Bits() {
