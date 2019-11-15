@@ -19,7 +19,6 @@ define([
         ASSERT(typeof options.globConf === 'object');
         ASSERT(typeof options.logger !== 'undefined');
 
-        var isOnMetaSheet = innerCore.isOnMetaSheet;
         var logger = options.logger,
             self = this,
             key;
@@ -27,7 +26,6 @@ define([
         for (key in innerCore) {
             this[key] = innerCore[key];
         }
-        delete this.isOnMetaSheet;
 
         logger.debug('initialized LibraryCore');
 
@@ -991,12 +989,12 @@ define([
             return TASYNC.call(function (oldInfo, newInfo) {
                 var newNodePaths = [],
                     removedNodePaths = [],
+                    addedToMetaPaths = [],
+                    removedFromMetaPaths = [],
                     i,
                     moves = [],
                     guid;
 
-                console.log(oldInfo);
-                console.log(newInfo);
                 for (guid in newInfo) {
                     if (!oldInfo[guid]) {
                         newNodePaths.push('/' + relid + newInfo[guid].path);
@@ -1017,6 +1015,18 @@ define([
 
                 for (i = 0; i < moves.length; i += 1) {
                     moveLibraryRelations(root, moves[i].from, moves[i].to);
+                }
+
+                //finally address the changes in the meta element of the library
+                for (guid in newInfo) {
+                    if (oldInfo[guid]) {
+                        if (newInfo[guid].isMeta && !oldInfo[guid].isMeta) {
+                            addedToMetaPaths.push('/' + relid + newInfo[guid].path);
+                        }
+                        if (!newInfo[guid].isMeta && oldInfo[guid].isMeta) {
+                            removedFromMetaPaths.push('/' + relid + newInfo[guid].path);
+                        }
+                    }
                 }
 
                 innerCore.setProperty(root, relid, updatedLibraryRootHash);
@@ -1043,11 +1053,26 @@ define([
                             innerCore.deletePointer(libraryFCO, 'base');
                             innerCore.setBase(libraryFCO, FCO);
 
-                            //adding new nodes to the global META
                             for (i = 0; i < newLibraryNodes.length; i += 1) {
+                                //adding new nodes to the global META
                                 if (newNodePaths.indexOf(self.getPath(newLibraryNodes[i])) !== -1 &&
                                         inMeta.indexOf(self.getPath(newLibraryNodes[i])) !== -1) {
                                     innerCore.addMember(root, CONSTANTS.META_SET_NAME, newLibraryNodes[i]);
+                                }
+                                //adding existing nodes to the global META
+                                if (addedToMetaPaths.indexOf(self.getPath(newLibraryNodes[i])) !== -1) {
+                                    innerCore.addMember(root, CONSTANTS.META_SET_NAME, newLibraryNodes[i]);
+                                }
+                                //removing existing nodes from the global META
+                                if (removedFromMetaPaths.indexOf(self.getPath(newLibraryNodes[i])) !== -1) {
+                                    innerCore.delMember(root, CONSTANTS.META_SET_NAME, self.getPath(newLibraryNodes[i]));
+                                    let sets = self.isMemberOf(newLibraryNodes[i]);
+                                    sets = sets[''] || [];
+                                    sets.forEach((set) => {
+                                        if (set.indexOf(CONSTANTS.META_SET_NAME) === 0) {
+                                            innerCore.addMember(root, CONSTANTS.META_SET_NAME, newLibraryNodes[i]);                                            
+                                        }
+                                    });
                                 }
                             }
                         }

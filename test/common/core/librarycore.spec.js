@@ -1113,7 +1113,7 @@ describe('Library core ', function () {
             .nodeify(done);
     });
 
-    it.only('should update a library with extension of the meta elements', function (done) {
+    it('should update a library with extension of the meta elements', function (done) {
         var firstHash,
             secondHash,
             asyncRoot,
@@ -1202,6 +1202,203 @@ describe('Library core ', function () {
                 expect(core.getAllMetaNodes(node)[libPath]).to.equal(undefined);
                 expect(core.getAllMetaNodes(node)[libPath] + '/Cont/toMove').not.to.equal(undefined);
                 expect(Object.keys(core.getAllMetaNodes(asyncRoot)).length).to.equal(originalMetaCount + 1);
+            })
+            .nodeify(done);
+    });
+
+    it('should update a library with removal of the meta elements', function (done) {
+        var firstHash,
+            secondHash,
+            asyncRoot,
+            asyncFco,
+            libPath,
+            originalMetaCount,
+            buildLibrary = function () {
+                var lRoot = core.createNode(),
+                    lFco = core.createNode({parent: lRoot, base: null, relid: 'FCO'}),
+                    lCont = core.createNode({parent: lRoot, base: lFco, relid: 'Cont'}),
+                    lRem = core.createNode({parent: lCont, base: lFco, relid: 'toRemove'}),
+                    lInc = core.createNode({parent: lRoot, base: lFco, relid: 'toInclude'});
+
+                core.setAttribute(lRoot, 'name', 'ROOT');
+                core.setAttribute(lFco, 'name', 'FCO');
+                core.setAttribute(lCont, 'name', 'container');
+                core.setAttribute(lRem, 'name', 'itemToremove');
+                core.setAttribute(lInc, 'name', 'itemToInclude');
+
+                core.addMember(lRoot, 'MetaAspectSet', lFco);
+                core.addMember(lRoot, 'MetaAspectSet', lRem);
+                core.addMember(lRoot, 'MetaAspectSet', lInc);
+
+                core.persist(lRoot);
+                firstHash = core.getHash(lRoot);
+
+                core.delMember(lRoot, 'MetaAspectSet', core.getPath(lInc));
+
+                core.persist(lRoot);
+                secondHash = core.getHash(lRoot);
+            };
+
+        buildLibrary();
+
+        asyncRoot = core.createNode();
+        asyncFco = core.createNode({parent: asyncRoot, base: null, relid: 'FCO'});
+
+        core.setAttribute(asyncRoot, 'name', 'ROOT');
+        core.setAttribute(asyncFco, 'name', 'FCO');
+        core.addMember(asyncRoot, 'MetaAspectSet', asyncFco);
+        expect(core.getPath(core.getFCO(asyncRoot))).to.equal('/FCO');
+
+        core.addLibrary(asyncRoot, 'library', firstHash, {})
+            .then(function () {
+                var libRoot = core.getLibraryRoot(asyncRoot, 'library');
+
+                expect(core.getLibraryNames(asyncRoot)).to.eql(['library']);
+                expect(libRoot).not.to.equal(null);
+                libPath = core.getPath(libRoot);
+                core.persist(asyncRoot);
+
+                return core.loadRoot(core.getHash(asyncRoot));
+            })
+            .then(function (root_) {
+                asyncRoot = root_;
+                asyncFco = core.getFCO(asyncRoot);
+
+                expect(core.getCollectionPaths(asyncFco, 'base')).to.eql([libPath + '/FCO']);
+
+                originalMetaCount = Object.keys(core.getAllMetaNodes(asyncRoot)).length;
+                core.createNode({
+                    parent: asyncRoot,
+                    base: core.getAllMetaNodes(asyncRoot)[libPath + '/toMove'],
+                    relid: 'node'
+                });
+
+                return core.updateLibrary(asyncRoot, 'library', secondHash, {}, {});
+            })
+            .then(function () {
+                expect(core.getLibraryNames(asyncRoot)).to.eql(['library']);
+
+                core.persist(asyncRoot);
+
+                return core.loadRoot(core.getHash(asyncRoot));
+            })
+            .then(function (root_) {
+                asyncRoot = root_;
+                asyncFco = core.getFCO(asyncRoot);
+
+                return core.loadByPath(asyncRoot, '/node');
+            })
+            .then(function (node) {
+                expect(node).not.to.equal(null);
+                expect(core.getPath(node)).to.equal('/node');
+                expect(core.getAllMetaNodes(node)[libPath + '/Cont']).to.equal(undefined);
+                expect(core.getAllMetaNodes(node)[libPath]).to.equal(undefined);
+                expect(core.getAllMetaNodes(node)[libPath] + '/Cont/toMove').not.to.equal(undefined);
+                expect(Object.keys(core.getAllMetaNodes(asyncRoot)).length).to.equal(originalMetaCount - 1);
+            })
+            .nodeify(done);
+    });
+
+    it('should not update removal of library meta elements if already used', function (done) {
+        var firstHash,
+            secondHash,
+            asyncRoot,
+            asyncFco,
+            libPath,
+            originalMetaCount,
+            buildLibrary = function () {
+                var lRoot = core.createNode(),
+                    lFco = core.createNode({parent: lRoot, base: null, relid: 'FCO'}),
+                    lCont = core.createNode({parent: lRoot, base: lFco, relid: 'Cont'}),
+                    lRem = core.createNode({parent: lCont, base: lFco, relid: 'toRemove'}),
+                    lInc = core.createNode({parent: lRoot, base: lFco, relid: 'toInclude'});
+
+                core.setAttribute(lRoot, 'name', 'ROOT');
+                core.setAttribute(lFco, 'name', 'FCO');
+                core.setAttribute(lCont, 'name', 'container');
+                core.setAttribute(lRem, 'name', 'itemToremove');
+                core.setAttribute(lInc, 'name', 'itemToInclude');
+
+                core.addMember(lRoot, 'MetaAspectSet', lFco);
+                core.addMember(lRoot, 'MetaAspectSet', lRem);
+                core.addMember(lRoot, 'MetaAspectSet', lInc);
+
+                core.persist(lRoot);
+                firstHash = core.getHash(lRoot);
+
+                core.delMember(lRoot, 'MetaAspectSet', core.getPath(lInc));
+
+                core.persist(lRoot);
+                secondHash = core.getHash(lRoot);
+            };
+
+        buildLibrary();
+
+        asyncRoot = core.createNode();
+        asyncFco = core.createNode({parent: asyncRoot, base: null, relid: 'FCO'});
+
+        core.setAttribute(asyncRoot, 'name', 'ROOT');
+        core.setAttribute(asyncFco, 'name', 'FCO');
+        core.addMember(asyncRoot, 'MetaAspectSet', asyncFco);
+        expect(core.getPath(core.getFCO(asyncRoot))).to.equal('/FCO');
+
+        core.addLibrary(asyncRoot, 'library', firstHash, {})
+            .then(function () {
+                var libRoot = core.getLibraryRoot(asyncRoot, 'library');
+
+                expect(core.getLibraryNames(asyncRoot)).to.eql(['library']);
+                expect(libRoot).not.to.equal(null);
+                libPath = core.getPath(libRoot);
+                core.persist(asyncRoot);
+
+                return core.loadRoot(core.getHash(asyncRoot));
+            })
+            .then(function (root_) {
+                asyncRoot = root_;
+                asyncFco = core.getFCO(asyncRoot);
+                return core.loadByPath(asyncRoot, libPath + '/toInclude');
+            })
+            .then(function (toIncludeNode) {
+                core.addMember(asyncRoot, 'MetaAspectSet_000-0000-0000', toIncludeNode);
+                core.persist(asyncRoot);
+
+                return core.loadRoot(core.getHash(asyncRoot));
+            })
+            .then(function (root_) {
+                asyncRoot = root_;
+                asyncFco = core.getFCO(asyncRoot);
+
+                expect(core.getCollectionPaths(asyncFco, 'base')).to.eql([libPath + '/FCO']);
+
+                originalMetaCount = Object.keys(core.getAllMetaNodes(asyncRoot)).length;
+                core.createNode({
+                    parent: asyncRoot,
+                    base: core.getAllMetaNodes(asyncRoot)[libPath + '/toMove'],
+                    relid: 'node'
+                });
+
+                return core.updateLibrary(asyncRoot, 'library', secondHash, {}, {});
+            })
+            .then(function () {
+                expect(core.getLibraryNames(asyncRoot)).to.eql(['library']);
+
+                core.persist(asyncRoot);
+
+                return core.loadRoot(core.getHash(asyncRoot));
+            })
+            .then(function (root_) {
+                asyncRoot = root_;
+                asyncFco = core.getFCO(asyncRoot);
+
+                return core.loadByPath(asyncRoot, '/node');
+            })
+            .then(function (node) {
+                expect(node).not.to.equal(null);
+                expect(core.getPath(node)).to.equal('/node');
+                expect(core.getAllMetaNodes(node)[libPath + '/Cont']).to.equal(undefined);
+                expect(core.getAllMetaNodes(node)[libPath]).to.equal(undefined);
+                expect(core.getAllMetaNodes(node)[libPath] + '/Cont/toMove').not.to.equal(undefined);
+                expect(Object.keys(core.getAllMetaNodes(asyncRoot)).length).to.equal(originalMetaCount);
             })
             .nodeify(done);
     });

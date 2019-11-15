@@ -85,8 +85,6 @@ define([
             return false;
         }
 
-        this.isOnMetaSheet = isOnMetaSheet;
-        
         function isMetaNode(node) {
             var metaNodes = innerCore.getRoot(node).metaNodes;
 
