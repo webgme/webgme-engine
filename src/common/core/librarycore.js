@@ -1065,12 +1065,20 @@ define([
                                 }
                                 //removing existing nodes from the global META
                                 if (removedFromMetaPaths.indexOf(self.getPath(newLibraryNodes[i])) !== -1) {
-                                    innerCore.delMember(root, CONSTANTS.META_SET_NAME, self.getPath(newLibraryNodes[i]));
+                                    innerCore.delMember(
+                                        root, 
+                                        CONSTANTS.META_SET_NAME, 
+                                        self.getPath(newLibraryNodes[i])
+                                    );
                                     let sets = self.isMemberOf(newLibraryNodes[i]);
                                     sets = sets[''] || [];
                                     sets.forEach((set) => {
                                         if (set.indexOf(CONSTANTS.META_SET_NAME) === 0) {
-                                            innerCore.addMember(root, CONSTANTS.META_SET_NAME, newLibraryNodes[i]);                                            
+                                            innerCore.addMember(
+                                                root, 
+                                                CONSTANTS.META_SET_NAME, 
+                                                newLibraryNodes[i]
+                                            );                                            
                                         }
                                     });
                                 }
