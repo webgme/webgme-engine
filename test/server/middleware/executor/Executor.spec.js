@@ -245,12 +245,71 @@ describe('ExecutorServer', function () {
                         agent.get(serverBaseUrl + '/rest/executor/info/existingHash')
                             .end(function (err, res) {
                                 should.equal(res.status, 200, err);
-                                server.stop(function (err) {
-                                    server = null;
-                                    done(err);
-                                });
+                                done();
                             });
                     });
+            });
+        });
+    });
+
+    describe('auth', function () {
+        beforeEach(() => {
+            gmeConfig.executor.authentication.enable = true;
+            gmeConfig.executor.authentication.allowGuests = true;
+            server = testFixture.WebGME.standaloneServer(gmeConfig);
+        });
+
+        it('should list jobs for the given user', function (done) {
+            // TODO: How can I add access tokens?
+            server.start(function () {
+                var serverBaseUrl = server.getUrl();
+                agent.get(serverBaseUrl + '/rest/executor?status=SUCCESS').end(function (err, res) {
+                    should.equal(res.status, 200, err);
+                    expect(res.body).to.deep.equal({});
+                    done();
+                });
+            });
+        });
+
+        it.skip('should not list jobs for other users', function (done) {
+        });
+
+        it.skip('should return 200 if on post output w/ permissions', function (done) {
+        });
+
+        it.skip('should return 403 if on post output w/o permissions', function (done) {
+        });
+
+        it.skip('should return job info for user jobs', function (done) {
+        });
+
+        it.skip('should return 404 for job info w/o permissions', function (done) {
+        });
+
+        it.skip('should create jobs with userId', function (done) {
+        });
+
+        it.skip('should return 404 when canceling w/o permissions', function (done) {
+        });
+
+        it.skip('should list workers for the given user', function (done) {
+        });
+
+        it.skip('should not list workers for other users', function (done) {
+        });
+
+        // If guest accounts not allowed:
+        it.skip('should return 403 for job creation w/o token', function (done) {
+        });
+
+        it('should return 200 POST rest/executor/create/some_hash', function (done) {
+            server.start(function () {
+                var serverBaseUrl = server.getUrl();
+                agent.post(serverBaseUrl + '/rest/executor/create/some_hash').end(function (err, res) {
+                    should.equal(res.status, 200, err);
+                    should.equal(typeof res.body.secret, 'string', res.body);
+                    done();
+                });
             });
         });
     });
