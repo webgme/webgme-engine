@@ -46,6 +46,8 @@ function ExecutorServer(options) {
         watchLabelsTimeout,
         workerRefreshInterval;
 
+    self.getUserId = options.getUserId;
+    self.accessTokens = options.accessTokens;
     self.logger = options.logger.fork('middleware:ExecutorServer');
     self.logger.debug('ctor');
     self.gmeConfig = options.gmeConfig;
@@ -69,9 +71,52 @@ function ExecutorServer(options) {
     self.labelJobs = {}; // map from label to blob hash
     self.labelJobsFilename = self.gmeConfig.executor.labelJobs;
 
+    async function setUserFromToken(req, res, next) {
+        const {guestAccount} = self.gmeConfig.authentication;
+        const userId = self.getUserId(req);
+        const isAuthenticated = !userId || userId === guestAccount;
+        const token = req.headers['x-api-token'];
+
+        if (!isAuthenticated && !!token) {
+            req.userData = {
+                userId: await self.accessTokens.getUserId(token)
+            };
+        }
+
+        next();
+    }
+
+    self.canUserAccessJob = async function (userId, hash) {
+        if (self.gmeConfig.executor.authentication.enable) {
+            const query = {hash};
+            const doc = await self.jobList.findOne(query);
+            return doc.userId.includes(userId);
+        }
+        return true;
+    };
+
+    self.addUserToQuery = function (req, query) {
+        if (self.gmeConfig.executor.authentication.enable) {
+            query.userId = {$in: [self.getUserId(req)]};
+        }
+        return query;
+    };
+
+    self.getJobQuery = function (req) {
+        const query = {hash: req.params.hash};
+        self.addUserToQuery(req, query);
+        return query;
+    };
+
     function executorAuthenticate(req, res, next) {
+        const {guestAccount} = self.gmeConfig.authentication;
         var isAuth = true,
             workerNonce;
+
+        const needsUser = !self.gmeConfig.executor.authentication.allowGuests;
+        if (needsUser && self.getUserId(req) === guestAccount) {
+            return res.sendStatus(403);
+        }
 
         if (self.gmeConfig.executor.nonce) {
             workerNonce = req.headers['x-executor-nonce'];
@@ -264,15 +309,26 @@ function ExecutorServer(options) {
 
     // all endpoints require authentication
     router.use('*', self.ensureAuthenticated);
+    router.use('*', setUserFromToken);
     router.use('*', executorAuthenticate);
+    router.use('/output/:hash', async function (req, res, next) {
+        const {hash} = req.params;
+        const userId = self.getUserId(req);
+        if (await self.canUserAccessJob(userId, hash)) {
+            return next();
+        }
+        return res.sendStatus(403);
+    });
 
     router.get('/', function (req, res/*, next*/) {
         var query = {};
         if (req.query.status) { // req.query.hasOwnProperty raises TypeError on node 0.11.16 [!]
             query.status = req.query.status;
         }
+
+        self.addUserToQuery(req, query);
         self.logger.debug('get by status:', query.status);
-        self.jobList.find(query).toArray(function (err, docs) {
+        self.jobList.find(query, {_id: 0, secret: 0}).toArray(function (err, docs) {
             if (err) {
                 self.logger.error(err);
                 res.sendStatus(500);
@@ -280,9 +336,8 @@ function ExecutorServer(options) {
             }
             var jobList = {};
             for (var i = 0; i < docs.length; i += 1) {
+                // TODO: Only record if belongs to the given user
                 jobList[docs[i].hash] = docs[i];
-                delete docs[i]._id;
-                delete docs[i].secret;
             }
             self.logger.debug('Found number of jobs matching status', docs.length, query.status);
             res.send(jobList);
@@ -290,7 +345,8 @@ function ExecutorServer(options) {
     });
 
     router.get('/info/:hash', function (req, res/*, next*/) {
-        self.jobList.findOne({hash: req.params.hash}, function (err, jobInfo) {
+        const query = self.getJobQuery(req);
+        self.jobList.findOne(query, function (err, jobInfo) {
             if (err) {
                 self.logger.error(err);
                 res.sendStatus(500);
@@ -311,6 +367,10 @@ function ExecutorServer(options) {
         info.hash = req.params.hash;
         info.createTime = new Date().toISOString();
         info.status = info.status || 'CREATED'; // TODO: define a constant for this
+        const userId = self.getUserId(req);
+        if (userId) {
+            info.userId = [userId];
+        }
 
         jobInfo = new JobInfo(info);
         jobInfo.secret = chance.guid();
@@ -347,8 +407,9 @@ function ExecutorServer(options) {
     });
 
     router.post('/update/:hash', async function (req, res/*, next*/) {
+        const query = self.getJobQuery(req);
         try {
-            const doc = await self.jobList.findOne({hash: req.params.hash});
+            const doc = await self.jobList.findOne(query);
             if (doc) {
                 var jobInfo = new JobInfo(doc);
                 var jobInfoUpdate = new JobInfo(req.body);
@@ -362,7 +423,7 @@ function ExecutorServer(options) {
                 }
 
                 jobInfo.secret = doc.secret;
-                self.jobList.updateOne({hash: req.params.hash}, jobInfo, function (err, result) {
+                self.jobList.updateOne(query, jobInfo, function (err, result) {
                     if (err) {
                         self.logger.error(err);
                         res.sendStatus(500);
@@ -390,13 +451,14 @@ function ExecutorServer(options) {
 
     router.post('/cancel/:hash', async function (req, res/*, next*/) {
         try {
-            const doc = await self.jobList.findOne({hash: req.params.hash});
+            const query = self.getJobQuery(req);
+            const doc = await self.jobList.findOne(query);
             if (doc) {
                 if (req.body.secret !== doc.secret) {
                     return res.sendStatus(403);
                 } else if (JobInfo.isFinishedStatus(doc.status) === false) {
                     // Only bother to update the cancelRequested if job hasn't finished.
-                    await self.jobList.updateOne({hash: req.params.hash}, {
+                    await self.jobList.updateOne(query, {
                         $set: {
                             cancelRequested: true
                         }
@@ -465,7 +527,7 @@ function ExecutorServer(options) {
 
         try {
             await self.outputList.updateOne({_id: outputInfo._id}, outputInfo, {upsert: true});
-            const result = await self.jobList.updateOne({hash: req.params.hash}, {
+            const result = await self.jobList.updateOne({hash: req.params.hash}, {  // TODO: Update the query
                 $set: {
                     outputNumber: outputInfo.outputNumber
                 }
@@ -485,7 +547,7 @@ function ExecutorServer(options) {
     // worker API
     router.get('/worker', async function (req, res/*, next*/) {
         var response = {};
-        const workers = await self.workerList.find({}).toArray();
+        const workers = await self.workerList.find({userId: {$in: [self.getUserId(req)]}}).toArray();
         for (let i = 0; i < workers.length; i++) {
             const worker = workers[i];
             const jobs = await self.jobList.find({
@@ -511,12 +573,14 @@ function ExecutorServer(options) {
         serverResponse.labelJobs = self.labelJobs;
 
         try {
-            await self.workerList.updateOne({clientId: clientRequest.clientId}, {
+            const query = {clientId: clientRequest.clientId};
+            self.addUserToQuery(req, query);  // FIXME: This will add another worker with the given user permissions...
+            await self.workerList.updateOne(query, {
                 $set: {
                     lastSeen: (new Date()).getTime() / 1000,
                     labels: clientRequest.labels
                 }
-            }, {upsert: true});  // TODO: Error handling?
+            }, {upsert: true});
             if (!self.running) {
                 self.logger.debug('ExecutorServer had been stopped.');
                 return res.sendStatus(404);
@@ -564,7 +628,7 @@ function ExecutorServer(options) {
      * @param callback
      * @returns {*}
      */
-    this.start = function (params, callback) {
+    this.start = async function (params, callback) {
         var mongo = params.mongoClient;
         self.logger.debug('Starting executor');
         return Q.all([

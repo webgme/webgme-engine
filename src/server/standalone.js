@@ -31,6 +31,7 @@ var path = require('path'),
     // Middleware
     BlobServer = require('./middleware/blob/BlobServer'),
     ExecutorServer = require('./middleware/executor/ExecutorServer'),
+    TokenServer = require('./middleware/access-tokens/TokenServer'),
     api = require('./api'),
 
     getClientConfig = require('../../config/getclientconfig'),
@@ -237,6 +238,9 @@ function StandAloneServer(gmeConfig) {
 
                 if (__executorServer) {
                     promises.push(__executorServer.start({mongoClient: db}));
+                }
+                if (__tokenServer) {
+                    promises.push(__tokenServer.start({mongoClient: db}));
                 }
 
                 return Q.all(promises);
@@ -697,7 +701,11 @@ function StandAloneServer(gmeConfig) {
     __app.use(methodOverride());
     __app.use(multipart({defer: true})); // required to upload files. (body parser should not be used!)
 
+    var __tokenServer = new TokenServer(middlewareOpts);
+    __app.use('/rest/tokens', __tokenServer.router);
+    middlewareOpts.accessTokens = __tokenServer.tokens;
     if (gmeConfig.executor.enable) {
+        // TODO: Create the access token server
         __executorServer = new ExecutorServer(middlewareOpts);
         __app.use('/rest/executor', __executorServer.router);
     } else {

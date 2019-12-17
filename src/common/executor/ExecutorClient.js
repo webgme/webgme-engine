@@ -75,11 +75,8 @@ define(['superagent', 'q'], function (superagent, Q) {
         }
         this.executorUrl = this.origin + this.relativeUrl;
 
-        // TODO: TOKEN???
-        // TODO: any ways to ask for this or get it from the configuration?
-        if (parameters.executorNonce) {
-            this.executorNonce = parameters.executorNonce;
-        }
+        this.executorNonce = parameters.executorNonce;
+        this.apiToken = parameters.apiToken;
 
         this.logger.debug('origin', this.origin);
         this.logger.debug('executorUrl', this.executorUrl);
@@ -375,6 +372,9 @@ define(['superagent', 'q'], function (superagent, Q) {
         var req = new superagent.Request(method, url);
         if (this.executorNonce) {
             req.set('x-executor-nonce', this.executorNonce);
+        }
+        if (this.apiToken) {
+            req.set('x-api-token', this.apiToken);
         }
         if (data) {
             req.send(data);
