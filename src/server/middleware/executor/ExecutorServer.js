@@ -657,11 +657,12 @@ ExecutorMaster.prototype.clearOutput = async function (jobInfo) {
 };
 
 ExecutorMaster.prototype.stop = function () {
-    var timerIds = Object.keys(this.clearOutputsTimers);
+    const self = this;
+    const timerIds = Object.keys(this.clearOutputsTimers);
     timerIds.forEach(function (timerId) {
-        clearTimeout(this.clearOutputsTimers[timerId].timeoutObj);
-        this.logger.warn('Outputs will not be cleared for job', timerId,
-            this.clearOutputsTimers[timerId].jobInfo.outputNumber);
+        clearTimeout(self.clearOutputsTimers[timerId].timeoutObj);
+        self.logger.warn('Outputs will not be cleared for job', timerId,
+            self.clearOutputsTimers[timerId].jobInfo.outputNumber);
     });
     this.running = false;
     clearInterval(this.workerTimeoutIntervalId);
