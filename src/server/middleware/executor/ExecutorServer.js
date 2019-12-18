@@ -43,7 +43,6 @@ function ExecutorServer(options) {
         router = express.Router(),
         WorkerInfo = requireJS('common/executor/WorkerInfo'),
         OutputInfo = requireJS('common/executor/OutputInfo'),
-        workerTimeoutIntervalId,
         updateLabelsTimeoutId,
         watchLabelsTimeout,
         workerRefreshInterval;
@@ -99,43 +98,6 @@ function ExecutorServer(options) {
             next();
         } else {
             res.sendStatus(403);
-        }
-    }
-
-    async function workerTimeout() {
-        var query;
-        if (process.uptime() < workerRefreshInterval / 1000 * 5) {
-            return;
-        }
-        query = {
-            lastSeen: {
-                $lt: Date.now() / 1000 - workerRefreshInterval / 1000 * 5
-            }
-        };
-
-        function callback(err) {
-            if (err) {
-                self.logger.error(err);
-            }
-        }
-
-        const docs = await self.workerList.find(query).toArray();
-        if (!self.running) {
-            self.logger.debug('ExecutorServer had been stopped.');
-            return;
-        }
-        for (var i = 0; i < docs.length; i += 1) {
-            // reset unfinished jobs assigned to worker to CREATED, so they'll be executed by someone else
-            self.logger.debug('worker "' + docs[i].clientId + '" is gone');
-
-            self.workerList.deleteOne({_id: docs[i]._id}, callback);
-            self.jobList.updateMany({worker: docs[i].clientId, status: {$nin: JobInfo.finishedStatuses}}, {
-                $set: {
-                    worker: null,
-                    status: 'CREATED',
-                    startTime: null
-                }
-            }, callback);
         }
     }
 
@@ -295,8 +257,8 @@ function ExecutorServer(options) {
                 serverResponse.jobsToStart = await self.master.startQueuedJobs(
                     userId,
                     clientRequest.clientId,
-                    clientRequest.availableProcesses,
-                    clientRequest.labels
+                    clientRequest.labels,
+                    clientRequest.availableProcesses
                 );
             }
 
@@ -340,7 +302,6 @@ function ExecutorServer(options) {
             })
             .then(function () {
                 watchLabelJobs();
-                workerTimeoutIntervalId = setInterval(workerTimeout, 10 * 1000);
                 self.running = true;
             })
             .nodeify(callback);
@@ -353,7 +314,6 @@ function ExecutorServer(options) {
     this.stop = function () {
         self.master.stop();
         self.master = null;
-        clearInterval(workerTimeoutIntervalId);
         clearTimeout(updateLabelsTimeoutId);
         clearTimeout(watchLabelsTimeout);
         self.running = false;
@@ -392,6 +352,8 @@ function ExecutorMaster(gmeConfig, logger, jobList, workerList, outputList) {
         // }
     };
     this.running = true;
+    this.workerRefreshInterval = gmeConfig.executor.workerRefreshInterval;
+    this.workerTimeoutIntervalId = setInterval(this.workerTimeout.bind(this), 10 * 1000);
 }
 
 ExecutorMaster.prototype.addUserToQuery = function (userId, query) {
@@ -597,7 +559,6 @@ ExecutorMaster.prototype.getWorkerDict = async function (userId) {
         }, {_id: 0, secret: 0}).sort({createTime: 1}).toArray();
         dict[worker.clientId] = worker;
         dict[worker.clientId].jobs = jobs;
-
     }
 
     return dict;
@@ -605,11 +566,11 @@ ExecutorMaster.prototype.getWorkerDict = async function (userId) {
 
 ExecutorMaster.prototype.updateWorker = async function (userId, clientId, labels=[]) {
     const query = {clientId};
-    this.addUserToQuery(userId, query);
     await this.workerList.updateOne(query, {
         $set: {
             lastSeen: (new Date()).getTime() / 1000,
-            labels: labels
+            labels: labels,
+            userId: [userId],
         }
     }, {upsert: true});
 };
@@ -703,6 +664,46 @@ ExecutorMaster.prototype.stop = function () {
             this.clearOutputsTimers[timerId].jobInfo.outputNumber);
     });
     this.running = false;
+    clearInterval(this.workerTimeoutIntervalId);
+};
+
+ExecutorMaster.prototype.workerTimeout = async function () {
+    const self = this;
+    if (process.uptime() < this.workerRefreshInterval / 1000 * 5) {
+        return;
+    }
+
+    const query = {
+        lastSeen: {
+            $lt: Date.now() / 1000 - this.workerRefreshInterval / 1000 * 5
+        }
+    };
+
+    function logError(err) {
+        if (err) {
+            self.logger.error(err);
+        }
+    }
+
+    const docs = await this.workerList.find(query).toArray();
+    if (!this.running) {
+        this.logger.debug('ExecutorMaster had been stopped.');
+        return;
+    }
+
+    for (let i = 0; i < docs.length; i += 1) {
+        // reset unfinished jobs assigned to worker to CREATED, so they'll be executed by someone else
+        this.logger.debug('worker "' + docs[i].clientId + '" is gone');
+
+        this.workerList.deleteOne({_id: docs[i]._id}, logError);
+        this.jobList.updateMany({worker: docs[i].clientId, status: {$nin: JobInfo.finishedStatuses}}, {
+            $set: {
+                worker: null,
+                status: 'CREATED',
+                startTime: null
+            }
+        }, logError);
+    }
 };
 
 module.exports = ExecutorServer;
