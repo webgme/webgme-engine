@@ -36,7 +36,7 @@ function TokenServer(options) {
     self.ensureAuthenticated = options.ensureAuthenticated;
     self.getUserId = options.getUserId;
     self.router = router;
-    self.tokenList = null;
+    self.tokens = new AccessTokens();
 
     router.use('*', self.ensureAuthenticated);
     router.get('/', async function (req, res) {
@@ -62,14 +62,18 @@ TokenServer.prototype.start = async function (params) {
     this.logger.debug('Starting token server');
     const mongo = params.mongoClient;
     const tokenList = await mongo.collection(TOKEN_LIST);
-    this.tokens = new AccessTokens(tokenList);
+    this.tokens.init(tokenList);
 };
 
-function AccessTokens(tokenList) {
+function AccessTokens() {
     this.chance = new Chance();
+    this.tokenList = null;
+}
+
+AccessTokens.prototype.init = function (tokenList) {
     this.tokenList = tokenList;
     this.tokenList.createIndex({id: 1}, {unique: true});
-}
+};
 
 AccessTokens.prototype.list = async function (userId) {
     const tokens = await this.tokenList.find({userId}, {_id: 0}).toArray();
@@ -83,17 +87,13 @@ AccessTokens.prototype.create = async function (userId) {
         issuedAt: new Date(),
     };
     await this.tokenList.save(token);
+    delete token._id;
     return token;
 };
 
 AccessTokens.prototype.delete = async function (userId, id) {
     const result = await this.tokenList.deleteOne({userId, id});
     return result.deletedCount;
-};
-
-AccessTokens.prototype.isValidToken = async function (userId, id) {
-    const token = await this.tokenList.findOne({userId, id});
-    return !!token;
 };
 
 AccessTokens.prototype.getUserId = async function (id) {

@@ -324,10 +324,10 @@ function ExecutorServer(options) {
 ExecutorServer.prototype.setUserFromToken = async function (req, res, next) {
     const {guestAccount} = this.gmeConfig.authentication;
     const userId = this.getUserId(req);
-    const isAuthenticated = !userId || userId === guestAccount;
+    const isNotAuthenticated = !userId || userId === guestAccount;
     const token = req.headers['x-api-token'];
 
-    if (!isAuthenticated && !!token) {
+    if (isNotAuthenticated && !!token) {
         req.userData = {
             userId: await this.accessTokens.getUserId(token)
         };

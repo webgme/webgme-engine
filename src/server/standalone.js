@@ -705,6 +705,7 @@ function StandAloneServer(gmeConfig) {
     __tokenServer = new TokenServer(middlewareOpts);
     __app.use('/rest/tokens', __tokenServer.router);
     middlewareOpts.accessTokens = __tokenServer.tokens;
+
     if (gmeConfig.executor.enable) {
         __executorServer = new ExecutorServer(middlewareOpts);
         __app.use('/rest/executor', __executorServer.router);
