@@ -23,12 +23,16 @@ var express = require('express'),
     WORKER_LIST = '_executorWorkerList',
     OUTPUT_LIST = '_executorOutput';
 
+const JobInfo = requireJS('common/executor/JobInfo');
+
 /**
  *
  * @param {object} options - middlewareOptions
  * @param {GmeLogger} options.logger - logger to fork off from
  * @param {GmeConfig} options.gmeConfig - gmeConfig
  * @param {function} options.ensureAuthenticated
+ * @param {function} options.getUserId
+ * @param {AccessTokens} options.accessTokens
  * @constructor
  * @ignore
  */
@@ -37,8 +41,6 @@ function ExecutorServer(options) {
         fs = require('fs'),
         bufferEqual = require('buffer-equal-constant-time'),
         router = express.Router(),
-        chance = new Chance(),
-        JobInfo = requireJS('common/executor/JobInfo'),
         WorkerInfo = requireJS('common/executor/WorkerInfo'),
         OutputInfo = requireJS('common/executor/OutputInfo'),
         workerTimeoutIntervalId,
@@ -46,22 +48,14 @@ function ExecutorServer(options) {
         watchLabelsTimeout,
         workerRefreshInterval;
 
+    self.master = null;
     self.getUserId = options.getUserId;
     self.accessTokens = options.accessTokens;
     self.logger = options.logger.fork('middleware:ExecutorServer');
     self.logger.debug('ctor');
     self.gmeConfig = options.gmeConfig;
     self.ensureAuthenticated = options.ensureAuthenticated;
-    self.jobList = null;
-    self.workerList = null;
-    self.outputList = null;
     self.running = false;
-    self.clearOutputsTimers = {
-        // <jobHash>: {
-        //   timeoutObj: <timeoutObject>
-        //   jobInfo: <JobInfo>
-        // }
-    };
 
     self.router = router;
 
@@ -71,42 +65,16 @@ function ExecutorServer(options) {
     self.labelJobs = {}; // map from label to blob hash
     self.labelJobsFilename = self.gmeConfig.executor.labelJobs;
 
-    async function setUserFromToken(req, res, next) {
-        const {guestAccount} = self.gmeConfig.authentication;
-        const userId = self.getUserId(req);
-        const isAuthenticated = !userId || userId === guestAccount;
-        const token = req.headers['x-api-token'];
-
-        if (!isAuthenticated && !!token) {
-            req.userData = {
-                userId: await self.accessTokens.getUserId(token)
-            };
+    function handleError(err, res) {
+        if (err.message === 'Not Found') {
+            res.sendStatus(404);
+        } else if (err.message === 'Unauthorized') {
+            res.sendStatus(403);
+        } else {
+            self.logger.error(err);
+            res.sendStatus(500);
         }
-
-        next();
     }
-
-    self.canUserAccessJob = async function (userId, hash) {
-        if (self.gmeConfig.executor.authentication.enable) {
-            const query = {hash};
-            const doc = await self.jobList.findOne(query);
-            return doc.userId.includes(userId);
-        }
-        return true;
-    };
-
-    self.addUserToQuery = function (req, query) {
-        if (self.gmeConfig.executor.authentication.enable) {
-            query.userId = {$in: [self.getUserId(req)]};
-        }
-        return query;
-    };
-
-    self.getJobQuery = function (req) {
-        const query = {hash: req.params.hash};
-        self.addUserToQuery(req, query);
-        return query;
-    };
 
     function executorAuthenticate(req, res, next) {
         const {guestAccount} = self.gmeConfig.authentication;
@@ -191,115 +159,6 @@ function ExecutorServer(options) {
         });
     }
 
-    function clearOutput(jobInfo, callback) {
-        var deferred = Q.defer(),
-            query = {
-                $set: {
-                    outputNumber: null
-                }
-            };
-
-        if (self.running === true) {
-
-            self.jobList.updateOne({hash: jobInfo.hash}, query, function (err) {
-                if (err) {
-                    self.logger.error('Error clearing outputNumber in job', err);
-                    deferred.reject(err);
-                    return;
-                }
-
-                if (self.running === false) {
-                    self.logger.error('Cleared job\'s outputNumber, but was shutdown before actual output was removed.',
-                        jobInfo.hash);
-                    deferred.resolve();
-                    return;
-                }
-
-                query = {
-                    _id: {
-                        $regex: '^' + jobInfo.hash
-                    }
-                };
-
-                self.outputList.deleteMany(query, function (err, res) {
-                    if (err) {
-                        deferred.reject(err);
-                        self.logger.error('Failed to remove output for job', err);
-                        return;
-                    }
-
-                    if (res.deletedCount !== jobInfo.outputNumber + 1) {
-                        self.logger.warn('Did not remove all output for job', res.deletedCount,
-                            {metadata: jobInfo});
-                    }
-
-                    self.logger.debug('Cleared output for job', res.deletedCount, jobInfo.hash);
-                    deferred.resolve();
-                });
-            });
-        } else {
-            deferred.resolve();
-        }
-
-        return deferred.promise.nodeify(callback);
-    }
-
-    function startClearOutputTimer(jobInfo) {
-        var timeoutObj;
-
-        timeoutObj = setTimeout(function () {
-
-            delete self.clearOutputsTimers[jobInfo.hash];
-
-            clearOutput(jobInfo);
-
-        }, self.gmeConfig.executor.clearOutputTimeout);
-
-        self.clearOutputsTimers[jobInfo.hash] = {
-            jobInfo: jobInfo,
-            timeoutObj: timeoutObj
-        };
-
-        self.logger.debug('Timeout', self.gmeConfig.executor.clearOutputTimeout,
-            '[ms] to clear output for job set (id)', jobInfo.hash);
-    }
-
-    function getCanceledJobs(hashes, callback) {
-        var deferred = Q.defer(),
-            query = {
-                hash: {
-                    $in: hashes
-                },
-                cancelRequested: true
-            };
-        if (hashes.length === 0) {
-            deferred.resolve([]);
-        } else {
-            self.jobList.find(query).toArray(function (err, docs) {
-                if (err) {
-                    deferred.reject(err);
-                } else {
-                    deferred.resolve(docs.map(function (jobInfo) {
-                        return jobInfo.hash;
-                    }));
-                }
-            });
-        }
-
-        return deferred.promise.nodeify(callback);
-    }
-
-    async function restartCanceledJob(oldJobInfo, newInfo) {
-        if (self.clearOutputsTimers[oldJobInfo.hash] || oldJobInfo.outputNumber !== null) {
-            delete self.clearOutputsTimers[oldJobInfo.hash];
-
-            await clearOutput(oldJobInfo);
-        }
-        await self.jobList.updateOne({hash: oldJobInfo.hash}, newInfo, {upsert: true});
-        return newInfo;
-
-    }
-
     // ensure authenticated can be used only after this rule
     router.use('*', function (req, res, next) {
         // TODO: set all headers, check rate limit, etc.
@@ -309,261 +168,116 @@ function ExecutorServer(options) {
 
     // all endpoints require authentication
     router.use('*', self.ensureAuthenticated);
-    router.use('*', setUserFromToken);
+    router.use('*', self.setUserFromToken.bind(self));
     router.use('*', executorAuthenticate);
     router.use('/output/:hash', async function (req, res, next) {
         const {hash} = req.params;
         const userId = self.getUserId(req);
-        if (await self.canUserAccessJob(userId, hash)) {
+        if (await self.master.canUserAccessJob(userId, hash)) {
             return next();
         }
         return res.sendStatus(403);
     });
 
-    router.get('/', function (req, res/*, next*/) {
-        var query = {};
-        if (req.query.status) { // req.query.hasOwnProperty raises TypeError on node 0.11.16 [!]
-            query.status = req.query.status;
+    router.get('/', async function (req, res/*, next*/) {
+        const userId = self.getUserId(req);
+        if (req.query.status) {
+            self.logger.debug('get by status:', req.query.status);
         }
-
-        self.addUserToQuery(req, query);
-        self.logger.debug('get by status:', query.status);
-        self.jobList.find(query, {_id: 0, secret: 0}).toArray(function (err, docs) {
-            if (err) {
-                self.logger.error(err);
-                res.sendStatus(500);
-                return;
-            }
-            var jobList = {};
-            for (var i = 0; i < docs.length; i += 1) {
-                // TODO: Only record if belongs to the given user
-                jobList[docs[i].hash] = docs[i];
-            }
-            self.logger.debug('Found number of jobs matching status', docs.length, query.status);
-            res.send(jobList);
-        });
+        const list = await self.master.getJobList(userId, req.query.status);
+        res.send(list);
     });
 
-    router.get('/info/:hash', function (req, res/*, next*/) {
-        const query = self.getJobQuery(req);
-        self.jobList.findOne(query, function (err, jobInfo) {
-            if (err) {
-                self.logger.error(err);
-                res.sendStatus(500);
-            } else if (jobInfo) {
-                delete jobInfo._id;
-                delete jobInfo.secret;
+    router.get('/info/:hash', async function (req, res/*, next*/) {
+        try {
+            const userId = self.getUserId(req);
+            const jobInfo = await self.master.getJobInfo(userId, req.params.hash);
+            if (jobInfo) {
                 res.send(jobInfo);
             } else {
                 res.sendStatus(404);
             }
-        });
+        } catch (err) {
+            handleError(err, res);
+        }
     });
 
     router.post('/create/:hash', async function (req, res/*, next*/) {
-        var jobInfo,
-            info = req.body;
-
-        info.hash = req.params.hash;
-        info.createTime = new Date().toISOString();
-        info.status = info.status || 'CREATED'; // TODO: define a constant for this
         const userId = self.getUserId(req);
-        if (userId) {
-            info.userId = [userId];
-        }
+        const info = req.body;
+        info.hash = req.params.hash;
 
-        jobInfo = new JobInfo(info);
-        jobInfo.secret = chance.guid();
-
-        self.logger.debug('job creation info:', {metadata: info});
         try {
-            const doc = await self.jobList.findOne({hash: req.params.hash});
-            if (!doc) {
-                self.jobList.insertOne(jobInfo, function (err) {
-                    if (err) {
-                        // TODO: Deal with error when it already existed.
-                        self.logger.error(err);
-                        res.sendStatus(500);
-                    } else {
-                        delete jobInfo._id;
-                        res.send(jobInfo);
-                    }
-                });
-            } else if (doc.status === 'CANCELED') {
-                const newInfo = await restartCanceledJob(doc, jobInfo);
-                res.send(newInfo);
-            } else {
-                delete doc._id;
-                delete doc.secret;
-                res.send(doc);
-            }
+            const jobInfo = await self.master.createJob(userId, info);
+            res.send(jobInfo);
         } catch (err) {
-            self.logger.error(err);
-            res.sendStatus(500);
+            handleError(err, res);
         }
-
-        // TODO: get job description
-
     });
 
     router.post('/update/:hash', async function (req, res/*, next*/) {
-        const query = self.getJobQuery(req);
         try {
-            const doc = await self.jobList.findOne(query);
-            if (doc) {
-                var jobInfo = new JobInfo(doc);
-                var jobInfoUpdate = new JobInfo(req.body);
-                jobInfoUpdate.hash = req.params.hash;
-                for (var i in jobInfoUpdate) {
-                    if (jobInfoUpdate[i] !== null && (!(jobInfoUpdate[i] instanceof Array) ||
-                        jobInfoUpdate[i].length !== 0)) {
-
-                        jobInfo[i] = jobInfoUpdate[i];
-                    }
-                }
-
-                jobInfo.secret = doc.secret;
-                self.jobList.updateOne(query, jobInfo, function (err, result) {
-                    if (err) {
-                        self.logger.error(err);
-                        res.sendStatus(500);
-                    } else if (result.matchedCount === 0) {
-                        res.sendStatus(404);
-                    } else {
-                        if (JobInfo.isFinishedStatus(jobInfo.status)) {
-                            if (jobInfo.outputNumber !== null && self.gmeConfig.executor.clearOutputTimeout > -1) {
-                                // The job has finished and there is stored output - set timeout to clear it.
-                                startClearOutputTimer(jobInfo);
-                            }
-                        }
-
-                        res.sendStatus(200);
-                    }
-                });
-            } else {
-                res.sendStatus(404);
-            }
+            const userId = self.getUserId(req);
+            const info = req.body;
+            info.hash = req.params.hash;
+            await self.master.updateJob(userId, info);
+            res.sendStatus(200);
         } catch (err) {
-            self.logger.error(err);
-            res.sendStatus(500);
+            handleError(err, res);
         }
     });
 
     router.post('/cancel/:hash', async function (req, res/*, next*/) {
         try {
-            const query = self.getJobQuery(req);
-            const doc = await self.jobList.findOne(query);
-            if (doc) {
-                if (req.body.secret !== doc.secret) {
-                    return res.sendStatus(403);
-                } else if (JobInfo.isFinishedStatus(doc.status) === false) {
-                    // Only bother to update the cancelRequested if job hasn't finished.
-                    await self.jobList.updateOne(query, {
-                        $set: {
-                            cancelRequested: true
-                        }
-                    });
-                }
-                res.sendStatus(200);
-            } else {
-                res.sendStatus(404);
-            }
+            const userId = self.getUserId(req);
+            const hash = req.params.hash;
+            await self.master.cancelJob(userId, hash, req.body.secret);
+            res.sendStatus(200);
         } catch (err) {
-            self.logger.error(err);
-            res.sendStatus(500);
+            handleError(err, res)
         }
     });
 
     router.get('/output/:hash', async function (req, res/*, next*/) {
-        var query = {
-            hash: req.params.hash
-        };
-
-        if (parseInt(req.query.start, 10)) {
-            query.outputNumber = {
-                $gte: parseInt(req.query.start, 10)
-            };
-        }
-
-        if (parseInt(req.query.end, 10)) {
-            if (query.hasOwnProperty('outputNumber')) {
-                query.outputNumber.$lt = parseInt(req.query.end, 10);
-            } else {
-                query.outputNumber = {
-                    $lt: parseInt(req.query.end, 10)
-                };
-            }
-        }
-
-        self.logger.debug('ouput requested', query);
         try {
-            const docs = await self.outputList.find(query)
-                .sort({outputNumber: 1})
-                .toArray();
-
-            self.logger.debug('got outputs, nbr', docs.length);
-            if (docs.length > 0) {
-                res.send(docs);
-            } else {
-                // No output found, could it be that job does not even exist?
-                const jobInfo = await self.jobList.findOne({hash: req.params.hash});
-                if (jobInfo) {
-                    res.send(docs);
-                } else {
-                    res.sendStatus(404);
-                }
-            }
+            const userId = self.getUserId(req);
+            const hash = req.params.hash;
+            const {start, end} = req.query;
+            const docs = await self.master.getJobOutput(
+                userId,
+                hash,
+                parseInt(start, 10),
+                parseInt(end, 10)
+            );
+            res.send(docs);
         } catch (err) {
-            self.logger.error('get output', err);
-            res.sendStatus(500);
-            return;
+            handleError(err, res);
         }
     });
 
     router.post('/output/:hash', async function (req, res/*, next*/) {
-        var outputInfo = new OutputInfo(req.params.hash, req.body);
-
-        self.logger.debug('output posted', outputInfo._id);
-
         try {
-            await self.outputList.updateOne({_id: outputInfo._id}, outputInfo, {upsert: true});
-            const result = await self.jobList.updateOne({hash: req.params.hash}, {  // TODO: Update the query
-                $set: {
-                    outputNumber: outputInfo.outputNumber
-                }
-            });
-            if (result.matchedCount === 0) {
+            const {hash} = req.params;
+            const userId = self.getUserId(req);
+            const output = new OutputInfo(hash, req.body);
+            self.logger.debug('output posted', output._id);
+            const matchedCount = await self.master.updateJobOutput(userId, hash, output);
+            if (matchedCount === 0) {
                 self.logger.warn('posted output to job that did not exist');
                 res.sendStatus(404);
             } else {
                 res.sendStatus(200);
             }
         } catch (err) {
-            self.logger.error('post output', err);
-            res.sendStatus(500);
+            handleError(err, res);
         }
     });
 
     // worker API
     router.get('/worker', async function (req, res/*, next*/) {
-        var response = {};
-        const workers = await self.workerList.find({userId: {$in: [self.getUserId(req)]}}).toArray();
-        for (let i = 0; i < workers.length; i++) {
-            const worker = workers[i];
-            const jobs = await self.jobList.find({
-                status: 'RUNNING',
-                worker: worker.clientId
-            }).sort({createTime: 1}).toArray();
-            for (var j = 0; j < jobs.length; j += 1) {
-                delete jobs[j]._id;
-                delete jobs[j].secret;
-            }
-            delete worker._id;
-            response[worker.clientId] = worker;
-            response[worker.clientId].jobs = jobs;
-
-        }
-        res.send(JSON.stringify(response));
+        const userId = self.getUserId(req);
+        const dict = await self.master.getWorkerDict(userId);
+        res.json(dict);
     });
 
     router.post('/worker', async function (req, res/*, next*/) {
@@ -573,51 +287,29 @@ function ExecutorServer(options) {
         serverResponse.labelJobs = self.labelJobs;
 
         try {
-            const query = {clientId: clientRequest.clientId};
-            self.addUserToQuery(req, query);  // FIXME: This will add another worker with the given user permissions...
-            await self.workerList.updateOne(query, {
-                $set: {
-                    lastSeen: (new Date()).getTime() / 1000,
-                    labels: clientRequest.labels
-                }
-            }, {upsert: true});
+            const userId = self.getUserId(req);
+            await self.master.updateWorker(userId, clientRequest.clientId, clientRequest.labels);
             if (!self.running) {
                 self.logger.debug('ExecutorServer had been stopped.');
                 return res.sendStatus(404);
             } else if (clientRequest.availableProcesses) {
-                const docs = await self.jobList.find({
-                    status: 'CREATED',
-                    labels: {
-                        $not: {
-                            $elemMatch: {
-                                $nin: clientRequest.labels
-                            }
-                        }
-                    }
-                }).limit(clientRequest.availableProcesses).toArray();
-                for (let i = 0; i < docs.length; i++) {
-                    const numReplaced = await self.jobList.updateOne({_id: docs[i]._id, status: 'CREATED'}, {
-                        $set: {
-                            status: 'RUNNING',
-                            worker: clientRequest.clientId
-                        }
-                    });
-                    if (numReplaced) {
-                        serverResponse.jobsToStart.push(docs[i].hash);
-                    }
-                }
+                serverResponse.jobsToStart = await self.master.startQueuedJobs(
+                    userId,
+                    clientRequest.clientId,
+                    clientRequest.availableProcesses,
+                    clientRequest.labels
+                );
             }
 
             try {
-                const jobsToCancel = await getCanceledJobs(clientRequest.runningJobs);
-                serverResponse.jobsToCancel = jobsToCancel;
+                const hashes = clientRequest.runningJobs;
+                serverResponse.jobsToCancel = await self.master.getCanceledJobs(hashes);
             } catch (err) {
                 self.logger.error(err);
             }
-            res.send(JSON.stringify(serverResponse));
+            res.json(serverResponse);
         } catch (err) {
-            self.logger.error(err);
-            res.sendStatus(500);
+            handleError(err, res);
         }
     });
 
@@ -631,28 +323,26 @@ function ExecutorServer(options) {
     this.start = async function (params, callback) {
         var mongo = params.mongoClient;
         self.logger.debug('Starting executor');
+
         return Q.all([
             mongo.collection(JOB_LIST),
             mongo.collection(WORKER_LIST),
             mongo.collection(OUTPUT_LIST)
         ])
-            .then(function (res) {
-                self.jobList = res[0];
-                self.workerList = res[1];
-                self.outputList = res[2];
+            .then(async function (res) {
                 if (self.gmeConfig.executor.clearOldDataAtStartUp === true) {
-                    return Q.allSettled([
+                    await Q.allSettled([
                         mongo.dropCollection(JOB_LIST),
                         mongo.dropCollection(WORKER_LIST),
                         mongo.dropCollection(OUTPUT_LIST)
                     ]);
                 }
+                self.master = new ExecutorMaster(self.gmeConfig, self.logger, ...res);
             })
             .then(function () {
                 watchLabelJobs();
                 workerTimeoutIntervalId = setInterval(workerTimeout, 10 * 1000);
                 self.running = true;
-                return self.jobList.createIndex({hash: 1}, {unique: true});
             })
             .nodeify(callback);
     };
@@ -662,22 +352,358 @@ function ExecutorServer(options) {
      * This does not close the connection to mongo.
      */
     this.stop = function () {
-        var timerIds = Object.keys(self.clearOutputsTimers);
-        timerIds.forEach(function (timerId) {
-            clearTimeout(self.clearOutputsTimers[timerId].timeoutObj);
-            self.logger.warn('Outputs will not be cleared for job', timerId,
-                self.clearOutputsTimers[timerId].jobInfo.outputNumber);
-        });
-
+        self.master.stop();
+        self.master = null;
         clearInterval(workerTimeoutIntervalId);
         clearTimeout(updateLabelsTimeoutId);
         clearTimeout(watchLabelsTimeout);
-        self.jobList = null;
-        self.workerList = null;
-        self.outputList = null;
         self.running = false;
         self.logger.debug('Executor was stopped');
     };
 }
+
+ExecutorServer.prototype.setUserFromToken = async function (req, res, next) {
+    const {guestAccount} = this.gmeConfig.authentication;
+    const userId = this.getUserId(req);
+    const isAuthenticated = !userId || userId === guestAccount;
+    const token = req.headers['x-api-token'];
+
+    if (!isAuthenticated && !!token) {
+        req.userData = {
+            userId: await this.accessTokens.getUserId(token)
+        };
+    }
+
+    next();
+};
+
+function ExecutorMaster(gmeConfig, logger, jobList, workerList, outputList) {
+    this.gmeConfig = gmeConfig;
+    this.logger = logger.fork('master');
+    this.chance = new Chance();
+    this.jobList = jobList;
+    this.workerList = workerList;
+    this.outputList = outputList;
+    this.jobList.createIndex({hash: 1}, {unique: true});
+    this.workerList.createIndex({clientId: 1}, {unique: true});
+    this.clearOutputsTimers = {
+        // <jobHash>: {
+        //   timeoutObj: <timeoutObject>
+        //   jobInfo: <JobInfo>
+        // }
+    };
+    this.running = true;
+}
+
+ExecutorMaster.prototype.addUserToQuery = function (userId, query) {
+    if (this.gmeConfig.executor.authentication.enable) {
+        query.userId = {$in: [userId]};
+    }
+    return query;
+};
+
+ExecutorMaster.prototype.getJobQuery = function (userId, hash) {
+    const query = {hash: hash};
+    this.addUserToQuery(userId, query);
+    return query;
+};
+
+ExecutorMaster.prototype.canUserAccessJob = async function (userId, hash) {
+    if (this.gmeConfig.executor.authentication.enable) {  // FIXME
+        const query = {hash};
+        const doc = await this.jobList.findOne(query);
+        return doc.userId.includes(userId);
+    }
+    return true;
+};
+
+ExecutorMaster.prototype.getJobList = async function (userId, status) {
+    const query = {};
+    if (status) {
+        query.status = status;
+    }
+
+    this.addUserToQuery(userId, query);
+    const docs = await this.jobList.find(query, {_id: 0, secret: 0}).toArray();
+    const jobList = {};
+    for (var i = 0; i < docs.length; i += 1) {
+        jobList[docs[i].hash] = docs[i];
+    }
+    this.logger.debug('Found number of jobs matching status', docs.length, query.status);
+
+    return jobList;
+};
+
+ExecutorMaster.prototype.getJobInfo = function (userId, hash) {
+    const query = this.getJobQuery(userId, hash);
+    return this.jobList.findOne(query, {_id: 0, secret: 0});
+};
+
+ExecutorMaster.prototype.createJob = async function (userId, info) {
+    info.createTime = new Date().toISOString();
+    info.status = info.status || 'CREATED'; // TODO: define a constant for this
+    info.userId = [userId];
+
+    const jobInfo = new JobInfo(info);
+    jobInfo.secret = this.chance.guid();
+
+    this.logger.debug('job creation info:', {metadata: info});
+    const doc = await this.jobList.findOne({hash: info.hash}, {_id: 0, secret: 0});
+    if (!doc) {
+        await this.jobList.insertOne(jobInfo);
+        delete jobInfo._id;
+        return jobInfo;
+    } else if (doc.status === 'CANCELED') {
+        const newInfo = await this.restartCanceledJob(doc, jobInfo);
+        return newInfo;
+    } else {
+        return doc;
+    }
+};
+
+ExecutorMaster.prototype.restartCanceledJob = async function (oldJobInfo, newInfo) {
+    if (this.clearOutputsTimers[oldJobInfo.hash] || oldJobInfo.outputNumber !== null) {
+        delete this.clearOutputsTimers[oldJobInfo.hash];
+
+        await this.clearOutput(oldJobInfo);
+    }
+    await this.jobList.updateOne({hash: oldJobInfo.hash}, newInfo, {upsert: true});
+    return newInfo;
+};
+
+ExecutorMaster.prototype.updateJob = async function (userId, info) {
+    const query = this.getJobQuery(userId, info.hash);
+    const doc = await this.jobList.findOne(query);
+    if (doc) {
+        const jobInfo = new JobInfo(doc);
+        const jobInfoUpdate = new JobInfo(info);
+        for (var i in jobInfoUpdate) {
+            if (jobInfoUpdate[i] !== null && (!(jobInfoUpdate[i] instanceof Array) ||
+                jobInfoUpdate[i].length !== 0)) {
+
+                jobInfo[i] = jobInfoUpdate[i];
+            }
+        }
+
+        jobInfo.secret = doc.secret;
+        const result = await this.jobList.updateOne(query, jobInfo);
+        if (result.matchedCount === 0) {
+            throw new Error('Not Found');
+        } else {
+            if (JobInfo.isFinishedStatus(jobInfo.status)) {
+                if (jobInfo.outputNumber !== null && this.gmeConfig.executor.clearOutputTimeout > -1) {
+                    // The job has finished and there is stored output - set timeout to clear it.
+                    this.startClearOutputTimer(jobInfo);
+                }
+            }
+        }
+    } else {
+        throw new Error('Not Found');
+    }
+};
+
+ExecutorMaster.prototype.startClearOutputTimer = async function (jobInfo) {
+    var timeoutObj;
+
+    timeoutObj = setTimeout(function () {
+
+        delete this.clearOutputsTimers[jobInfo.hash];
+        this.clearOutput(jobInfo);
+
+    }, this.gmeConfig.executor.clearOutputTimeout);
+
+    this.clearOutputsTimers[jobInfo.hash] = {
+        jobInfo: jobInfo,
+        timeoutObj: timeoutObj
+    };
+
+    this.logger.debug('Timeout', this.gmeConfig.executor.clearOutputTimeout,
+        '[ms] to clear output for job set (id)', jobInfo.hash);
+};
+
+ExecutorMaster.prototype.cancelJob = async function (userId, hash, secret) {
+    const query = this.getJobQuery(userId, hash);
+    const doc = await this.jobList.findOne(query);
+    if (doc) {
+        if (secret !== doc.secret) {
+            throw new Error('Unauthorized');
+        } else if (JobInfo.isFinishedStatus(doc.status) === false) {
+            // Only bother to update the cancelRequested if job hasn't finished.
+            await this.jobList.updateOne(query, {
+                $set: {
+                    cancelRequested: true
+                }
+            });
+        }
+    } else {
+        throw new Error('Not Found');
+    }
+};
+
+ExecutorMaster.prototype.getJobOutput = async function (userId, hash, start, end) {
+    const query = {hash};
+
+    if (start || end) {
+        query.outputNumber = {};
+        if (start) {
+            query.outputNumber.$gte = start;
+        }
+
+        if (end) {
+            query.outputNumber.$lt = end;
+        }
+    }
+
+    this.logger.debug('output requested', query);
+    const docs = await this.outputList.find(query)
+        .sort({outputNumber: 1})
+        .toArray();
+
+    this.logger.debug('got outputs, nbr', docs.length);
+    if (docs.length > 0) {
+        return docs;
+    } else {
+        // No output found, could it be that job does not even exist?
+        const query = {hash};
+        this.addUserToQuery(userId, query);
+        const jobInfo = await this.jobList.findOne(query);
+        if (jobInfo) {
+            return docs;
+        } else {
+            throw new Error('Not Found');  // TODO: Handle these better...
+        }
+    }
+};
+
+ExecutorMaster.prototype.updateJobOutput = async function (userId, hash, outputInfo) {
+    await this.outputList.updateOne({_id: outputInfo._id}, outputInfo, {upsert: true});
+    const query = {hash};
+    this.addUserToQuery(userId, query);
+    const result = await this.jobList.updateOne(query, {
+        $set: {
+            outputNumber: outputInfo.outputNumber
+        }
+    });
+    return result.matchedCount;
+};
+
+ExecutorMaster.prototype.getWorkerDict = async function (userId) {
+    const dict = {};
+    const workers = await this.workerList.find({userId: {$in: [userId]}}, {_id: 0}).toArray();
+    for (let i = 0; i < workers.length; i++) {
+        const worker = workers[i];
+        const jobs = await this.jobList.find({
+            status: 'RUNNING',
+            worker: worker.clientId
+        }, {_id: 0, secret: 0}).sort({createTime: 1}).toArray();
+        dict[worker.clientId] = worker;
+        dict[worker.clientId].jobs = jobs;
+
+    }
+
+    return dict;
+};
+
+ExecutorMaster.prototype.updateWorker = async function (userId, clientId, labels=[]) {
+    const query = {clientId};
+    this.addUserToQuery(userId, query);
+    await this.workerList.updateOne(query, {
+        $set: {
+            lastSeen: (new Date()).getTime() / 1000,
+            labels: labels
+        }
+    }, {upsert: true});
+};
+
+ExecutorMaster.prototype.startQueuedJobs = async function (userId, clientId, labels=[], count=10) {
+    const startedHashes = [];
+    const docs = await this.jobList.find({
+        status: 'CREATED',
+        userId: {$in: [userId]},
+        labels: {
+            $not: {
+                $elemMatch: {
+                    $nin: labels
+                }
+            }
+        }
+    }).limit(count).toArray();
+
+    for (let i = 0; i < docs.length; i++) {
+        const numReplaced = await this.jobList.updateOne({_id: docs[i]._id, status: 'CREATED'}, {
+            $set: {
+                status: 'RUNNING',
+                worker: clientId
+            }
+        });
+        if (numReplaced) {
+            startedHashes.push(docs[i].hash);
+        }
+    }
+
+    return startedHashes;
+};
+
+ExecutorMaster.prototype.getCanceledJobs = async function (hashes) {
+    const query = {
+        hash: {
+            $in: hashes
+        },
+        cancelRequested: true
+    };
+    const docs = await this.jobList.find(query).toArray();
+    return docs.map(jobInfo => jobInfo.hash);
+};
+
+ExecutorMaster.prototype.clearOutput = async function (jobInfo) {
+    let query = {
+        $set: {
+            outputNumber: null
+        }
+    };
+
+    if (this.running === true) {
+        try {
+            await this.jobList.updateOne({hash: jobInfo.hash}, query);
+        } catch (err) {
+            this.logger.error('Error clearing outputNumber in job', err);
+            throw err;
+        }
+        if (this.running === false) {
+            this.logger.error('Cleared job\'s outputNumber, but was shutdown before actual output was removed.',
+                jobInfo.hash);
+            return;
+        }
+
+        query = {
+            _id: {
+                $regex: '^' + jobInfo.hash
+            }
+        };
+
+        try {
+            const res = await this.outputList.deleteMany(query);
+            if (res.deletedCount !== jobInfo.outputNumber + 1) {
+                this.logger.warn('Did not remove all output for job', res.deletedCount,
+                    {metadata: jobInfo});
+            }
+
+            this.logger.debug('Cleared output for job', res.deletedCount, jobInfo.hash);
+        } catch (err) {
+            this.logger.error('Failed to remove output for job', err);
+            throw err;
+        }
+    }
+};
+
+ExecutorMaster.prototype.stop = function () {
+    var timerIds = Object.keys(this.clearOutputsTimers);
+    timerIds.forEach(function (timerId) {
+        clearTimeout(this.clearOutputsTimers[timerId].timeoutObj);
+        this.logger.warn('Outputs will not be cleared for job', timerId,
+            this.clearOutputsTimers[timerId].jobInfo.outputNumber);
+    });
+    this.running = false;
+};
 
 module.exports = ExecutorServer;

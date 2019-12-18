@@ -119,6 +119,7 @@ function StandAloneServer(gmeConfig) {
         // __requestCounter = 0,
         // __reportedRequestCounter = 0,
         // __requestCheckInterval = 2500,
+        __tokenServer,
         __executorServer,
         middlewareOpts;
 
@@ -701,7 +702,7 @@ function StandAloneServer(gmeConfig) {
     __app.use(methodOverride());
     __app.use(multipart({defer: true})); // required to upload files. (body parser should not be used!)
 
-    var __tokenServer = new TokenServer(middlewareOpts);
+    __tokenServer = new TokenServer(middlewareOpts);
     __app.use('/rest/tokens', __tokenServer.router);
     middlewareOpts.accessTokens = __tokenServer.tokens;
     if (gmeConfig.executor.enable) {
