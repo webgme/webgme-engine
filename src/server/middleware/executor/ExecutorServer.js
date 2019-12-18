@@ -564,7 +564,7 @@ ExecutorMaster.prototype.getWorkerDict = async function (userId) {
     return dict;
 };
 
-ExecutorMaster.prototype.updateWorker = async function (userId, clientId, labels=[]) {
+ExecutorMaster.prototype.updateWorker = async function (userId, clientId, labels = []) {
     const query = {clientId};
     await this.workerList.updateOne(query, {
         $set: {
@@ -575,7 +575,7 @@ ExecutorMaster.prototype.updateWorker = async function (userId, clientId, labels
     }, {upsert: true});
 };
 
-ExecutorMaster.prototype.startQueuedJobs = async function (userId, clientId, labels=[], count=10) {
+ExecutorMaster.prototype.startQueuedJobs = async function (userId, clientId, labels = [], count = 10) {
     const startedHashes = [];
     const docs = await this.jobList.find({
         status: 'CREATED',

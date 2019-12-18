@@ -1,7 +1,7 @@
 /*eslint-env node, mocha*/
 
 const testFixture = require('../../../_globals.js');
-describe('TokenServer', function() {
+describe('TokenServer', function () {
     const assert = require('assert');
     const {promisify} = require('util');
     const agent = testFixture.superagent.agent();
