@@ -206,7 +206,6 @@ function ExecutorServer(options) {
         const userId = self.getUserId(req);
         const info = req.body;
         info.hash = req.params.hash;
-
         try {
             const jobInfo = await self.master.createJob(userId, info);
             res.send(jobInfo);
@@ -234,7 +233,7 @@ function ExecutorServer(options) {
             await self.master.cancelJob(userId, hash, req.body.secret);
             res.sendStatus(200);
         } catch (err) {
-            handleError(err, res)
+            handleError(err, res);
         }
     });
 
@@ -409,7 +408,7 @@ ExecutorMaster.prototype.getJobQuery = function (userId, hash) {
 };
 
 ExecutorMaster.prototype.canUserAccessJob = async function (userId, hash) {
-    if (this.gmeConfig.executor.authentication.enable) {  // FIXME
+    if (this.gmeConfig.executor.authentication.enable) {
         const query = {hash};
         const doc = await this.jobList.findOne(query);
         return doc.userId.includes(userId);
@@ -570,7 +569,7 @@ ExecutorMaster.prototype.getJobOutput = async function (userId, hash, start, end
         if (jobInfo) {
             return docs;
         } else {
-            throw new Error('Not Found');  // TODO: Handle these better...
+            throw new Error('Not Found');
         }
     }
 };
