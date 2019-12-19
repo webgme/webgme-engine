@@ -2818,6 +2818,9 @@ define([
          * @param {string[]} [rule.enum] - if the attribute is an enumeration, this array contains the possible values
          * @param {string|number|boolean} [rule.default] - The value the attribute should have at the node. If not given
          * it should be set at some point.
+         * @param {boolean} [rule.multiline] - if true, than the attribute represents a multiline string, for example code snipet.
+         * @param {string} [rule.multilineType] - describing the type of the multiline (like java or c++) suggesting syntax highlighting.
+         * @param {boolean} [rule.isPassword] - shows if the string attribute should be handled sensitively on the user interface.
          *
          * @throws {CoreIllegalArgumentError} If some of the parameters don't match the input criteria.
          * @throws {CoreIllegalOperationError} If the context of the operation is not allowed.

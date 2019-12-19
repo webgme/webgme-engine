@@ -882,6 +882,50 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             context,
             storage,
             blobClient = getBlobClient(webgmeToken),
+            checkSelectionValidity = function (parent, info) {
+                var deferred = Q.defer(),
+                    selectionNodes = [],
+                    otherChildren = [],
+                    selectionRelids = [],
+                    hasError = false;
+                
+                Object.keys(info.relids).forEach(function (hash) {
+                    selectionRelids.push(info.relids[hash]);
+                });
+
+                context.core.loadChildren(parent)
+                    .then(function (children) {
+                        var validMetaNodes;
+
+                        children.forEach(function (child) {
+                            if (selectionRelids.indexOf(context.core.getRelid(child)) !== -1) {
+                                selectionNodes.push(child);
+                            } else {
+                                otherChildren.push(child);
+                            }
+                        });
+                        validMetaNodes = context.core.getValidChildrenMetaNodes({node: parent, children: otherChildren, multiplicity: true});
+
+                        selectionNodes.forEach(function (node) {
+                            var hasValidBase = false;
+                            validMetaNodes.forEach(function (base) {
+                                if (context.core.isTypeOf(node, base)) {
+                                    hasValidBase = true;
+                                }
+                            });
+                            if (!hasValidBase) {
+                                hasError = true;
+                            }
+                        });
+
+                        if (hasError) {
+                            deferred.reject(new Error('The selection has elements that are not valid child of the target node!'));
+                        } else {
+                            deferred.resolve();
+                        }
+                    });
+                return deferred.promise;
+            },
             finish = function (err, result) {
                 if (err) {
                     err = err instanceof Error ? err : new Error(err);
@@ -934,8 +978,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 return context.core.loadByPath(context.rootNode, parameters.parentPath);
             })
             .then(function (parent) {
-                var persisted,
-                    closureInfo;
+                var closureInfo;
 
                 if (parent === null) {
                     throw new Error('Given parentPath does not exist [' + parameters.parentPath + ']');
@@ -946,6 +989,12 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 if (closureInfo instanceof Error) {
                     throw closureInfo;
                 }
+
+                return checkSelectionValidity(parent, closureInfo);
+            })
+            .then(function () {
+                //now as everything is imported, we need to check if the models are even valid in their new context
+                var persisted;
 
                 persisted = context.core.persist(context.rootNode);
 
