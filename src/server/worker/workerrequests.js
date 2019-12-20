@@ -904,7 +904,11 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                                 otherChildren.push(child);
                             }
                         });
-                        validMetaNodes = context.core.getValidChildrenMetaNodes({node: parent, children: otherChildren, multiplicity: true});
+                        validMetaNodes = context.core.getValidChildrenMetaNodes({
+                            node: parent, 
+                            children: otherChildren, 
+                            multiplicity: true
+                        });
 
                         selectionNodes.forEach(function (node) {
                             var hasValidBase = false;
@@ -919,7 +923,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                         });
 
                         if (hasError) {
-                            deferred.reject(new Error('The selection has elements that are not valid child of the target node!'));
+                            deferred.reject(
+                                new Error('The selection has elements that are not valid child of the target node!')
+                            );
                         } else {
                             deferred.resolve();
                         }
