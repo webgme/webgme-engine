@@ -77,6 +77,7 @@ define(['superagent', 'q'], function (superagent, Q) {
 
         this.executorNonce = parameters.executorNonce;
         this.apiToken = parameters.apiToken;
+        this.webgmeToken = parameters.webgmeToken;
 
         this.logger.debug('origin', this.origin);
         this.logger.debug('executorUrl', this.executorUrl);
@@ -375,6 +376,9 @@ define(['superagent', 'q'], function (superagent, Q) {
         }
         if (this.apiToken) {
             req.set('x-api-token', this.apiToken);
+        }
+        if (this.webgmeToken) {
+            req.set('Authorization', 'Bearer ' + this.webgmeToken);
         }
         if (data) {
             req.send(data);
