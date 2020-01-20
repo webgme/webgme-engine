@@ -464,12 +464,13 @@ ExecutorMaster.prototype.updateJob = async function (userId, info) {
 };
 
 ExecutorMaster.prototype.startClearOutputTimer = async function (jobInfo) {
-    var timeoutObj;
+    var self = this,
+        timeoutObj;
 
     timeoutObj = setTimeout(function () {
 
-        delete this.clearOutputsTimers[jobInfo.hash];
-        this.clearOutput(jobInfo);
+        delete self.clearOutputsTimers[jobInfo.hash];
+        self.clearOutput(jobInfo);
 
     }, this.gmeConfig.executor.clearOutputTimeout);
 
