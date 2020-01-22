@@ -182,6 +182,8 @@ function validateConfig(configOrFileName) {
     expectedKeys.push('executor');
     assertObject('config.executor', config.executor);
     assertBoolean('config.executor.enable', config.executor.enable);
+    assertBoolean('config.executor.authentication.enable', config.executor.authentication.enable);
+    assertBoolean('config.executor.authentication.allowGuests', config.executor.authentication.allowGuests);
     assertString('config.executor.nonce', config.executor.nonce, true);
     warnDeprecated('config.executor.outputDir', config.executor.outputDir);
     assertString('config.executor.labelJobs', config.executor.labelJobs);

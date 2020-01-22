@@ -1,23 +1,14 @@
 /*eslint-env node*/
 
 /**
- * @author lattmann / https://github.com/lattmann
- * @author ksmyth / https://github.com/ksmyth
- * @author pmeijer / https://github.com/pmeijer
- *
- curl http://localhost:8855/rest/executor/info/77704f10a36aa4214f5b0095ba8099e729a10f46
- curl -X POST -H "Content-Type: application/json"
- -d {} http://localhost:8855/rest/executor/create/77704f10a36aa4214f5b0095ba8099e729a10f46
- curl -X POST -H "Content-Type: application/json"
- -d {\"status\":\"CREATED\"} http://localhost:8855/rest/executor/update/77704f10a36aa4214f5b0095ba8099e729a10f46
+ * @author brollb / https://github.com/brollb
  */
 
 'use strict';
 
-var express = require('express'),
-    Chance = require('chance'),
-    // Mongo collections
-    TOKEN_LIST = '_tokenList';
+const express = require('express');
+const Chance = require('chance');
+const TOKEN_COLLECTION = '_tokenList';
 
 /**
  *
@@ -61,7 +52,7 @@ function TokenServer(options) {
 TokenServer.prototype.start = async function (params) {
     this.logger.debug('Starting token server');
     const mongo = params.mongoClient;
-    const tokenList = await mongo.collection(TOKEN_LIST);
+    const tokenList = await mongo.collection(TOKEN_COLLECTION);
     this.tokens.init(tokenList);
 };
 
