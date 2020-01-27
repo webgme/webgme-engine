@@ -149,6 +149,10 @@ Modification of arrays is not support, but non-existing config sub-group (object
 
 - `config.executor.enable = false`
  - If true will enable the executor.
+- `config.executor.authentication.enable = false`
+ - If true will enable authentication for the executors allowing them to be associated with a given user. Executors will only be able to view jobs from the given owner (or guest). Workers are associated with a user by providing a user's personal access token in the worker's config.
+- `config.executor.authentication.allowGuests = true`
+ - If true will require jobs and workers to be associated with an existing user.
 - `config.executor.nonce = null`
  - If defined this is the secret shared between the server and attached workers.
 - `config.executor.workerRefreshInterval = 5000`

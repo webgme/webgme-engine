@@ -106,6 +106,10 @@ var path = require('path'),
 
         executor: {
             enable: false,
+            authentication: {
+                enable: false,
+                allowGuests: true,
+            },
             nonce: null,
             workerRefreshInterval: 5000,
             clearOutputTimeout: 60000,
