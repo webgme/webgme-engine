@@ -379,7 +379,7 @@ function StandAloneServer(gmeConfig) {
             return;
         }
 
-        if (authorization && authorization.indexOf('Basic ') === 0) {
+        if (authorization && authorization.indexOf('Basic') === 0) {
             logger.debug('Basic authentication request');
             // FIXME: ':' should not be in username nor in password
             split = Buffer.from(authorization.substr('Basic '.length), 'base64').toString('utf8').split(':');
