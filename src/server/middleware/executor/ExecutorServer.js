@@ -81,7 +81,11 @@ function ExecutorServer(options) {
 
         const needsUser = !self.gmeConfig.executor.authentication.allowGuests;
         if (needsUser && self.isGuestUserId(req)) {
-            await self.ensureAuthenticated(req, res);
+            try {
+                await self.ensureAuthenticated(req, res);
+            } catch (err) {
+                return res.send('Unauthorized');
+            }
             if (self.isGuestUserId(req)) {
                 return res.sendStatus(403);
             }
@@ -329,15 +333,11 @@ ExecutorServer.prototype.isGuestUserId = function (req) {
 
 ExecutorServer.prototype.setUserFromToken = async function (req, res, next) {
     const {guestAccount} = this.gmeConfig.authentication;
-    const userId = req.userData && this.getUserId(req);
-    const isNotAuthenticated = !userId || userId === guestAccount;
     const token = req.headers['x-api-token'];
+    const userId = (token && await this.accessTokens.getUserId(token)) ||
+        guestAccount;
 
-    if (isNotAuthenticated && !!token) {
-        req.userData = {
-            userId: await this.accessTokens.getUserId(token)
-        };
-    }
+    req.userData = {userId};
     next();
 };
 
