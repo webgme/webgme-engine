@@ -24,6 +24,7 @@ var express = require('express'),
     OUTPUT_LIST = '_executorOutput';
 
 const JobInfo = requireJS('common/executor/JobInfo');
+const {promisify} = require('util');
 
 /**
  *
@@ -53,7 +54,7 @@ function ExecutorServer(options) {
     self.logger = options.logger.fork('middleware:ExecutorServer');
     self.logger.debug('ctor');
     self.gmeConfig = options.gmeConfig;
-    self.ensureAuthenticated = options.ensureAuthenticated;
+    self.ensureAuthenticated = promisify(options.ensureAuthenticated);
     self.running = false;
 
     self.router = router;
@@ -75,18 +76,23 @@ function ExecutorServer(options) {
         }
     }
 
-    function executorAuthenticate(req, res, next) {
-        const {guestAccount} = self.gmeConfig.authentication;
-        var isAuth = true,
-            workerNonce;
+    async function executorAuthenticate(req, res, next) {
+        let isAuth = true;
 
         const needsUser = !self.gmeConfig.executor.authentication.allowGuests;
-        if (needsUser && self.getUserId(req) === guestAccount) {
-            return res.sendStatus(403);
+        if (needsUser && self.isGuestUserId(req)) {
+            try {
+                await self.ensureAuthenticated(req, res);
+            } catch (err) {
+                return res.send('Unauthorized');
+            }
+            if (self.isGuestUserId(req)) {
+                return res.sendStatus(403);
+            }
         }
 
         if (self.gmeConfig.executor.nonce) {
-            workerNonce = req.headers['x-executor-nonce'];
+            const workerNonce = req.headers['x-executor-nonce'];
             if (workerNonce) {
                 isAuth = bufferEqual(Buffer.from(workerNonce), Buffer.from(self.gmeConfig.executor.nonce));
             } else {
@@ -129,7 +135,6 @@ function ExecutorServer(options) {
     });
 
     // all endpoints require authentication
-    router.use('*', self.ensureAuthenticated);
     router.use('*', self.setUserFromToken.bind(self));
     router.use('*', executorAuthenticate);
     router.use('/output/:hash', async function (req, res, next) {
@@ -321,18 +326,18 @@ function ExecutorServer(options) {
     };
 }
 
+ExecutorServer.prototype.isGuestUserId = function (req) {
+    const {guestAccount} = this.gmeConfig.authentication;
+    return this.getUserId(req) === guestAccount;
+};
+
 ExecutorServer.prototype.setUserFromToken = async function (req, res, next) {
     const {guestAccount} = this.gmeConfig.authentication;
-    const userId = this.getUserId(req);
-    const isNotAuthenticated = !userId || userId === guestAccount;
     const token = req.headers['x-api-token'];
+    const userId = (token && await this.accessTokens.getUserId(token)) ||
+        guestAccount;
 
-    if (isNotAuthenticated && !!token) {
-        req.userData = {
-            userId: await this.accessTokens.getUserId(token)
-        };
-    }
-
+    req.userData = {userId};
     next();
 };
 
