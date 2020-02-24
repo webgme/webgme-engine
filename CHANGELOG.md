@@ -1,5 +1,14 @@
 # Changelog
 
+## [v2.24.3](https://github.com/webgme/webgme-engine/tree/v2.24.3) (2020-02-24)
+
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.24.2...v2.24.3)
+
+**Fixed bugs:**
+
+- Error when authenticating with API tokens and guest accounts disabled [\#185](https://github.com/webgme/webgme-engine/issues/185)
+- Only call ensureAuthenticated if other auth methods fail. Fixes \#185 [\#186](https://github.com/webgme/webgme-engine/pull/186) ([brollb](https://github.com/brollb))
+
 ## [v2.24.2](https://github.com/webgme/webgme-engine/tree/v2.24.2) (2020-02-23)
 
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.24.1...v2.24.2)
