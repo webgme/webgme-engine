@@ -35,7 +35,7 @@ function TokenServer(options) {
         res.json(await self.tokens.list(userId));
     });
 
-    router.post('/create/:name', async function (req, res) {
+    router.post('/create/:name?', async function (req, res) {
         const userId = self.getUserId(req);
         const {name} = req.params;
         const token = await self.tokens.create(userId, name);
