@@ -35,9 +35,10 @@ function TokenServer(options) {
         res.json(await self.tokens.list(userId));
     });
 
-    router.post('/create', async function (req, res) {
+    router.post('/create/:name?', async function (req, res) {
         const userId = self.getUserId(req);
-        const token = await self.tokens.create(userId);
+        const {name} = req.params;
+        const token = await self.tokens.create(userId, name);
         res.json(token);
     });
 
@@ -71,8 +72,10 @@ AccessTokens.prototype.list = async function (userId) {
     return tokens;
 };
 
-AccessTokens.prototype.create = async function (userId) {
+AccessTokens.prototype.create = async function (userId, name) {
+    name = name || `Created on ${new Date()}`;
     const token = {
+        displayName: name,
         userId: userId,
         id: this.chance.guid(),
         issuedAt: new Date(),
