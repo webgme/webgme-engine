@@ -33,6 +33,12 @@ describe('TokenServer', function () {
         assert(response.body.userId, 'Did not set userId');
     });
 
+    it('should be able to create access tokens w/ default display name', async function () {
+        const response = await createToken();
+        assert.equal(response.status, 200);
+        assert(response.body.displayName.startsWith('Created on'), 'Did not set userId');
+    });
+
     it('should be able to list access tokens', async function () {
         await createToken();
         await createToken();
