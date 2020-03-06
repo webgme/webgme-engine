@@ -32,7 +32,7 @@ function TokenServer(options) {
     router.use('*', self.ensureAuthenticated);
     router.get('/', async function (req, res) {
         const userId = self.getUserId(req);
-        res.json(await self.tokens.list(userId));
+        res.json(await self.tokens.list(userId, true));
     });
 
     router.post('/create/:name?', async function (req, res) {
@@ -67,8 +67,12 @@ AccessTokens.prototype.init = function (tokenList) {
     this.tokenList.createIndex({id: 1}, {unique: true});
 };
 
-AccessTokens.prototype.list = async function (userId) {
-    const tokens = await this.tokenList.find({userId}, {_id: 0}).toArray();
+AccessTokens.prototype.list = async function (userId, sanitize = false) {
+    const projection = {_id: 0};
+    if (sanitize) {
+        projection.id = 0;
+    }
+    const tokens = await this.tokenList.find({userId}, projection).toArray();
     return tokens;
 };
 
