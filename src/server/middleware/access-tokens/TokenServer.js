@@ -77,7 +77,7 @@ AccessTokens.prototype.list = async function (userId, sanitize = false) {
 };
 
 AccessTokens.prototype.create = async function (userId, name) {
-    name = name || `Created on ${new Date()}`;
+    name = name || this.getDefaultTokenName();
     const token = {
         displayName: name,
         userId: userId,
@@ -87,6 +87,20 @@ AccessTokens.prototype.create = async function (userId, name) {
     await this.tokenList.save(token);
     delete token._id;
     return token;
+};
+
+AccessTokens.prototype.getDefaultTokenName = function () {
+    const formatOpts = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        timeZoneName: 'short'
+    };
+    const date = new Date();
+    return `Created on ${date.toLocaleString('en-US', formatOpts)}`;
 };
 
 AccessTokens.prototype.delete = async function (userId, id) {
