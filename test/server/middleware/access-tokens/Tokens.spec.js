@@ -62,7 +62,7 @@ describe('TokenServer', function () {
     it('should be able to delete access tokens', async function () {
         await createToken();
         const {body: token} = await createToken();
-        await deleteToken(token.id);
+        await deleteToken(token.displayName);
         const res = await listTokens();
         assert.equal(res.status, 200);
         const tokens = res.body;

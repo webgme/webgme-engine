@@ -42,9 +42,10 @@ function TokenServer(options) {
         res.json(token);
     });
 
-    router.delete('/:id', async function (req, res) {
+    router.delete('/:name', async function (req, res) {
         const userId = self.getUserId(req);
-        const deleted = await self.tokens.delete(userId, req.params.id);
+        const {name} = req.params;
+        const deleted = await self.tokens.delete(userId, name);
         res.json(deleted);
     });
 
@@ -65,6 +66,7 @@ function AccessTokens() {
 AccessTokens.prototype.init = function (tokenList) {
     this.tokenList = tokenList;
     this.tokenList.createIndex({id: 1}, {unique: true});
+    this.tokenList.createIndex({displayName: 1}, {unique: true});
 };
 
 AccessTokens.prototype.list = async function (userId, sanitize = false) {
@@ -77,7 +79,7 @@ AccessTokens.prototype.list = async function (userId, sanitize = false) {
 };
 
 AccessTokens.prototype.create = async function (userId, name) {
-    name = name || this.getDefaultTokenName();
+    name = name || await this.getUniqueDefaultTokenName(userId);
     const token = {
         displayName: name,
         userId: userId,
@@ -87,6 +89,20 @@ AccessTokens.prototype.create = async function (userId, name) {
     await this.tokenList.save(token);
     delete token._id;
     return token;
+};
+
+AccessTokens.prototype.getUniqueDefaultTokenName = async function (userId) {
+    const basename = this.getDefaultTokenName();
+    const userTokens = await this.tokenList.find({userId}).toArray();
+    const names = userTokens.map(token => token.displayName);
+    let name = basename;
+    let i = 2;
+
+    while (names.includes(name)) {
+        name = `${basename} (${i++})`;
+    }
+
+    return name;
 };
 
 AccessTokens.prototype.getDefaultTokenName = function () {
@@ -103,8 +119,8 @@ AccessTokens.prototype.getDefaultTokenName = function () {
     return `Created on ${date.toLocaleString('en-US', formatOpts)}`;
 };
 
-AccessTokens.prototype.delete = async function (userId, id) {
-    const result = await this.tokenList.deleteOne({userId, id});
+AccessTokens.prototype.delete = async function (userId, displayName) {
+    const result = await this.tokenList.deleteOne({userId, displayName});
     return result.deletedCount;
 };
 
