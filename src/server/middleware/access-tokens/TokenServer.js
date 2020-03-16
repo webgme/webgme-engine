@@ -9,6 +9,7 @@
 const express = require('express');
 const Chance = require('chance');
 const TOKEN_COLLECTION = '_tokenList';
+const {ObjectId} = require('mongodb');
 
 /**
  *
@@ -44,7 +45,8 @@ function TokenServer(options) {
 
     router.delete('/:id', async function (req, res) {
         const userId = self.getUserId(req);
-        const deleted = await self.tokens.delete(userId, req.params.id);
+        const {id} = req.params;
+        const deleted = await self.tokens.delete(userId, id);
         res.json(deleted);
     });
 
@@ -64,16 +66,16 @@ function AccessTokens() {
 
 AccessTokens.prototype.init = function (tokenList) {
     this.tokenList = tokenList;
-    this.tokenList.createIndex({id: 1}, {unique: true});
+    this.tokenList.createIndex({value: 1}, {unique: true});
 };
 
 AccessTokens.prototype.list = async function (userId, sanitize = false) {
-    const projection = {_id: 0};
+    const projection = {};
     if (sanitize) {
-        projection.id = 0;
+        projection.value = 0;
     }
     const tokens = await this.tokenList.find({userId}, projection).toArray();
-    return tokens;
+    return tokens.map(token => this._getPublicToken(token, sanitize));
 };
 
 AccessTokens.prototype.create = async function (userId, name) {
@@ -81,12 +83,11 @@ AccessTokens.prototype.create = async function (userId, name) {
     const token = {
         displayName: name,
         userId: userId,
-        id: this.chance.guid(),
+        value: this.chance.guid(),
         issuedAt: new Date(),
     };
     await this.tokenList.save(token);
-    delete token._id;
-    return token;
+    return this._getPublicToken(token);
 };
 
 AccessTokens.prototype.getDefaultTokenName = function () {
@@ -104,13 +105,22 @@ AccessTokens.prototype.getDefaultTokenName = function () {
 };
 
 AccessTokens.prototype.delete = async function (userId, id) {
-    const result = await this.tokenList.deleteOne({userId, id});
+    const result = await this.tokenList.deleteOne({userId, _id: ObjectId(id)});
     return result.deletedCount;
 };
 
 AccessTokens.prototype.getUserId = async function (id) {
-    const token = await this.tokenList.findOne({id}, {_id: 0});
+    const token = await this.tokenList.findOne({id});
     return token && token.userId;
+};
+
+AccessTokens.prototype._getPublicToken = function (token, sanitize = false) {
+    token.id = token._id;
+    delete token._id;
+    if (sanitize) {
+        delete token.value;
+    }
+    return token;
 };
 
 module.exports = TokenServer;

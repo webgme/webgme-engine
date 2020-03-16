@@ -48,21 +48,22 @@ describe('TokenServer', function () {
         assert.equal(tokens.length, 2);
     });
 
-    it('should token list should not include ID', async function () {
+    it('should token list should not include value', async function () {
         await createToken();
         await createToken();
         const res = await listTokens();
         assert.equal(res.status, 200);
         const tokens = res.body;
         tokens.forEach(token => {
-            assert(!token.id);
+            assert(!token.value);
         });
     });
 
     it('should be able to delete access tokens', async function () {
         await createToken();
-        const {body: token} = await createToken();
-        await deleteToken(token.id);
+        await createToken();
+        const {body: initialTokens} = await listTokens();
+        await deleteToken(initialTokens[0].id);
         const res = await listTokens();
         assert.equal(res.status, 200);
         const tokens = res.body;
