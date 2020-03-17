@@ -38,16 +38,25 @@ function TokenServer(options) {
     router.post('/create/:name?', async function (req, res) {
         const userId = self.getUserId(req);
         const {name} = req.params;
-        const token = await self.tokens.create(userId, name);
-        res.json(token);
+        try {
+            const token = await self.tokens.create(userId, name);
+            res.json(token);
+        } catch (err) {
+            const isUserError = err instanceof InvalidTokenError;
+            if (isUserError) {
+                res.status(400).send(err.message);
+            } else {
+                res.sendStatus(500);
+            }
+        }
     });
 
-    router.delete('/:id', async function (req, res) {
+    router.delete('/:name', async function (req, res) {
         const userId = self.getUserId(req);
-        const deleted = await self.tokens.delete(userId, req.params.id);
+        const {name} = req.params;
+        const deleted = await self.tokens.delete(userId, name);
         res.json(deleted);
     });
-
 }
 
 TokenServer.prototype.start = async function (params) {
@@ -65,6 +74,7 @@ function AccessTokens() {
 AccessTokens.prototype.init = function (tokenList) {
     this.tokenList = tokenList;
     this.tokenList.createIndex({id: 1}, {unique: true});
+    this.tokenList.createIndex({displayName: 1}, {unique: true});
 };
 
 AccessTokens.prototype.list = async function (userId, sanitize = false) {
@@ -77,16 +87,37 @@ AccessTokens.prototype.list = async function (userId, sanitize = false) {
 };
 
 AccessTokens.prototype.create = async function (userId, name) {
-    name = name || this.getDefaultTokenName();
+    name = name || await this.getUniqueDefaultTokenName(userId);
     const token = {
         displayName: name,
         userId: userId,
         id: this.chance.guid(),
         issuedAt: new Date(),
     };
-    await this.tokenList.save(token);
-    delete token._id;
-    return token;
+    try {
+        await this.tokenList.save(token);
+        delete token._id;
+        return token;
+    } catch (err) {
+        if (err.message.includes('duplicate key error')) {
+            throw new InvalidTokenError('Token name already exists.');
+        }
+        throw err;
+    }
+};
+
+AccessTokens.prototype.getUniqueDefaultTokenName = async function (userId) {
+    const basename = this.getDefaultTokenName();
+    const userTokens = await this.tokenList.find({userId}).toArray();
+    const names = userTokens.map(token => token.displayName);
+    let name = basename;
+    let i = 2;
+
+    while (names.includes(name)) {
+        name = `${basename} (${i++})`;
+    }
+
+    return name;
 };
 
 AccessTokens.prototype.getDefaultTokenName = function () {
@@ -103,8 +134,8 @@ AccessTokens.prototype.getDefaultTokenName = function () {
     return `Created on ${date.toLocaleString('en-US', formatOpts)}`;
 };
 
-AccessTokens.prototype.delete = async function (userId, id) {
-    const result = await this.tokenList.deleteOne({userId, id});
+AccessTokens.prototype.delete = async function (userId, displayName) {
+    const result = await this.tokenList.deleteOne({userId, displayName});
     return result.deletedCount;
 };
 
@@ -112,5 +143,9 @@ AccessTokens.prototype.getUserId = async function (id) {
     const token = await this.tokenList.findOne({id}, {_id: 0});
     return token && token.userId;
 };
+
+function InvalidTokenError() {
+    Error.apply(this, arguments);
+}
 
 module.exports = TokenServer;
