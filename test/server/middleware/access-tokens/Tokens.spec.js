@@ -36,7 +36,18 @@ describe('TokenServer', function () {
     it('should be able to create access tokens w/ default display name', async function () {
         const response = await createToken();
         assert.equal(response.status, 200);
-        assert(response.body.displayName.startsWith('Created on'), 'Did not set userId');
+        assert(response.body.displayName.startsWith('Created on'), 'Did not set default display name');
+    });
+
+    it('should not be able to create access tokens w/ existing display name', async function () {
+        await createToken('hello');
+        try {
+            await createToken('hello');
+        } catch (response) {
+            assert.equal(response.status, 400);
+            return;
+        }
+        assert(false, 'Created token with duplicate name.');
     });
 
     it('should be able to list access tokens', async function () {
@@ -69,11 +80,11 @@ describe('TokenServer', function () {
         assert.equal(tokens.length, 1);
     });
 
-    function createToken() {
+    function createToken(name = '') {
         return new Promise(function (resolve, reject) {
-            agent.post(baseUrl + '/rest/tokens/create').end(function (err, res) {
+            agent.post(`${baseUrl}/rest/tokens/create/${name}`).end(function (err, res) {
                 if (err) {
-                    return reject(err);
+                    return reject(res);
                 }
                 resolve(res);
             });

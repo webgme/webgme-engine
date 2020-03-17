@@ -38,8 +38,17 @@ function TokenServer(options) {
     router.post('/create/:name?', async function (req, res) {
         const userId = self.getUserId(req);
         const {name} = req.params;
-        const token = await self.tokens.create(userId, name);
-        res.json(token);
+        try {
+            const token = await self.tokens.create(userId, name);
+            res.json(token);
+        } catch (err) {
+            const isUserError = err instanceof InvalidTokenError;
+            if (isUserError) {
+                res.status(400).send(err.message);
+            } else {
+                res.sendStatus(500);
+            }
+        }
     });
 
     router.delete('/:name', async function (req, res) {
@@ -48,7 +57,6 @@ function TokenServer(options) {
         const deleted = await self.tokens.delete(userId, name);
         res.json(deleted);
     });
-
 }
 
 TokenServer.prototype.start = async function (params) {
@@ -86,9 +94,16 @@ AccessTokens.prototype.create = async function (userId, name) {
         id: this.chance.guid(),
         issuedAt: new Date(),
     };
-    await this.tokenList.save(token);
-    delete token._id;
-    return token;
+    try {
+        await this.tokenList.save(token);
+        delete token._id;
+        return token;
+    } catch (err) {
+        if (err.message.includes('duplicate key error')) {
+            throw new InvalidTokenError(`Token name already exists.`);
+        }
+        throw err;
+    }
 };
 
 AccessTokens.prototype.getUniqueDefaultTokenName = async function (userId) {
@@ -128,5 +143,9 @@ AccessTokens.prototype.getUserId = async function (id) {
     const token = await this.tokenList.findOne({id}, {_id: 0});
     return token && token.userId;
 };
+
+function InvalidTokenError() {
+    Error.apply(this, arguments);
+}
 
 module.exports = TokenServer;
