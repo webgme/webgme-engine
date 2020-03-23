@@ -9,7 +9,7 @@
 var testFixture = require('../../../_globals.js');
 
 
-describe('USER REST API', function () {
+describe.only('USER REST API', function () {
     'use strict';
 
     var gmeConfig = testFixture.getGmeConfig(),
@@ -2653,6 +2653,81 @@ describe('USER REST API', function () {
                         }, 2000);
                     });
             });
+        });
+
+        describe.only('Verification on', function () {
+            var server,
+                agent;
+
+            before(function (done) {
+                var gmeConfig = testFixture.getGmeConfig();
+                gmeConfig.authentication.enable = true;
+                gmeConfig.authentication.newUserNeedsVerification = true;
+
+                server = WebGME.standaloneServer(gmeConfig);
+                server.start(done);
+            });
+
+            after(function (done) {
+                server.stop(done);
+            });
+
+            beforeEach(function () {
+                agent = superagent.agent();
+            });
+
+            it('should add disabled user when posting /api/v1/register', function (done) {
+                var newUser = {
+                    userId: 'veri_reg_user_2',
+                    email: 'em@il',
+                    password: 'pass'
+                };
+
+                agent.post(server.getUrl() + '/api/v1/register')
+                    .send(newUser)
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body._id).to.equal('veri_reg_user_2');
+                        
+                        agent.get(server.getUrl() + '/api/v1/user')
+                            .set('Authorization', 'Basic ' + new Buffer('veri_reg_user_2:pass').toString('base64'))
+                            .end(function (err, res) {
+                                expect(res.status).equal(401, err);
+                                done();
+                            });
+                    });
+            });
+
+            it('should not allow disabled user to enable itself', function (done) {
+                var newUser = {
+                    userId: 'veri_reg_user',
+                    email: 'em@il',
+                    password: 'pass'
+                };
+
+                agent.post(server.getUrl() + '/api/v1/register')
+                    .send(newUser)
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body._id).to.equal('veri_reg_user');
+                        
+                        agent.patch(server.getUrl() + '/api/v1/user/data')
+                            .set('Authorization', 'Basic ' + new Buffer('veri_reg_user:pass').toString('base64'))
+                            .send({disabled: false})
+                            .end(function (err, res) {
+                                expect(res.status).equal(401, err);
+                                
+                                agent.patch(server.getUrl() + '/api/v1/user')
+                                    .set('Authorization', 'Basic ' + new Buffer('veri_reg_user:pass').toString('base64'))
+                                    .send({disabled: false})
+                                    .end(function (err, res) {
+                                        expect(res.status).equal(401, err);
+                                        done();
+                                    });
+                            });
+                    });
+            });
+
         });
     });
 });
