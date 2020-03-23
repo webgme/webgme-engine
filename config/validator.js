@@ -132,6 +132,7 @@ function validateConfig(configOrFileName) {
     assertBooleanOrString('config.authentication.allowUserRegistration', config.authentication.allowUserRegistration);
     assertBoolean('config.authentication.registeredUsersCanCreate', config.authentication.registeredUsersCanCreate);
     assertBoolean('config.authentication.inferredUsersCanCreate', config.authentication.inferredUsersCanCreate);
+    assertBoolean('config.authentication.newUserNeedsVerification', config.authentication.newUserNeedsVerification);
     assertBoolean('config.authentication.guestCanCreate', config.authentication.guestCanCreate);
     assertString('config.authentication.guestAccount', config.authentication.guestAccount);
     assertString('config.authentication.logOutUrl', config.authentication.logOutUrl);

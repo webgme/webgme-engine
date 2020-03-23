@@ -1190,6 +1190,53 @@ function GMEAuth(session, gmeConfig) {
         return authorizer.setAccessRights(userId, projectId, rights, projectAuthParams).nodeify(callback);
     }
 
+    function generateRandomString(length) {
+        const chars = '1234567890qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKLOP';
+        let result = '';
+        for (let i = 0; i < length; i += 1) {
+            result += chars.charAt(Math.floor(Math.random() * Math.floor(chars.length)));
+        }
+
+        return result;
+    }
+
+    function resetPassword(userId, callback) {
+        let resetId = null;
+        let userData = {};
+        const now = new Date();
+
+        collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}})
+            .then(userData_ => {
+                userData = userData_;
+                const then = userData.lastReset ? Number(userData.lastReset) : 0;
+                if (!gmeConfig.authentication.allowPasswordReset) {
+                    throw new Error('Password reset is not allowed!');
+                }
+
+                if (userId === gmeConfig.authentication.guestAccount) {
+                    throw new Error('Password reset is not allowed for GUEST account!');
+                }
+
+                if (now - then < gmeConfig.authentication.allowedResetInterval) {
+                    throw new Error('cannot reset password just yet!');
+                }
+                
+                resetId = generateRandomString(20);
+
+                return (bcrypt, 'hash', resetId, gmeConfig.authentication.salts);
+            })
+            .then(function (hash) {
+                userData.resetHash = hash;
+                userData.lastReset = now;
+                userData.passwordHash = null;
+                return updateUser(userId, userData);
+            })
+            .then(() => {
+                return resetId;
+            })
+            .nodeify(callback);
+    }
+
     this.unload = unload;
     this.connect = connect;
 
@@ -1205,6 +1252,7 @@ function GMEAuth(session, gmeConfig) {
     this.updateUserComponentSettings = updateUserComponentSettings;
     this.deleteUser = deleteUser;
     this.reEnableUser = reEnableUser;
+    this.resetPassword = resetPassword;
 
     this.listOrganizations = listOrganizations;
     this.getOrganization = getOrganization;

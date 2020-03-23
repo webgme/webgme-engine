@@ -172,6 +172,29 @@ main = function (argv) {
         });
 
     program
+        .command('verify <username>')
+        .description('verifies a user')
+        .action(function (username, options) {
+            setupGMEAuth(options.parent.db, function (/*err*/) {
+
+                if (username) {
+                    auth.reEnableUser(username)
+                        .then(mainDeferred.resolve)
+                        .catch(mainDeferred.reject)
+                        .finally(auth.unload);
+                } else {
+                    mainDeferred.reject(new SyntaxError('username parameter is missing'));
+                }
+            });
+        })
+        .on('--help', function () {
+            console.log('  Examples:');
+            console.log();
+            console.log('    $ node usermanager.js verify misterX');
+            console.log();
+        });
+
+    program
         .command('organizationadd <organizationname>')
         .description('adds a new organization')
         .action(function (organizationname, options) {
