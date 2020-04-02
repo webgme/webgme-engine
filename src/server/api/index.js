@@ -141,6 +141,43 @@ function createAPI(app, mountPath, middlewareOpts) {
 
     router.post('/register', registerEndPoint);
 
+    router.get('/reset/:userName', function (req, res) {
+        gmeAuth.resetPassword(req.params.userName)
+            .then(function (resetToken) {
+                res.status(200);
+                res.json({
+                    resetId: resetToken
+                });
+            })
+            .catch(function (err) {
+                logger.error('cannot process reset request:', err);
+                res.sendStatus(404);
+            });
+    });
+
+    router.get('/reset/:userName/:resetHash', function (req, res) {
+        gmeAuth.isValidReset(req.params.userName, req.params.resetHash)
+            .then(() => {
+                res.redirect(gmeConfig.authentication.resetUrl + 
+                    '/' + req.params.userName + '/' + req.params.resetHash);
+            })
+            .catch((err)=> {
+                logger.error('invalid reset password request for user: ', req.params.userName, ' : ', err);
+                res.sendStatus(404);
+            });
+    });
+
+    router.post('/reset/:userName/:resetHash', function (req, res) {
+        gmeAuth.changePassword(req.params.userName, req.params.resetHash, req.body.newPassword)
+            .then(function () {
+                res.sendStatus(200);
+            })
+            .catch(function (err) {
+                logger.error('failed to change password: ', err);
+                res.sendStatus(404);
+            });
+    });
+
     // modifications are allowed only if the user is authenticated
     // all get rules by default do NOT require authentication, if the get rule has to be protected add inline
     // the ensureAuthenticated function middleware
