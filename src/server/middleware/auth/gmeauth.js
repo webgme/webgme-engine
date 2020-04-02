@@ -448,6 +448,9 @@ function GMEAuth(session, gmeConfig) {
                 }
 
                 delete userData.passwordHash;
+                delete userData.resetHash;
+                delete userData.lastReset;
+                
                 userData.data = userData.data || {};
                 userData.settings = userData.settings || {};
 
