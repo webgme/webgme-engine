@@ -387,7 +387,6 @@ describe('GME authentication config users and orgs', function () {
                 return gmeAuth.changePassword('resetUser', hash_, 'newPassword');
             })
             .then(user => {
-                expect(user.resetHash).to.equal(null);
                 return gmeAuth.authenticateUser('resetUser', 'newPassword');
             })
             .then(()=> {
