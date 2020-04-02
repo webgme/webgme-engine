@@ -165,13 +165,14 @@ describe('key generator', function () {
 
         const plainTime = end - start;
 
-        // console.log(plainTime, rustTime);
+        // console.log(plainTime, rustTime); FIXME is this really a requirement?
         // expect(plainTime).to.be.above(rustTime);
     });
 
-    it.skip('it should be faster to use rust SHA1 than regular huge objects', function () {
+    it('it should be faster to use rust SHA1 than regular huge objects', function () {
+        this.timeout(20000);
         const size = 10000000;
-        const iterations = 10;
+        const iterations = 3;
         let start = new Date().getTime();
         for (let i = 0; i < iterations; i += 1) {
             keyGenerator(generateRandomObject(size), {storage: {keyType: 'rustSHA1'}});
