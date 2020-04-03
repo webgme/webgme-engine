@@ -155,6 +155,7 @@ function validateConfig(configOrFileName) {
             'must be 32 bytes. Got: ' + key.length + ' bytes'
         );
     }
+    assertBoolean('config.authentication.allowPasswordReset', config.authentication.allowPasswordReset);
 
     if (config.authentication.adminAccount) {
         assertString('config.authentication.adminAccount', config.authentication.adminAccount);
@@ -356,6 +357,15 @@ function validateConfig(configOrFileName) {
         throw new Error('config.webhooks.manager can only be ' +
             '\'redis\' if config.socketIO.adapter.type is \'redis\' as well');
     }
+
+    //mailer
+    expectedKeys.push('mailer');
+    assertBoolean('config.mailer.enable', config.mailer.enable);
+    assertBoolean('config.mailer.secure', config.mailer.secure);
+    assertString('config.mailer.host', config.mailer.host);
+    assertString('config.mailer.user', config.mailer.user);
+    assertString('config.mailer.pwd', config.mailer.pwd);
+    assertNumber('config.mailer.port', config.mailer.port);
 
     if (Object.keys(config).length !== expectedKeys.length) {
         errMsg = 'Configuration had unexpected key(s):';

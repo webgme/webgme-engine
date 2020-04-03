@@ -19,6 +19,7 @@ var express = require('express'),
     webgmeUtils = require('../../utils'),
     GUID = webgme.requirejs('common/util/guid'),
     BlobClientClass = webgme.requirejs('blob/BlobClient'),
+    Mailer = require('../middleware/mailer/mailer'),
 
     CONSTANTS = webgme.requirejs('common/Constants');
 
@@ -49,7 +50,9 @@ function createAPI(app, mountPath, middlewareOpts) {
             require(gmeConfig.authentication.allowUserRegistration)(middlewareOpts) :
             require('./defaultRegisterEndPoint')(middlewareOpts),
         seedToBlobHash = {},
-        paths;
+        paths,
+        mailer = new Mailer(logger.fork('mailer'), gmeConfig, gmeAuth),
+        mailerAvailable = false;
 
     app.get(apiDocumentationMountPoint, function (req, res) {
         res.sendFile(path.join(__dirname, '..', '..', '..', 'docs', 'REST', 'index.html'));
@@ -142,18 +145,38 @@ function createAPI(app, mountPath, middlewareOpts) {
     router.post('/register', registerEndPoint);
 
     if (gmeConfig.authentication.enable && gmeConfig.authentication.allowPasswordReset) {
+        mailer.init((err) => {
+            if (err) {
+                logger.error(err);
+            } else {
+                mailerAvailable = true;
+            }
+        });
+
         router.get('/reset/:userName', function (req, res) {
-            gmeAuth.resetPassword(req.params.userName)
-                .then(function (resetToken) {
-                    res.status(200);
-                    res.json({
-                        resetId: resetToken
+            if (gmeConfig.mailer.sendPasswordReset && mailerAvailable) {
+                mailer.passwordReset({userId: req.params.userName, hostUrlPrefix: req.headers.host})
+                    .then(info => {
+                        logger.info('reset email sent: ', JSON.stringify(info, null, 2));
+                        res.sendStatus(200);
+                    })
+                    .catch(err => {
+                        logger.error(err);
+                        res.sendStatus(404);
                     });
-                })
-                .catch(function (err) {
-                    logger.error('cannot process reset request:', err);
-                    res.sendStatus(404);
-                });
+            } else {
+                gmeAuth.resetPassword(req.params.userName)
+                    .then(function (resetToken) {
+                        res.status(200);
+                        res.json({
+                            resetId: resetToken
+                        });
+                    })
+                    .catch(function (err) {
+                        logger.error('cannot process reset request:', err);
+                        res.sendStatus(404);
+                    });
+            }
         });
     
         router.get('/reset/:userName/:resetHash', function (req, res) {

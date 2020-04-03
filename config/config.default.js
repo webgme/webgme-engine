@@ -49,7 +49,8 @@ var path = require('path'),
             encryption: {
                 algorithm: 'aes-256-cbc',
                 key: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_ENCRYPTION_KEY')
-            }
+            },
+            allowPasswordReset: false
         },
 
         bin: {
@@ -274,6 +275,15 @@ var path = require('path'),
             defaults: {
                 //myHook: {url: 'http://127.0.0.1:9000/MyWebHook', events: 'all', options: {}}
             }
+        },
+
+        mailer: {
+            enable: false,
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false,
+            user: 'none',
+            pwd: 'none'
         }
     };
 
