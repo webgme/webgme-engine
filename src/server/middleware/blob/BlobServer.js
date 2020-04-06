@@ -28,8 +28,10 @@ function createExpressBlob(options) {
     accessTokens = options.accessTokens;
     getUserId = options.getUserId;
     logger = options.logger.fork('middleware:BlobServer');
-    ensureAuthenticated = function (req, res, next) {
+    ensureAuthenticated = async function (req, res, next) {
         const {guestAccount, allowGuests} = options.gmeConfig.authentication;
+
+        await accessTokens.setUserFromToken(req, res);
         const userId = getUserId(req);
         const isGuest = userId === guestAccount;
         const isInvalidUser = isGuest && !allowGuests;
@@ -61,7 +63,6 @@ function createExpressBlob(options) {
         next();
     }); */
 
-    __app.use('*', accessTokens.setUserFromToken.bind(accessTokens));
     __app.get('/metadata', ensureAuthenticated, function (req, res) {
         if (options.gmeConfig.debug) {
             blobBackend.listAllMetadata(req.query.all, function (err, metadata) {

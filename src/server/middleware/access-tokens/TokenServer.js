@@ -152,12 +152,13 @@ AccessTokens.prototype.setUserFromToken = async function (req, res, next) {
 
     if (token) {
         const userId = await this.getUserId(token);
-        console.log('setting user from token:', token, '(', userId, ')');
         req.userData = req.userData || {};
         req.userData.userId = userId;
     }
 
-    next();
+    if (next) {
+        next();
+    }
 };
 
 module.exports = TokenServer;
