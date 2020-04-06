@@ -360,7 +360,7 @@ function StandAloneServer(gmeConfig) {
 
     //internal functions
     function getUserId(req) {
-        return req.userData.userId;
+        return req.userData && req.userData.userId;
     }
 
     function ensureAuthenticated(req, res, next) {
