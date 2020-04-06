@@ -15,6 +15,7 @@ var mime = require('mime'),
 
 function createExpressBlob(options) {
     var __app = express.Router(),
+        accessTokens,
         BlobBackend,
         blobBackend,
         ensureAuthenticated,
@@ -24,9 +25,19 @@ function createExpressBlob(options) {
     ASSERT(typeof options.gmeConfig !== 'undefined', 'gmeConfig required');
     ASSERT(typeof options.ensureAuthenticated === 'function', 'ensureAuthenticated must be given.');
 
-    ensureAuthenticated = options.ensureAuthenticated;
+    accessTokens = options.accessTokens;
     getUserId = options.getUserId;
     logger = options.logger.fork('middleware:BlobServer');
+    ensureAuthenticated = function (req, res, next) {
+        const {guestAccount, allowGuests} = options.gmeConfig.authentication;
+        const userId = getUserId(req);
+        const isGuest = userId === guestAccount;
+        const isInvalidUser = isGuest && !allowGuests;
+        if (!userId || isInvalidUser) {
+            return options.ensureAuthenticated(req, res, next);
+        }
+        return next();
+    };
     if (options.gmeConfig.blob.type.toUpperCase() === 'FS') {
         BlobBackend = require('./BlobFSBackend');
     } else if (options.gmeConfig.blob.type.toUpperCase() === 'S3') {
@@ -50,6 +61,7 @@ function createExpressBlob(options) {
         next();
     }); */
 
+    __app.use('*', accessTokens.setUserFromToken.bind(accessTokens));
     __app.get('/metadata', ensureAuthenticated, function (req, res) {
         if (options.gmeConfig.debug) {
             blobBackend.listAllMetadata(req.query.all, function (err, metadata) {

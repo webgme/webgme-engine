@@ -79,6 +79,7 @@ function ExecutorServer(options) {
     async function executorAuthenticate(req, res, next) {
         let isAuth = true;
 
+        self.ensureHasUserId(req);
         const needsUser = !self.gmeConfig.executor.authentication.allowGuests;
         if (needsUser && self.isGuestUserId(req)) {
             try {
@@ -135,7 +136,7 @@ function ExecutorServer(options) {
     });
 
     // all endpoints require authentication
-    router.use('*', self.setUserFromToken.bind(self));
+    router.use('*', self.accessTokens.setUserFromToken.bind(self.accessTokens));
     router.use('*', executorAuthenticate);
     router.use('/output/:hash', async function (req, res, next) {
         const {hash} = req.params;
@@ -326,19 +327,16 @@ function ExecutorServer(options) {
     };
 }
 
+ExecutorServer.prototype.ensureHasUserId = function (req) {
+    const {guestAccount} = this.gmeConfig.authentication;
+    if (!req.userData) {
+        req.userData = {userId: guestAccount};
+    }
+};
+
 ExecutorServer.prototype.isGuestUserId = function (req) {
     const {guestAccount} = this.gmeConfig.authentication;
     return this.getUserId(req) === guestAccount;
-};
-
-ExecutorServer.prototype.setUserFromToken = async function (req, res, next) {
-    const {guestAccount} = this.gmeConfig.authentication;
-    const token = req.headers['x-api-token'];
-    const userId = (token && await this.accessTokens.getUserId(token)) ||
-        guestAccount;
-
-    req.userData = {userId};
-    next();
 };
 
 function ExecutorMaster(gmeConfig, logger, jobList, workerList, outputList) {

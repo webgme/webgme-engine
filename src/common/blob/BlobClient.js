@@ -64,6 +64,7 @@ define([
             this.server = parameters.server || this.server;
             this.serverPort = parameters.serverPort || this.serverPort;
             this.httpsecure = (parameters.httpsecure !== undefined) ? parameters.httpsecure : this.httpsecure;
+            this.apiToken = parameters.apiToken;
             this.webgmeToken = parameters.webgmeToken;
             this.keepaliveAgentOptions = parameters.keepaliveAgentOptions || {/* use defaults */};
         } else {
@@ -212,6 +213,10 @@ define([
             req.agent(this.keepaliveAgent);
         }
 
+        if (this.apiToken) {
+            req.set('x-api-token', this.apiToken);
+        }
+
         if (this.webgmeToken) {
             req.set('Authorization', 'Bearer ' + this.webgmeToken);
         }
@@ -258,6 +263,10 @@ define([
         }
 
         req = superagent.post(this.getCreateURL(metadataDescriptor.name, true));
+        if (this.apiToken) {
+            req.set('x-api-token', this.apiToken);
+        }
+
         if (this.webgmeToken) {
             req.set('Authorization', 'Bearer ' + this.webgmeToken);
         }
@@ -366,6 +375,10 @@ define([
         //superagent.parse['application/json'] = superagent.parse['application/zip'];
 
         var req = superagent.get(this.getViewURL(metadataHash, subpath));
+        if (this.apiToken) {
+            req.set('x-api-token', this.apiToken);
+        }
+
         if (this.webgmeToken) {
             req.set('Authorization', 'Bearer ' + this.webgmeToken);
         }
@@ -460,6 +473,10 @@ define([
 
         var req = superagent.get(this.getViewURL(metadataHash, subpath));
 
+        if (this.apiToken) {
+            req.set('x-api-token', this.apiToken);
+        }
+
         if (this.webgmeToken) {
             req.set('Authorization', 'Bearer ' + this.webgmeToken);
         }
@@ -543,6 +560,10 @@ define([
             self = this;
 
         this.logger.debug('getMetadata', metadataHash);
+
+        if (this.apiToken) {
+            req.set('x-api-token', this.apiToken);
+        }
 
         if (this.webgmeToken) {
             req.set('Authorization', 'Bearer ' + this.webgmeToken);
