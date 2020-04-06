@@ -44,6 +44,7 @@ describe('TokenServer', function () {
         try {
             await createToken('hello');
         } catch (response) {
+            assert.equal(response.text, 'Token name already exists');
             assert.equal(response.status, 400);
             return;
         }

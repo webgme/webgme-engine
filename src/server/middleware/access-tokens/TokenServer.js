@@ -99,7 +99,7 @@ AccessTokens.prototype.create = async function (userId, name) {
         return token;
     } catch (err) {
         if (err.message.includes('duplicate key error')) {
-            throw new InvalidTokenError('Token name already exists.');
+            throw new InvalidTokenError('Token name already exists');
         }
         throw err;
     }
@@ -143,9 +143,7 @@ AccessTokens.prototype.getUserId = async function (id) {
     return token && token.userId;
 };
 
-function InvalidTokenError() {
-    Error.apply(this, arguments);
-}
+class InvalidTokenError extends Error {}
 
 AccessTokens.prototype.setUserFromToken = async function (req, res, next) {
     const token = req.headers['x-api-token'];
