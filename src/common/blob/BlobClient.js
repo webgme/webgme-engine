@@ -213,13 +213,7 @@ define([
             req.agent(this.keepaliveAgent);
         }
 
-        if (this.apiToken) {
-            req.set('x-api-token', this.apiToken);
-        }
-
-        if (this.webgmeToken) {
-            req.set('Authorization', 'Bearer ' + this.webgmeToken);
-        }
+        this._setAuthHeaders(req);
 
         if (typeof data !== 'string' && !(data instanceof String) && typeof window === 'undefined') {
             req.set('Content-Length', contentLength);
@@ -245,6 +239,14 @@ define([
         return deferred.promise.nodeify(callback);
     };
 
+    BlobClient.prototype._setAuthHeaders = function (req) {
+        if (this.apiToken) {
+            req.set('x-api-token', this.apiToken);
+        } else if (this.webgmeToken) {
+            req.set('Authorization', 'Bearer ' + this.webgmeToken);
+        }
+    };
+
     BlobClient.prototype.putMetadata = function (metadataDescriptor, callback) {
         var metadata = new BlobMetadata(metadataDescriptor),
             deferred = Q.defer(),
@@ -263,13 +265,7 @@ define([
         }
 
         req = superagent.post(this.getCreateURL(metadataDescriptor.name, true));
-        if (this.apiToken) {
-            req.set('x-api-token', this.apiToken);
-        }
-
-        if (this.webgmeToken) {
-            req.set('Authorization', 'Bearer ' + this.webgmeToken);
-        }
+        this._setAuthHeaders(req);
 
         if (typeof window === 'undefined') {
             req.agent(this.keepaliveAgent);
@@ -375,13 +371,7 @@ define([
         //superagent.parse['application/json'] = superagent.parse['application/zip'];
 
         var req = superagent.get(this.getViewURL(metadataHash, subpath));
-        if (this.apiToken) {
-            req.set('x-api-token', this.apiToken);
-        }
-
-        if (this.webgmeToken) {
-            req.set('Authorization', 'Bearer ' + this.webgmeToken);
-        }
+        this._setAuthHeaders(req);
 
         if (typeof window === 'undefined') {
             // running on node
@@ -473,13 +463,7 @@ define([
 
         var req = superagent.get(this.getViewURL(metadataHash, subpath));
 
-        if (this.apiToken) {
-            req.set('x-api-token', this.apiToken);
-        }
-
-        if (this.webgmeToken) {
-            req.set('Authorization', 'Bearer ' + this.webgmeToken);
-        }
+        this._setAuthHeaders(req);
 
         if (typeof Buffer !== 'undefined') {
             // running on node
@@ -561,13 +545,7 @@ define([
 
         this.logger.debug('getMetadata', metadataHash);
 
-        if (this.apiToken) {
-            req.set('x-api-token', this.apiToken);
-        }
-
-        if (this.webgmeToken) {
-            req.set('Authorization', 'Bearer ' + this.webgmeToken);
-        }
+        this._setAuthHeaders(req);
 
         if (typeof window === 'undefined') {
             req.agent(this.keepaliveAgent);
