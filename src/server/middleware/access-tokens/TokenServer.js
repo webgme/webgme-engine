@@ -14,7 +14,6 @@ const TOKEN_COLLECTION = '_tokenList';
  *
  * @param {object} options - middlewareOptions
  * @param {GmeLogger} options.logger - logger to fork off from
- * @param {GmeConfig} options.gmeConfig - gmeConfig
  * @param {function} options.ensureAuthenticated
  * @constructor
  * @ignore
@@ -147,5 +146,19 @@ AccessTokens.prototype.getUserId = async function (id) {
 function InvalidTokenError() {
     Error.apply(this, arguments);
 }
+
+AccessTokens.prototype.setUserFromToken = async function (req, res, next) {
+    const token = req.headers['x-api-token'];
+
+    if (token) {
+        const userId = await this.getUserId(token);
+        req.userData = req.userData || {};
+        req.userData.userId = userId;
+    }
+
+    if (next) {
+        next();
+    }
+};
 
 module.exports = TokenServer;

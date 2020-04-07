@@ -321,7 +321,7 @@ function StandAloneServer(gmeConfig) {
 
         logger.debug('destroyed # of sockets: ' + numDestroyedSockets);
 
-        serverDeferred.promise
+        return serverDeferred.promise
             .then(function () {
                 var promises = [];
 
@@ -351,7 +351,9 @@ function StandAloneServer(gmeConfig) {
                     logger.error('Error at server stop', err);
                 }
 
-                callback(err);
+                if (callback) {
+                    callback(err);
+                }
             });
     }
 
@@ -360,7 +362,7 @@ function StandAloneServer(gmeConfig) {
 
     //internal functions
     function getUserId(req) {
-        return req.userData.userId;
+        return req.userData && req.userData.userId;
     }
 
     function ensureAuthenticated(req, res, next) {

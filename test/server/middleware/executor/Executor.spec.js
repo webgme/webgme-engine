@@ -26,11 +26,9 @@ describe('ExecutorServer', function () {
             server = testFixture.WebGME.standaloneServer(gmeConfig);
         });
 
-        afterEach(function (done) {
+        afterEach(async function () {
             if (server) {
-                server.stop(done);
-            } else {
-                done();
+                await server.stop();
             }
         });
 
@@ -301,9 +299,9 @@ describe('ExecutorServer', function () {
             app = await app.listen(gmeConfig.server.port);
         });
 
-        afterEach(() => {
+        afterEach(async () => {
             if (server) {
-                server.stop();
+                await server.stop();
             }
             if (app) {
                 app.close();
