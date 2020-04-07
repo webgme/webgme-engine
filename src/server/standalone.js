@@ -351,7 +351,9 @@ function StandAloneServer(gmeConfig) {
                     logger.error('Error at server stop', err);
                 }
 
-                callback(err);
+                if (callback) {
+                    callback(err);
+                }
             });
     }
 
