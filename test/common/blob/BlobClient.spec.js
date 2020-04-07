@@ -10,6 +10,8 @@ var testFixture = require('../../_globals.js');
 
 describe('BlobClient', function () {
     'use strict';
+    const _ = require('underscore');
+    const assert = require('assert');
     var rimraf = testFixture.rimraf,
         should = testFixture.should,
         superagent = testFixture.superagent,
@@ -1009,6 +1011,81 @@ describe('BlobClient', function () {
                 .catch(done);
         });
     });
+
+    describe('[http - access tokens]', function () {
+        before(async function () {
+            const gmeConfig = testFixture.getGmeConfig();
+            gmeConfig.authentication.enable = true;
+            gmeConfig.authentication.allowGuests = false;
+            gmeConfig.authentication.logInUrl = null;
+
+            const gmeAuth = await testFixture.clearDBAndGetGMEAuth(gmeConfig);
+            await gmeAuth.addUser('user1', 'u1@mail.com', 'plaintext', false, {
+                overwrite: true,
+                displayName: 'User One',
+            });
+            const jwt = await gmeAuth.generateJWTokenForAuthenticatedUser('user1');
+
+            bcParam.serverPort = gmeConfig.server.port;
+            bcParam.server = '127.0.0.1';
+            bcParam.httpsecure = false;
+            bcParam.logger = testFixture.logger.fork('Blob');
+
+            server = testFixture.WebGME.standaloneServer(gmeConfig);
+            await new Promise(resolve => server.start(resolve));
+
+            const apiToken = await getAccessToken(jwt);
+            bcParam.apiToken = apiToken.id;
+            bcParam.webgmeToken = jwt;
+        });
+
+        beforeEach(function (done) {
+            rimraf('./test-tmp/blob-storage', function (err) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                done();
+            });
+        });
+
+        after(function (done) {
+            server.stop(done);
+        });
+
+        it('should authenticate using access token', async function () {
+            const params = _.omit(bcParam, ['apiToken']);
+            const bc = new BlobClient(params);
+            await bc.putFile('test.txt', Buffer.alloc(0));
+        });
+
+        it('should authenticate using JWT', async function () {
+            const params = _.omit(bcParam, ['webgmeToken']);
+            const bc = new BlobClient(params);
+            await bc.putFile('test.txt', Buffer.alloc(0));
+        });
+
+        it('should fail if no auth credentials', async function () {
+            const params = _.omit(bcParam, ['apiToken', 'webgmeToken']);
+            const bc = new BlobClient(params);
+            await assert.rejects(() => bc.putFile('test.txt', Buffer.alloc(0)));
+        });
+    });
+
+    function getAccessToken(jwt) {
+        const agent = superagent.agent();
+        return new Promise((resolve, reject) => 
+            agent.post(server.getUrl() + '/rest/tokens/create/TestToken')
+                .set('Authorization', 'Bearer ' + jwt)
+                .end(function (err, res) {
+                    if (err) {
+                        return reject(err);
+                    }
+                    console.log(res.body);
+                    resolve(res.body);
+                })
+        );
+    }
 
     function createZip(data, done) {
         var bc = new BlobClient(bcParam);
