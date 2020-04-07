@@ -1081,7 +1081,6 @@ describe('BlobClient', function () {
                     if (err) {
                         return reject(err);
                     }
-                    console.log(res.body);
                     resolve(res.body);
                 })
         );
