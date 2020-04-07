@@ -321,7 +321,7 @@ function StandAloneServer(gmeConfig) {
 
         logger.debug('destroyed # of sockets: ' + numDestroyedSockets);
 
-        serverDeferred.promise
+        return serverDeferred.promise
             .then(function () {
                 var promises = [];
 

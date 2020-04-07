@@ -79,6 +79,7 @@ function ExecutorServer(options) {
     async function executorAuthenticate(req, res, next) {
         let isAuth = true;
 
+        await self.accessTokens.setUserFromToken(req, res);
         self.ensureHasUserId(req);
         const needsUser = !self.gmeConfig.executor.authentication.allowGuests;
         if (needsUser && self.isGuestUserId(req)) {
@@ -136,7 +137,6 @@ function ExecutorServer(options) {
     });
 
     // all endpoints require authentication
-    router.use('*', self.accessTokens.setUserFromToken.bind(self.accessTokens));
     router.use('*', executorAuthenticate);
     router.use('/output/:hash', async function (req, res, next) {
         const {hash} = req.params;
