@@ -10,6 +10,8 @@ const express = require('express');
 const Chance = require('chance');
 const TOKEN_COLLECTION = '_tokenList';
 
+class InvalidTokenError extends Error {}
+
 /**
  *
  * @param {object} options - middlewareOptions
@@ -142,8 +144,6 @@ AccessTokens.prototype.getUserId = async function (id) {
     const token = await this.tokenList.findOne({id}, {_id: 0});
     return token && token.userId;
 };
-
-class InvalidTokenError extends Error {}
 
 AccessTokens.prototype.setUserFromToken = async function (req, res, next) {
     const token = req.headers['x-api-token'];
