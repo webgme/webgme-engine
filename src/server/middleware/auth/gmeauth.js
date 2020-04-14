@@ -592,7 +592,6 @@ function GMEAuth(session, gmeConfig) {
                 const deleteNestedKey = currentValue === undefined;
                 const update = {};
                 if (deleteNestedKey) {
-                    console.log('deleting', jointKey);
                     update.$unset = {};
                     update.$unset[jointKey] = '';
                 } else {
