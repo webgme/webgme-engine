@@ -633,14 +633,14 @@ function GMEAuth(session, gmeConfig) {
      * @returns {*}
      */
     function updateUserDataField(userId, data, overwrite, callback) {
-        return _updateUserObjectField(userId, ['data'], data, overwrite)
+        return _updateUserObjectField(userId, ['data'], data, {overwrite})
             .then(function (userData) {
                 return userData.data;
             })
             .nodeify(callback);
     }
 
-    async function setUserDataField(userId, fields, data, options={}) {
+    async function setUserDataField(userId, fields, data, options = {}) {
         if (typeof fields === 'string') {
             fields = [fields];
         }
@@ -685,7 +685,7 @@ function GMEAuth(session, gmeConfig) {
      * @returns {*}
      */
     function updateUserComponentSettings(userId, componentId, settings, overwrite, callback) {
-        return _updateUserObjectField(userId, ['settings', componentId], settings, overwrite)
+        return _updateUserObjectField(userId, ['settings', componentId], settings, {overwrite})
             .then(function (userData) {
                 return userData.settings[componentId];
             })
@@ -701,7 +701,7 @@ function GMEAuth(session, gmeConfig) {
      * @returns {*}
      */
     function updateUserSettings(userId, settings, overwrite, callback) {
-        return _updateUserObjectField(userId, ['settings'], settings, overwrite)
+        return _updateUserObjectField(userId, ['settings'], settings, {overwrite})
             .then(function (userData) {
                 return userData.settings;
             })
