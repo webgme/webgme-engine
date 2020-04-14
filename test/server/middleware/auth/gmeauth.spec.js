@@ -21,6 +21,7 @@ describe('GME authentication', function () {
         auth,
         authorizer,
         projectAuthParams;
+    const assert = require('assert').strict;
 
     before(function (done) {
         auth = new GMEAuth(null, gmeConfig);
@@ -452,231 +453,297 @@ describe('GME authentication', function () {
             .nodeify(done);
     });
 
-    it('updateUserDataField should update with all supplied', function (done) {
-        var userId = 'user_w_data1',
-            initData = {a: 1, b: 1},
-            newData = {a: 2, b: 2};
+    describe('set/getUserDataField', function () {
+        const userId = 'user_w_data1';
+        beforeEach(() => {
+            const initData = {a: 1, b: 1, c: {d: 1}};
+            return auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData});
+        });
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal(newData);
-            })
-            .nodeify(done);
+        afterEach(() => auth.deleteUser(userId));
+
+        it('should set nested field value', async function () {
+            const newData = {a: 2, b: 2};
+            const userData = await auth.setUserDataField(userId, 'test', newData);
+            // TODO: Should this be returning all the userData?
+            assert.deepEqual(userData.test, newData);
+        });
+
+        it('should set/get encrypted field value', async function () {
+            const newData = {hello: 'world'};
+            const userData = await auth.setUserDataField(userId, 'test', newData, {encrypt: true});
+            const data = await auth.getUserDataField(userId, ['test', 'hello'], true);
+            assert.equal(data, newData.hello);
+            assert.notEqual(userData.test.hello, newData.hello);
+        });
+
+        it('should set to non-object values', async function () {
+            const newData = 'someValue';
+            const userData = await auth.setUserDataField(userId, 'test', newData);
+            const data = await auth.getUserDataField(userId, 'test');
+            assert.equal(data, newData);
+        });
+
+        // TODO: I don't think we will likely need to support encrypting numbers...
+        it.skip('should set encrypted numeric value', async function () {
+            const newData = {hello: 10};
+            const userData = await auth.setUserDataField(userId, 'test', newData, {encrypt: true});
+            const data = await auth.getUserDataField(userId, ['test', 'hello'], true);
+            assert.equal(data, newData.hello);
+            assert.notEqual(userData.test.hello, newData.hello);
+        });
+
+        it('should get top-level field value', async function () {
+            const valueForA = await auth.getUserDataField(userId, 'a');
+            assert.equal(valueForA, 1);
+        });
+
+        it('should get nested field value', async function () {
+            const nestedValue = await auth.getUserDataField(userId, ['c', 'd']);
+            assert.equal(nestedValue, 1);
+        });
+
+        it('should delete value if set to undefined', async function () {
+            await auth.setUserDataField(userId, 'a', undefined);
+            const userData = await auth.getUserDataField(userId);
+            const keys = Object.keys(userData);
+            assert(!keys.includes('a'), `"a" key not deleted!: ${keys.join(',')}`);
+        });
+
+        it('should getUserData object if no fields provided', async function () {
+            const userData = await auth.getUserDataField(userId);
+            assert.deepEqual(Object.keys(userData), ['a', 'b', 'c']);
+        });
+
     });
 
-    it('updateUserDataField should update given field and keep the old', function (done) {
-        var userId = 'user_w_data2',
-            initData = {a: 1, b: 1},
-            newData = {a: 2};
+    describe('updateUserDataField', function () {
+        it('should update with all supplied', function (done) {
+            var userId = 'user_w_data1',
+                initData = {a: 1, b: 1},
+                newData = {a: 2, b: 2};
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal({a: 2, b: 1});
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal(newData);
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserDataField should add given field and keep the old', function (done) {
-        var userId = 'user_w_data3',
-            initData = {b: 1},
-            newData = {a: 2};
+        it('should update given field and keep the old', function (done) {
+            var userId = 'user_w_data2',
+                initData = {a: 1, b: 1},
+                newData = {a: 2};
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal({a: 2, b: 1});
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal({a: 2, b: 1});
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserDataField should update field deep down', function (done) {
-        var userId = 'user_w_data4',
-            initData = {a: {b: {c: {d: 1, e: 2}}}},
-            newData = {a: {b: {c: {e: 5}}}};
+        it('should add given field and keep the old', function (done) {
+            var userId = 'user_w_data3',
+                initData = {b: 1},
+                newData = {a: 2};
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal({a: {b: {c: {d: 1, e: 5}}}});
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal({a: 2, b: 1});
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserDataField should overwrite array with array', function (done) {
-        var userId = 'user_w_data5',
-            initData = {a: {b: [1, 2], c: 'c'}},
-            newData = {a: {b: [3, 4]}};
+        it('should update field deep down', function (done) {
+            var userId = 'user_w_data4',
+                initData = {a: {b: {c: {d: 1, e: 2}}}},
+                newData = {a: {b: {c: {e: 5}}}};
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal({a: {b: [3, 4], c: 'c'}});
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal({a: {b: {c: {d: 1, e: 5}}}});
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserDataField should overwrite object with array', function (done) {
-        var userId = 'user_w_data6',
-            initData = {a: {b: {d: 1}, c: 'c'}},
-            newData = {a: {b: [3, 4]}};
+        it('should overwrite array with array', function (done) {
+            var userId = 'user_w_data5',
+                initData = {a: {b: [1, 2], c: 'c'}},
+                newData = {a: {b: [3, 4]}};
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal({a: {b: [3, 4], c: 'c'}});
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal({a: {b: [3, 4], c: 'c'}});
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserDataField should overwrite array with object', function (done) {
-        var userId = 'user_w_data7',
-            initData = {a: {b: [1, 2], c: 'c'}},
-            newData = {a: {b: {d: 1}}};
+        it('should overwrite object with array', function (done) {
+            var userId = 'user_w_data6',
+                initData = {a: {b: {d: 1}, c: 'c'}},
+                newData = {a: {b: [3, 4]}};
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal({a: {b: {d: 1}, c: 'c'}});
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal({a: {b: [3, 4], c: 'c'}});
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserDataField should overwrite object with null', function (done) {
-        var userId = 'user_w_data8',
-            initData = {a: {b: {d: 1}, c: 'c'}},
-            newData = {a: {b: null}};
+        it('should overwrite array with object', function (done) {
+            var userId = 'user_w_data7',
+                initData = {a: {b: [1, 2], c: 'c'}},
+                newData = {a: {b: {d: 1}}};
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal({a: {b: null, c: 'c'}});
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal({a: {b: {d: 1}, c: 'c'}});
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserDataField should overwrite null with object', function (done) {
-        var userId = 'user_w_data9',
-            initData = {a: {b: null, c: 'c'}},
-            newData = {a: {b: {d: 1}}};
+        it('should overwrite object with null', function (done) {
+            var userId = 'user_w_data8',
+                initData = {a: {b: {d: 1}, c: 'c'}},
+                newData = {a: {b: null}};
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal({a: {b: {d: 1}, c: 'c'}});
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal({a: {b: null, c: 'c'}});
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserDataField should do nothing with empty object', function (done) {
-        var userId = 'user_w_data10',
-            initData = {a: {b: null, c: 'c'}},
-            newData = {};
+        it('should overwrite null with object', function (done) {
+            var userId = 'user_w_data9',
+                initData = {a: {b: null, c: 'c'}},
+                newData = {a: {b: {d: 1}}};
 
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function (customData) {
-                expect(customData).to.deep.equal(initData);
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal({a: {b: {d: 1}, c: 'c'}});
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserData should reject with error when given data is a string', function (done) {
-        var userId = 'user_w_data11',
-            initData = {},
-            newData = 'aString';
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function () {
-                throw new Error('Should have failed!');
-            })
-            .catch(function (err) {
-                expect(err.message).to.include('supplied value is not an object [aString]');
-            })
-            .nodeify(done);
-    });
+        it('should do nothing with empty object', function (done) {
+            var userId = 'user_w_data10',
+                initData = {a: {b: null, c: 'c'}},
+                newData = {};
 
-    it('updateUserData should reject with error when given data is null', function (done) {
-        var userId = 'user_w_data12',
-            initData = {},
-            newData = null;
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, newData);
-            })
-            .then(function () {
-                throw new Error('Should have failed!');
-            })
-            .catch(function (err) {
-                expect(err.message).to.include('supplied value is not an object [null]');
-            })
-            .nodeify(done);
-    });
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function (customData) {
+                    expect(customData).to.deep.equal(initData);
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserData should reject with error when given data is undefined', function (done) {
-        var userId = 'user_w_data13',
-            initData = {};
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId);
-            })
-            .then(function () {
-                throw new Error('Should have failed!');
-            })
-            .catch(function (err) {
-                expect(err.message).to.include('supplied value is not an object [undefined]');
-            })
-            .nodeify(done);
-    });
+        it('should reject with error when given data is a string', function (done) {
+            var userId = 'user_w_data11',
+                initData = {},
+                newData = 'aString';
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function () {
+                    throw new Error('Should have failed!');
+                })
+                .catch(function (err) {
+                    expect(err.message).to.include('supplied value is not an object [aString]');
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserData should reject with error when given data is an array', function (done) {
-        var userId = 'user_w_data14',
-            initData = {};
-        auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
-            .then(function () {
-                return auth.updateUserDataField(userId, [1, 2]);
-            })
-            .then(function () {
-                throw new Error('Should have failed!');
-            })
-            .catch(function (err) {
-                expect(err.message).to.include('supplied value is not an object [1,2]');
-            })
-            .nodeify(done);
-    });
+        it('should reject with error when given data is null', function (done) {
+            var userId = 'user_w_data12',
+                initData = {},
+                newData = null;
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, newData);
+                })
+                .then(function () {
+                    throw new Error('Should have failed!');
+                })
+                .catch(function (err) {
+                    expect(err.message).to.include('supplied value is not an object [null]');
+                })
+                .nodeify(done);
+        });
 
-    it('updateUserData should reject with error when user does not exist', function (done) {
-        auth.updateUserDataField('does_not_exist', {a: 1})
-            .then(function () {
-                throw new Error('Should have failed!');
-            })
-            .catch(function (err) {
-                expect(err.message).to.include('no such user [does_not_exist]');
-            })
-            .nodeify(done);
+        it('should reject with error when given data is undefined', function (done) {
+            var userId = 'user_w_data13',
+                initData = {};
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId);
+                })
+                .then(function () {
+                    throw new Error('Should have failed!');
+                })
+                .catch(function (err) {
+                    expect(err.message).to.include('supplied value is not an object [undefined]');
+                })
+                .nodeify(done);
+        });
+
+        it('should reject with error when given data is an array', function (done) {
+            var userId = 'user_w_data14',
+                initData = {};
+            auth.addUser(userId, 'e@mail', 'pass', true, {overwrite: true, data: initData})
+                .then(function () {
+                    return auth.updateUserDataField(userId, [1, 2]);
+                })
+                .then(function () {
+                    throw new Error('Should have failed!');
+                })
+                .catch(function (err) {
+                    expect(err.message).to.include('supplied value is not an object [1,2]');
+                })
+                .nodeify(done);
+        });
+
+        it('should reject with error when user does not exist', function (done) {
+            auth.updateUserDataField('does_not_exist', {a: 1})
+                .then(function () {
+                    throw new Error('Should have failed!');
+                })
+                .catch(function (err) {
+                    expect(err.message).to.include('no such user [does_not_exist]');
+                })
+                .nodeify(done);
+        });
     });
 
     it('should add a user without settings', function (done) {

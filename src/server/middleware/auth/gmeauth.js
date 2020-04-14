@@ -24,6 +24,8 @@ var Mongodb = require('mongodb'),
     CONSTANTS = require('./constants'),
     chance = new Chance();
 
+const crypto = require('crypto');
+
 /**
  *
  * @param session
@@ -549,17 +551,19 @@ function GMEAuth(session, gmeConfig) {
             .nodeify(callback);
     }
 
-    function _updateUserObjectField(userId, keys, newValue, overwrite) {
+    function _updateUserObjectField(userId, keys, newValue, options={}) {
+        const isNestedField = keys.length > 1;
+        const {overwrite, encrypt} = options;
         return collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}})
             .then(function (userData) {
                 var currentValue,
-                    update = {$set: {}},
                     jointKey = keys.join('.');
 
+                const isValidValue = isNestedField || UTIL.isTrueObject(newValue);
                 if (!userData) {
                     throw new Error('no such user [' + userId + ']');
-                } else if (UTIL.isTrueObject(newValue) === false) {
-                    throw new Error('supplied value is not an object [' + newValue + ']');
+                } else if (!isValidValue) {
+                    throw new Error(`object required for ${jointKey}. Found [${newValue}]`);
                 }
 
                 currentValue = userData[keys.shift()] || {};
@@ -568,18 +572,57 @@ function GMEAuth(session, gmeConfig) {
                     currentValue = currentValue[key] || {};
                 });
 
-                if (overwrite) {
-                    currentValue = newValue;
-                } else {
-                    UTIL.updateFieldsRec(currentValue, newValue);
+                if (encrypt) {
+                    const unencrypted = newValue;
+                    newValue = {};
+                    Object.entries(unencrypted).forEach(entry => {
+                        const [key, value] = entry;
+                        newValue[key] = _encrypt(value);
+                    });
                 }
 
-                update.$set[jointKey] = currentValue;
+                const isUpdatingObject = !overwrite && UTIL.isTrueObject(newValue) &&
+                    UTIL.isTrueObject(currentValue);
+                if (isUpdatingObject) {
+                    UTIL.updateFieldsRec(currentValue, newValue);
+                } else {
+                    currentValue = newValue;
+                }
+
+                const deleteNestedKey = currentValue === undefined;
+                const update = {};
+                if (deleteNestedKey) {
+                    console.log('deleting', jointKey);
+                    update.$unset = {};
+                    update.$unset[jointKey] = '';
+                } else {
+                    update.$set = {};
+                    update.$set[jointKey] = currentValue;
+                }
                 return collection.updateOne({_id: userId}, update, {upsert: true});
             })
             .then(function () {
                 return getUser(userId);
             });
+    }
+
+    const algorithm = 'aes-256-cbc';
+    const key = crypto.randomBytes(32);  // TODO: Read key from config
+    function _encrypt(text) {
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
+        let encrypted = cipher.update(text);
+        encrypted = Buffer.concat([encrypted, cipher.final()]);
+        return {iv: iv.toString('hex'), encryptedData: encrypted.toString('hex')};
+    }
+
+    function _decrypt(encrypted) {
+        const iv = Buffer.from(encrypted.iv, 'hex');
+        const encryptedData = Buffer.from(encrypted.encryptedData, 'hex');
+        const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
+        let decrypted = decipher.update(encryptedData);
+        decrypted = Buffer.concat([decrypted, decipher.final()]);
+        return decrypted.toString();
     }
 
     /**
@@ -596,6 +639,41 @@ function GMEAuth(session, gmeConfig) {
                 return userData.data;
             })
             .nodeify(callback);
+    }
+
+    async function setUserDataField(userId, fields, data, options={}) {
+        if (typeof fields === 'string') {
+            fields = [fields];
+        }
+        fields.unshift('data');
+        const userData = await _updateUserObjectField(userId, fields, data, options);
+        return userData.data;
+    }
+
+    async function getUserDataField(userId, fields = [], decrypt = false) {
+        if (typeof fields === 'string') {
+            fields = [fields];
+        }
+        const query = {
+            _id: userId,
+            type: {$ne: CONSTANTS.ORGANIZATION},
+            disabled: {$ne: true}
+        };
+        const jointKey = fields.join('.');
+        const user = await collection.findOne(query);
+        let result = user.data;
+        fields.forEach(key => {
+            if (!result.hasOwnProperty(key)) {
+                throw new Error(`User data field not found: ${jointKey}`);
+            }
+            result = result[key];
+        });
+
+        if (decrypt) {
+            result = _decrypt(result);
+        }
+
+        return result;
     }
 
     /**
@@ -1064,6 +1142,8 @@ function GMEAuth(session, gmeConfig) {
     this.addUser = addUser;
     this.updateUser = updateUser;
     this.updateUserDataField = updateUserDataField;
+    this.setUserDataField = setUserDataField;
+    this.getUserDataField = getUserDataField;
     this.updateUserSettings = updateUserSettings;
     this.updateUserComponentSettings = updateUserComponentSettings;
     this.deleteUser = deleteUser;
