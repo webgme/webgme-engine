@@ -479,7 +479,7 @@ describe('GME authentication', function () {
 
         it('should set to non-object values', async function () {
             const newData = 'someValue';
-            const userData = await auth.setUserDataField(userId, 'test', newData);
+            await auth.setUserDataField(userId, 'test', newData);
             const data = await auth.getUserDataField(userId, 'test');
             assert.equal(data, newData);
         });
