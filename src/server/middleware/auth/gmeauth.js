@@ -564,7 +564,7 @@ function GMEAuth(session, gmeConfig) {
                 if (!userData) {
                     throw new Error('no such user [' + userId + ']');
                 } else if (!isValidValue) {
-                    throw new Error(`object required for ${jointKey}. Found [${newValue}]`);
+                    throw new Error(`object required for user ${jointKey}. Found [${newValue}]`);
                 }
 
                 currentValue = userData[keys.shift()] || {};

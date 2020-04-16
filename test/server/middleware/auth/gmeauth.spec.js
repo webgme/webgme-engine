@@ -698,7 +698,7 @@ describe('GME authentication', function () {
                     throw new Error('Should have failed!');
                 })
                 .catch(function (err) {
-                    expect(err.message).to.include('supplied value is not an object [aString]');
+                    expect(err.message).to.include('object required for user data. Found [aString]');
                 })
                 .nodeify(done);
         });
@@ -715,7 +715,7 @@ describe('GME authentication', function () {
                     throw new Error('Should have failed!');
                 })
                 .catch(function (err) {
-                    expect(err.message).to.include('supplied value is not an object [null]');
+                    expect(err.message).to.include('object required for user data. Found [null]');
                 })
                 .nodeify(done);
         });
@@ -731,7 +731,7 @@ describe('GME authentication', function () {
                     throw new Error('Should have failed!');
                 })
                 .catch(function (err) {
-                    expect(err.message).to.include('supplied value is not an object [undefined]');
+                    expect(err.message).to.include('object required for user data. Found [undefined]');
                 })
                 .nodeify(done);
         });
@@ -747,7 +747,7 @@ describe('GME authentication', function () {
                     throw new Error('Should have failed!');
                 })
                 .catch(function (err) {
-                    expect(err.message).to.include('supplied value is not an object [1,2]');
+                    expect(err.message).to.include('object required for user data. Found [1,2]');
                 })
                 .nodeify(done);
         });
