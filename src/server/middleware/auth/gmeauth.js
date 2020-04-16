@@ -552,7 +552,7 @@ function GMEAuth(session, gmeConfig) {
             .nodeify(callback);
     }
 
-    function _updateUserObjectField(userId, keys, newValue, options={}) {
+    function _updateUserObjectField(userId, keys, newValue, options = {}) {
         const isNestedField = keys.length > 1;
         const {overwrite, encrypt} = options;
         return collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}})
