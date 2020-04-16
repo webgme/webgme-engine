@@ -326,45 +326,65 @@ function createAPI(app, mountPath, middlewareOpts) {
             .catch(next);
     });
 
-    router.get('/user/data', ensureAuthenticated, function (req, res, next) {
-        var userId = getUserId(req);
+    router.get(/\/user\/data\/?(.*)/, ensureAuthenticated, function (req, res, next) {
+        const userId = getUserId(req);
+        const keys = getUserDataKeys(req);
+        const {decrypt = false} = req.query;
 
-        gmeAuth.getUser(userId)
-            .then(function (userData) {
-                res.json(userData.data);
-            })
-            .catch(next);
-    });
-
-    router.put('/user/data', function (req, res, next) {
-        var userId = getUserId(req);
-
-        gmeAuth.updateUserDataField(userId, req.body, true)
+        gmeAuth.getUserDataField(userId, keys, decrypt)
             .then(function (data) {
                 res.json(data);
             })
             .catch(next);
     });
 
-    router.patch('/user/data', function (req, res, next) {
-        var userId = getUserId(req);
+    router.put(/\/user\/data\/?(.*)/, function (req, res, next) {
+        const userId = getUserId(req);
+        const keys = getUserDataKeys(req);
+        const {encrypt = false} = req.query;
+        const options = {
+            encrypt,
+            overwrite: true
+        };
 
-        gmeAuth.updateUserDataField(userId, req.body)
+        gmeAuth.setUserDataField(userId, keys, req.body, options)
             .then(function (data) {
                 res.json(data);
             })
             .catch(next);
     });
 
-    router.delete('/user/data', function (req, res, next) {
-        var userId = getUserId(req);
+    router.patch(/\/user\/data\/?(.*)/, function (req, res, next) {
+        const userId = getUserId(req);
+        const keys = getUserDataKeys(req);
+        const {encrypt = false} = req.query;
+        const options = {
+            encrypt,
+            overwrite: false
+        };
 
-        gmeAuth.updateUserDataField(userId, {}, true)
+        gmeAuth.setUserDataField(userId, keys, req.body, options)
+            .then(function (data) {
+                res.json(data);
+            })
+            .catch(next);
+    });
+
+    router.delete(/\/user\/data\/?(.*)/, function (req, res, next) {
+        const userId = getUserId(req);
+        const keys = getUserDataKeys(req);
+
+        gmeAuth.setUserDataField(userId, keys)
             .then(function (/*data*/) {
                 res.sendStatus(204);
             })
             .catch(next);
     });
+
+    function getUserDataKeys(req) {
+        const encodedKeys = req.params[0].split('/');
+        return encodedKeys.map(decodeURIComponent);
+    }
 
     router.get('/user/token', ensureAuthenticated, function (req, res, next) {
         var userId = getUserId(req);
