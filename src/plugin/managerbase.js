@@ -311,16 +311,17 @@ define([
             try {
                 if (expectsCallback) {
                     result = await new Promise((resolve, reject) => 
-                        plugin.main(function (err) {
+                        plugin.main(function (err, res) {
+                            result = res || result;
                             if (err) {
                                 reject(err);
                             }
-                            checkMultiCallbacks();
                             resolve();
+                            setTimeout(checkMultiCallbacks);
                         })
                     );
                 } else {
-                    await plugin.main();
+                    result = await plugin.main();
                 }
             } catch (e) {
                 err = e;
