@@ -222,7 +222,9 @@ describe('climanager', function () {
         await manager.configurePlugin(plugin, pluginConfig, context);
 
         plugin.main = () => {throw new Error('Fail!');};
-        await assert.rejects(Q.ninvoke(manager, 'runPluginMain', plugin));
+        await assert.rejects(
+            () => Q.ninvoke(manager, 'runPluginMain', plugin)
+        );
     });
 
     it('should handle uncaught async errors', async function () {
@@ -237,7 +239,9 @@ describe('climanager', function () {
         await manager.configurePlugin(plugin, pluginConfig, context);
 
         plugin.main = async () => {throw new Error('Fail!');};
-        await assert.rejects(Q.ninvoke(manager, 'runPluginMain', plugin));
+        await assert.rejects(
+            () => Q.ninvoke(manager, 'runPluginMain', plugin)
+        );
     });
 
     it('should executePlugin', function (done) {
