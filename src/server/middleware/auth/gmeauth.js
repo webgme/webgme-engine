@@ -601,8 +601,8 @@ function GMEAuth(session, gmeConfig) {
             });
     }
 
-    const algorithm = 'aes-256-cbc';
-    const key = Buffer.from('1234567890asdfghjklpoiuytrewqzxc');  // TODO: Read key from config
+    const {algorithm} = gmeConfig.authentication.encryption;
+    const key = fs.readFileSync(gmeConfig.authentication.encryption.key);
     function _encrypt(input) {
         const type = typeof input;
         if (type === 'object') {
