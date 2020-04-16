@@ -25,6 +25,7 @@ var Mongodb = require('mongodb'),
     chance = new Chance();
 
 const crypto = require('crypto');
+const _ = require('underscore');
 
 /**
  *
@@ -573,12 +574,7 @@ function GMEAuth(session, gmeConfig) {
                 });
 
                 if (encrypt) {
-                    const unencrypted = newValue;
-                    newValue = {};
-                    Object.entries(unencrypted).forEach(entry => {
-                        const [key, value] = entry;
-                        newValue[key] = _encrypt(value);
-                    });
+                    newValue = _encrypt(newValue);
                 }
 
                 const isUpdatingObject = !overwrite && UTIL.isTrueObject(newValue) &&
@@ -606,22 +602,47 @@ function GMEAuth(session, gmeConfig) {
     }
 
     const algorithm = 'aes-256-cbc';
-    const key = crypto.randomBytes(32);  // TODO: Read key from config
-    function _encrypt(text) {
+    const key = Buffer.from('1234567890asdfghjklpoiuytrewqzxc');  // TODO: Read key from config
+    function _encrypt(input) {
+        const type = typeof input;
+        if (type === 'object') {
+            return _.mapObject(input, _encrypt);
+        } else if (type === 'string') {
+            return _encryptString(input);
+        } else {
+            throw new Error('Unsupported data type for encryption: ' + type);
+        }
+    }
+
+    function _encryptString(text) {
         const iv = crypto.randomBytes(16);
-        const cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
+        const cipher = crypto.createCipheriv(algorithm, key, iv);
         let encrypted = cipher.update(text);
         encrypted = Buffer.concat([encrypted, cipher.final()]);
         return {iv: iv.toString('hex'), encryptedData: encrypted.toString('hex')};
     }
 
     function _decrypt(encrypted) {
+        const isEncryptedObject = !(encrypted.iv && encrypted.encryptedData);
+        if (isEncryptedObject) {
+            return _.mapObject(encrypted, _decryptData);
+        } else {
+            return _decryptData(encrypted);
+        }
+    }
+
+    function _decryptData(encrypted) {
+        // TODO: Handle these errors better
         const iv = Buffer.from(encrypted.iv, 'hex');
         const encryptedData = Buffer.from(encrypted.encryptedData, 'hex');
-        const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
+        const decipher = crypto.createDecipheriv(algorithm, key, iv);
         let decrypted = decipher.update(encryptedData);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
-        return decrypted.toString();
+        return _removeTrailingAcks(decrypted.toString());
+    }
+
+    function _removeTrailingAcks(text) {
+        return text.replace(/\u0006+$/g, '');
     }
 
     /**

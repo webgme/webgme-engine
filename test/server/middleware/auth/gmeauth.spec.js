@@ -469,12 +469,30 @@ describe('GME authentication', function () {
             assert.deepEqual(userData.test, newData);
         });
 
+        it('should create objects as needed during set nested field ', async function () {
+            const newData = 10;
+            const keys = ['test-nested', 'a', 'b', 'c'];
+            await auth.setUserDataField(userId, keys, newData);
+            const data = await auth.getUserDataField(userId);
+            const value = keys.reduce((obj, key) => obj[key], data);
+            assert.equal(value, newData);
+        });
+
         it('should set/get encrypted field value', async function () {
             const newData = {hello: 'world'};
             const userData = await auth.setUserDataField(userId, 'test', newData, {encrypt: true});
-            const data = await auth.getUserDataField(userId, ['test', 'hello'], true);
-            assert.equal(data, newData.hello);
+            const data = await auth.getUserDataField(userId, 'test', true);
+            assert.deepEqual(data, newData);
             assert.notEqual(userData.test.hello, newData.hello);
+        });
+
+        it('should set/get encrypted string value', async function () {
+            const newData = 'testValue';
+            await auth.setUserDataField(userId, 'test', newData, {encrypt: true});
+            const encryptedData = await auth.getUserDataField(userId, 'test');
+            assert.notEqual(encryptedData, newData);
+            const data = await auth.getUserDataField(userId, 'test', true);
+            assert.equal(data, newData);
         });
 
         it('should set to non-object values', async function () {
