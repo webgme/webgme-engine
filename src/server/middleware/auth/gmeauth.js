@@ -660,6 +660,7 @@ function GMEAuth(session, gmeConfig) {
     }
 
     function _removeTrailingAcks(text) {
+        /* eslint-disable-next-line no-control-regex */
         return text.replace(/\u0006+$/g, '');
     }
 
