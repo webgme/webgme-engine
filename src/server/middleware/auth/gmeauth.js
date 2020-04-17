@@ -632,7 +632,6 @@ function GMEAuth(session, gmeConfig) {
     }
 
     function _decryptData(encrypted) {
-        // TODO: Handle these errors better
         const iv = Buffer.from(encrypted.iv, 'hex');
         const encryptedData = Buffer.from(encrypted.encryptedData, 'hex');
         const decipher = crypto.createDecipheriv(algorithm, key, iv);
