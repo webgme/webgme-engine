@@ -453,7 +453,7 @@ describe('GME authentication', function () {
             .nodeify(done);
     });
 
-    describe('set/getUserDataField', function () {
+    describe('set/get/deleteUserDataField', function () {
         const userId = 'user_w_data1';
         beforeEach(() => {
             const initData = {a: 1, b: 1, c: {d: 1}};
@@ -465,7 +465,6 @@ describe('GME authentication', function () {
         it('should set nested field value', async function () {
             const newData = {a: 2, b: 2};
             const userData = await auth.setUserDataField(userId, 'test', newData);
-            // TODO: Should this be returning all the userData?
             assert.deepEqual(userData.test, newData);
         });
 
@@ -497,18 +496,22 @@ describe('GME authentication', function () {
 
         it('should set to non-object values', async function () {
             const newData = 'someValue';
-            await auth.setUserDataField(userId, 'test', newData);
-            const data = await auth.getUserDataField(userId, 'test');
+            await auth.setUserDataField(userId, 'test2', newData);
+            const data = await auth.getUserDataField(userId, 'test2');
             assert.equal(data, newData);
         });
 
-        // TODO: I don't think we will likely need to support encrypting numbers...
-        it.skip('should set encrypted numeric value', async function () {
-            const newData = {hello: 10};
-            const userData = await auth.setUserDataField(userId, 'test', newData, {encrypt: true});
-            const data = await auth.getUserDataField(userId, ['test', 'hello'], true);
-            assert.equal(data, newData.hello);
-            assert.notEqual(userData.test.hello, newData.hello);
+        it('should not overwrite primitive w/ object', async function () {
+            const newData = {b: 2};
+            await auth.setUserDataField(userId, 'a', newData);
+            const data = await auth.getUserDataField(userId, 'a');
+            assert.notDeepEqual(data, newData);
+        });
+
+        it('should throw error when encrypting numeric value', async function () {
+            await assert.rejects(
+                () => auth.setUserDataField(userId, ['a', 'b'], 10, {encrypt: true})
+            );
         });
 
         it('should get top-level field value', async function () {
@@ -521,8 +524,15 @@ describe('GME authentication', function () {
             assert.equal(nestedValue, 1);
         });
 
-        it('should delete value if set to undefined', async function () {
-            await auth.setUserDataField(userId, 'a', undefined);
+        it('should delete nested keys', async function () {
+            const keys = ['c', 'd'];
+            await auth.deleteUserDataField(userId, keys);
+            const data = await auth.getUserDataField(userId, 'c');
+            assert(!data.d);
+        });
+
+        it('should delete top-level value', async function () {
+            await auth.deleteUserDataField(userId, 'a');
             const userData = await auth.getUserDataField(userId);
             const keys = Object.keys(userData);
             assert(!keys.includes('a'), `"a" key not deleted!: ${keys.join(',')}`);

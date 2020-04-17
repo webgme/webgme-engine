@@ -374,7 +374,7 @@ function createAPI(app, mountPath, middlewareOpts) {
         const userId = getUserId(req);
         const keys = getUserDataKeys(req);
 
-        gmeAuth.setUserDataField(userId, keys)
+        gmeAuth.deleteUserDataField(userId, keys)
             .then(function (/*data*/) {
                 res.sendStatus(204);
             })
