@@ -8,6 +8,7 @@ var testFixture = require('../_globals');
 describe('climanager', function () {
     'use strict';
 
+    const assert = require('assert').strict;
     var pluginName = 'MinimalWorkingExample',
         logger = testFixture.logger.fork('climanager'),
         gmeConfig = testFixture.getGmeConfig(),
@@ -207,6 +208,40 @@ describe('climanager', function () {
                 });
             })
             .catch(done);
+    });
+
+    it('should handle uncaught errors', async function () {
+        const manager = new PluginCliManager(null, logger, gmeConfig);
+        const pluginConfig = {};
+        const context = {
+            project: project,
+            commitHash: commitHash,
+            branchName: branchName
+        };
+        const plugin = await manager.initializePlugin(pluginName);
+        await manager.configurePlugin(plugin, pluginConfig, context);
+
+        plugin.main = () => {throw new Error('Fail!');};
+        await assert.rejects(
+            () => Q.ninvoke(manager, 'runPluginMain', plugin)
+        );
+    });
+
+    it('should handle uncaught async errors', async function () {
+        const manager = new PluginCliManager(null, logger, gmeConfig);
+        const pluginConfig = {};
+        const context = {
+            project: project,
+            commitHash: commitHash,
+            branchName: branchName
+        };
+        const plugin = await manager.initializePlugin(pluginName);
+        await manager.configurePlugin(plugin, pluginConfig, context);
+
+        plugin.main = async () => {throw new Error('Fail!');};
+        await assert.rejects(
+            () => Q.ninvoke(manager, 'runPluginMain', plugin)
+        );
     });
 
     it('should executePlugin', function (done) {

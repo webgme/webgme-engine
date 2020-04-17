@@ -274,7 +274,7 @@ define([
          * @param plugin
          * @param callback
          */
-        this.runPluginMain = function (plugin, callback) {
+        this.runPluginMain = async function (plugin, callback) {
             var startTime = (new Date()).toISOString(),
                 mainCallbackCalls = 0,
                 multiCallbackHandled = false;
@@ -287,20 +287,14 @@ define([
                 return;
             }
 
-            plugin.main(function (err, result) {
-                var stackTrace;
-                result = result || plugin.result;
-                self.logger.debug('plugin main callback called', {result: result.serialize()});
+            let result,
+                err = null;
+
+            const expectsCallback = plugin.main.length > 0;
+            const checkMultiCallbacks = () => {
                 mainCallbackCalls += 1;
-                // set common information (meta info) about the plugin and measured execution times
-                result.setFinishTime((new Date()).toISOString());
-                result.setStartTime(startTime);
-
-                result.setPluginName(plugin.getName());
-                result.setPluginId(plugin.getId());
-
                 if (mainCallbackCalls > 1) {
-                    stackTrace = new Error().stack;
+                    const stackTrace = new Error().stack;
                     self.logger.error('The main callback is being called more than once!', {metadata: stackTrace});
                     result.setError('The main callback is being called more than once!');
                     if (multiCallbackHandled === true) {
@@ -312,12 +306,39 @@ define([
                     plugin.createMessage(null, 'The main callback is being called more than once.');
                     plugin.createMessage(null, stackTrace);
                     callback('The main callback is being called more than once!', result);
-                } else {
-                    result.setError(err);
-                    plugin.notificationHandlers = [];
-                    callback(typeof err === 'string' ? new Error(err) : err, result);
                 }
-            });
+            };
+            try {
+                if (expectsCallback) {
+                    result = await new Promise((resolve, reject) => 
+                        plugin.main(function (err, res) {
+                            result = res || result;
+                            if (err) {
+                                reject(err);
+                            }
+                            resolve();
+                            setTimeout(checkMultiCallbacks);
+                        })
+                    );
+                } else {
+                    result = await plugin.main();
+                }
+            } catch (e) {
+                err = e;
+            }
+
+            result = result || plugin.result;
+            self.logger.debug('plugin main callback called', {result: result.serialize()});
+            // set common information (meta info) about the plugin and measured execution times
+            result.setFinishTime((new Date()).toISOString());
+            result.setStartTime(startTime);
+
+            result.setPluginName(plugin.getName());
+            result.setPluginId(plugin.getId());
+
+            result.setError(err);
+            plugin.notificationHandlers = [];
+            callback(typeof err === 'string' ? new Error(err) : err, result);
         };
 
         this.getPluginErrorResult = function (pluginId, pluginName, message, projectId) {
