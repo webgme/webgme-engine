@@ -736,12 +736,16 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    function updateUserComponentSettings(userId, componentId, settings, overwrite, callback) {
-        return _updateUserObjectField(userId, ['settings', componentId], settings, {overwrite})
-            .then(function (userData) {
-                return userData.settings[componentId];
-            })
-            .nodeify(callback);
+    async function updateUserComponentSettings(userId, componentId, settings, overwrite, callback) {
+        const deferred = Q.defer();
+        try {
+            const userData = await _updateUserObjectField(userId, ['settings', componentId], settings, {overwrite});
+            deferred.resolve(userData.settings[componentId]);
+        } catch (e) {
+            deferred.reject(e);
+        }
+        
+        return deferred.promise.nodeify(callback);
     }
 
     /**
@@ -752,12 +756,16 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    function updateUserSettings(userId, settings, overwrite, callback) {
-        return _updateUserObjectField(userId, ['settings'], settings, {overwrite})
-            .then(function (userData) {
-                return userData.settings;
-            })
-            .nodeify(callback);
+    async function updateUserSettings(userId, settings, overwrite, callback) {
+        const deferred = Q.defer();
+        try {
+            const userData = await _updateUserObjectField(userId, ['settings'], settings, {overwrite});
+            deferred.resolve(userData.settings);
+        } catch (e) {
+            deferred.reject(e);
+        }
+        
+        return deferred.promise.nodeify(callback);
     }
 
     /**
