@@ -672,12 +672,16 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    function updateUserDataField(userId, data, overwrite, callback) {
-        return _updateUserObjectField(userId, ['data'], data, {overwrite})
-            .then(function (userData) {
-                return userData.data;
-            })
-            .nodeify(callback);
+    async function updateUserDataField(userId, data, overwrite, callback) {
+        const deferred = Q.defer();
+        try {
+            const userData = await _updateUserObjectField(userId, ['data'], data, {overwrite});
+            deferred.resolve(userData.data);
+        } catch (e) {
+            deferred.reject(e);
+        }
+        
+        return deferred.promise.nodeify(callback);
     }
 
     async function setUserDataField(userId, fields, data, options = {}) {
