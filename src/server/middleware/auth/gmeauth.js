@@ -672,14 +672,13 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    async function updateUserDataField(userId, data, overwrite, callback) {
+    function updateUserDataField(userId, data, overwrite, callback) {
         const deferred = Q.defer();
-        try {
-            const userData = await _updateUserObjectField(userId, ['data'], data, {overwrite});
-            deferred.resolve(userData.data);
-        } catch (e) {
-            deferred.reject(e);
-        }
+        _updateUserObjectField(userId, ['data'], data, {overwrite})
+            .then((userData) => {
+                deferred.resolve(userData.data);
+            })
+            .catch(deferred.reject);
         
         return deferred.promise.nodeify(callback);
     }
@@ -736,14 +735,13 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    async function updateUserComponentSettings(userId, componentId, settings, overwrite, callback) {
+    function updateUserComponentSettings(userId, componentId, settings, overwrite, callback) {
         const deferred = Q.defer();
-        try {
-            const userData = await _updateUserObjectField(userId, ['settings', componentId], settings, {overwrite});
-            deferred.resolve(userData.settings[componentId]);
-        } catch (e) {
-            deferred.reject(e);
-        }
+        _updateUserObjectField(userId, ['settings', componentId], settings, {overwrite})
+            .then((userData) => {
+                deferred.resolve(userData.settings[componentId]);
+            })
+            .catch(deferred.reject);
         
         return deferred.promise.nodeify(callback);
     }
@@ -756,14 +754,13 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    async function updateUserSettings(userId, settings, overwrite, callback) {
+    function updateUserSettings(userId, settings, overwrite, callback) {
         const deferred = Q.defer();
-        try {
-            const userData = await _updateUserObjectField(userId, ['settings'], settings, {overwrite});
-            deferred.resolve(userData.settings);
-        } catch (e) {
-            deferred.reject(e);
-        }
+        _updateUserObjectField(userId, ['settings'], settings, {overwrite})
+            .then((userData) => {
+                deferred.resolve(userData.settings);
+            })
+            .catch(deferred.reject);
         
         return deferred.promise.nodeify(callback);
     }
