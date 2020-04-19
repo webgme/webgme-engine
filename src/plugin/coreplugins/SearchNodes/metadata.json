@@ -1,0 +1,39 @@
+{
+  "id": "SearchNodes",
+  "name": "Search Nodes",
+  "version": "0.1.0",
+  "description": "Look for nodes in the given sub tree based on the stringified values of their attributes",
+  "icon": {
+    "src": "",
+    "class": "glyphicon glyphicon-search"
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": false,
+  "writeAccessRequired": false,
+  "configStructure": [
+    {
+      "name": "attributeName",
+      "displayName": "Name of the attribute to filter",
+      "description": "Name of the attribute that will be tested against the keyword.",
+      "value": "name",
+      "valueType": "string",
+      "readOnly": false
+    },
+    {
+      "name": "searchPattern",
+      "displayName": "Search Pattern",
+      "description": "Regular expression without any modifier and the bounding slash characters.",
+      "value": "",
+      "valueType": "string",
+      "readOnly": false
+    },
+    {
+      "name": "matchCase",
+      "displayName": "Case Sensitive",
+      "description": "Tells whether search should go in a case sensitive mode or should ignore capitalization only differences.",
+      "value": true,
+      "valueType": "boolean",
+      "readOnly": false
+    }
+  ]
+}
