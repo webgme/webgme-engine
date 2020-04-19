@@ -383,7 +383,16 @@ function createAPI(app, mountPath, middlewareOpts) {
 
     function getUserDataKeys(req) {
         const encodedKeys = req.params[0].split('/');
-        return encodedKeys.map(decodeURIComponent);
+        encodedKeys.map(decodeURIComponent);
+        let i = encodedKeys.length;
+        if (i > 0) {
+            while (i--) {
+                if (encodedKeys[i] === '') {
+                    encodedKeys.splice(i, 1);
+                }
+            }
+        }
+        return encodedKeys;
     }
 
     router.get('/user/token', ensureAuthenticated, function (req, res, next) {
