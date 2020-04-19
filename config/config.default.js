@@ -44,6 +44,10 @@ var path = require('path'),
                 algorithm: 'RS256',
                 // The private key is only needed if using the localtokengenerator
                 privateKey: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_PRIVATE_KEY')
+            },
+            encryption: {
+                algorithm: 'aes-256-cbc',
+                key: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_ENCRYPTION_KEY')
             }
         },
 

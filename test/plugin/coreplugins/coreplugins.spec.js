@@ -44,7 +44,8 @@ describe('CorePlugins', function () {
             'InvokedPlugin',
             'WaitingForAbort',
             'AbortPlugin',
-            'WaitPlugin'
+            'WaitPlugin',
+            'SearchNodes'
         ],
 
         pluginsShouldFail = [

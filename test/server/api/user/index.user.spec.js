@@ -22,6 +22,7 @@ describe('USER REST API', function () {
 
 
         superagent = testFixture.superagent;
+    const assert = require('assert').strict;
 
 
     describe('USER SPECIFIC API', function () {
@@ -57,6 +58,10 @@ describe('USER REST API', function () {
                         gmeAuth.addUser('user_w_data1', 'e@mail.com', 'plaintext', false, {
                             overwrite: true,
                             data: {a: 1}
+                        }),
+                        gmeAuth.addUser('user_w_nesteddata1', 'e@mail.com', 'plaintext', false, {
+                            overwrite: true,
+                            data: {a: {b: 1}, 'a/c': 1}
                         }),
                         gmeAuth.addUser('user_w_data2', 'e@mail.com', 'plaintext', false, {
                             overwrite: true,
@@ -1668,6 +1673,110 @@ describe('USER REST API', function () {
                         expect(res.body).to.deep.equal({});
                         done();
                     });
+            });
+
+            it('should get user data basic authentication GET /api/v1/user/data/a', function (done) {
+                agent.get(server.getUrl() + '/api/v1/user/data/a')
+                    .set('Authorization', 'Basic ' + new Buffer('user_w_data1:plaintext').toString('base64'))
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body).to.deep.equal(1);
+                        done();
+                    });
+            });
+
+            it('should get nested user data values GET /api/v1/user/data/a/b', function (done) {
+                agent.get(server.getUrl() + '/api/v1/user/data/a/b')
+                    .set('Authorization', 'Basic ' + new Buffer('user_w_nesteddata1:plaintext').toString('base64'))
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body).to.deep.equal(1);
+                        done();
+                    });
+            });
+
+            it('should get user data key with special chars GET /api/v1/user/data/a%2Fc', function (done) {
+                agent.get(server.getUrl() + '/api/v1/user/data/a/b')
+                    .set('Authorization', 'Basic ' + new Buffer('user_w_nesteddata1:plaintext').toString('base64'))
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body).to.deep.equal(1);
+                        done();
+                    });
+            });
+
+            it('should set nested key PUT /api/v1/user/data/test/b/d', function (done) {
+                const user = 'user_w_nesteddata1';
+                const newData = {b: 1};
+                agent.put(server.getUrl() + '/api/v1/user/data/b/d')
+                    .send(newData)
+                    .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        gmeAuth.getUser(user)
+                            .then(userData => {
+                                expect(userData.data.b.d).to.deep.equal(newData);
+                            })
+                            .nodeify(done);
+                    });
+            });
+
+            it('should set encrypted nested key PUT /api/v1/user/data/user/password', function (done) {
+                const user = 'user_w_nesteddata1';
+                const newData = 'IAmASecret';
+                agent.put(server.getUrl() + '/api/v1/user/data/user/password')
+                    .send(newData)
+                    .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        gmeAuth.getUser(user)
+                            .then(userData => {
+                                assert(userData.data.user.password);
+                                assert.notEqual(userData.data.user.password, newData);
+                            })
+                            .nodeify(done);
+                    });
+            });
+
+            it('should decrypt user data GET /api/v1/user/data/user/password?decrypt=true', async function () {
+                const user = 'user_w_nesteddata1';
+                const newData = 'IAmASecret';
+                const keys = ['user', 'password'];
+                await gmeAuth.setUserDataField(user, keys, newData, {encrypt: true});
+                const response = await new Promise((resolve, reject) => 
+                    agent.get(server.getUrl() + '/api/v1/user/data/' + keys.join('/') + '?decrypt=true')
+                        .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                        .end(function (err, res) {
+                            if (err) {
+                                return reject(err);
+                            }
+                            resolve(res);
+                        })
+                );
+                assert.equal(response.status, 200);
+                assert.equal(response.body, newData);
+            });
+
+            it('should get encrypted user data GET /api/v1/user/data/user/password?decrypt=true', async function () {
+                const user = 'user_w_nesteddata1';
+                const newData = 'IAmASecret';
+                const keys = ['user', 'otherPassword'];
+                await gmeAuth.setUserDataField(user, keys, newData, {encrypt: true});
+                const response = await new Promise((resolve, reject) => 
+                    agent.get(server.getUrl() + '/api/v1/user/data/' + keys.join('/'))
+                        .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                        .end(function (err, res) {
+                            if (err) {
+                                return reject(err);
+                            }
+                            resolve(res);
+                        })
+                );
+                assert.equal(response.status, 200);
+                assert.equal(typeof response.body, 'object');
+                assert(response.body.iv);
+                assert(response.body.encryptedData);
+                assert.notEqual(response.body, newData);
             });
 
             it('should get user data basic authentication GET /api/v1/user/data', function (done) {

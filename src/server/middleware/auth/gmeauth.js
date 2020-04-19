@@ -24,6 +24,9 @@ var Mongodb = require('mongodb'),
     CONSTANTS = require('./constants'),
     chance = new Chance();
 
+const crypto = require('crypto');
+const _ = require('underscore');
+
 /**
  *
  * @param session
@@ -549,37 +552,116 @@ function GMEAuth(session, gmeConfig) {
             .nodeify(callback);
     }
 
-    function _updateUserObjectField(userId, keys, newValue, overwrite) {
-        return collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}})
-            .then(function (userData) {
-                var currentValue,
-                    update = {$set: {}},
-                    jointKey = keys.join('.');
+    async function _updateUserObjectField(userId, keys, newValue, options = {}) {
+        const isNestedField = keys.length > 1;
+        const {overwrite, encrypt} = options;
+        const jointKey = keys.join('.');
 
-                if (!userData) {
-                    throw new Error('no such user [' + userId + ']');
-                } else if (UTIL.isTrueObject(newValue) === false) {
-                    throw new Error('supplied value is not an object [' + newValue + ']');
-                }
+        const isValidValue = isNestedField || UTIL.isTrueObject(newValue);
+        if (!isValidValue) {
+            throw new Error(`object required for user ${jointKey}. Found [${newValue}]`);
+        }
 
-                currentValue = userData[keys.shift()] || {};
+        const userData = await collection.findOne({
+            _id: userId,
+            type: {$ne: CONSTANTS.ORGANIZATION},
+            disabled: {$ne: true}
+        });
 
-                keys.forEach(function (key) {
-                    currentValue = currentValue[key] || {};
-                });
+        if (!userData) {
+            throw new Error('no such user [' + userId + ']');
+        }
 
-                if (overwrite) {
-                    currentValue = newValue;
-                } else {
-                    UTIL.updateFieldsRec(currentValue, newValue);
-                }
+        let isNewlyCreated = false;
+        let currentValue = keys.reduce((value, key) => {
+            if (value.hasOwnProperty(key)) {
+                return value[key];
+            } else {
+                isNewlyCreated = true;
+                return {};
+            }
+        }, userData);
 
-                update.$set[jointKey] = currentValue;
-                return collection.updateOne({_id: userId}, update, {upsert: true});
-            })
-            .then(function () {
-                return getUser(userId);
-            });
+        if (encrypt) {
+            newValue = _encrypt(newValue);
+        }
+
+        const areBothObjects = UTIL.isTrueObject(newValue) &&
+            UTIL.isTrueObject(currentValue);
+        const isUpdatingObject = !overwrite && areBothObjects;
+
+        if (isUpdatingObject) {
+            UTIL.updateFieldsRec(currentValue, newValue);
+        } else if (overwrite || isNewlyCreated) {
+            currentValue = newValue;
+        }
+
+        const update = {};
+        update.$set = {};
+        update.$set[jointKey] = currentValue;
+
+        await collection.updateOne({_id: userId}, update, {upsert: true});
+        return getUser(userId);
+    }
+
+    async function _deleteUserObjectField(userId, keys) {
+        const jointKey = keys.join('.');
+        const update = {};
+
+        const isNestedKey = keys.length > 1;
+        if (isNestedKey) {
+            update.$unset = {};
+            update.$unset[jointKey] = '';
+        } else {
+            update.$set = {};
+            update.$set[jointKey] = {};
+        }
+
+        await collection.updateOne({_id: userId}, update, {upsert: true});
+    }
+
+    const {algorithm} = gmeConfig.authentication.encryption;
+    const key = fs.readFileSync(gmeConfig.authentication.encryption.key);
+    function _encrypt(input) {
+        const type = typeof input;
+        if (type === 'object') {
+            return _.mapObject(input, _encrypt);
+        } else if (type === 'string') {
+            return _encryptString(input);
+        } else {
+            throw new Error('Unsupported data type for encryption: ' + type);
+        }
+    }
+
+    function _encryptString(text) {
+        const iv = crypto.randomBytes(16);
+        const cipher = crypto.createCipheriv(algorithm, key, iv);
+        let encrypted = cipher.update(text);
+        encrypted = Buffer.concat([encrypted, cipher.final()]);
+        return {iv: iv.toString('hex'), encryptedData: encrypted.toString('hex')};
+    }
+
+    function _decrypt(encrypted) {
+        const isEncryptedObject = !(encrypted.iv && encrypted.encryptedData);
+        if (isEncryptedObject) {
+            return _.mapObject(encrypted, _decryptData);
+        } else {
+            return _decryptData(encrypted);
+        }
+    }
+
+    function _decryptData(encrypted) {
+        const iv = Buffer.from(encrypted.iv, 'hex');
+        const encryptedData = Buffer.from(encrypted.encryptedData, 'hex');
+        const decipher = crypto.createDecipheriv(algorithm, key, iv);
+        let decrypted = decipher.update(encryptedData);
+        decrypted = Buffer.concat([decrypted, decipher.final()]);
+        return _removeTrailingAcks(decrypted.toString());
+    }
+
+    function _removeTrailingAcks(text) {
+        /* eslint-disable-next-line no-control-regex */
+        return text.replace(/\u0006+$/g, '');
     }
 
     /**
@@ -591,11 +673,57 @@ function GMEAuth(session, gmeConfig) {
      * @returns {*}
      */
     function updateUserDataField(userId, data, overwrite, callback) {
-        return _updateUserObjectField(userId, ['data'], data, overwrite)
-            .then(function (userData) {
-                return userData.data;
+        const deferred = Q.defer();
+        _updateUserObjectField(userId, ['data'], data, {overwrite})
+            .then((userData) => {
+                deferred.resolve(userData.data);
             })
-            .nodeify(callback);
+            .catch(deferred.reject);
+        
+        return deferred.promise.nodeify(callback);
+    }
+
+    async function setUserDataField(userId, fields, data, options = {}) {
+        if (typeof fields === 'string') {
+            fields = [fields];
+        }
+        fields = ['data'].concat(fields);
+        const userData = await _updateUserObjectField(userId, fields, data, options);
+        return userData.data;
+    }
+
+    async function deleteUserDataField(userId, fields) {
+        if (typeof fields === 'string') {
+            fields = [fields];
+        }
+        fields = ['data'].concat(fields);
+        return _deleteUserObjectField(userId, fields);
+    }
+
+    async function getUserDataField(userId, fields = [], decrypt = false) {
+        if (typeof fields === 'string') {
+            fields = [fields];
+        }
+        const query = {
+            _id: userId,
+            type: {$ne: CONSTANTS.ORGANIZATION},
+            disabled: {$ne: true}
+        };
+        const jointKey = fields.join('.');
+        const user = await collection.findOne(query);
+        let result = user.data;
+        fields.forEach(key => {
+            if (!result.hasOwnProperty(key)) {
+                throw new Error(`User data field not found: ${jointKey}`);
+            }
+            result = result[key];
+        });
+
+        if (decrypt) {
+            result = _decrypt(result);
+        }
+
+        return result;
     }
 
     /**
@@ -608,11 +736,14 @@ function GMEAuth(session, gmeConfig) {
      * @returns {*}
      */
     function updateUserComponentSettings(userId, componentId, settings, overwrite, callback) {
-        return _updateUserObjectField(userId, ['settings', componentId], settings, overwrite)
-            .then(function (userData) {
-                return userData.settings[componentId];
+        const deferred = Q.defer();
+        _updateUserObjectField(userId, ['settings', componentId], settings, {overwrite})
+            .then((userData) => {
+                deferred.resolve(userData.settings[componentId]);
             })
-            .nodeify(callback);
+            .catch(deferred.reject);
+        
+        return deferred.promise.nodeify(callback);
     }
 
     /**
@@ -624,11 +755,14 @@ function GMEAuth(session, gmeConfig) {
      * @returns {*}
      */
     function updateUserSettings(userId, settings, overwrite, callback) {
-        return _updateUserObjectField(userId, ['settings'], settings, overwrite)
-            .then(function (userData) {
-                return userData.settings;
+        const deferred = Q.defer();
+        _updateUserObjectField(userId, ['settings'], settings, {overwrite})
+            .then((userData) => {
+                deferred.resolve(userData.settings);
             })
-            .nodeify(callback);
+            .catch(deferred.reject);
+        
+        return deferred.promise.nodeify(callback);
     }
 
     /**
@@ -1064,6 +1198,9 @@ function GMEAuth(session, gmeConfig) {
     this.addUser = addUser;
     this.updateUser = updateUser;
     this.updateUserDataField = updateUserDataField;
+    this.setUserDataField = setUserDataField;
+    this.getUserDataField = getUserDataField;
+    this.deleteUserDataField = deleteUserDataField;
     this.updateUserSettings = updateUserSettings;
     this.updateUserComponentSettings = updateUserComponentSettings;
     this.deleteUser = deleteUser;

@@ -181,6 +181,25 @@ resourceTypes:
               application/json:
                 example: !include webgme-api-user-token.json
   /data:
+    description: Entity representing a datum. Nested values can be accessed via URI parameters such as `/user/data/key1/key2...`.
+    get:
+        queryParameters:
+            decrypt:
+                description: 'Decrypt the requested data.'
+                required: false
+                type: boolean
+    put:
+        queryParameters:
+            encrypt:
+                description: 'Encrypt the submitted data before saving.'
+                required: false
+                type: boolean
+    patch:
+        queryParameters:
+            encrypt:
+                description: 'Encrypt the submitted data before saving.'
+                required: false
+                type: boolean
     type:
       collection-item:
         exampleItem: !include webgme-api-user-data-retrieve.json

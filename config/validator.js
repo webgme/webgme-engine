@@ -7,6 +7,7 @@
 'use strict';
 
 var configFileName;
+const fs = require('fs');
 
 function warnDeprecated(name, value, hint) {
     if (typeof value !== 'undefined') {
@@ -18,15 +19,20 @@ function warnDeprecated(name, value, hint) {
     }
 }
 
-function throwTypeMiss(name, value, typeStr) {
-    var msg;
+function throwValidationError(name, msg) {
+    let prefix;
     if (configFileName) {
-        msg = 'In ' + configFileName;
+        prefix = 'In ' + configFileName;
     } else {
-        msg = 'In configuration';
+        prefix = 'In configuration';
     }
-    msg += ': ' + name + ' must be a(n) ' + typeStr + '. Got: "' + value + '".';
-    throw new Error(msg);
+    prefix += ': ' + name + ' ';
+    throw new Error(prefix + msg);
+}
+
+function throwTypeMiss(name, value, typeStr) {
+    const msg = 'must be a(n) ' + typeStr + '. Got: "' + value + '".';
+    throwValidationError(name, msg);
 }
 
 function assertTypeOf(name, value, type, orFalsy) {
@@ -83,6 +89,17 @@ function assertBooleanOrString(name, value, orFalsy) {
     }
 }
 
+function assertFileExists(name, path) {
+    try {
+        fs.statSync(path);
+    } catch (err) {
+        throwValidationError(
+            name,
+            'must be a path to an existing file. Got: ' + path
+        );
+    }
+}
+
 // We will fail as early as possible
 function validateConfig(configOrFileName) {
     var expectedKeys = [],
@@ -127,6 +144,16 @@ function validateConfig(configOrFileName) {
     config.authentication.publicOrganizations.forEach(function (publicOrg, idx) {
         assertString('config.authentication.publicOrganizations[' + idx, ']', publicOrg);
     });
+    assertObject('config.authentication.encryption', config.authentication.encryption);
+    assertString('config.authentication.encryption.algorithm', config.authentication.encryption.algorithm);
+    assertFileExists('config.authentication.encryption.key', config.authentication.encryption.key);
+    key = fs.readFileSync(config.authentication.encryption.key);
+    if (key.length !== 32) {
+        throwValidationError(
+            'config.authentication.encryption.key',
+            'must be 32 bytes. Got: ' + key.length + ' bytes'
+        );
+    }
 
     if (config.authentication.adminAccount) {
         assertString('config.authentication.adminAccount', config.authentication.adminAccount);
