@@ -10,7 +10,6 @@ describe('GME authentication config users and orgs', function () {
     var testFixture = require('../../../_globals.js'),
         expect = testFixture.expect,
         Q = testFixture.Q,
-        bcrypt = require('bcryptjs'),
         gmeAuth;
 
     afterEach(function (done) {
@@ -240,7 +239,7 @@ describe('GME authentication config users and orgs', function () {
         gmeConfig.authentication.allowedResetInterval = 1000;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.resetPassword('resetUser');
             })
             .then(resetHash => {
@@ -258,7 +257,7 @@ describe('GME authentication config users and orgs', function () {
         gmeConfig.authentication.allowedResetInterval = 1000;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.resetPassword('resetUser');
             })
             .then(() => {
@@ -331,7 +330,7 @@ describe('GME authentication config users and orgs', function () {
         gmeConfig.authentication.allowedResetInterval = 1000;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.resetPassword('resetUser');
             })
             .then(() => {
@@ -358,7 +357,7 @@ describe('GME authentication config users and orgs', function () {
         let oldHash = null;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.resetPassword('resetUser');
             })
             .then(hash_ => {
@@ -377,16 +376,15 @@ describe('GME authentication config users and orgs', function () {
         gmeConfig.authentication.enable = true;
         gmeConfig.authentication.allowPasswordReset = true;
         gmeConfig.authentication.allowedResetInterval = 1;
-        let oldHash = null;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.resetPassword('resetUser');
             })
             .then(hash_ => {
                 return gmeAuth.changePassword('resetUser', hash_, 'newPassword');
             })
-            .then(user => {
+            .then(() => {
                 return gmeAuth.authenticateUser('resetUser', 'newPassword');
             })
             .then(()=> {
@@ -402,7 +400,7 @@ describe('GME authentication config users and orgs', function () {
         gmeConfig.authentication.allowedResetInterval = 1000;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.changePassword('resetUser', 'dontMatter', 'newPassword');
             })
             .then(() => {
@@ -476,7 +474,7 @@ describe('GME authentication config users and orgs', function () {
         gmeConfig.authentication.resetTimeout = 0;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.resetPassword('resetUser');
             })
             .then(hash_ => {
@@ -505,7 +503,7 @@ describe('GME authentication config users and orgs', function () {
         gmeConfig.authentication.allowedResetInterval = 1;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.resetPassword('resetUser');
             })
             .then(hash_ => {
@@ -524,7 +522,7 @@ describe('GME authentication config users and orgs', function () {
         gmeConfig.authentication.allowedResetInterval = 1000;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.isValidReset('resetUser', 'dontMatter');
             })
             .then(() => {
@@ -598,7 +596,7 @@ describe('GME authentication config users and orgs', function () {
         gmeConfig.authentication.resetTimeout = 0;
 
         _preCreateResetUser(gmeConfig)
-            .then(user => {
+            .then(() => {
                 return gmeAuth.resetPassword('resetUser');
             })
             .then(hash_ => {

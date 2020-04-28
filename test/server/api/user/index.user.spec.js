@@ -2742,7 +2742,7 @@ describe('USER REST API', function () {
                 gmeConfig.authentication.allowPasswordReset = true;
                 gmeConfig.authentication.allowedResetInterval = 1;
                 gmeConfig.authentication.resetTimeout = 10000;
-                gmeConfig.authentication.resetUrl = '/profile/reset'
+                gmeConfig.authentication.resetUrl = '/profile/reset';
 
                 server = WebGME.standaloneServer(gmeConfig);
                 server.start(done);
@@ -2774,9 +2774,10 @@ describe('USER REST API', function () {
                                 expect(res.status).equal(200);
                                 agent.post(server.getUrl() + '/api/v1/reset/reset_pwd_user/' + res.body.resetId)
                                     .send({newPassword: 'newpass'})
-                                    .end(function (err, res) {
+                                    .end(function (/*err, res*/) {
                                         agent.get(server.getUrl() + '/api/v1/user')
-                                            .set('Authorization', 'Basic ' + new Buffer('reset_pwd_user:newpass').toString('base64'))
+                                            .set('Authorization', 'Basic ' + 
+                                                new Buffer('reset_pwd_user:newpass').toString('base64'))
                                             .end(function (err, res) {
                                                 expect(res.status).equal(200);
                                                 expect(res.body._id).equal('reset_pwd_user');
@@ -2809,7 +2810,8 @@ describe('USER REST API', function () {
                                     //.redirects(0)
                                     .end(function (err, res) {
                                         expect(err.status).equal(404);
-                                        expect(res.redirects[0]).to.contains('profile/reset/reset_pwd_user2/' + resetId);
+                                        expect(res.redirects[0])
+                                            .to.contains('profile/reset/reset_pwd_user2/' + resetId);
                                         done();
                                     });
                             });

@@ -6,10 +6,6 @@
 'use strict';
 
 var Q = require('q'),
-    ENTITY_TYPES = {
-        PROJECT: 'PROJECT',
-        USER: 'USER'
-    },
     nodemailer = require('nodemailer');
 
 
@@ -74,7 +70,7 @@ function Mailer(mainLogger, gmeConfig, gmeAuth) {
                 }
             });
         } else {
-            deferred.reject( new Error('Function is not enabled in the configuration!'));
+            deferred.reject(new Error('Function is not enabled in the configuration!'));
         }
     
         return deferred.promise.nodeify(callback);
@@ -120,7 +116,7 @@ function Mailer(mainLogger, gmeConfig, gmeAuth) {
      *
      * @param {object} params
      * @param {string} params.userId - The userId of the recipient.
-     * @param {string} params.hostUrlPrefix - The main Url address of the server (like 'https://editor.WebGLFramebuffer.org')
+     * @param {string} params.hostUrlPrefix - The main Url address of the server
      * @param {function} [callback] - if provided no promise will be returned.
      *
      * @return {external:Promise}  On finishing the promise will be resolved.

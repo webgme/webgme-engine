@@ -16,11 +16,7 @@ describe('GME mailing services', function () {
         Q = testFixture.Q,
         mailer = null,
         logger = testFixture.logger.fork('MailerTest'),
-        
-
-        auth,
-        authorizer,
-        projectAuthParams;
+        auth;
 
     const nodemailer = require('nodemailer');
     const Mailer = require('./../../../../src/server/middleware/mailer/mailer');
@@ -48,10 +44,6 @@ describe('GME mailing services', function () {
                     return auth.connect();
                 })
                 .then(function () {
-                    authorizer = auth.authorizer;
-                    projectAuthParams = {
-                        entityType: authorizer.ENTITY_TYPES.PROJECT,
-                    };
                     return Q.allDone([
                         auth.addUser('OneUser', 'user@webgme.org', 'passone', true, {overwrite: true}),
                         auth.addUser('OneUser2', 'user2@webgme.org', 'passtwo', true, {overwrite: true})
