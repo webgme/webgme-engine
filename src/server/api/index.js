@@ -153,9 +153,9 @@ function createAPI(app, mountPath, middlewareOpts) {
             }
         });
 
-        router.get('/reset/:userName', function (req, res) {
+        router.post('/reset', function (req, res) {
             if (gmeConfig.mailer.sendPasswordReset && mailerAvailable) {
-                mailer.passwordReset({userId: req.params.userName, hostUrlPrefix: req.headers.host})
+                mailer.passwordReset({userId: req.body.userId, hostUrlPrefix: req.headers.host})
                     .then(info => {
                         logger.info('reset email sent: ', JSON.stringify(info, null, 2));
                         res.sendStatus(200);
@@ -165,7 +165,7 @@ function createAPI(app, mountPath, middlewareOpts) {
                         res.sendStatus(404);
                     });
             } else {
-                gmeAuth.resetPassword(req.params.userName)
+                gmeAuth.resetPassword(req.body.userId)
                     .then(function (resetToken) {
                         res.status(200);
                         res.json({
@@ -179,20 +179,19 @@ function createAPI(app, mountPath, middlewareOpts) {
             }
         });
     
-        router.get('/reset/:userName/:resetHash', function (req, res) {
-            gmeAuth.isValidReset(req.params.userName, req.params.resetHash)
+        router.get('/reset', function (req, res) {
+            gmeAuth.isValidReset(req.query.userId, req.query.resetHash)
                 .then(() => {
-                    res.redirect(gmeConfig.authentication.resetUrl + 
-                        '/' + req.params.userName + '/' + req.params.resetHash);
+                    res.sendStatus(200);
                 })
                 .catch((err)=> {
-                    logger.error('invalid reset password request for user: ', req.params.userName, ' : ', err);
+                    logger.error('invalid reset password request for user: ', req.query.userId, ' : ', err);
                     res.sendStatus(404);
                 });
         });
     
-        router.post('/reset/:userName/:resetHash', function (req, res) {
-            gmeAuth.changePassword(req.params.userName, req.params.resetHash, req.body.newPassword)
+        router.patch('/reset', function (req, res) {
+            gmeAuth.changePassword(req.body.userId, req.body.resetHash, req.body.newPassword)
                 .then(function () {
                     res.sendStatus(200);
                 })

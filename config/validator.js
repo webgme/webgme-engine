@@ -360,8 +360,10 @@ function validateConfig(configOrFileName) {
 
     //mailer
     expectedKeys.push('mailer');
+    assertObject('config.mailer', config.mailer);
     assertBoolean('config.mailer.enable', config.mailer.enable);
     assertBoolean('config.mailer.secure', config.mailer.secure);
+    assertString('config.mailer.service', config.mailer.service);
     assertString('config.mailer.host', config.mailer.host);
     assertString('config.mailer.user', config.mailer.user);
     assertString('config.mailer.pwd', config.mailer.pwd);

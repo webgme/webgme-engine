@@ -50,7 +50,8 @@ var path = require('path'),
                 algorithm: 'aes-256-cbc',
                 key: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_ENCRYPTION_KEY')
             },
-            allowPasswordReset: false
+            allowPasswordReset: false,
+            resetUrl: '/profile/reset'
         },
 
         bin: {

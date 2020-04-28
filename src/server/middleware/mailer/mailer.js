@@ -42,17 +42,27 @@ function Mailer(mainLogger, gmeConfig, gmeAuth) {
         const deferred = Q.defer();
         const self = this;
         let {logger, gmeConfig} = this;
-        if (gmeConfig.mailer.enabled) {
-            this.transporter = nodemailer.createTransport({
-                pool: true, // to setup SMTP connection once and not for every message
-                host: gmeConfig.mailer.host,
-                port: gmeConfig.mailer.port,
-                secure: gmeConfig.mailer.secure,
-                auth: {
-                    user: gmeConfig.mailer.user,
-                    pass: gmeConfig.mailer.pwd,
-                }
-            });
+        if (gmeConfig.mailer.enable) {
+            if (gmeConfig.mailer.service && gmeConfig.mailer.service === 'gmail') {
+                this.transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: gmeConfig.mailer.user,
+                        pass: gmeConfig.mailer.pwd,
+                    },
+                });
+            } else {
+                this.transporter = nodemailer.createTransport({
+                    pool: true, // to setup SMTP connection once and not for every message
+                    host: gmeConfig.mailer.host,
+                    port: gmeConfig.mailer.port,
+                    secure: gmeConfig.mailer.secure,
+                    auth: {
+                        user: gmeConfig.mailer.user,
+                        pass: gmeConfig.mailer.pwd,
+                    },
+                });
+            }
             this.transporter.verify((error /* , success */) => {
                 if (error) {
                     logger.error('Configured server is not functioning!');
@@ -136,7 +146,8 @@ function Mailer(mainLogger, gmeConfig, gmeAuth) {
                         ',\n Password reset was requested for you account.\n' + 
                         ' If you have not made this request, please disregard this email.\n' +
                         ' Otherwise, please follow the link to complete the reset:\n' +
-                        params.hostUrlPrefix + '/api/reset/' + params.userId + '/' + resetId + '\n\n' +
+                        params.hostUrlPrefix + gmeConfig.authentication.resetUrl + 
+                        '/' + params.userId + '/' + resetId + '\n\n' +
                         ' Stay safe, secure, and keep on modeling!\n The WebGME team -(]:)'
                     });
                 })
