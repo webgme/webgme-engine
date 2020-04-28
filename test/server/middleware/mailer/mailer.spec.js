@@ -29,7 +29,7 @@ describe('GME mailing services', function () {
             }
 
             gmeConfig.mailer = {}; //FIXME
-            gmeConfig.mailer.enabled = true;
+            gmeConfig.mailer.enable = true;
             gmeConfig.mailer.host = 'smtp.ethereal.email';
             gmeConfig.mailer.port = 587;
             gmeConfig.mailer.secure = false;
