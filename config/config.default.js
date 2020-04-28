@@ -279,6 +279,7 @@ var path = require('path'),
         },
 
         mailer: {
+            service: '',
             enable: false,
             host: 'smtp.ethereal.email',
             port: 587,
