@@ -2769,12 +2769,18 @@ describe('USER REST API', function () {
                         expect(res.status).equal(200, err);
                         expect(res.body._id).to.equal('reset_pwd_user');
                         
-                        agent.get(server.getUrl() + '/api/v1/reset/reset_pwd_user')
+                        agent.post(server.getUrl() + '/api/v1/reset')
+                            .send({userId: 'reset_pwd_user'})
                             .end(function (err, res) {
                                 expect(res.status).equal(200);
-                                agent.post(server.getUrl() + '/api/v1/reset/reset_pwd_user/' + res.body.resetId)
-                                    .send({newPassword: 'newpass'})
-                                    .end(function (/*err, res*/) {
+                                agent.patch(server.getUrl() + '/api/v1/reset')
+                                    .send({
+                                        userId: 'reset_pwd_user', 
+                                        resetHash: res.body.resetHash, 
+                                        newPassword: 'newpass'})
+                                    .end(function (err, res) {
+                                        expect(err).to.eql(null);
+                                        expect(res.status).equal(200);
                                         agent.get(server.getUrl() + '/api/v1/user')
                                             .set('Authorization', 'Basic ' + 
                                                 new Buffer('reset_pwd_user:newpass').toString('base64'))
@@ -2790,11 +2796,10 @@ describe('USER REST API', function () {
 
             it('should allow checking of password reset request', function (done) {
                 var newUser = {
-                        userId: 'reset_pwd_user2',
-                        email: 'em@il',
-                        password: 'pass'
-                    },
-                    resetId;
+                    userId: 'reset_pwd_user2',
+                    email: 'em@il',
+                    password: 'pass'
+                };
 
                 agent.post(server.getUrl() + '/api/v1/register')
                     .send(newUser)
@@ -2802,16 +2807,17 @@ describe('USER REST API', function () {
                         expect(res.status).equal(200, err);
                         expect(res.body._id).to.equal('reset_pwd_user2');
                         
-                        agent.get(server.getUrl() + '/api/v1/reset/reset_pwd_user2')
+                        agent.post(server.getUrl() + '/api/v1/reset')
+                            .send({userId: 'reset_pwd_user2'})
                             .end(function (err, res) {
                                 expect(res.status).equal(200);
-                                resetId = res.body.resetId;
-                                agent.get(server.getUrl() + '/api/v1/reset/reset_pwd_user2/' + resetId)
-                                    //.redirects(0)
+                                expect(res.body.resetHash).not.to.eql(undefined);
+                                agent.get(server.getUrl() + 
+                                    '/api/v1/reset?userId=reset_pwd_user2&resetHash=' + 
+                                    res.body.resetHash)
                                     .end(function (err, res) {
-                                        expect(err.status).equal(404);
-                                        expect(res.redirects[0])
-                                            .to.contains('profile/reset/reset_pwd_user2/' + resetId);
+                                        expect(err).to.eql(null);
+                                        expect(res.status).equal(200);
                                         done();
                                     });
                             });

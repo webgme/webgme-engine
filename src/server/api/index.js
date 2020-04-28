@@ -147,7 +147,7 @@ function createAPI(app, mountPath, middlewareOpts) {
     if (gmeConfig.authentication.enable && gmeConfig.authentication.allowPasswordReset) {
         mailer.init((err) => {
             if (err) {
-                logger.error(err);
+                logger.info(err);
             } else {
                 mailerAvailable = true;
             }
@@ -169,7 +169,7 @@ function createAPI(app, mountPath, middlewareOpts) {
                     .then(function (resetToken) {
                         res.status(200);
                         res.json({
-                            resetId: resetToken
+                            resetHash: resetToken
                         });
                     })
                     .catch(function (err) {
