@@ -51,6 +51,8 @@ var path = require('path'),
                 key: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_ENCRYPTION_KEY')
             },
             allowPasswordReset: false,
+            allowedResetInterval: 3600000,
+            resetTimeout: 1200000,
             resetUrl: '/profile/reset'
         },
 
@@ -122,6 +124,16 @@ var path = require('path'),
             clearOutputTimeout: 60000,
             clearOldDataAtStartUp: false,
             labelJobs: './labelJobs.json'
+        },
+
+        mailer: {
+            enable: false,
+            service: '',
+            host: '',
+            port: 587,
+            secure: false,
+            user: 'none',
+            pwd: 'none'
         },
 
         mongo: {
@@ -276,16 +288,6 @@ var path = require('path'),
             defaults: {
                 //myHook: {url: 'http://127.0.0.1:9000/MyWebHook', events: 'all', options: {}}
             }
-        },
-
-        mailer: {
-            service: '',
-            enable: false,
-            host: 'smtp.ethereal.email',
-            port: 587,
-            secure: false,
-            user: 'none',
-            pwd: 'none'
         }
     };
 

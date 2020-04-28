@@ -23,8 +23,12 @@ function getClientConfig(gmeConfig) {
     delete clientConfig.authentication.salts;
     delete clientConfig.authentication.authorizer;
     delete clientConfig.authentication.adminAccount;
+    delete clientConfig.authentication.allowedResetInterval;
+    delete clientConfig.authentication.resetTimeout;
+    delete clientConfig.authentication.resetUrl;
 
     delete clientConfig.executor.nonce;
+    delete clientConfig.mailer;
     delete clientConfig.mongo;
     delete clientConfig.blob;
     delete clientConfig.bin;

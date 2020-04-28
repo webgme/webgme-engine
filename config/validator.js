@@ -156,6 +156,8 @@ function validateConfig(configOrFileName) {
         );
     }
     assertBoolean('config.authentication.allowPasswordReset', config.authentication.allowPasswordReset);
+    assertNumber('config.authentication.allowedResetInterval', config.authentication.allowedResetInterval);
+    assertNumber('config.authentication.resetTimeout', config.authentication.resetTimeout);
 
     if (config.authentication.adminAccount) {
         assertString('config.authentication.adminAccount', config.authentication.adminAccount);
