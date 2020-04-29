@@ -193,6 +193,7 @@ class StandAloneServer {
         if (gmeConfig.addOn.enable) {
             this.__addOnEventPropagator = new AddOnEventPropagator(this.__storage, this.__logger, gmeConfig);
             this.__routeComponents.push(this.__addOnEventPropagator);
+            this.__middlewareOptions.addOnEventPropagator = this.__addOnEventPropagator;
         }
     }
 
