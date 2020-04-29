@@ -170,9 +170,9 @@ describe('key generator', function () {
     });
 
     it('it should be faster to use rust SHA1 than regular huge objects', function () {
-        this.timeout(20000);
+        this.timeout(30000);
         const size = 10000000;
-        const iterations = 3;
+        const iterations = 2;
         let start = new Date().getTime();
         for (let i = 0; i < iterations; i += 1) {
             keyGenerator(generateRandomObject(size), {storage: {keyType: 'rustSHA1'}});
