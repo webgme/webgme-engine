@@ -133,7 +133,8 @@ var path = require('path'),
             port: 587,
             secure: false,
             user: 'none',
-            pwd: 'none'
+            pwd: 'none',
+            sendPasswordReset: false
         },
 
         mongo: {

@@ -178,7 +178,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 
 ##### mailer
 - `config.mailer.enable = false`
- - Switch to turn on the mail sending services of WebGME.
+ - Switch to turn on the mail sending services of WebGME. To see what this service can do, please check the [mailer readme](https://github.com/webgme/webgme-engine/blob/master/src/server/middleware/mailer/README.md).
 - `config.mailer.service = ''`
  - Allows for shorthand configuraiton of SMTP servers for known services like gmail. For furhter details on what can be configured, please check [nodemailer](https://nodemailer.com/about/).
 - `config.mailer.host = ''`
@@ -190,7 +190,9 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.mailer.user = 'none'`
  - The username of the account that should be used to access the SMTP server.
 - `config.mailer.pwd = 'none'`
- - The password of the account that should be used to access the SMTP server. This information as well as all other sensitive SMTP server configuration cannot be accesssed from the client side. 
+ - The password of the account that should be used to access the SMTP server. This information as well as all other sensitive SMTP server configuration cannot be accesssed from the client side.
+- `config.mailer.sendPasswordReset = false`
+ - If used, the reset request on the REST API will send an e-mail to the user and not respond with the resetHash.
 
 ##### mongo
 - `config.mongo.uri = 'mongodb://127.0.0.1:27017/multi'`

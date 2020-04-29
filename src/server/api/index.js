@@ -19,8 +19,6 @@ var express = require('express'),
     webgmeUtils = require('../../utils'),
     GUID = webgme.requirejs('common/util/guid'),
     BlobClientClass = webgme.requirejs('blob/BlobClient'),
-    Mailer = require('../middleware/mailer/mailer'),
-
     CONSTANTS = webgme.requirejs('common/Constants');
 
 
@@ -51,8 +49,8 @@ function createAPI(app, mountPath, middlewareOpts) {
             require('./defaultRegisterEndPoint')(middlewareOpts),
         seedToBlobHash = {},
         paths,
-        mailer = new Mailer(logger.fork('mailer'), gmeConfig, gmeAuth),
-        mailerAvailable = false;
+        mailer = middlewareOpts.mailer,
+        mailerAvailable = mailer === null ? false : true;
 
     app.get(apiDocumentationMountPoint, function (req, res) {
         res.sendFile(path.join(__dirname, '..', '..', '..', 'docs', 'REST', 'index.html'));
@@ -145,14 +143,6 @@ function createAPI(app, mountPath, middlewareOpts) {
     router.post('/register', registerEndPoint);
 
     if (gmeConfig.authentication.enable && gmeConfig.authentication.allowPasswordReset) {
-        mailer.init((err) => {
-            if (err) {
-                logger.info(err);
-            } else {
-                mailerAvailable = true;
-            }
-        });
-
         router.post('/reset', function (req, res) {
             if (gmeConfig.mailer.sendPasswordReset && mailerAvailable) {
                 mailer.passwordReset({userId: req.body.userId, hostUrlPrefix: req.headers.host})

@@ -841,6 +841,55 @@ resourceTypes:
               application/json:
                 example: !include webgme-api-plugin-result.json   
 
+/reset:
+  description: passsword reset functionality related requests
+  get:
+    description: verify a reset request
+    queryParameters:
+      userId:
+        type: string
+        description: id of user in question
+        example: myWebgmeLogin
+        required: true
+      resetHash:
+        type: string
+        description: id of the reset request
+        example: someRandomCharacters
+        required: true
+    responses:
+      200:
+      404:
+  post:
+    description: initiate a reset request (response will only contain a resetHash if e-mail sending is not active for password resets)
+    body:
+      application/json:
+        example: |
+                {
+                  "userId": "myLittleUserName"
+                }
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+                    {
+                      "resetHash": "someRandomCharacters"
+                    }
+      404:
+  patch:
+    description: update password request
+    body:
+      application/json:
+        example: |
+                {
+                  "userId": "myVeryOwnUserName",
+                  "resetHash": "myValidResetRequestId",
+                  "newPassword" "myNewAndSafePassword"
+                }
+    responses:
+      200:
+      404:
+      
 /blob:
   description: TO BE MOVED here from /rest/blob
   /metadata:    
@@ -878,8 +927,7 @@ resourceTypes:
       
   /createMetadata:
     post:
-      
-      
+          
 /executor:
   description: TO BE MOVED here from /rest/executor
   

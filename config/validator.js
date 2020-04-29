@@ -222,6 +222,17 @@ function validateConfig(configOrFileName) {
     assertNumber('config.executor.clearOutputTimeout', config.executor.clearOutputTimeout);
     assertBoolean('config.executor.clearOldDataAtStartUp', config.executor.clearOldDataAtStartUp);
 
+    //mailer
+    expectedKeys.push('mailer');
+    assertObject('config.mailer', config.mailer);
+    assertBoolean('config.mailer.enable', config.mailer.enable);
+    assertBoolean('config.mailer.secure', config.mailer.secure);
+    assertString('config.mailer.service', config.mailer.service);
+    assertString('config.mailer.host', config.mailer.host);
+    assertString('config.mailer.user', config.mailer.user);
+    assertString('config.mailer.pwd', config.mailer.pwd);
+    assertNumber('config.mailer.port', config.mailer.port);
+    assertBoolean('config.mailer.sendPasswordReset', config.mailer.sendPasswordReset);
     // mongo configuration
     expectedKeys.push('mongo');
     assertObject('config.mongo', config.mongo);
@@ -359,17 +370,6 @@ function validateConfig(configOrFileName) {
         throw new Error('config.webhooks.manager can only be ' +
             '\'redis\' if config.socketIO.adapter.type is \'redis\' as well');
     }
-
-    //mailer
-    expectedKeys.push('mailer');
-    assertObject('config.mailer', config.mailer);
-    assertBoolean('config.mailer.enable', config.mailer.enable);
-    assertBoolean('config.mailer.secure', config.mailer.secure);
-    assertString('config.mailer.service', config.mailer.service);
-    assertString('config.mailer.host', config.mailer.host);
-    assertString('config.mailer.user', config.mailer.user);
-    assertString('config.mailer.pwd', config.mailer.pwd);
-    assertNumber('config.mailer.port', config.mailer.port);
 
     if (Object.keys(config).length !== expectedKeys.length) {
         errMsg = 'Configuration had unexpected key(s):';
