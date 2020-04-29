@@ -47,7 +47,6 @@ const isAbsUrlPath = new RegExp('^(?:[a-z]+:)?//', 'i');
 
 let mainLogger;
 const shutdown = () => {
-    let i;
     let error;
     let numStops = 0;
 
@@ -336,7 +335,7 @@ class StandAloneServer {
                     })
                     .catch(function (err) {
                         if (err.name === 'TokenExpiredError') {
-                            if (res.getHeader('X-WebGME-Media-Type') || !gmeConfig.authentication.logInUrl) {
+                            if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
                                 res.status(401);
                                 next(err);
                             } else {
@@ -405,7 +404,7 @@ class StandAloneServer {
                                         userId: result.content.userId
                                     };
                                     __logger.debug('generated new token for user', result.content.userId);
-                                    res.cookie(gmeConfig.authentication.jwt.cookieId, newToken);
+                                    res.cookie(__gmeConfig.authentication.jwt.cookieId, newToken);
                                     // Status code for new token??
                                     next();
                                 })
@@ -581,7 +580,8 @@ class StandAloneServer {
                             imageUrl: imageUrl,
                             projectId: projectId ? projectId.replace('+', '/') : 'WebGME',
                             favicon: __gmeConfig.client.faviconPath,
-                            pageTitle: typeof __gmeConfig.client.pageTitle === 'string' ? __gmeConfig.client.pageTitle : 'WebGME',
+                            pageTitle: typeof __gmeConfig.client.pageTitle === 'string' ? 
+                                __gmeConfig.client.pageTitle : 'WebGME',
                         }));
                     }
                 });
@@ -763,7 +763,8 @@ class StandAloneServer {
             __app.get(/^\/.*\.(css|ico|ttf|woff|woff2|js|cur)$/, Express.static(__clientBaseDir));
 
             __app.get('/package.json', ensureAuthenticated, Express.static(path.join(__baseDir, '..')));
-            __app.get(/^\/.*\.(_js|html|gif|png|bmp|svg|json|map)$/, ensureAuthenticated, Express.static(__clientBaseDir));
+            __app.get(/^\/.*\.(_js|html|gif|png|bmp|svg|json|map)$/, 
+                ensureAuthenticated, Express.static(__clientBaseDir));
 
             __logger.debug('creating API related routing rules');
 
@@ -775,7 +776,8 @@ class StandAloneServer {
                 res.sendStatus(404);
             });
 
-            // catches all next(new Error()) from previous rules, you can set res.status() before you call next(new Error())
+            // catches all next(new Error()) from previous rules, 
+            // you can set res.status() before you call next(new Error())
             // eslint-disable-next-line
             __app.use(function (err, req, res, next) {
                 if (res.statusCode === 200) {
@@ -864,13 +866,19 @@ class StandAloneServer {
 
                     return Q.all(promises);
                 })
-                .then(function () {
+                .then(() => {
                     // Finally start listening to the server port.
                     return Q.ninvoke(__httpServer, 'listen', __gmeConfig.server.handle || __gmeConfig.server.port);
                 })
-                .then(function () {
+                .then(() => {
                     __logger.info('Server is listening ...');
-                    return webgmeUtils.createStartUpProjects(gmeConfig, __gmeAuth, __storage, logger, getUrl());
+                    return webgmeUtils.createStartUpProjects(
+                        __gmeConfig,
+                        __gmeAuth,
+                        __storage,
+                        __logger,
+                        this.getUrl()
+                    );
                 })
                 .then(() => {
                     __isRunning = true;
