@@ -5,7 +5,7 @@
 
 var testFixture = require('../../../_globals.js');
 
-describe('Executor Plugin', function () {
+describe.only('Executor Plugin', function () {
     'use strict';
 
     var Q = testFixture.Q,
@@ -74,7 +74,7 @@ describe('Executor Plugin', function () {
             .then(function (result) {
                 expect(result.status).to.equal('SYNCED');
                 server = testFixture.WebGME.standaloneServer(gmeConfig);
-                return Q.nfcall(server.start);
+                return server.start();
             })
             .then(function () {
                 var workerConfig = {},
