@@ -195,6 +195,8 @@ class StandAloneServer {
             this.__routeComponents.push(this.__addOnEventPropagator);
             this.__middlewareOptions.addOnEventPropagator = this.__addOnEventPropagator;
         }
+
+        this.__middlewareOptions.server = this;
     }
 
     getUrl() {
@@ -211,6 +213,19 @@ class StandAloneServer {
 
     getGmeConfig() {
         return this.__gmeConfig;
+    }
+
+    getSocketsInfo() {
+        return Object.keys(this.__sockets)
+            .map(sid => {
+                return {
+                    address: this.__sockets[sid].address(),
+                    localAddress: this.__sockets[sid].localAddress,
+                    localPort: this.__sockets[sid].localPort,
+                    remoteAddress: this.__sockets[sid].remoteAddress,
+                    remotePort: this.__sockets[sid].remotePort,
+                };
+            });
     }
 
     _setIsRunning(value) {
@@ -863,6 +878,7 @@ class StandAloneServer {
                     return Q.ninvoke(this.__httpServer, 'listen', __gmeConfig.server.handle || __gmeConfig.server.port);
                 })
                 .then(() => {
+                    this.__isRunning = true;
                     __logger.info('Server is listening ...');
                     return webgmeUtils.createStartUpProjects(
                         __gmeConfig,
@@ -873,10 +889,20 @@ class StandAloneServer {
                     );
                 })
                 .then(() => {
-                    this.__isRunning = true;
                     deferred.resolve();
                 })
-                .catch(deferred.reject);
+                .catch(err => {
+                    __logger.error('Cannot start server...', {metadata: err});
+                    if (this.__isRunning) {
+                        //should stop the http server
+                        this.stop()
+                            .finally(() => {
+                                deferred.reject(err);
+                            });
+                    } else {
+                        deferred.reject(err);
+                    }
+                });
 
             return deferred.promise;
         };
@@ -937,7 +963,7 @@ class StandAloneServer {
                         __executorServer.stop();
                     }
     
-                    __routeComponents.forEach( component => {
+                    __routeComponents.forEach(component => {
                         promises.push(Q.ninvoke(component, 'stop'));
                     });
     
