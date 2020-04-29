@@ -123,7 +123,7 @@ class StandAloneServer {
             mainLogger = Logger.createWithGmeConfig('gme', gmeConfig, true);
             mainLogger.info('Node version', process.version);
     
-            gmeConfig.server.log.transports.forEach(function (transport) {
+            gmeConfig.server.log.transports.forEach(transport => {
                 if (transport.transportType === 'File') {
                     mainLogger.info('Logfile [', transport.options.level, '] :', 
                         path.resolve(transport.options.filename));
@@ -238,15 +238,6 @@ class StandAloneServer {
             __storage,
             __webSocket,
         } = this;
-        let {
-            __middlewareOptions,
-            __tokenServer,
-            __executorServer,
-            __httpServer,
-            __sockets,
-            // eslint-disable-next-line no-unused-vars
-            __isRunning,
-        } = this;
         const getUserId = req => {
             return req.userData && req.userData.userId;
         };
@@ -293,13 +284,13 @@ class StandAloneServer {
                 password = split[1];
                 if (username && password) {
                     __gmeAuth.authenticateUser(username, password)
-                        .then(function () {
+                        .then(() => {
                             req.userData = {
                                 userId: username
                             };
                             next();
                         })
-                        .catch(function (err) {
+                        .catch(err => {
                             __logger.debug('Basic auth failed', {metadata: err});
                             res.status(401);
                             next(new Error('Basic authentication failed'));
@@ -312,10 +303,10 @@ class StandAloneServer {
                 __logger.debug('Token Bearer authentication request');
                 token = authorization.substr('Bearer '.length);
                 __gmeAuth.verifyJWToken(token)
-                    .then(function (result) {
+                    .then(result => {
                         if (result.renew === true) {
                             __gmeAuth.regenerateJWToken(token)
-                                .then(function (newToken) {
+                                .then(newToken => {
                                     req.userData = {
                                         token: newToken,
                                         newToken: true,
@@ -333,7 +324,7 @@ class StandAloneServer {
                             next();
                         }
                     })
-                    .catch(function (err) {
+                    .catch(err => {
                         if (err.name === 'TokenExpiredError') {
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
                                 res.status(401);
@@ -351,10 +342,10 @@ class StandAloneServer {
                 __logger.debug('jwtoken provided in url query string');
                 token = req.query.token;
                 __gmeAuth.verifyJWToken(token)
-                    .then(function (result) {
+                    .then(result => {
                         if (result.renew === true) {
                             __gmeAuth.regenerateJWToken(token)
-                                .then(function (newToken) {
+                                .then(newToken => {
                                     req.userData = {
                                         token: newToken,
                                         newToken: true,
@@ -375,7 +366,7 @@ class StandAloneServer {
                             next();
                         }
                     })
-                    .catch(function (err) {
+                    .catch(err => {
                         if (err.name === 'TokenExpiredError') {
                             res.clearCookie(__gmeConfig.authentication.jwt.cookieId);
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
@@ -394,10 +385,10 @@ class StandAloneServer {
                 __logger.debug('jwtoken provided in cookie');
                 token = req.cookies[__gmeConfig.authentication.jwt.cookieId];
                 __gmeAuth.verifyJWToken(token)
-                    .then(function (result) {
+                    .then(result => {
                         if (result.renew === true) {
                             __gmeAuth.regenerateJWToken(token)
-                                .then(function (newToken) {
+                                .then(newToken => {
                                     req.userData = {
                                         token: newToken,
                                         newToken: true,
@@ -417,7 +408,7 @@ class StandAloneServer {
                             next();
                         }
                     })
-                    .catch(function (err) {
+                    .catch(err => {
                         res.clearCookie(__gmeConfig.authentication.jwt.cookieId);
                         if (err.name === 'TokenExpiredError') {
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
@@ -435,7 +426,7 @@ class StandAloneServer {
             } else if (__gmeConfig.authentication.allowGuests) {
                 __logger.debug('jwtoken not provided in cookie - will generate a guest token.');
                 __gmeAuth.generateJWToken(__gmeConfig.authentication.guestAccount, null)
-                    .then(function (guestToken) {
+                    .then(guestToken => {
                         req.userData = {
                             token: guestToken,
                             newToken: true,
@@ -477,7 +468,7 @@ class StandAloneServer {
                     __logger.debug('Mounting external REST component [' + src + '] at /' + mount);
     
                     if (restComponent.hasOwnProperty('initialize') && restComponent.hasOwnProperty('router')) {
-                        restComponent.initialize(__middlewareOptions);
+                        restComponent.initialize(this.__middlewareOptions);
                         __app.use('/' + mount, restComponent.router);
     
                         if (restComponent.hasOwnProperty('start') && restComponent.hasOwnProperty('stop')) {
@@ -497,7 +488,7 @@ class StandAloneServer {
     
         const mountUserManagementPage = () => {
             var userComponent = require(__gmeConfig.authentication.userManagementPage);
-            userComponent.initialize(__middlewareOptions);
+            userComponent.initialize(this.__middlewareOptions);
             __routeComponents.push(userComponent);
             __app.use('/profile', userComponent.router);
         };
@@ -511,14 +502,14 @@ class StandAloneServer {
         const coreInit = () => {
             const deferred = Q.defer();
 
-            __middlewareOptions.ensureAuthenticated = ensureAuthenticated;
-            __middlewareOptions.getUserId = getUserId;
-            __middlewareOptions.getMountedPath = getMountedPath;
+            this.__middlewareOptions.ensureAuthenticated = ensureAuthenticated;
+            this.__middlewareOptions.getUserId = getUserId;
+            this.__middlewareOptions.getMountedPath = getMountedPath;
 
             if (__gmeConfig.mailer.enable) {
                 __mailer.init()
                     .then(() => {
-                        __middlewareOptions.mailer = __mailer;
+                        this.__middlewareOptions.mailer = __mailer;
                     })
                     .catch(err => {
                         __logger.info('Failed to start mail service!', {metadata: err});
@@ -534,13 +525,13 @@ class StandAloneServer {
 
         // adding all routes
         const buildRoutes = () => {
-            __tokenServer = new TokenServer(__middlewareOptions);
-            __app.use('/rest/tokens', __tokenServer.router);
-            __middlewareOptions.accessTokens = __tokenServer.tokens;
+            this.__tokenServer = new TokenServer(this.__middlewareOptions);
+            __app.use('/rest/tokens', this.__tokenServer.router);
+            this.__middlewareOptions.accessTokens = this.__tokenServer.tokens;
 
             if (__gmeConfig.executor.enable) {
-                __executorServer = new ExecutorServer(__middlewareOptions);
-                __app.use('/rest/executor', __executorServer.router);
+                this.__executorServer = new ExecutorServer(this.__middlewareOptions);
+                __app.use('/rest/executor', this.__executorServer.router);
             } else {
                 __logger.debug('Executor not enabled. Add \'executor.enable: true\' to configuration to activate.');
             }
@@ -551,7 +542,7 @@ class StandAloneServer {
 
             setupExternalRestModules();
 
-            __app.get(['', '/', '/index.html'], ensureAuthenticated, function (req, res) {
+            __app.get(['', '/', '/index.html'], ensureAuthenticated, (req, res) => {
                 const indexHtmlPath = path.join(__clientBaseDir, 'index.html');
                 const protocol = __gmeConfig.server.behindSecureProxy ? 'https' : 'http';
                 const host = protocol + '://' + req.get('host');
@@ -561,7 +552,7 @@ class StandAloneServer {
         
                 __logger.debug('resolved url', url);
         
-                fs.readFile(indexHtmlPath, 'utf8', function (err, indexTemp) {
+                fs.readFile(indexHtmlPath, 'utf8', (err, indexTemp) => {
                     if (err) {
                         __logger.error(err);
                         res.sendStatus(404);
@@ -589,7 +580,7 @@ class StandAloneServer {
 
             __logger.debug('creating login routing rules for the static server');
 
-            __app.get('/logout', function (req, res) {
+            __app.get('/logout', (req, res) => {
                 let redirectUrl;
                 let logOutUrl = '';
 
@@ -606,7 +597,7 @@ class StandAloneServer {
                 }
             });
 
-            __app.post('/login', function (req, res) {
+            __app.post('/login', (req, res) => {
                 const userId = req.body.userId;
                 const password = req.body.password;
 
@@ -616,7 +607,7 @@ class StandAloneServer {
                             res.cookie(__gmeConfig.authentication.jwt.cookieId, token);
                             res.sendStatus(200);
                         })
-                        .catch(function (err) {
+                        .catch(err => {
                             __logger.error('Failed login', err);
                             res.sendStatus(401);
                         });
@@ -625,7 +616,7 @@ class StandAloneServer {
                 }
             });
 
-            __app.get('/bin/getconfig.js', ensureAuthenticated, function (req, res) {
+            __app.get('/bin/getconfig.js', ensureAuthenticated, (req, res) => {
                 res.status(200);
                 res.setHeader('Content-type', 'application/javascript');
                 res.end('define([],function(){ return ' +
@@ -633,24 +624,24 @@ class StandAloneServer {
             });
         
             __logger.debug('creating gmeConfig.json specific routing rules');
-            __app.get('/gmeConfig.json', function (req, res) {
+            __app.get('/gmeConfig.json', (req, res) => {
                 res.status(200);
                 res.setHeader('Content-type', 'application/json');
                 res.end(JSON.stringify(processRequestBasedGMEConfigFields(__clientConfig, req)));
             });
         
-            __app.get(/^\/(gme-dist)\/.*\.(js|map)$/, function (req, res) {
+            __app.get(/^\/(gme-dist)\/.*\.(js|map)$/, (req, res) => {
                 res.sendFile(path.join(__baseDir, '../dist', req.url.substring('/gme-dist/'.length)));
             });
 
             __logger.debug('creating decorator specific routing rules');
-            __app.get(/^\/decorators\/.*/, ensureAuthenticated, function (req, res) {
+            __app.get(/^\/decorators\/.*/, ensureAuthenticated, (req, res) => {
                 const tryNext = (index) => {
                     let resolvedPath;
                     if (index < __gmeConfig.visualization.decoratorPaths.length) {
                         resolvedPath = path.resolve(__gmeConfig.visualization.decoratorPaths[index]);
                         resolvedPath = path.join(resolvedPath, req.url.substring('/decorators/'.length));
-                        res.sendFile(resolvedPath, function (err) {
+                        res.sendFile(resolvedPath, (err) => {
                             __logger.debug('sending decorator', resolvedPath);
                             if (err && err.code !== 'ECONNRESET') {
                                 tryNext(index + 1);
@@ -690,9 +681,9 @@ class StandAloneServer {
            
             // Assets paths (svgs)
             __logger.debug('creating assets/svgs specific routing rules');
-            __app.get(/^\/assets\/DecoratorSVG\/.*/, ensureAuthenticated, function (req, res, next) {
+            __app.get(/^\/assets\/DecoratorSVG\/.*/, ensureAuthenticated, (req, res, next) => {
                 webgmeUtils.getSVGMap(__gmeConfig, __logger)
-                    .then(function (svgMap) {
+                    .then(svgMap => {
                         if (svgMap.hasOwnProperty(req.path)) {
                             res.sendFile(svgMap[req.path]);
                         } else {
@@ -703,26 +694,26 @@ class StandAloneServer {
                     .catch(next);
             });
 
-            __app.get('/assets/decoratorSVGList.json', ensureAuthenticated, function (req, res, next) {
+            __app.get('/assets/decoratorSVGList.json', ensureAuthenticated, (req, res, next) => {
                 webgmeUtils.getSVGMap(__gmeConfig, __logger)
-                    .then(function (svgMap) {
-                        res.json(Object.keys(svgMap).map(function (svgName) {
+                    .then(svgMap => {
+                        res.json(Object.keys(svgMap).map(svgName => {
                             return svgName.substring('/assets/DecoratorSVG/'.length);
                         }));
                     })
-                    .catch(function (err) {
+                    .catch(err => {
                         __logger.error(err);
                         next(err);
                     });
             });
 
             __logger.debug('creating external library specific routing rules');
-            __gmeConfig.server.extlibExcludes.forEach(function (regExStr) {
+            __gmeConfig.server.extlibExcludes.forEach(regExStr => {
                 __logger.debug('Adding exclude rule to "/extlib" path: ', regExStr);
                 __excludeRegExs.push(new RegExp(regExStr));
             });
 
-            __app.get(/^\/extlib\/.*/, ensureAuthenticated, function (req, res) {
+            __app.get(/^\/extlib\/.*/, ensureAuthenticated, (req, res) => {
                 var i;
                 for (i = 0; i < __excludeRegExs.length; i += 1) {
                     if (__excludeRegExs[i].test(req.url)) {
@@ -757,7 +748,7 @@ class StandAloneServer {
             //TODO remove this part as this is only temporary!!!
             __app.get('/docs/*', Express.static(path.join(__baseDir, '..'), {index: false}));
 
-            __app.use('/rest/blob', BlobServer.createExpressBlob(__middlewareOptions));
+            __app.use('/rest/blob', BlobServer.createExpressBlob(this.__middlewareOptions));
 
             //client contents - js/html/css
             __app.get(/^\/.*\.(css|ico|ttf|woff|woff2|js|cur)$/, Express.static(__clientBaseDir));
@@ -768,18 +759,18 @@ class StandAloneServer {
 
             __logger.debug('creating API related routing rules');
 
-            const apiReady = API.createAPI(__app, '/api', __middlewareOptions);
+            const apiReady = API.createAPI(__app, '/api', this.__middlewareOptions);
 
             // everything else is 404
             __logger.debug('creating all other request rule - error 404 -');
-            __app.use('*', function (req, res) {
+            __app.use('*', (req, res) => {
                 res.sendStatus(404);
             });
 
             // catches all next(new Error()) from previous rules, 
             // you can set res.status() before you call next(new Error())
             // eslint-disable-next-line
-            __app.use(function (err, req, res, next) {
+            __app.use((err, req, res, next) => {
                 if (res.statusCode === 200) {
                     res.status(err.status || 500);
                 }
@@ -804,30 +795,30 @@ class StandAloneServer {
                     socketId += ':encrypted';
                 }
     
-                __sockets[socketId] = socket;
+                this.__sockets[socketId] = socket;
                 __logger.debug('socket connected (added to list) ' + socketId);
     
-                socket.on('close', function () {
-                    if (__sockets.hasOwnProperty(socketId)) {
+                socket.on('close', () => {
+                    if (this.__sockets.hasOwnProperty(socketId)) {
                         __logger.debug('socket closed (removed from list) ' + socketId);
-                        delete __sockets[socketId];
+                        delete this.__sockets[socketId];
                     }
                 });
             };
 
-            __httpServer = Http.createServer(__app);
+            this.__httpServer = Http.createServer(__app);
             if (__gmeConfig.server.timeout > -1) {
-                __httpServer.timeout = __gmeConfig.server.timeout;
+                this.__httpServer.timeout = __gmeConfig.server.timeout;
             }
     
-            __httpServer.on('connection', handleNewConnection);
-            __httpServer.on('secureConnection', handleNewConnection);
+            this.__httpServer.on('connection', handleNewConnection);
+            this.__httpServer.on('secureConnection', handleNewConnection);
     
-            __httpServer.on('clientError', function (err/*, socket*/) {
+            this.__httpServer.on('clientError', (err/*, socket*/) => {
                 __logger.debug('clientError', err);
             });
     
-            __httpServer.on('error', function (err) {
+            this.__httpServer.on('error', err => {
                 if (err.code === 'EADDRINUSE') {
                     __logger.error('Failed to start server', {metadata: {port: __gmeConfig.server.port, error: err}});
                     deferred.reject(err);
@@ -847,20 +838,20 @@ class StandAloneServer {
                     promises.push(Q.ninvoke(__workerManager, 'start'));
                     promises.push(__storage.openDatabase());
 
-                    if (__executorServer) {
-                        promises.push(__executorServer.start({mongoClient: db}));
+                    if (this.__executorServer) {
+                        promises.push(this.__executorServer.start({mongoClient: db}));
                     }
-                    if (__tokenServer) {
-                        promises.push(__tokenServer.start({mongoClient: db}));
+                    if (this.__tokenServer) {
+                        promises.push(this.__tokenServer.start({mongoClient: db}));
                     }
 
                     return Q.all(promises);
                 })
                 .then(() => {
                     const promises = [];
-                    __webSocket.start(__httpServer);
+                    __webSocket.start(this.__httpServer);
 
-                    __routeComponents.forEach(function (component) {
+                    __routeComponents.forEach(component => {
                         promises.push(Q.ninvoke(component, 'start'));
                     });
 
@@ -868,7 +859,7 @@ class StandAloneServer {
                 })
                 .then(() => {
                     // Finally start listening to the server port.
-                    return Q.ninvoke(__httpServer, 'listen', __gmeConfig.server.handle || __gmeConfig.server.port);
+                    return Q.ninvoke(this.__httpServer, 'listen', __gmeConfig.server.handle || __gmeConfig.server.port);
                 })
                 .then(() => {
                     __logger.info('Server is listening ...');
@@ -881,7 +872,7 @@ class StandAloneServer {
                     );
                 })
                 .then(() => {
-                    __isRunning = true;
+                    this.__isRunning = true;
                     deferred.resolve();
                 })
                 .catch(deferred.reject);
@@ -914,29 +905,29 @@ class StandAloneServer {
             __workerManager,
             __gmeAuth,
         } = this;
-        let {__isRunning, __sockets} = this;
         const deferred = Q.defer();
 
-        if (__isRunning === false) {
+        if (this.__isRunning === false) {
             // TODO - should this be an error?
             deferred.resolve();
         } else {
-            __isRunning = false;
+            this.__isRunning = false;
+            // first we have to request the close then we can destroy the sockets.
+            // this should happen without waiting for http server close.
+            let numDestroyedSockets = 0;
+            // destroy all open sockets i.e. keep-alive and socket-io connections, etc.
+            for (let key in this.__sockets) {
+                if (this.__sockets.hasOwnProperty(key)) {
+                    this.__sockets[key].destroy();
+                    delete this.__sockets[key];
+                    __logger.debug('destroyed open socket ' + key);
+                    numDestroyedSockets += 1;
+                }
+            }
+            __logger.debug('destroyed # of sockets: ' + numDestroyedSockets);
+
             Q.ninvoke(__httpServer, 'close')
                 .then(() => {
-                    // first we have to request the close then we can destroy the sockets.
-                    let numDestroyedSockets = 0;
-                    // destroy all open sockets i.e. keep-alive and socket-io connections, etc.
-                    for (let key in __sockets) {
-                        if (__sockets.hasOwnProperty(key)) {
-                            __sockets[key].destroy();
-                            delete __sockets[key];
-                            __logger.debug('destroyed open socket ' + key);
-                            numDestroyedSockets += 1;
-                        }
-                    }
-                    __logger.debug('destroyed # of sockets: ' + numDestroyedSockets);
-
                     const promises = [];
                     
                     __webSocket.stop();
@@ -945,21 +936,22 @@ class StandAloneServer {
                         __executorServer.stop();
                     }
     
-                    __routeComponents.forEach(function (component) {
+                    __routeComponents.forEach( component => {
                         promises.push(Q.ninvoke(component, 'stop'));
                     });
     
                     return Q.all(promises);
                 })
-                .then(function () {
+                .then(() => {
                     return Q.all([
                         __storage.closeDatabase(),
                         Q.ninvoke(__workerManager, 'stop')
                     ]);
                 })
-                .then(function () {
+                .then(() => {
                     return __gmeAuth.unload();
                 })
+                .then(deferred.resolve)
                 .catch(err => {
                     this.__logger.error('Error at server stop', err);
                     if (err.code === 'ERR_SERVER_NOT_RUNNING' || err.message.indexOf('Not running') > -1) {
@@ -969,6 +961,7 @@ class StandAloneServer {
                         deferred.reject(err);
                     }
                 });
+
         }
         return deferred.promise.nodeify(callback);
     }
