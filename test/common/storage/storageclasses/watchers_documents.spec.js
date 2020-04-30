@@ -44,10 +44,10 @@ describe('watchers documents', function () {
                         gmeConfig: gmeConfig,
                         logger: logger
                     }),
-                    gmeAuth.addUser('user1', 'em@il', 'pass', true, {overwrite: true}),
-                    gmeAuth.addUser('user2', 'em@il', 'pass', true, {overwrite: true}),
-                    gmeAuth.addUser('userRead', 'em@il', 'pass', true, {overwrite: true}),
-                    gmeAuth.addUser('userNoAccess', 'em@il', 'pass', true, {overwrite: true})
+                    gmeAuth.addUser('user1', 'normal@mail.com', 'pass', true, {overwrite: true}),
+                    gmeAuth.addUser('user2', 'normal@mail.com', 'pass', true, {overwrite: true}),
+                    gmeAuth.addUser('userRead', 'normal@mail.com', 'pass', true, {overwrite: true}),
+                    gmeAuth.addUser('userNoAccess', 'normal@mail.com', 'pass', true, {overwrite: true})
                 ]);
             })
             .then(function (result) {
