@@ -301,17 +301,16 @@ describe('GME authentication config users and orgs', function () {
     it('should fail to reset password for inferred account', function (done) {
         const gmeConfig = testFixture.getGmeConfig();
         gmeConfig.authentication.enable = true;
-        gmeConfig.authentication.guestAccount = 'resetUser';
         gmeConfig.authentication.allowPasswordReset = true;
         gmeConfig.authentication.allowedResetInterval = 1000;
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
             .then(function (gmeAuth_) {
                 gmeAuth = gmeAuth_;
-                return gmeAuth.addUser('inferredUser', 'normal@mail.com', 'doesitmatter?', true, {});
+                return gmeAuth.addUser('inferredUser', 'em@il', 'doesitmatter?', true, {});
             })
             .then(() => {
-                return gmeAuth.resetPassword('resetUser');
+                return gmeAuth.resetPassword('inferredUser');
             })
             .then(() => {
                 done(new Error('should have failed to reset the password!'));
