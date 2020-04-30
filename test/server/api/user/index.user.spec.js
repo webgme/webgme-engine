@@ -1083,7 +1083,7 @@ describe('USER REST API', function () {
             it('should add user when posting /api/v1/register', function (done) {
                 var newUser = {
                     userId: 'reg_user',
-                    email: 'em@il',
+                    email: 'normal@mail.com',
                     password: 'pass'
                 };
 
@@ -1162,7 +1162,7 @@ describe('USER REST API', function () {
             it('should add user when posting /api/v1/register', function (done) {
                 var newUser = {
                     userId: 'reg_user_no_create',
-                    email: 'em@il',
+                    email: 'normal@mail.com',
                     password: 'pass'
                 };
 
@@ -2450,7 +2450,7 @@ describe('USER REST API', function () {
             it('should add user when posting /api/v1/register and user starts with an "a"', function (done) {
                 var newUser = {
                     userId: 'a_new_user_starts_with_a',
-                    email: 'em@il',
+                    email: 'normal@mail.com',
                     password: 'pass'
                 };
 
@@ -2473,7 +2473,7 @@ describe('USER REST API', function () {
             it('should 400 when posting /api/v1/register if user does NOT starts with an "a"', function (done) {
                 var newUser = {
                     userId: 'not_starting_with_a_new_user',
-                    email: 'em@il',
+                    email: 'normal@mail.com',
                     password: 'pass'
                 };
 
@@ -2679,7 +2679,7 @@ describe('USER REST API', function () {
             it('should add disabled user when posting /api/v1/register', function (done) {
                 var newUser = {
                     userId: 'veri_reg_user_2',
-                    email: 'em@il',
+                    email: 'normal@mail.com',
                     password: 'pass'
                 };
 
@@ -2701,7 +2701,7 @@ describe('USER REST API', function () {
             it('should not allow disabled user to enable itself', function (done) {
                 var newUser = {
                     userId: 'veri_reg_user',
-                    email: 'em@il',
+                    email: 'normal@mail.com',
                     password: 'pass'
                 };
 
@@ -2759,7 +2759,7 @@ describe('USER REST API', function () {
             it('should allow complete password change', function (done) {
                 var newUser = {
                     userId: 'reset_pwd_user',
-                    email: 'em@il',
+                    email: 'normal@mail.com',
                     password: 'pass'
                 };
 
@@ -2797,7 +2797,7 @@ describe('USER REST API', function () {
             it('should allow checking of password reset request', function (done) {
                 var newUser = {
                     userId: 'reset_pwd_user2',
-                    email: 'em@il',
+                    email: 'normal@mail.com',
                     password: 'pass'
                 };
 

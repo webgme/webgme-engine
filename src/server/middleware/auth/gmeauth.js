@@ -26,6 +26,7 @@ var Mongodb = require('mongodb'),
 
 const crypto = require('crypto');
 const _ = require('underscore');
+const INFERRED_USER_EMAIL = 'em@il';
 
 /**
  *
@@ -395,7 +396,7 @@ function GMEAuth(session, gmeConfig) {
                     .catch(function (err) {
                         if (err.message.indexOf('no such user') === 0) {
                             logger.info('Authenticated user did not exist in db, adding:', content.userId);
-                            self.addUser(content.userId, 'em@il', GUID(),
+                            self.addUser(content.userId, INFERRED_USER_EMAIL, GUID(),
                                 gmeConfig.authentication.inferredUsersCanCreate, {
                                     overwrite: false,
                                     displayName: content.displayName
@@ -1237,6 +1238,10 @@ function GMEAuth(session, gmeConfig) {
 
                 if (now - then < gmeConfig.authentication.allowedResetInterval) {
                     throw new Error('cannot reset password just yet!');
+                }
+
+                if (userData.email === INFERRED_USER_EMAIL) {
+                    throw new Error('cannot change inferred user data!');
                 }
                 
                 return generateRandomString(30);

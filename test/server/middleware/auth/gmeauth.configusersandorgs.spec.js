@@ -131,7 +131,7 @@ describe('GME authentication config users and orgs', function () {
                     }).sort())
                     .to.deep.equal(['public', 'public1', 'public2']);
 
-                return gmeAuth.addUser('newUser', 'em@il', 'pass', true, {});
+                return gmeAuth.addUser('newUser', 'normal@mail.com', 'pass', true, {});
             })
             .then(function (user) {
                 expect(user.orgs.sort()).to.deep.equal(['public', 'public1', 'public2']);
@@ -168,7 +168,7 @@ describe('GME authentication config users and orgs', function () {
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
             .then(function (gmeAuth_) {
                 gmeAuth = gmeAuth_;
-                return gmeAuth.addUser('newUser', 'em@il', 'pass', true, {});
+                return gmeAuth.addUser('newUser', 'normal@mail.com', 'pass', true, {});
             })
             .then(function (user) {
                 expect(user.orgs).to.deep.equal([]);
@@ -290,6 +290,33 @@ describe('GME authentication config users and orgs', function () {
             })
             .catch(err => {
                 if (err.message === 'Password reset is not allowed for GUEST account!') {
+                    done(null);
+                } else {
+                    done(err);
+                }
+                
+            });
+    });
+
+    it('should fail to reset password for inferred account', function (done) {
+        const gmeConfig = testFixture.getGmeConfig();
+        gmeConfig.authentication.enable = true;
+        gmeConfig.authentication.allowPasswordReset = true;
+        gmeConfig.authentication.allowedResetInterval = 1000;
+
+        testFixture.clearDBAndGetGMEAuth(gmeConfig)
+            .then(function (gmeAuth_) {
+                gmeAuth = gmeAuth_;
+                return gmeAuth.addUser('inferredUser', 'em@il', 'doesitmatter?', true, {});
+            })
+            .then(() => {
+                return gmeAuth.resetPassword('inferredUser');
+            })
+            .then(() => {
+                done(new Error('should have failed to reset the password!'));
+            })
+            .catch(err => {
+                if (err.message === 'cannot change inferred user data!') {
                     done(null);
                 } else {
                     done(err);
