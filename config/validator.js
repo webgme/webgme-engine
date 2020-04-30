@@ -132,6 +132,7 @@ function validateConfig(configOrFileName) {
     assertBooleanOrString('config.authentication.allowUserRegistration', config.authentication.allowUserRegistration);
     assertBoolean('config.authentication.registeredUsersCanCreate', config.authentication.registeredUsersCanCreate);
     assertBoolean('config.authentication.inferredUsersCanCreate', config.authentication.inferredUsersCanCreate);
+    assertBoolean('config.authentication.newUserNeedsVerification', config.authentication.newUserNeedsVerification);
     assertBoolean('config.authentication.guestCanCreate', config.authentication.guestCanCreate);
     assertString('config.authentication.guestAccount', config.authentication.guestAccount);
     assertString('config.authentication.logOutUrl', config.authentication.logOutUrl);
@@ -154,6 +155,9 @@ function validateConfig(configOrFileName) {
             'must be 32 bytes. Got: ' + key.length + ' bytes'
         );
     }
+    assertBoolean('config.authentication.allowPasswordReset', config.authentication.allowPasswordReset);
+    assertNumber('config.authentication.allowedResetInterval', config.authentication.allowedResetInterval);
+    assertNumber('config.authentication.resetTimeout', config.authentication.resetTimeout);
 
     if (config.authentication.adminAccount) {
         assertString('config.authentication.adminAccount', config.authentication.adminAccount);
@@ -218,6 +222,17 @@ function validateConfig(configOrFileName) {
     assertNumber('config.executor.clearOutputTimeout', config.executor.clearOutputTimeout);
     assertBoolean('config.executor.clearOldDataAtStartUp', config.executor.clearOldDataAtStartUp);
 
+    //mailer
+    expectedKeys.push('mailer');
+    assertObject('config.mailer', config.mailer);
+    assertBoolean('config.mailer.enable', config.mailer.enable);
+    assertBoolean('config.mailer.secure', config.mailer.secure);
+    assertString('config.mailer.service', config.mailer.service);
+    assertString('config.mailer.host', config.mailer.host);
+    assertString('config.mailer.user', config.mailer.user);
+    assertString('config.mailer.pwd', config.mailer.pwd);
+    assertNumber('config.mailer.port', config.mailer.port);
+    assertBoolean('config.mailer.sendPasswordReset', config.mailer.sendPasswordReset);
     // mongo configuration
     expectedKeys.push('mongo');
     assertObject('config.mongo', config.mongo);

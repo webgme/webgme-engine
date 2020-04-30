@@ -448,6 +448,9 @@ function GMEAuth(session, gmeConfig) {
                 }
 
                 delete userData.passwordHash;
+                delete userData.resetHash;
+                delete userData.lastReset;
+                
                 userData.data = userData.data || {};
                 userData.settings = userData.settings || {};
 
@@ -535,6 +538,10 @@ function GMEAuth(session, gmeConfig) {
                 }
 
                 oldUserData.displayName = userData.displayName || oldUserData.displayName;
+
+                // reset related fields
+                oldUserData.resetHash = userData.resetHash;
+                oldUserData.lastReset = userData.lastReset;
 
                 if (userData.password) {
                     return Q.ninvoke(bcrypt, 'hash', userData.password, gmeConfig.authentication.salts)
@@ -895,6 +902,12 @@ function GMEAuth(session, gmeConfig) {
         return deferred.promise.nodeify(callback);
     }
 
+    /**
+     *
+     * @param {string} userId
+     * @param {function} [callback]
+     * @returns {*}
+     */
     function reEnableUser(userId, callback) {
         return collection.updateOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}}, {
             $set: {disabled: false}
@@ -1190,6 +1203,132 @@ function GMEAuth(session, gmeConfig) {
         return authorizer.setAccessRights(userId, projectId, rights, projectAuthParams).nodeify(callback);
     }
 
+    function generateRandomString(length) {
+        const chars = '1234567890qwertyuiopasdfghjklzxcvbnmQAZWSXEDCRFVTGBYHNUJMIKLOP';
+        let result = '';
+        for (let i = 0; i < length; i += 1) {
+            result += chars.charAt(Math.floor(Math.random() * Math.floor(chars.length)));
+        }
+
+        return result;
+    }
+
+    function resetPassword(userId, callback) {
+        let resetId = null;
+        let userData = {};
+        const now = new Date();
+        const deferred = Q.defer();
+
+        collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}})
+            .then(userData_ => {
+                if (!userData_) {
+                    throw new Error('Cannot find user: ' + userId);
+                }
+
+                userData = userData_;
+                const then = userData.lastReset ? Number(userData.lastReset) : 0;
+                if (!gmeConfig.authentication.allowPasswordReset) {
+                    throw new Error('Password reset is not allowed!');
+                }
+
+                if (userId === gmeConfig.authentication.guestAccount) {
+                    throw new Error('Password reset is not allowed for GUEST account!');
+                }
+
+                if (now - then < gmeConfig.authentication.allowedResetInterval) {
+                    throw new Error('cannot reset password just yet!');
+                }
+                
+                return generateRandomString(30);
+            })
+            .then(function (hash) {
+                userData.resetHash = hash;
+                userData.lastReset = now;
+                userData.passwordHash = null;
+                resetId = hash;
+                return updateUser(userId, userData);
+            })
+            .then(() => {
+                deferred.resolve(resetId);
+            })
+            .catch(deferred.reject);
+
+        return deferred.promise.nodeify(callback);
+    }
+
+    function changePassword(userId, resetHash, newPassword, callback) {
+        const deferred = Q.defer();
+        const now = new Date();
+
+        collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}})
+            .then(userData => {
+
+                if (!userData) {
+                    throw new Error('Cannot find user: ' + userId);
+                }
+
+                const then = userData.lastReset ? Number(userData.lastReset) : 0;
+                if (!gmeConfig.authentication.allowPasswordReset) {
+                    throw new Error('Password reset is not allowed!');
+                }
+
+                if (userId === gmeConfig.authentication.guestAccount) {
+                    throw new Error('Password reset is not allowed for GUEST account!');
+                }
+
+                if (now - then > gmeConfig.authentication.resetTimeout) {
+                    throw new Error('Your reset token has expired!');
+                }
+
+                if (resetHash !== userData.resetHash) {
+                    throw new Error('Invalid reset id!');
+                }
+                
+                userData.password = newPassword;
+                userData.resetHash = null;
+
+                return updateUser(userId, userData);
+            })
+            .then(deferred.resolve)
+            .catch(deferred.reject);
+
+        return deferred.promise.nodeify(callback);
+    }
+
+    function isValidReset(userId, resetHash, callback) {
+        const deferred = Q.defer();
+        const now = new Date();
+        collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}})
+            .then(userData => {
+                if (!userData) {
+                    throw new Error('Cannot find user: ' + userId);
+                }
+
+                const then = userData.lastReset ? Number(userData.lastReset) : 0;
+                if (!gmeConfig.authentication.allowPasswordReset) {
+                    throw new Error('Password reset is not allowed!');
+                }
+
+                if (userId === gmeConfig.authentication.guestAccount) {
+                    throw new Error('Password reset is not allowed for GUEST account!');
+                }
+
+                if (now - then > gmeConfig.authentication.resetTimeout) {
+                    throw new Error('Your reset token has expired!');
+                }
+
+                if (resetHash !== userData.resetHash) {
+                    throw new Error('Invalid reset id!');
+                }
+
+
+            })
+            .then(deferred.resolve)
+            .catch(deferred.reject);
+
+        return deferred.promise.nodeify(callback);
+    }
+
     this.unload = unload;
     this.connect = connect;
 
@@ -1205,6 +1344,9 @@ function GMEAuth(session, gmeConfig) {
     this.updateUserComponentSettings = updateUserComponentSettings;
     this.deleteUser = deleteUser;
     this.reEnableUser = reEnableUser;
+    this.resetPassword = resetPassword;
+    this.changePassword = changePassword;
+    this.isValidReset = isValidReset;
 
     this.listOrganizations = listOrganizations;
     this.getOrganization = getOrganization;

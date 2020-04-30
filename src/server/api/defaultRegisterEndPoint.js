@@ -38,14 +38,14 @@ module.exports = function getRegisterEndPoint(middlewareOpts) {
             receivedData.email,
             receivedData.password,
             gmeConfig.authentication.registeredUsersCanCreate,
-            {overwrite: false},
+            {overwrite: false, disabled: gmeConfig.authentication.newUserNeedsVerification ? true : false},
             function (err/*, updateData*/) {
                 if (err) {
                     res.sendStatus(400);
                     return;
                 }
 
-                gmeAuth.getUser(receivedData.userId, function (err, data) {
+                gmeAuth.getUser(receivedData.userId, {disabled: undefined}, function (err, data) {
                     if (err) {
                         res.sendStatus(500);
                         return;

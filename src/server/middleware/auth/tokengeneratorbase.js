@@ -68,6 +68,11 @@ TokenGeneratorBase.prototype.getToken = function (userId, callback) {
     return deferred.promise.nodeify(callback);
 };
 
+TokenGeneratorBase.prototype.getResetToken = function (userId, resetId, callback) {
+    var deferred = Q.defer();
+    deferred.reject(new Error('TokenGeneratorBase.getResetToken is not implemented!'));
+    return deferred.promise.nodeify(callback);
+};
 
 
 module.exports = TokenGeneratorBase;

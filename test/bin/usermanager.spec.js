@@ -76,6 +76,7 @@ describe('User manager command line interface (CLI)', function () {
                 'userlist',
                 'passwd',
                 'userdel',
+                'verify',
                 'organizationadd',
                 'organizationdel',
                 'usermod_auth',
@@ -766,5 +767,49 @@ describe('User manager command line interface (CLI)', function () {
                     done(err);
                 });
         });
+
+        it('should verify disabled user', function (done) {
+            suppressLogAndExit();
+            var username = 'user_to_delete_and_verify';
+            userManager.main(['node',
+                filename,
+                '--db',
+                mongoUri,
+                'useradd',
+                username,
+                'user@example.com',
+                'plaintext']
+            )
+                .then(function () {
+                    return userManager.main(['node', filename, '--db', mongoUri, 'userdel', username]);
+                })
+                .then(function () {
+                    auth.getUser(username, function (err, data) {
+                        if (!err || err.message.indexOf('no such user') === -1 || data) {
+                            done(err);
+                        } else {
+                            userManager.main(['node', filename, '--db', mongoUri, 'verify', username])
+                                .then(function () {
+                                    auth.getUser(username, function (err, data) {
+                                        restoreLogAndExit();
+                                        if (err || !data || data._id !== username) {
+                                            done(err);
+                                        }
+                                        done(null);
+                                    });
+                                })
+                                .catch(function (err) {
+                                    restoreLogAndExit();
+                                    done(err);
+                                });
+                        }
+                    });
+                })
+                .catch(function (err) {
+                    restoreLogAndExit();
+                    done(err);
+                });
+        });
+
     });
 });

@@ -26,6 +26,7 @@ var path = require('path'),
             allowUserRegistration: true,
             registeredUsersCanCreate: true,
             inferredUsersCanCreate: false,
+            newUserNeedsVerification: false,
             userManagementPage: path.join(__dirname, '../src/server/middleware/auth/loginRouter'),
             guestAccount: 'guest',
             guestCanCreate: true,
@@ -48,7 +49,11 @@ var path = require('path'),
             encryption: {
                 algorithm: 'aes-256-cbc',
                 key: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_ENCRYPTION_KEY')
-            }
+            },
+            allowPasswordReset: false,
+            allowedResetInterval: 3600000,
+            resetTimeout: 1200000,
+            resetUrl: '/profile/reset'
         },
 
         bin: {
@@ -119,6 +124,17 @@ var path = require('path'),
             clearOutputTimeout: 60000,
             clearOldDataAtStartUp: false,
             labelJobs: './labelJobs.json'
+        },
+
+        mailer: {
+            enable: false,
+            service: '',
+            host: '',
+            port: 587,
+            secure: false,
+            user: 'none',
+            pwd: 'none',
+            sendPasswordReset: false
         },
 
         mongo: {

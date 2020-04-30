@@ -23,7 +23,7 @@ module.exports = function getRegisterEndPoint(middlewareOpts) {
             receivedData.email,
             receivedData.password,
             gmeConfig.authentication.registeredUsersCanCreate,
-            {overwrite: false},
+            {overwrite: false, disabled: gmeConfig.authentication.newUserNeedsVerification ? true : false},
             function (err/*, updateData*/) {
                 if (err) {
                     res.sendStatus(400);

@@ -84,11 +84,12 @@ main = function (argv) {
     program
         .command('userlist [username]')
         .option('-t, --generateToken', 'Generates a token for given username', false)
+        .option('-d, --disabled', 'list users that are disabled', false)
         .description('lists all users or the specified user')
         .action(function (username, options) {
             setupGMEAuth(options.parent.db, function (/*err*/) {
                 if (username) {
-                    auth.getUser(username)
+                    auth.getUser(username, {disabled: undefined})
                         .then(function (userObject) {
                             if (options.generateToken) {
                                 return auth.generateJWTokenForAuthenticatedUser(username);
@@ -104,7 +105,11 @@ main = function (argv) {
                         .catch(mainDeferred.reject)
                         .finally(auth.unload);
                 } else {
-                    auth.listUsers(null)
+                    let query = {};
+                    if (options.disabled) {
+                        query = {disabled: {$eq: true}};
+                    }
+                    auth.listUsers(query)
                         .then(function (userObject) {
                             // TODO: pretty print users
                             console.log(userObject);
@@ -168,6 +173,29 @@ main = function (argv) {
             console.log();
             console.log('    $ node usermanager.js userdel brubble');
             console.log('    $ node usermanager.js userdel brubble -f');
+            console.log();
+        });
+
+    program
+        .command('verify <username>')
+        .description('verifies a user')
+        .action(function (username, options) {
+            setupGMEAuth(options.parent.db, function (/*err*/) {
+
+                if (username) {
+                    auth.reEnableUser(username)
+                        .then(mainDeferred.resolve)
+                        .catch(mainDeferred.reject)
+                        .finally(auth.unload);
+                } else {
+                    mainDeferred.reject(new SyntaxError('username parameter is missing'));
+                }
+            });
+        })
+        .on('--help', function () {
+            console.log('  Examples:');
+            console.log();
+            console.log('    $ node usermanager.js verify misterX');
             console.log();
         });
 

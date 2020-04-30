@@ -1239,4 +1239,72 @@ describe('VARIOUS REST API', function () {
                 });
         });
     });
+
+    describe('USER RESET SPECIFIC API', function () {
+        var gmeAuth,
+            server,
+            agent;
+
+        before(function (done) {
+            this.timeout(4000);
+
+            var gmeConfig = testFixture.getGmeConfig();
+            gmeConfig.authentication.enable = false;
+            testFixture.clearDBAndGetGMEAuth(gmeConfig)
+                .then(function (gmeAuth_) {
+                    gmeAuth = gmeAuth_;
+                    server = WebGME.standaloneServer(gmeConfig);
+                    server.start(done);
+                })
+                .catch(done);
+        });
+
+        beforeEach(function () {
+            agent = superagent.agent();
+        });
+
+        after(function (done) {
+            server.stop(function () {
+                gmeAuth.unload()
+                    .nodeify(done);
+            });
+        });
+
+        it('should 404 /reset/anyUser', function (done) {
+            agent.get(server.getUrl() + '/api/v1/reset/anyUser')
+                .end(function (err, res) {
+                    try {
+                        expect(res.status).equal(404, err);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+        });
+
+        it('should 404 /reset/anyUser/anyResetHash', function (done) {
+            agent.get(server.getUrl() + '/api/v1/reset/anyUser/anyResetHash')
+                .end(function (err, res) {
+                    try {
+                        expect(res.status).equal(404, err);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+        });
+
+        it('should 404 post /reset/anyUser/anyResetHash', function (done) {
+            agent.post(server.getUrl() + '/api/v1/reset/anyUser/anyResetHash')
+                .send({})
+                .end(function (err, res) {
+                    try {
+                        expect(res.status).equal(404, err);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+        });
+    });
 });

@@ -19,7 +19,6 @@ var express = require('express'),
     webgmeUtils = require('../../utils'),
     GUID = webgme.requirejs('common/util/guid'),
     BlobClientClass = webgme.requirejs('blob/BlobClient'),
-
     CONSTANTS = webgme.requirejs('common/Constants');
 
 
@@ -49,7 +48,9 @@ function createAPI(app, mountPath, middlewareOpts) {
             require(gmeConfig.authentication.allowUserRegistration)(middlewareOpts) :
             require('./defaultRegisterEndPoint')(middlewareOpts),
         seedToBlobHash = {},
-        paths;
+        paths,
+        mailer = middlewareOpts.mailer,
+        mailerAvailable = mailer === null ? false : true;
 
     app.get(apiDocumentationMountPoint, function (req, res) {
         res.sendFile(path.join(__dirname, '..', '..', '..', 'docs', 'REST', 'index.html'));
@@ -140,6 +141,57 @@ function createAPI(app, mountPath, middlewareOpts) {
     });
 
     router.post('/register', registerEndPoint);
+
+    if (gmeConfig.authentication.enable && gmeConfig.authentication.allowPasswordReset) {
+        router.post('/reset', function (req, res) {
+            if (gmeConfig.mailer.sendPasswordReset && mailerAvailable) {
+                mailer.passwordReset({userId: req.body.userId, hostUrlPrefix: req.headers.host})
+                    .then(info => {
+                        logger.info('reset email sent: ', JSON.stringify(info, null, 2));
+                        res.sendStatus(200);
+                    })
+                    .catch(err => {
+                        logger.error(err);
+                        res.sendStatus(404);
+                    });
+            } else {
+                gmeAuth.resetPassword(req.body.userId)
+                    .then(function (resetToken) {
+                        res.status(200);
+                        res.json({
+                            resetHash: resetToken
+                        });
+                    })
+                    .catch(function (err) {
+                        logger.error('cannot process reset request:', err);
+                        res.sendStatus(404);
+                    });
+            }
+        });
+    
+        router.get('/reset', function (req, res) {
+            gmeAuth.isValidReset(req.query.userId, req.query.resetHash)
+                .then(() => {
+                    res.sendStatus(200);
+                })
+                .catch((err)=> {
+                    logger.error('invalid reset password request for user: ', req.query.userId, ' : ', err);
+                    res.sendStatus(404);
+                });
+        });
+    
+        router.patch('/reset', function (req, res) {
+            gmeAuth.changePassword(req.body.userId, req.body.resetHash, req.body.newPassword)
+                .then(function () {
+                    res.sendStatus(200);
+                })
+                .catch(function (err) {
+                    logger.error('failed to change password: ', err);
+                    res.sendStatus(404);
+                });
+        });
+    }
+
 
     // modifications are allowed only if the user is authenticated
     // all get rules by default do NOT require authentication, if the get rule has to be protected add inline

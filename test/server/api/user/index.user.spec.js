@@ -2654,5 +2654,176 @@ describe('USER REST API', function () {
                     });
             });
         });
+
+        describe('Verification on', function () {
+            var server,
+                agent;
+
+            before(function (done) {
+                var gmeConfig = testFixture.getGmeConfig();
+                gmeConfig.authentication.enable = true;
+                gmeConfig.authentication.newUserNeedsVerification = true;
+
+                server = WebGME.standaloneServer(gmeConfig);
+                server.start(done);
+            });
+
+            after(function (done) {
+                server.stop(done);
+            });
+
+            beforeEach(function () {
+                agent = superagent.agent();
+            });
+
+            it('should add disabled user when posting /api/v1/register', function (done) {
+                var newUser = {
+                    userId: 'veri_reg_user_2',
+                    email: 'em@il',
+                    password: 'pass'
+                };
+
+                agent.post(server.getUrl() + '/api/v1/register')
+                    .send(newUser)
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body._id).to.equal('veri_reg_user_2');
+                        
+                        agent.get(server.getUrl() + '/api/v1/user')
+                            .set('Authorization', 'Basic ' + new Buffer('veri_reg_user_2:pass').toString('base64'))
+                            .end(function (err, res) {
+                                expect(res.status).equal(401, err);
+                                done();
+                            });
+                    });
+            });
+
+            it('should not allow disabled user to enable itself', function (done) {
+                var newUser = {
+                    userId: 'veri_reg_user',
+                    email: 'em@il',
+                    password: 'pass'
+                };
+
+                agent.post(server.getUrl() + '/api/v1/register')
+                    .send(newUser)
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body._id).to.equal('veri_reg_user');
+                        
+                        agent.patch(server.getUrl() + '/api/v1/user/data')
+                            .set('Authorization', 'Basic ' + new Buffer('veri_reg_user:pass').toString('base64'))
+                            .send({disabled: false})
+                            .end(function (err, res) {
+                                expect(res.status).equal(401, err);
+                                
+                                agent.patch(server.getUrl() + '/api/v1/user')
+                                    .set('Authorization', 
+                                        'Basic ' + new Buffer('veri_reg_user:pass').toString('base64'))
+                                    .send({disabled: false})
+                                    .end(function (err, res) {
+                                        expect(res.status).equal(401, err);
+                                        done();
+                                    });
+                            });
+                    });
+            });
+
+        });
+
+        describe('Reset enabled', function () {
+            var server,
+                agent;
+
+            before(function (done) {
+                var gmeConfig = testFixture.getGmeConfig();
+                gmeConfig.authentication.enable = true;
+                gmeConfig.authentication.newUserNeedsVerification = false;
+                gmeConfig.authentication.allowPasswordReset = true;
+                gmeConfig.authentication.allowedResetInterval = 1;
+                gmeConfig.authentication.resetTimeout = 10000;
+                gmeConfig.authentication.resetUrl = '/profile/reset';
+
+                server = WebGME.standaloneServer(gmeConfig);
+                server.start(done);
+            });
+
+            after(function (done) {
+                server.stop(done);
+            });
+
+            beforeEach(function () {
+                agent = superagent.agent();
+            });
+
+            it('should allow complete password change', function (done) {
+                var newUser = {
+                    userId: 'reset_pwd_user',
+                    email: 'em@il',
+                    password: 'pass'
+                };
+
+                agent.post(server.getUrl() + '/api/v1/register')
+                    .send(newUser)
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body._id).to.equal('reset_pwd_user');
+                        
+                        agent.post(server.getUrl() + '/api/v1/reset')
+                            .send({userId: 'reset_pwd_user'})
+                            .end(function (err, res) {
+                                expect(res.status).equal(200);
+                                agent.patch(server.getUrl() + '/api/v1/reset')
+                                    .send({
+                                        userId: 'reset_pwd_user', 
+                                        resetHash: res.body.resetHash, 
+                                        newPassword: 'newpass'})
+                                    .end(function (err, res) {
+                                        expect(err).to.eql(null);
+                                        expect(res.status).equal(200);
+                                        agent.get(server.getUrl() + '/api/v1/user')
+                                            .set('Authorization', 'Basic ' + 
+                                                new Buffer('reset_pwd_user:newpass').toString('base64'))
+                                            .end(function (err, res) {
+                                                expect(res.status).equal(200);
+                                                expect(res.body._id).equal('reset_pwd_user');
+                                                done();
+                                            });
+                                    });
+                            });
+                    });
+            });
+
+            it('should allow checking of password reset request', function (done) {
+                var newUser = {
+                    userId: 'reset_pwd_user2',
+                    email: 'em@il',
+                    password: 'pass'
+                };
+
+                agent.post(server.getUrl() + '/api/v1/register')
+                    .send(newUser)
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        expect(res.body._id).to.equal('reset_pwd_user2');
+                        
+                        agent.post(server.getUrl() + '/api/v1/reset')
+                            .send({userId: 'reset_pwd_user2'})
+                            .end(function (err, res) {
+                                expect(res.status).equal(200);
+                                expect(res.body.resetHash).not.to.eql(undefined);
+                                agent.get(server.getUrl() + 
+                                    '/api/v1/reset?userId=reset_pwd_user2&resetHash=' + 
+                                    res.body.resetHash)
+                                    .end(function (err, res) {
+                                        expect(err).to.eql(null);
+                                        expect(res.status).equal(200);
+                                        done();
+                                    });
+                            });
+                    });
+            });
+                    
+        });
     });
 });

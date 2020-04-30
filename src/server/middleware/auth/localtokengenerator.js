@@ -33,6 +33,15 @@ function LocalTokenGenerator(mainLogger, gmeConfig, jwt) {
     this.getToken = function (userId, callback) {
         return Q.ninvoke(jwt, 'sign', {userId: userId}, self.privateKey, self.jwtOptions).nodeify(callback);
     };
+
+    this.getResetToken = function (userId, resetId, callback) {
+        return Q.ninvoke(
+            jwt,
+            'sign',
+            {userId, resetId},
+            self.privateKey, self.jwtOptions
+        ).nodeify(callback);
+    };
 }
 
 LocalTokenGenerator.prototype = Object.create(TokenGeneratorBase.prototype);

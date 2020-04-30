@@ -98,6 +98,18 @@ Modification of arrays is not support, but non-existing config sub-group (object
  - The algorithm used for encryption (should not be edited w/o changing keys appropriately).
 - `config.authentication.jwt.tokenGenerator = './src/server/middleware/auth/localtokengenerator.js'`
  - Replaceable module for generating tokens in case webgme should not generated new tokens by itself.
+- `config.authentication.encryption.algorithm = aes-256-cbc`
+ - The type of algorithm used for data encryption. To get an idea of what algorithms you can use, check the [nodejs](https://nodejs.org/dist/latest-v12.x/docs/api/crypto.html#crypto_crypto_createcipheriv_algorithm_key_iv_options) descriptions as well as [openSSL](https://www.openssl.org/docs/man1.0.2/man1/ciphers.html).
+- `config.authentication.encryption.key` = './src/server/middleware/auth/EXAMPLE_ENCRYPTION_KEY'`
+ - Key file used for data cipher.
+- `config.authentication.allowPasswordReset = false`
+ - Allows password reset functionality (option to change password without successful login). For maximum security check [mailer](#mailer) options.
+- `config.authentication.allowedResetInterval = 3600000`
+ - The frequency in milliseconds of the allowed reset requests.
+- `config.authentication.resetTimeout = 1200000`
+ - The maximum interval of validity of the reset. This means that the password has to be changed within this interval (otherwise the user has to wait until a new request can be made).
+- `config.authentication.resetUrl = '/profile/reset'`
+ - Location of the reset page where the user should be guided to input the new password. The whole reset procedure can be done with purely REST API calls, but it is usually safer to include an email in the process.
 
 ##### bin
 
@@ -163,6 +175,24 @@ Modification of arrays is not support, but non-existing config sub-group (object
  - If true, all data stored for jobs (jobInfos, outputs, workerInfos, etc.) is cleared when the server starts.
 - `config.executor.labelJobs = './labelJobs.json'`
  - Path to configuration file for label jobs for the workers.
+
+##### mailer
+- `config.mailer.enable = false`
+ - Switch to turn on the mail sending services of WebGME. To see what this service can do, please check the [mailer readme](https://github.com/webgme/webgme-engine/blob/master/src/server/middleware/mailer/README.md).
+- `config.mailer.service = ''`
+ - Allows for shorthand configuraiton of SMTP servers for known services like gmail. For furhter details on what can be configured, please check [nodemailer](https://nodemailer.com/about/).
+- `config.mailer.host = ''`
+ - The IP address of the SMTP server that should be used by WebGME to send e-mails.
+- `config.mailer.port = 587`
+ - The port of the SMTP server.
+- `config.mailer.secure = false`
+ - If true, the connection between WebGME and the SMTP server will be secured.
+- `config.mailer.user = 'none'`
+ - The username of the account that should be used to access the SMTP server.
+- `config.mailer.pwd = 'none'`
+ - The password of the account that should be used to access the SMTP server. This information as well as all other sensitive SMTP server configuration cannot be accesssed from the client side.
+- `config.mailer.sendPasswordReset = false`
+ - If used, the reset request on the REST API will send an e-mail to the user and not respond with the resetHash.
 
 ##### mongo
 - `config.mongo.uri = 'mongodb://127.0.0.1:27017/multi'`
