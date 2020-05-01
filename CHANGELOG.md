@@ -1,5 +1,42 @@
 # Changelog
 
+## [v2.25.0](https://github.com/webgme/webgme-engine/tree/v2.25.0) (2020-05-01)
+
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.24.3...v2.25.0)
+
+**Implemented enhancements:**
+
+- Node lookup plugin [\#203](https://github.com/webgme/webgme-engine/issues/203)
+- Mailer service [\#195](https://github.com/webgme/webgme-engine/issues/195)
+- Enhance merge logging [\#207](https://github.com/webgme/webgme-engine/pull/207) ([kecso](https://github.com/kecso))
+- Mailer - service [\#205](https://github.com/webgme/webgme-engine/pull/205) ([kecso](https://github.com/kecso))
+- Add displayName to access tokens. Closes \#182 [\#187](https://github.com/webgme/webgme-engine/pull/187) ([brollb](https://github.com/brollb))
+
+**Fixed bugs:**
+
+- Merge log [\#208](https://github.com/webgme/webgme-engine/pull/208) ([kecso](https://github.com/kecso))
+- Inferred user password cannot be reset [\#206](https://github.com/webgme/webgme-engine/pull/206) ([kecso](https://github.com/kecso))
+
+**Closed issues:**
+
+- Expose information to reproduce \(and debug\) merge conflicts [\#204](https://github.com/webgme/webgme-engine/issues/204)
+- Errors thrown by a plugin's `main` function should be handled automatically [\#201](https://github.com/webgme/webgme-engine/issues/201)
+- Store encrypted userData [\#199](https://github.com/webgme/webgme-engine/issues/199)
+- Send detailed error message on failure to create access token [\#197](https://github.com/webgme/webgme-engine/issues/197)
+- Cannot delete old access tokens [\#192](https://github.com/webgme/webgme-engine/issues/192)
+- Change Default Name For Access Tokens [\#190](https://github.com/webgme/webgme-engine/issues/190)
+- Add name/displayName to personal access tokens [\#182](https://github.com/webgme/webgme-engine/issues/182)
+
+**Merged pull requests:**
+
+- Catch and handle errors thrown by plugin main fn. Fixes \#201 [\#202](https://github.com/webgme/webgme-engine/pull/202) ([brollb](https://github.com/brollb))
+- Optionally encrypt/decrypt userData fields using GME Auth. Closes \#199 [\#200](https://github.com/webgme/webgme-engine/pull/200) ([brollb](https://github.com/brollb))
+- Send error message on failed token creation. Closes \#197 [\#198](https://github.com/webgme/webgme-engine/pull/198) ([brollb](https://github.com/brollb))
+- Add API token auth to blob. Minor refactor of executor api token auth [\#196](https://github.com/webgme/webgme-engine/pull/196) ([brollb](https://github.com/brollb))
+- Use \(unique\) display name for deletion. Fixes \#192 [\#194](https://github.com/webgme/webgme-engine/pull/194) ([brollb](https://github.com/brollb))
+- Shorten default access token name. Closes \#190 [\#191](https://github.com/webgme/webgme-engine/pull/191) ([brollb](https://github.com/brollb))
+- Only show access token ID on creation. Closes \#188 [\#189](https://github.com/webgme/webgme-engine/pull/189) ([brollb](https://github.com/brollb))
+
 ## [v2.24.3](https://github.com/webgme/webgme-engine/tree/v2.24.3) (2020-02-24)
 
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.24.2...v2.24.3)
@@ -8,6 +45,10 @@
 
 - Error when authenticating with API tokens and guest accounts disabled [\#185](https://github.com/webgme/webgme-engine/issues/185)
 - Only call ensureAuthenticated if other auth methods fail. Fixes \#185 [\#186](https://github.com/webgme/webgme-engine/pull/186) ([brollb](https://github.com/brollb))
+
+**Closed issues:**
+
+- Should Access Tokens hide their value after creation? [\#188](https://github.com/webgme/webgme-engine/issues/188)
 
 ## [v2.24.2](https://github.com/webgme/webgme-engine/tree/v2.24.2) (2020-02-23)
 
