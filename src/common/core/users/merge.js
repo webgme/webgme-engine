@@ -325,7 +325,8 @@ define([
                 })
                 .then(mergeDeferred.resolve)
                 .catch(err => {
-                    let message = 'Merge reproduction info [base:' + result.baseCommitHash + ', mine:' + result.myCommitHash + ', theirs:' +  result.theirCommitHash + '] \n';
+                    let message = 'Merge reproduction info [base:' + result.baseCommitHash + 
+                        ', mine:' + result.myCommitHash + ', theirs:' +  result.theirCommitHash + '] \n';
                     message += 'original error message:' + err.message;
                     err.messasge = message;
                     mergeDeferred.reject(err);
