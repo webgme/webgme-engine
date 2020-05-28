@@ -629,7 +629,7 @@ function GMEAuth(session, gmeConfig) {
     }
 
     const {algorithm} = gmeConfig.authentication.encryption;
-    const key = fs.readFileSync(gmeConfig.authentication.encryption.key);
+    const key = Buffer.from(fs.readFileSync(gmeConfig.authentication.encryption.key, 'utf8').trim());
     function _encrypt(input) {
         const type = typeof input;
         if (type === 'object') {

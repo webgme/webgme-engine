@@ -148,7 +148,7 @@ function validateConfig(configOrFileName) {
     assertObject('config.authentication.encryption', config.authentication.encryption);
     assertString('config.authentication.encryption.algorithm', config.authentication.encryption.algorithm);
     assertFileExists('config.authentication.encryption.key', config.authentication.encryption.key);
-    key = fs.readFileSync(config.authentication.encryption.key);
+    key = Buffer.from(fs.readFileSync(config.authentication.encryption.key, 'utf8').trim());
     if (key.length !== 32) {
         throwValidationError(
             'config.authentication.encryption.key',
