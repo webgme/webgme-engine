@@ -27,6 +27,18 @@ var Mongodb = require('mongodb'),
 const crypto = require('crypto');
 const _ = require('underscore');
 const INFERRED_USER_EMAIL = 'em@il';
+function loadEncryptionKey(gmeConfig) {
+    const {algorithm, key} = gmeConfig.authentication.encryption;
+
+    const keyValue = Buffer.from(fs.readFileSync(key, 'utf-8').replace(/\r?\n$/, ''));
+    try {
+        crypto.createCipheriv(algorithm, keyValue, crypto.randomBytes(16));
+    } catch (err) {
+        throw new Error(`Error when loading encryption key: ${err.message}`);
+    }
+
+    return keyValue;
+}
 
 /**
  *
@@ -629,7 +641,7 @@ function GMEAuth(session, gmeConfig) {
     }
 
     const {algorithm} = gmeConfig.authentication.encryption;
-    const key = fs.readFileSync(gmeConfig.authentication.encryption.key);
+    const key = loadEncryptionKey(gmeConfig);
     function _encrypt(input) {
         const type = typeof input;
         if (type === 'object') {

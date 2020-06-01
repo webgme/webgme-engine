@@ -148,13 +148,6 @@ function validateConfig(configOrFileName) {
     assertObject('config.authentication.encryption', config.authentication.encryption);
     assertString('config.authentication.encryption.algorithm', config.authentication.encryption.algorithm);
     assertFileExists('config.authentication.encryption.key', config.authentication.encryption.key);
-    key = fs.readFileSync(config.authentication.encryption.key);
-    if (key.length !== 32) {
-        throwValidationError(
-            'config.authentication.encryption.key',
-            'must be 32 bytes. Got: ' + key.length + ' bytes'
-        );
-    }
     assertBoolean('config.authentication.allowPasswordReset', config.authentication.allowPasswordReset);
     assertNumber('config.authentication.allowedResetInterval', config.authentication.allowedResetInterval);
     assertNumber('config.authentication.resetTimeout', config.authentication.resetTimeout);
