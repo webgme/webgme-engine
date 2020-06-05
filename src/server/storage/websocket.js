@@ -29,6 +29,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         }, // TODO: This is a single state on one server!
         webSocket;
 
+    const socketRouters = {};
+
     logger.debug('ctor');
 
     function getTokenFromHandshake(socket) {
@@ -1187,6 +1189,19 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     done(err);
                 }
             });
+
+            // websocket router connection
+            socket.on('websocketRouterConnect', function (data, callback) {
+                if (data.routerId) {
+                    if (this.socketRouters[data.routerId]) {
+                        this.socketRouters[data.routerId](socket);
+                    } else {
+                        socket.emit('websocketRouterError', {routerId: data.routerId, error: 'cannot connect to non-existent websocket-router [' + 
+                        data.routerId + ']'});
+                    }
+                }
+                callback(null);
+            });
         });
     };
 
@@ -1235,6 +1250,10 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     branchRooms: branchRooms
                 };
             });
+    };
+
+    this.handleWebsocketRouterUsers = function (routerId, connectHandleFn) {
+        this.socketRouters[routerId] = connectHandleFn;
     };
 }
 
