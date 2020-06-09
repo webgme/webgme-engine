@@ -170,7 +170,7 @@ define([
     /**
      * Adds a file to the blob storage.
      * @param {string} name - file name.
-     * @param {string|Buffer|ArrayBuffer|fs.ReadStream} data - file content. 
+     * @param {string|Buffer|ArrayBuffer|stream.Readable} data - file content. 
      * !ReadStream currently only available from a nodejs setting
      * @param {function} [callback] - if provided no promise will be returned.
      *
@@ -182,7 +182,7 @@ define([
             self = this,
             contentLength,
             req,
-            fs = null;
+            stream = null;
 
         this.logger.debug('putFile', name);
 
@@ -198,7 +198,7 @@ define([
         }
 
         if (typeof window === 'undefined') {
-            fs = require('fs');
+            stream = require('stream');
         }
         // On node-webkit, we use XMLHttpRequest, but xhr.send thinks a Buffer is a string and encodes it in utf-8 -
         // send an ArrayBuffer instead.
@@ -223,13 +223,13 @@ define([
         if (typeof data !== 'string' &&
         !(data instanceof String) &&
         typeof window === 'undefined' &&
-        !(data instanceof fs.ReadStream)) {
+        !(data instanceof stream.Readable)) {
             req.set('Content-Length', contentLength);
         }
 
         req.set('Content-Type', 'application/octet-stream');
 
-        if (typeof window === 'undefined' && data instanceof fs.ReadStream) {
+        if (typeof window === 'undefined' && data instanceof stream.Readable) {
             data.on('error', function (err) {
                 deferred.reject(err || new Error('Failed to send stream data completely'));
                 return;
