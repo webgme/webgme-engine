@@ -170,7 +170,8 @@ define([
     /**
      * Adds a file to the blob storage.
      * @param {string} name - file name.
-     * @param {string|Buffer|ArrayBuffer|fs.ReadStream} data - file content. !ReadStream currently only available from a nodejs setting
+     * @param {string|Buffer|ArrayBuffer|fs.ReadStream} data - file content. 
+     * !ReadStream currently only available from a nodejs setting
      * @param {function} [callback] - if provided no promise will be returned.
      *
      * @return {external:Promise} On success the promise will be resolved with {string} <b>metadataHash</b>.<br>
