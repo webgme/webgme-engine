@@ -170,7 +170,7 @@ define([
     /**
      * Adds a file to the blob storage.
      * @param {string} name - file name.
-     * @param {string|Buffer|ArrayBuffer} data - file content.
+     * @param {string|Buffer|ArrayBuffer|fs.ReadStream} data - file content. !ReadStream currently only available from a nodejs setting
      * @param {function} [callback] - if provided no promise will be returned.
      *
      * @return {external:Promise} On success the promise will be resolved with {string} <b>metadataHash</b>.<br>
@@ -180,7 +180,8 @@ define([
         var deferred = Q.defer(),
             self = this,
             contentLength,
-            req;
+            req,
+            fs = null;
 
         this.logger.debug('putFile', name);
 
@@ -195,6 +196,9 @@ define([
             return ab;
         }
 
+        if (typeof window === 'undefined') {
+            fs = require('fs');
+        }
         // On node-webkit, we use XMLHttpRequest, but xhr.send thinks a Buffer is a string and encodes it in utf-8 -
         // send an ArrayBuffer instead.
         if (typeof window !== 'undefined' && typeof Buffer !== 'undefined' && data instanceof Buffer) {
@@ -215,26 +219,45 @@ define([
 
         this._setAuthHeaders(req);
 
-        if (typeof data !== 'string' && !(data instanceof String) && typeof window === 'undefined') {
+        if (typeof data !== 'string' &&
+        !(data instanceof String) &&
+        typeof window === 'undefined' &&
+        !(data instanceof fs.ReadStream)) {
             req.set('Content-Length', contentLength);
         }
 
-        req.set('Content-Type', 'application/octet-stream')
-            .send(data)
-            .on('progress', function (event) {
-                self.uploadProgressHandler(name, event);
-            })
-            .end(function (err, res) {
-                if (err || res.status > 399) {
-                    deferred.reject(err || new Error(res.status));
-                    return;
-                }
+        req.set('Content-Type', 'application/octet-stream');
+
+        if (typeof window === 'undefined' && data instanceof fs.ReadStream) {
+            data.on('error', function (err) {
+                deferred.reject(err || new Error('Failed to send stream data completely'));
+                return;
+            });
+            req.on('response', function (res) {
                 var response = res.body;
                 // Get the first one
                 var hash = Object.keys(response)[0];
                 self.logger.debug('putFile - result', hash);
                 deferred.resolve(hash);
             });
+            data.pipe(req);
+        } else {
+            req.send(data)
+                .on('progress', function (event) {
+                    self.uploadProgressHandler(name, event);
+                })
+                .end(function (err, res) {
+                    if (err || res.status > 399) {
+                        deferred.reject(err || new Error(res.status));
+                        return;
+                    }
+                    var response = res.body;
+                    // Get the first one
+                    var hash = Object.keys(response)[0];
+                    self.logger.debug('putFile - result', hash);
+                    deferred.resolve(hash);
+                });
+        }
 
         return deferred.promise.nodeify(callback);
     };
