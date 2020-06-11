@@ -1195,12 +1195,12 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 const {routerId, messageType, payload} = data;
                 
                 if (routerId) {
-                    if (this.socketRouters[routerId]) {
+                    if (socketRouters[routerId]) {
                         switch (messageType) {
-                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.CONNECT:
-                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.DISCONNECT:
-                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.MESSAGE:
-                                this.socketRouters[routerId][messageType](payload, callback);
+                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.CONNECT:
+                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT:
+                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE:
+                                socketRouters[routerId][messageType](payload, callback);
                                 break;
                             default:
                                 callback('Unkown message type! [' + messageType + ']');
@@ -1263,7 +1263,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     };
 
     this.handleWebsocketRouterMessages = function (routerId, handleObject) {
-        this.socketRouters[routerId] = handleObject;
+        socketRouters[routerId] = handleObject;
+        return webSocket;
     };
 }
 

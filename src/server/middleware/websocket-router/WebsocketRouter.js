@@ -1,40 +1,42 @@
+"use strict";
+
 const CONSTANTS = requireJS('common/storage/constants');
 
 class WebsocketRouter {
     constructor(websocket, routerId) {
-        this._ws = websocket;
         this._id = CONSTANTS.WEBSOCKET_ROUTER_ROOM_ID_PREFIX + routerId;
         this._routerId = routerId;
         this._sockets = {};
         this._handles = {};
         this._onConnectHandle = (user, callback) => {callback(null);};
         
-        this._userConnected = this._userConnected.bind(this);
+        /*this._userConnected = this._userConnected.bind(this);
         this._userDisconnected = this._userDisconnected.bind(this);
         this.send = this.send.bind(this);
         this.disconnect = this.disconnect.bind(this);
         this.onConnect = this.onConnect.bind(this);
-        this.connectUser = this.connectUser.bind(this);
+        this.connectUser = this.connectUser.bind(this);*/
         
         const handleObject = {};
-        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.CONNECT] = (socket, callback) => {
+        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.CONNECT] = (socket, callback) => {
             this._sockets[socket.id] = socket;
             const user = new WebsocketRouterUser(socket, this);
             this._onConnectHandle(user, callback);
         };
 
-        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.DISCONNECT] = (socketId, payload, callback) => {
+        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT] = (socketId, payload, callback) => {
             // user initiated disconnect
-            this._handles[socketId][CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.DISCONNECT](payload, callback);
+            this._handles[socketId][CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT](payload, callback);
             this._sockets[socketId].leave(this._id);
             delete this._handles[socketId];
             delete this._sockets[socketId];
         };
-        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.MESSAGE] = (SocketId, payload, callback) => {
-            this._handles[socketId][CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.MESSAGE](payload, callback);
+        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE] = (SocketId, payload, callback) => {
+            this._handles[socketId][CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE](payload, callback);
         };
 
-        this._ws.handleWebsocketRouterMessages(routerId, this._userConnected);
+        const ws = websocket.handleWebsocketRouterMessages(routerId, this._userConnected);
+        this._ns = ws.of(this._id);
     }
 
     
@@ -43,20 +45,20 @@ class WebsocketRouter {
     }
 
     send(payload) {
-        this._ws.in(this._id).emit('websocketRouterMessage',  {
+        this._ns.in(this._id).emit('websocketRouterMessage',  {
             routerId: this._routerId,
-            messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.MESSAGE,
+            messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE,
             payload: payload,
         });
     }
 
     disconnect(error) {
-        this._ws.in(this._id).emit('websocketRouterMessage',  {
+        this._ns.in(this._id).emit('websocketRouterMessage',  {
             routerId: this._routerId,
-            messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.DISCONNECT,
+            messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT,
             payload: error.message,
         });
-        Object.keys(this._socket2user).forEach(socketId => {
+        Object.keys(this._sockets).forEach(socketId => {
             this._sockets[socketId].leave(this._id);
         });
         this._sockets = {};
@@ -88,10 +90,10 @@ class WebsocketRouterUser {
         this.disconnect = this.disconnect.bind(this);
 
         const handleObject = {};
-        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.MESSAGE] = (payload, callback) => {
+        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE] = (payload, callback) => {
             this._msgHandle(payload, callback);
         };
-        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.DISCONNECT] = (payload, callback) => {
+        handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT] = (payload, callback) => {
             this._discHandle(payload, callback);
         }; 
 
@@ -101,7 +103,7 @@ class WebsocketRouterUser {
     send(payload) {
         this._socket.emit('websocketRouterMessage', {
             routerId: this._router.getRouterId(),
-            messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.MESSAGE,
+            messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE,
             payload: payload,
         });
     }
@@ -109,7 +111,7 @@ class WebsocketRouterUser {
     disconnect(err) {
         this._socket.emit('websocketRouterMessage', {
             routerId: this._routerId,
-            messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.DISCONNECT,
+            messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT,
             error: err.message,
         });
     }
@@ -123,7 +125,5 @@ class WebsocketRouterUser {
     }
 }
 
-// module.exports = {
-    // WebsocketRouter: WebsocketRouter
-// }
-export {WebsocketRouter}
+module.exports = WebsocketRouter;
+// export {WebsocketRouter}

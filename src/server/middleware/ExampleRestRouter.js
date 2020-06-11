@@ -16,6 +16,7 @@ var express = require('express'),
 const WebsocketRouter = require('./websocket-router/WebsocketRouter');
 let pingTimer = null;
 let wsRouter = null;
+let websocket = null;
 /**
  * Called when the server is created but before it starts to listening to incoming requests.
  * N.B. gmeAuth, safeStorage and workerManager are not ready to use until the start function is called.
@@ -34,32 +35,8 @@ function initialize(middlewareOpts) {
     var logger = middlewareOpts.logger.fork('ExampleRestRouter'),
         ensureAuthenticated = middlewareOpts.ensureAuthenticated,
         getUserId = middlewareOpts.getUserId;
-    
-    wsRouter = new WebsocketRouter(middlewareOpts.websocket, 'ExampleRestRouter');
 
-
-    wsRouter.onConnect((user, callback) => {
-        let pongTimer = setInterval(() => {
-            user.send('ping-ping');
-        }, 50);
-
-        user.onMessage((payload, callback) => {
-            logger.debug('message arrived', payload);
-            if (payload === 'ping') {
-                callback(null, 'pong');
-            } else {
-                callback(new Error('unknown message'));
-            }
-        });
-
-        user.onDisconnect((cause, callback) => {
-            logger.debug('user disconnected...', cause);
-            clearInterval(pongTimer);
-            callback(null);
-        });
-
-        callback(null);
-    });
+    websocket = middlewareOpts.webSocket;
 
     logger.debug('initializing ...');
 
@@ -106,6 +83,31 @@ function initialize(middlewareOpts) {
  * @param {function} callback
  */
 function start(callback) {
+    wsRouter = new WebsocketRouter(websocket, 'ExampleRestRouter');
+
+
+    wsRouter.onConnect((user, callback) => {
+        let pongTimer = setInterval(() => {
+            user.send('ping-ping');
+        }, 50);
+
+        user.onMessage((payload, callback) => {
+            logger.debug('message arrived', payload);
+            if (payload === 'ping') {
+                callback(null, 'pong');
+            } else {
+                callback(new Error('unknown message'));
+            }
+        });
+
+        user.onDisconnect((cause, callback) => {
+            logger.debug('user disconnected...', cause);
+            clearInterval(pongTimer);
+            callback(null);
+        });
+
+        callback(null);
+    });
     pingTimer = setInterval(() => {
         if (wsRouter) {
             wsRouter.send('ping');
