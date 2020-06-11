@@ -21,7 +21,7 @@ define([
     './gmeServerRequests',
     './stateloghelpers',
     './pluginmanager',
-    './websocketRouterAccess'
+    './websocketRouterAccess',
     'superagent'
 ], function (Logger,
              Storage,
