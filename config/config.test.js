@@ -47,4 +47,6 @@ config.server.log = {
 
 config.plugin.basePaths.push(path.join(__dirname, '../test-karma/assets/plugins'));
 
+config.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
+
 module.exports = config;
