@@ -159,6 +159,12 @@
             INITIATED: 'INITIATED',
             ABORT: 'ABORT',
             MESSAGE: 'MESSAGE'
+        },
+        WEBSOCKET_ROUTER_ROOM_ID_PREFIX: 'wsr-room-',
+        WEBSOCKET_ROUTER_MESSAGE_TYPES: {
+            CONNECT: 'wsm-connect',
+            DISCONNECT: 'wsm-disconnect',
+            MESSAGE: 'wsm-message'
         }
     };
 }));

@@ -1190,17 +1190,27 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 }
             });
 
-            // websocket router connection
-            socket.on('websocketRouterConnect', function (data, callback) {
-                if (data.routerId) {
-                    if (this.socketRouters[data.routerId]) {
-                        this.socketRouters[data.routerId](socket);
+            // websocket router message
+            socket.on('websocketRouterMessage', function (data, callback) {
+                const {routerId, messageType, payload} = data;
+                
+                if (routerId) {
+                    if (this.socketRouters[routerId]) {
+                        switch (messageType) {
+                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.CONNECT:
+                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.DISCONNECT:
+                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.MESSAGE:
+                                this.socketRouters[routerId][messageType](payload, callback);
+                                break;
+                            default:
+                                callback('Unkown message type! [' + messageType + ']');
+                        }
                     } else {
-                        socket.emit('websocketRouterError', {routerId: data.routerId, error: 'cannot connect to non-existent websocket-router [' + 
-                        data.routerId + ']'});
+                        callback('Unknown websocket router! [' + routerId + ']');
                     }
+                } else {
+                    callback('Missing websocket router id!');
                 }
-                callback(null);
             });
         });
     };
@@ -1252,8 +1262,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             });
     };
 
-    this.handleWebsocketRouterUsers = function (routerId, connectHandleFn) {
-        this.socketRouters[routerId] = connectHandleFn;
+    this.handleWebsocketRouterMessages = function (routerId, handleObject) {
+        this.socketRouters[routerId] = handleObject;
     };
 }
 

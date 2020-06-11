@@ -21,6 +21,7 @@ define([
     './gmeServerRequests',
     './stateloghelpers',
     './pluginmanager',
+    './websocketRouterAccess'
     'superagent'
 ], function (Logger,
              Storage,
@@ -37,6 +38,7 @@ define([
              getServerRequests,
              stateLogHelpers,
              PluginManager,
+             WebsocketRouterAccess,
              superagent) {
 
     'use strict';
@@ -2006,6 +2008,8 @@ define([
             return storage.userId;
         };
 
+        this.getWebsocketRouterAccess = WebsocketRouterAccess.getWebsocketRouterAccess;
+        
         window.addEventListener('error', function (evt) {
             var errorType;
             state.exception = {};

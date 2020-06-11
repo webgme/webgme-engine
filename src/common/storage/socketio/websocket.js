@@ -24,6 +24,7 @@ define([
         self.userId = null;
         self.serverVersion = null;
         self.ioClient = ioClient;
+        self._handleWebsocketRouterMessage = () => {};
 
         logger.debug('ctor');
         EventDispatcher.call(this);
@@ -185,6 +186,11 @@ define([
                 self.socket.on(CONSTANTS.DOCUMENT_SELECTION, function (data) {
                     logger.debug('DOCUMENT_SELECTION event', {metadata: data});
                     self.dispatchEvent(self.getDocumentSelectionEventName(data), data);
+                });
+
+                self.socket.on('websocketRouterMessage', function (data) {
+                    logger.debug('websocketRouterMessage', {metadata: data});
+                    self._handleWebsocketRouterMessage(data.routerId, data.messageType, data.payload);
                 });
             });
         };
@@ -489,6 +495,25 @@ define([
                 return [CONSTANTS.DOCUMENT_SELECTION + data.projectId, data.branchName, data.nodeId, data.attrName]
                     .join(CONSTANTS.ROOM_DIVIDER);
             }
+        };
+
+        // Router websocket relay messaging
+        this.sendWsRouterMessage = function (routerId, messageType, payload, callback) {
+            const data = {
+                routerId: routerId,
+                messageType: messageType,
+                payload: payload,
+            };
+
+            return emitWithToken(data, 'websocketRouterMessage')
+                .catch(function (err) {
+                    return Q.reject(new Error(err));
+                })
+                .nodeify(callback);
+        };
+
+        this.onWebsocketRouterMessage = function (handleFn) {
+            self._handleWebsocketRouterMessage = handleFn;
         };
     }
 
