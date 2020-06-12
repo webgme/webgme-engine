@@ -1218,12 +1218,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
     this.stop = function () {
         //disconnect clients
-        var socketIds;
         if (webSocket) {
-            socketIds = Object.keys(webSocket.sockets.connected);
-            socketIds.forEach(function (socketId) {
-                webSocket.sockets.connected[socketId].disconnect();
-            });
             Object.keys(documents).forEach(function (docId) {
                 logger.warn('Document room was open - will close it', docId);
 
@@ -1233,7 +1228,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
                 delete documents[docId];
             });
-            webSocket = null;
+            webSocket.close();
         }
     };
 
