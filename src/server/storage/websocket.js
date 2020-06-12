@@ -27,7 +27,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         documents = {
             //<docId> : { otServer: DocumentServer, users: {}, disconnectedUsers: {} }
         }, // TODO: This is a single state on one server!
-        webSocket;
+        webSocket = io();
 
     const socketRouters = {};
 
@@ -238,7 +238,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     this.start = function (server) {
         logger.debug('start');
 
-        webSocket = io.listen(server || gmeConfig.server.port, gmeConfig.socketIO.serverOptions);
+        // webSocket = io.listen(server || gmeConfig.server.port, gmeConfig.socketIO.serverOptions);
+        webSocket.listen(server || gmeConfig.server.port, gmeConfig.socketIO.serverOptions);
 
         if (gmeConfig.socketIO.adapter.type.toLowerCase() === 'redis') {
             logger.info('redis adapter:', JSON.stringify(gmeConfig.socketIO.adapter.options));
