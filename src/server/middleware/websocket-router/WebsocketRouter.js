@@ -35,7 +35,7 @@ class WebsocketRouter {
             this._handles[socketId][CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE](payload, callback);
         };
 
-        const ws = websocket.handleWebsocketRouterMessages(routerId, this._userConnected);
+        const ws = websocket.handleWebsocketRouterMessages(routerId, handleObject);
         this._ns = ws.of(this._id);
     }
 
@@ -85,9 +85,9 @@ class WebsocketRouterUser {
         this.userId = socket.userId;
         this._router = router;
 
-        this.send = this.send.bind(this);
-        this.error = this.error.bind(this);
-        this.disconnect = this.disconnect.bind(this);
+        //this.send = this.send.bind(this);
+        //this.error = this.error.bind(this);
+        //this.disconnect = this.disconnect.bind(this);
 
         const handleObject = {};
         handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE] = (payload, callback) => {

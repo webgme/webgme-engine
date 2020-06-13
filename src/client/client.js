@@ -2008,7 +2008,8 @@ define([
             return storage.userId;
         };
 
-        this.getWebsocketRouterAccess = WebsocketRouterAccess.getWebsocketRouterAccess;
+        this.getWebsocketRouterAccess = (new WebsocketRouterAccess(logger.fork('websocketRouterAccess'), this, storage)).getWebsocketRouterAccess;
+        
         
         window.addEventListener('error', function (evt) {
             var errorType;

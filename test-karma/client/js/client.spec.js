@@ -4943,7 +4943,7 @@ describe('GME client', function () {
         });
     });
 
-    describe('websocketRouterAccess', function () {
+    describe.only('websocketRouterAccess', function () {
         let Client = null;
         let client = null;
         let gmeConfig = null;
@@ -4968,6 +4968,15 @@ describe('GME client', function () {
             client.disconnectFromDatabase(done);
         });
 
+
+        it('should have all the functions', function() {
+            expect(typeof routerAccess.isConnected).to.equal('function');
+            expect(typeof routerAccess.connect).to.equal('function');
+            expect(typeof routerAccess.send).to.equal('function');
+            expect(typeof routerAccess.disconnect).to.equal('function');
+            expect(typeof routerAccess.onMessage).to.equal('function');
+            expect(typeof routerAccess.onDisconnect).to.equal('function');
+        });
 
         it('should be able to connect and disconnect', function (done) {
             expect(routerAccess.isConnected()).to.equal(false);

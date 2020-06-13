@@ -15,10 +15,10 @@ define(['common/storage/constants'], function (CONSTANTS) {
             this._send = send;
             this._isConnected = false;
             const handleObject = {};
-            handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.MESSAGE] = (payload, callback) => {
+            handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE] = (payload, callback) => {
                 this._onDisconnectHandle(payload, callback);
             };
-            handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE.DISCONNECT] = (payload, callback) => {
+            handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT] = (payload, callback) => {
                 this._onDisconnectHandle(payload, callback);
             }; 
 
@@ -26,7 +26,7 @@ define(['common/storage/constants'], function (CONSTANTS) {
         }
 
         connect(callback) {
-            this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGES.CONNECT, null, (err, data) => {
+            this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.CONNECT, null, (err, data) => {
                 if (!err) {
                     this._isConnected = true;
                 }
@@ -35,12 +35,12 @@ define(['common/storage/constants'], function (CONSTANTS) {
         }
 
         send(payload, callback) {
-            this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGES.MESSAGE, payload, callback);
+            this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE, payload, callback);
         }
 
         disconnect(reason, callback) {
             this._isConnected = false;
-            this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGES.DISCONNECT, reason, callback);
+            this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT, reason, callback);
         }
 
         onMessage(handleFn) {
@@ -85,6 +85,7 @@ define(['common/storage/constants'], function (CONSTANTS) {
             } 
             
             routers[routerId] = new WebsocketRouterAccessClient(routerId, send, connectHandles);
+            return routers[routerId];
         }
 
 

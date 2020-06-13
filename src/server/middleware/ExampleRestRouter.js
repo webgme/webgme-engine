@@ -83,6 +83,7 @@ function initialize(middlewareOpts) {
  * @param {function} callback
  */
 function start(callback) {
+    console.log('we got ws router')
     wsRouter = new WebsocketRouter(websocket, 'ExampleRestRouter');
 
 

@@ -1194,11 +1194,12 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             // websocket router message
             socket.on('websocketRouterMessage', function (data, callback) {
                 const {routerId, messageType, payload} = data;
-                
                 if (routerId) {
                     if (socketRouters[routerId]) {
                         switch (messageType) {
                             case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.CONNECT:
+                                socketRouters[routerId][messageType](socket, callback);
+                                break;
                             case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT:
                             case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE:
                                 socketRouters[routerId][messageType](payload, callback);
@@ -1259,6 +1260,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     };
 
     this.handleWebsocketRouterMessages = function (routerId, handleObject) {
+        console.log(routerId, handleObject);
         socketRouters[routerId] = handleObject;
         return webSocket;
     };
