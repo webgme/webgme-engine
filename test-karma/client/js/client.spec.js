@@ -4942,4 +4942,46 @@ describe('GME client', function () {
             });
         });
     });
+
+    describe('websocketRouterAccess', function () {
+        let Client = null;
+        let client = null;
+        let gmeConfig = null;
+        let routerAccess = null;
+
+
+        before(function (done) {
+            this.timeout(10000);
+            requirejs(['client/client', 'text!gmeConfig.json'], function (Client_, gmeConfigJSON) {
+                Client = Client_;
+                gmeConfig = JSON.parse(gmeConfigJSON);
+                client = new Client(gmeConfig);
+                client.connectToDatabase(function (err) {
+                    expect(err).to.equal(null);
+                    routerAccess = client.getWebsocketRouterAccess('ExampleRestRouter');
+                    done();
+                });
+            });
+        });
+
+        after(function (done) {
+            client.disconnectFromDatabase(done);
+        });
+
+
+        it('should be able to connect and disconnect', function (done) {
+            expect(routerAccess.isConnected()).to.equal(false);
+            routerAccess.connect((err, database) => {
+                expect(err).to.eql(null);
+                expect(data).to.eql(undefined);
+                expect(routerAccess.isConnected()).to.equal(true);
+                routerAccess.disconnect('just cause', (err, data) => {
+                    expect(err).to.eql(null);
+                    expect(data).to.eql(undefined);
+                    expect(routerAccess.isConnected()).to.equal(false);
+                    done();
+                });
+            });
+        });
+    });
 });
