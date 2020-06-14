@@ -83,7 +83,6 @@ function initialize(middlewareOpts) {
  * @param {function} callback
  */
 function start(callback) {
-    console.log('we got ws router')
     wsRouter = new WebsocketRouter(websocket, 'ExampleRestRouter');
 
 
@@ -93,7 +92,6 @@ function start(callback) {
         }, 50);
 
         user.onMessage((payload, callback) => {
-            logger.debug('message arrived', payload);
             if (payload === 'ping') {
                 callback(null, 'pong');
             } else {
@@ -102,7 +100,6 @@ function start(callback) {
         });
 
         user.onDisconnect((cause, callback) => {
-            logger.debug('user disconnected...', cause);
             clearInterval(pongTimer);
             callback(null);
         });

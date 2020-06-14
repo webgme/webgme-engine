@@ -8,18 +8,17 @@
 
 define(['common/storage/constants'], function (CONSTANTS) {
     'use strict';
-
     class WebsocketRouterAccessClient {
         constructor(routerId, send, connectReceiveFunctions) {
             this._id = routerId;
             this._send = send;
             this._isConnected = false;
             const handleObject = {};
-            handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE] = (payload, callback) => {
-                this._onDisconnectHandle(payload, callback);
+            handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE] = (payload) => {
+                this._onDisconnectHandle(payload);
             };
-            handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT] = (payload, callback) => {
-                this._onDisconnectHandle(payload, callback);
+            handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT] = (payload) => {
+                this._onDisconnectHandle(payload);
             }; 
 
             connectReceiveFunctions(this._id, handleObject);
@@ -68,18 +67,33 @@ define(['common/storage/constants'], function (CONSTANTS) {
         const handles = {};
 
         function send(routerId, messageType, payload, callback) {
+            logger.debug('outgoing message to websocket router',
+                {metadata: {routerId: routerId, messageType: messageType, payload: payload}});
             storage.sendWsRouterMessage(routerId, messageType, payload, callback);
         }
 
         function connectHandles(routerId, handles) {
+            logger.debug('access binding [' +  routerId + ']');
             handles[routerId] = handles;
         }
 
         function processMessage(routerId, messageType, payload) {
-
+            if (handles[routerId] && routers[routerId]) {
+                switch (messageType) {
+                    case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE:
+                    case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT:
+                        logger.debug('incoming message from websocket router',
+                            {metadata: {routerId: routerId, messageType: messageType, payload: payload}});
+                        handles[routerId][messageType](payload);
+                        return;
+                }
+            }
+            logger.debug('bad incoming message from websocket router',
+                {metadata: {routerId: routerId, messageType: messageType, payload: payload}});
         }
 
         function getWebsocketRouterAccess(routerId) {
+            logger.debug('getting websocket router access [' + routerId + ']');
             if (routers[routerId]) {
                 return routers[routerId];
             } 

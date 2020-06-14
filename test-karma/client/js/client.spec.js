@@ -4969,7 +4969,7 @@ describe('GME client', function () {
         });
 
 
-        it('should have all the functions', function() {
+        it('should have all the functions', function () {
             expect(typeof routerAccess.isConnected).to.equal('function');
             expect(typeof routerAccess.connect).to.equal('function');
             expect(typeof routerAccess.send).to.equal('function');
@@ -4978,9 +4978,9 @@ describe('GME client', function () {
             expect(typeof routerAccess.onDisconnect).to.equal('function');
         });
 
-        it('should be able to connect and disconnect', function (done) {
+        it('should be able to connect and disconnect twice', function (done) {
             expect(routerAccess.isConnected()).to.equal(false);
-            routerAccess.connect((err, database) => {
+            routerAccess.connect((err, data) => {
                 expect(err).to.eql(null);
                 expect(data).to.eql(undefined);
                 expect(routerAccess.isConnected()).to.equal(true);
@@ -4988,8 +4988,26 @@ describe('GME client', function () {
                     expect(err).to.eql(null);
                     expect(data).to.eql(undefined);
                     expect(routerAccess.isConnected()).to.equal(false);
-                    done();
+                    routerAccess.connect((err, data) => {
+                        expect(err).to.eql(null);
+                        expect(data).to.eql(undefined);
+                        expect(routerAccess.isConnected()).to.equal(true);
+                        routerAccess.disconnect('just cause', (err, data) => {
+                            expect(err).to.eql(null);
+                            expect(data).to.eql(undefined);
+                            expect(routerAccess.isConnected()).to.equal(false);
+                            done();
+                        });
+                    });
                 });
+            });
+        });
+
+        it.skip('should be able to receive messages from server', function (done) {
+            routerAccess.connect((err, data) => {
+                expect(err).to.eql(null);
+                expect(data).to.eql(undefined);
+                done();
             });
         });
     });
