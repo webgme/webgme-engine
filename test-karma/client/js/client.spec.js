@@ -4964,6 +4964,11 @@ describe('GME client', function () {
             });
         });
 
+        afterEach(function () {
+            routerAccess.onDisconnect(null);
+            routerAccess.onMessage(null);
+        });
+
         after(function (done) {
             client.disconnectFromDatabase(done);
         });
@@ -5003,11 +5008,47 @@ describe('GME client', function () {
             });
         });
 
-        it.skip('should be able to receive messages from server', function (done) {
+        it('should not crash even without message handlers', function (done) {
             routerAccess.connect((err, data) => {
                 expect(err).to.eql(null);
                 expect(data).to.eql(undefined);
-                done();
+                setTimeout(()=> {
+                    routerAccess.disconnect('just cause', (err, data) => {
+                        expect(err).to.eql(null);
+                        expect(data).to.eql(undefined);
+                        done();
+                    });
+                }, 200);
+            });
+        });
+
+        it('should be able to receive messages from server', function (done) {
+            let messagesReceived = 0;
+            let finished = false;
+            routerAccess.onMessage((payload) => {
+                if (!finished) {
+                    if (payload !== 'ping-ping') {
+                        finished = true;
+                        done(new Error('wrong message arrived'));
+                    } else {
+                        messagesReceived += 1;
+                    }
+                }
+            });
+
+            routerAccess.connect((err, data) => {
+                expect(err).to.eql(null);
+                expect(data).to.eql(undefined);
+                setTimeout(()=> {
+                    routerAccess.disconnect('just cause', (err, data) => {
+                        expect(err).to.eql(null);
+                        expect(data).to.eql(undefined);
+                        setTimeout(()=>{
+                            expect(messagesReceived).to.equal(2);
+                            done();
+                        }, 100);
+                    });
+                }, 130);
             });
         });
     });

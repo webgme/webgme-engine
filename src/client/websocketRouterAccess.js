@@ -9,16 +9,25 @@
 define(['common/storage/constants'], function (CONSTANTS) {
     'use strict';
     class WebsocketRouterAccessClient {
-        constructor(routerId, send, connectReceiveFunctions) {
+        constructor(routerId, logger, send, connectReceiveFunctions) {
             this._id = routerId;
+            this._logger = logger;
             this._send = send;
             this._isConnected = false;
             const handleObject = {};
             handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE] = (payload) => {
-                this._onDisconnectHandle(payload);
+                if (typeof this._onMessageHandle === 'function') {
+                    this._onMessageHandle(payload);
+                } else {
+                    logger.warn('Receiving message without handle [' + routerId + ']');
+                }
             };
             handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT] = (payload) => {
-                this._onDisconnectHandle(payload);
+                if (typeof this._onDisconnectHandle === 'function') {
+                    this._onDisconnectHandle(payload);
+                } else {
+                    logger.warn('Receiving disconnect without handle [' + routerId + ']');
+                }
             }; 
 
             connectReceiveFunctions(this._id, handleObject);
@@ -72,9 +81,9 @@ define(['common/storage/constants'], function (CONSTANTS) {
             storage.sendWsRouterMessage(routerId, messageType, payload, callback);
         }
 
-        function connectHandles(routerId, handles) {
+        function connectHandles(routerId, clientHandles) {
             logger.debug('access binding [' +  routerId + ']');
-            handles[routerId] = handles;
+            handles[routerId] = clientHandles;
         }
 
         function processMessage(routerId, messageType, payload) {
@@ -98,7 +107,7 @@ define(['common/storage/constants'], function (CONSTANTS) {
                 return routers[routerId];
             } 
             
-            routers[routerId] = new WebsocketRouterAccessClient(routerId, send, connectHandles);
+            routers[routerId] = new WebsocketRouterAccessClient(routerId, logger.fork(routerId), send, connectHandles);
             return routers[routerId];
         }
 

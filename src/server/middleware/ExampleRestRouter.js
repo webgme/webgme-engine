@@ -91,6 +91,11 @@ function start(callback) {
             user.send('ping-ping');
         }, 50);
 
+        setTimeout(() => {
+            clearInterval(pongTimer);
+            user.disconnect(new Error('timeout baby'));
+        }, 500);
+
         user.onMessage((payload, callback) => {
             if (payload === 'ping') {
                 callback(null, 'pong');
@@ -106,8 +111,10 @@ function start(callback) {
 
         callback(null);
     });
+    
     pingTimer = setInterval(() => {
         if (wsRouter) {
+            console.log('broadcasting message...');
             wsRouter.send('ping');
         }
     }, 100);

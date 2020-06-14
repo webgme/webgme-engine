@@ -92,6 +92,7 @@ class WebsocketRouter {
     }
 
     send(payload) {
+        console.log('broadcasting a messafe...', payload);
         this._ns.in(this._id).emit('websocketRouterMessage',  {
             routerId: this._routerId,
             messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE,
