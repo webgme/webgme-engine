@@ -505,11 +505,14 @@ define([
                 payload: payload,
             };
 
-            return emitWithToken(data, 'websocketRouterMessage')
-                .catch(function (err) {
-                    return Q.reject(new Error(err));
-                })
-                .nodeify(callback);
+            return emitWithToken(data, 'websocketRouterMessage', (err, result) => {
+                if (err) {
+                    callback(new Error(err), result);
+                } else {
+                    callback(err, result);
+                }
+            });
+                
         };
 
         this.onWebsocketRouterMessage = function (handleFn) {

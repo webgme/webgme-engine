@@ -31,9 +31,9 @@ class WebsocketRouterUser {
 
     disconnect(err) {
         this._socket.emit('websocketRouterMessage', {
-            routerId: this._routerId,
+            routerId: this._router.getRouterId(),
             messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT,
-            error: err.message,
+            payload: err.message,
         });
     }
 

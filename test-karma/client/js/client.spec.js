@@ -4943,7 +4943,7 @@ describe('GME client', function () {
         });
     });
 
-    describe.only('websocketRouterAccess', function () {
+    describe('websocketRouterAccess', function () {
         let Client = null;
         let client = null;
         let gmeConfig = null;
@@ -4987,19 +4987,19 @@ describe('GME client', function () {
             expect(routerAccess.isConnected()).to.equal(false);
             routerAccess.connect((err, data) => {
                 expect(err).to.eql(null);
-                expect(data).to.eql(undefined);
+                expect(data).to.eql(null);
                 expect(routerAccess.isConnected()).to.equal(true);
                 routerAccess.disconnect('just cause', (err, data) => {
                     expect(err).to.eql(null);
-                    expect(data).to.eql(undefined);
+                    expect(data).to.eql(null);
                     expect(routerAccess.isConnected()).to.equal(false);
                     routerAccess.connect((err, data) => {
                         expect(err).to.eql(null);
-                        expect(data).to.eql(undefined);
+                        expect(data).to.eql(null);
                         expect(routerAccess.isConnected()).to.equal(true);
                         routerAccess.disconnect('just cause', (err, data) => {
                             expect(err).to.eql(null);
-                            expect(data).to.eql(undefined);
+                            expect(data).to.eql(null);
                             expect(routerAccess.isConnected()).to.equal(false);
                             done();
                         });
@@ -5011,11 +5011,11 @@ describe('GME client', function () {
         it('should not crash even without message handlers', function (done) {
             routerAccess.connect((err, data) => {
                 expect(err).to.eql(null);
-                expect(data).to.eql(undefined);
+                expect(data).to.eql(null);
                 setTimeout(()=> {
                     routerAccess.disconnect('just cause', (err, data) => {
                         expect(err).to.eql(null);
-                        expect(data).to.eql(undefined);
+                        expect(data).to.eql(null);
                         done();
                     });
                 }, 200);
@@ -5035,17 +5035,81 @@ describe('GME client', function () {
 
             routerAccess.connect((err, data) => {
                 expect(err).to.eql(null);
-                expect(data).to.eql(undefined);
+                expect(data).to.eql(null);
                 setTimeout(()=> {
                     routerAccess.disconnect('just cause', (err, data) => {
                         expect(err).to.eql(null);
-                        expect(data).to.eql(undefined);
+                        expect(data).to.eql(null);
                         setTimeout(()=>{
                             expect(messagesReceived).to.equal(2);
                             done();
                         }, 100);
                     });
                 }, 130);
+            });
+        });
+
+        it('should be able to receive broadcast messages', function (done) {
+            let messagesReceived = 0;
+            routerAccess.onMessage((payload) => {
+                if (payload === 'ping') {
+                    messagesReceived += 1;
+                }
+            });
+
+            routerAccess.connect((err, data) => {
+                expect(err).to.eql(null);
+                expect(data).to.eql(null);
+                setTimeout(()=> {
+                    const received = messagesReceived;
+                    expect(messagesReceived).to.above(0);
+                    routerAccess.disconnect('just cause', (err, data) => {
+                        expect(err).to.eql(null);
+                        expect(data).to.eql(null);
+                        setTimeout(()=>{
+                            expect(messagesReceived).to.equal(received);
+                            done();
+                        }, 100);
+                    });
+                }, 100);
+            });
+        });
+
+        it('should be able to send messages to server', function (done) {
+            routerAccess.connect((err, data) => {
+                expect(err).to.eql(null);
+                expect(data).to.eql(null);
+                routerAccess.send('ping', (err, response) => {
+                    expect(err).to.eql(null);
+                    expect(response).to.eql('pong');
+                    routerAccess.send('baaad messages', (err, response) => {
+                        expect(err).not.to.eql(null);
+                        expect(err.message).to.eql('unknown message');
+                        expect(response).to.eql(null);
+                        routerAccess.disconnect('just cause', (err, data) => {
+                            expect(err).to.eql(null);
+                            expect(data).to.eql(null);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('should be able to handle forcefull disconnect from server', function (done) {
+            let disconnected = false;
+            routerAccess.onDisconnect((reason) => {
+                expect(reason).to.eql('timeout baby');
+                disconnected = true;
+                done();
+            });
+            routerAccess.connect((err, data) => {
+                expect(err).to.eql(null);
+                expect(data).to.eql(null);
+                setTimeout(() => {
+                    expect(disconnected).to.eql(true);
+                    done();
+                }, 600);
             });
         });
     });

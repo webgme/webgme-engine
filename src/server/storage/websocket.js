@@ -1193,16 +1193,23 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             // websocket router message
             socket.on('websocketRouterMessage', function (data, callback) {
+                function errorHandlingCallback(err, result) {
+                    if (err) {
+                        callback(err.message, result);
+                    } else {
+                        callback(err, result);
+                    }
+                }
                 const {routerId, messageType, payload} = data;
                 if (routerId) {
                     if (socketRouters[routerId]) {
                         switch (messageType) {
                             case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.CONNECT:
-                                socketRouters[routerId][messageType](socket, callback);
+                                socketRouters[routerId][messageType](socket, errorHandlingCallback);
                                 break;
                             case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT:
                             case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE:
-                                socketRouters[routerId][messageType](socket.id, payload, callback);
+                                socketRouters[routerId][messageType](socket.id, payload, errorHandlingCallback);
                                 break;
                             default:
                                 callback('Unkown message type! [' + messageType + ']');
