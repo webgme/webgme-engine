@@ -114,7 +114,6 @@ function start(callback) {
     
     pingTimer = setInterval(() => {
         if (wsRouter) {
-            console.log('broadcasting message...');
             wsRouter.send('ping');
         }
     }, 100);

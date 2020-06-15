@@ -10,10 +10,6 @@ class WebsocketRouterUser {
         this.userId = socket.userId;
         this._router = router;
 
-        //this.send = this.send.bind(this);
-        //this.error = this.error.bind(this);
-        //this.disconnect = this.disconnect.bind(this);
-
         const handleObject = {};
         handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE] = (payload, callback) => {
             this._msgHandle(payload, callback);
@@ -57,16 +53,10 @@ class WebsocketRouter {
         this._handles = {};
         this._onConnectHandle = (user, callback) => {callback(null);};
         
-        /*this._userConnected = this._userConnected.bind(this);
-        this._userDisconnected = this._userDisconnected.bind(this);
-        this.send = this.send.bind(this);
-        this.disconnect = this.disconnect.bind(this);
-        this.onConnect = this.onConnect.bind(this);
-        this.connectUser = this.connectUser.bind(this);*/
-        
         const handleObject = {};
         handleObject[CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.CONNECT] = (socket, callback) => {
             this._sockets[socket.id] = socket;
+            socket.join(this._id);
             const user = new WebsocketRouterUser(socket, this);
             this._onConnectHandle(user, callback);
         };
@@ -82,8 +72,7 @@ class WebsocketRouter {
             this._handles[socketId][CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE](payload, callback);
         };
 
-        const ws = websocket.handleWebsocketRouterMessages(routerId, handleObject);
-        this._ns = ws.of(this._id);
+        this._ws = websocket.handleWebsocketRouterMessages(routerId, handleObject);
     }
 
     
@@ -92,8 +81,7 @@ class WebsocketRouter {
     }
 
     send(payload) {
-        console.log('broadcasting a messafe...', payload);
-        this._ns.in(this._id).emit('websocketRouterMessage',  {
+        this._ws.to(this._id).emit('websocketRouterMessage',  {
             routerId: this._routerId,
             messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE,
             payload: payload,
@@ -101,7 +89,7 @@ class WebsocketRouter {
     }
 
     disconnect(error) {
-        this._ns.in(this._id).emit('websocketRouterMessage',  {
+        this._ws.to(this._id).emit('websocketRouterMessage',  {
             routerId: this._routerId,
             messageType: CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT,
             payload: error.message,

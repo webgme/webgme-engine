@@ -7,7 +7,7 @@
 var path = require('path'),
     config = require('./config.default');
 
-config.server.port = 9001;
+config.server.port = 42024;
 
 config.mongo.uri = 'mongodb://127.0.0.1:27017/webgme_tests';
 config.mongo.options.poolSize = 2; // 5 is the default

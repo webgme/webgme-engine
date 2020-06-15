@@ -5027,10 +5027,7 @@ describe('GME client', function () {
             let finished = false;
             routerAccess.onMessage((payload) => {
                 if (!finished) {
-                    if (payload !== 'ping-ping') {
-                        finished = true;
-                        done(new Error('wrong message arrived'));
-                    } else {
+                    if (payload === 'ping-ping') {
                         messagesReceived += 1;
                     }
                 }
