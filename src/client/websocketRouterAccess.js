@@ -6,7 +6,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-define(['common/storage/constants'], function (CONSTANTS) {
+define(['common/storage/constants', 'q'], function (CONSTANTS, Q) {
     'use strict';
     class WebsocketRouterAccessClient {
         constructor(routerId, logger, send, connectReceiveFunctions) {
@@ -34,21 +34,27 @@ define(['common/storage/constants'], function (CONSTANTS) {
         }
 
         connect(callback) {
+            const deferred = Q.defer();
+
             this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.CONNECT, null, (err, data) => {
                 if (!err) {
                     this._isConnected = true;
+                    deferred.resolve(data);
+                } else {
+                    deferred.reject(err);
                 }
-                callback(err, data);
             });
+
+            return deferred.promise.nodeify(callback);
         }
 
         send(payload, callback) {
-            this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE, payload, callback);
+            return this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE, payload).nodeify(callback);
         }
 
         disconnect(reason, callback) {
             this._isConnected = false;
-            this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT, reason, callback);
+            return this._send(this._id, CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT, reason).nodeify(callback);
         }
 
         onMessage(handleFn) {
@@ -76,9 +82,18 @@ define(['common/storage/constants'], function (CONSTANTS) {
         const handles = {};
 
         function send(routerId, messageType, payload, callback) {
+            const deferred = Q.defer();
             logger.debug('outgoing message to websocket router',
                 {metadata: {routerId: routerId, messageType: messageType, payload: payload}});
-            storage.sendWsRouterMessage(routerId, messageType, payload, callback);
+            storage.sendWsRouterMessage(routerId, messageType, payload, (err,result) => {
+                if (err) {
+                    deferred.reject(err);
+                } else {
+                    deferred.resolve(result);
+                }
+            });
+
+            return deferred.promise.nodeify(callback);
         }
 
         function connectHandles(routerId, clientHandles) {

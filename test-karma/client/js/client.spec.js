@@ -5008,6 +5008,16 @@ describe('GME client', function () {
             });
         });
 
+        it('should fail to connect to invalid router', function (done) {
+            const badAccess = client.getWebsocketRouterAccess('invalidRouter');
+            expect(routerAccess.isConnected()).to.equal(false);
+            badAccess.connect((err, data) => {
+                expect(err).not.to.eql(null);
+                expect(data).to.eql(undefined);
+                done();
+            });
+        });
+
         it('should not crash even without message handlers', function (done) {
             routerAccess.connect((err, data) => {
                 expect(err).to.eql(null);
@@ -5085,7 +5095,7 @@ describe('GME client', function () {
                     routerAccess.send('baaad messages', (err, response) => {
                         expect(err).not.to.eql(null);
                         expect(err.message).to.eql('unknown message');
-                        expect(response).to.eql(null);
+                        expect(response).to.eql(undefined);
                         routerAccess.disconnect('just cause', (err, data) => {
                             expect(err).to.eql(null);
                             expect(data).to.eql(null);
@@ -5094,6 +5104,20 @@ describe('GME client', function () {
                     });
                 });
             });
+        });
+
+        it('should be able to send messages to server promise fashion', function (done) {
+            routerAccess.connect()
+                .then(data => {
+                    expect(data).to.eql(null);
+                    return routerAccess.send('ping');
+                })
+                .then(response => {
+                    expect(response).to.eql('pong');
+                    return routerAccess.disconnect();
+                })
+                .then(done)
+                .catch(done);
         });
 
         it('should be able to handle forcefull disconnect from server', function (done) {
