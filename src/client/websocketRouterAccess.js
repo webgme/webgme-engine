@@ -85,7 +85,7 @@ define(['common/storage/constants', 'q'], function (CONSTANTS, Q) {
             const deferred = Q.defer();
             logger.debug('outgoing message to websocket router',
                 {metadata: {routerId: routerId, messageType: messageType, payload: payload}});
-            storage.sendWsRouterMessage(routerId, messageType, payload, (err,result) => {
+            storage.sendWsRouterMessage(routerId, messageType, payload, (err, result) => {
                 if (err) {
                     deferred.reject(err);
                 } else {
