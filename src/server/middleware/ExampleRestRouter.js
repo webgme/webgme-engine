@@ -13,6 +13,10 @@
 var express = require('express'),
     router = express.Router();
 
+const WebsocketRouter = require('./websocket-router/WebsocketRouter');
+let pingTimer = null;
+let wsRouter = null;
+let websocket = null;
 /**
  * Called when the server is created but before it starts to listening to incoming requests.
  * N.B. gmeAuth, safeStorage and workerManager are not ready to use until the start function is called.
@@ -31,6 +35,8 @@ function initialize(middlewareOpts) {
     var logger = middlewareOpts.logger.fork('ExampleRestRouter'),
         ensureAuthenticated = middlewareOpts.ensureAuthenticated,
         getUserId = middlewareOpts.getUserId;
+
+    websocket = middlewareOpts.webSocket;
 
     logger.debug('initializing ...');
 
@@ -77,6 +83,41 @@ function initialize(middlewareOpts) {
  * @param {function} callback
  */
 function start(callback) {
+    wsRouter = new WebsocketRouter(websocket, 'ExampleRestRouter');
+
+
+    wsRouter.onConnect((user, callback) => {
+        let pongTimer = setInterval(() => {
+            user.send('ping-ping');
+        }, 50);
+
+        setTimeout(() => {
+            clearInterval(pongTimer);
+            user.disconnect(new Error('timeout baby'));
+        }, 500);
+
+        user.onMessage((payload, callback) => {
+            if (payload === 'ping') {
+                callback(null, 'pong');
+            } else {
+                callback(new Error('unknown message'));
+            }
+        });
+
+        user.onDisconnect((cause, callback) => {
+            clearInterval(pongTimer);
+            callback(null);
+        });
+
+        callback(null);
+    });
+    
+    pingTimer = setInterval(() => {
+        if (wsRouter) {
+            wsRouter.send('ping');
+        }
+    }, 100);
+
     callback();
 }
 
@@ -85,6 +126,10 @@ function start(callback) {
  * @param {function} callback
  */
 function stop(callback) {
+    if (pingTimer) {
+        clearInterval(pingTimer);
+        wsRouter.disconnect(new Error('shutting down...'));
+    }
     callback();
 }
 

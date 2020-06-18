@@ -27,7 +27,9 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         documents = {
             //<docId> : { otServer: DocumentServer, users: {}, disconnectedUsers: {} }
         }, // TODO: This is a single state on one server!
-        webSocket;
+        webSocket = io();
+
+    const socketRouters = {};
 
     logger.debug('ctor');
 
@@ -236,7 +238,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     this.start = function (server) {
         logger.debug('start');
 
-        webSocket = io.listen(server || gmeConfig.server.port, gmeConfig.socketIO.serverOptions);
+        // webSocket = io.listen(server || gmeConfig.server.port, gmeConfig.socketIO.serverOptions);
+        webSocket.listen(server || gmeConfig.server.port, gmeConfig.socketIO.serverOptions);
 
         if (gmeConfig.socketIO.adapter.type.toLowerCase() === 'redis') {
             logger.info('redis adapter:', JSON.stringify(gmeConfig.socketIO.adapter.options));
@@ -1187,17 +1190,43 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     done(err);
                 }
             });
+
+            // websocket router message
+            socket.on('websocketRouterMessage', function (data, callback) {
+                function errorHandlingCallback(err, result) {
+                    if (err) {
+                        callback(err.message, result);
+                    } else {
+                        callback(err, result);
+                    }
+                }
+                const {routerId, messageType, payload} = data;
+                if (routerId) {
+                    if (socketRouters[routerId]) {
+                        switch (messageType) {
+                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.CONNECT:
+                                socketRouters[routerId][messageType](socket, errorHandlingCallback);
+                                break;
+                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT:
+                            case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE:
+                                socketRouters[routerId][messageType](socket.id, payload, errorHandlingCallback);
+                                break;
+                            default:
+                                callback('Unkown message type! [' + messageType + ']');
+                        }
+                    } else {
+                        callback('Unknown websocket router! [' + routerId + ']');
+                    }
+                } else {
+                    callback('Missing websocket router id!');
+                }
+            });
         });
     };
 
     this.stop = function () {
         //disconnect clients
-        var socketIds;
         if (webSocket) {
-            socketIds = Object.keys(webSocket.sockets.connected);
-            socketIds.forEach(function (socketId) {
-                webSocket.sockets.connected[socketId].disconnect();
-            });
             Object.keys(documents).forEach(function (docId) {
                 logger.warn('Document room was open - will close it', docId);
 
@@ -1207,7 +1236,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
                 delete documents[docId];
             });
-            webSocket = null;
+            webSocket.close();
         }
     };
 
@@ -1235,6 +1264,11 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     branchRooms: branchRooms
                 };
             });
+    };
+
+    this.handleWebsocketRouterMessages = function (routerId, handleObject) {
+        socketRouters[routerId] = handleObject;
+        return webSocket;
     };
 }
 

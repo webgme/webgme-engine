@@ -25,7 +25,7 @@ describe('ExampleRestRouter', function () {
         it('/ExampleRestRouter/getExample should return 200', function (done) {
             var gmeConfig = testFixture.getGmeConfig();
             server = null;
-            gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
+            // gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
             server = webGME.standaloneServer(gmeConfig);
             server.start(function () {
                 var serverBaseUrl = server.getUrl();
@@ -73,7 +73,7 @@ describe('ExampleRestRouter', function () {
             server = null;
             gmeConfig.authentication.enable = true;
             gmeConfig.authentication.allowGuests = false;
-            gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
+            // gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
             server = webGME.standaloneServer(gmeConfig);
             server.start(function () {
                 var serverBaseUrl = server.getUrl();
@@ -93,7 +93,7 @@ describe('ExampleRestRouter', function () {
             server = null;
             gmeConfig.authentication.enable = true;
             gmeConfig.authentication.allowGuests = true;
-            gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
+            // gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
             server = webGME.standaloneServer(gmeConfig);
             server.start(function () {
                 var serverBaseUrl = server.getUrl();
@@ -118,7 +118,7 @@ describe('ExampleRestRouter', function () {
         it('PATCH /ExampleRestRouter/patchExample should return 200', function (done) {
             var gmeConfig = testFixture.getGmeConfig();
             server = null;
-            gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
+            // gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
             server = webGME.standaloneServer(gmeConfig);
             server.start(function () {
                 var serverBaseUrl = server.getUrl();
@@ -142,7 +142,7 @@ describe('ExampleRestRouter', function () {
         it('POST /ExampleRestRouter/postExample should return 204', function (done) {
             var gmeConfig = testFixture.getGmeConfig();
             server = null;
-            gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
+            // gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
             server = webGME.standaloneServer(gmeConfig);
             server.start(function () {
                 var serverBaseUrl = server.getUrl();
@@ -162,7 +162,7 @@ describe('ExampleRestRouter', function () {
         it('DELETE /ExampleRestRouter/deleteExample should return 200', function (done) {
             var gmeConfig = testFixture.getGmeConfig();
             server = null;
-            gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
+            // gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
             server = webGME.standaloneServer(gmeConfig);
             server.start(function () {
                 var serverBaseUrl = server.getUrl();
@@ -180,7 +180,7 @@ describe('ExampleRestRouter', function () {
         it('should return 500 /ExampleRestRouter/error', function (done) {
             var gmeConfig = testFixture.getGmeConfig();
             server = null;
-            gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
+            // gmeConfig.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
             server = webGME.standaloneServer(gmeConfig);
             server.start(function () {
                 var serverBaseUrl = server.getUrl();

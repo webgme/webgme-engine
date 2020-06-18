@@ -963,6 +963,9 @@ define([
                 .nodeify(callback);
         };
 
+        this.sendWsRouterMessage = webSocket.sendWsRouterMessage;
+        this.onWebsocketRouterMessage = webSocket.onWebsocketRouterMessage;
+         
         this.CONSTANTS = CONSTANTS;
     }
 

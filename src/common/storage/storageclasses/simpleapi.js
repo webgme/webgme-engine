@@ -258,5 +258,11 @@ define(['common/storage/storageclasses/watchers'], function (StorageWatcher) {
         return this.webSocket.sendNotification(data).nodeify(callback);
     };
 
+    StorageSimpleAPI.prototype.sendWsRouterMessage = function (routerId, messageType, payload, callback) {
+        this.logger.debug('invoking sendWsRouterMessage', 
+            {metadata: {routerId: routerId, messageType: messageType, payload: payload}});
+        return this.webSocket.simpleRequest(routerId, messageType, payload).nodeify(callback);
+    };
+
     return StorageSimpleAPI;
 });

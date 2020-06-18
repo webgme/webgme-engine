@@ -7,7 +7,7 @@
 var path = require('path'),
     config = require('./config.default');
 
-config.server.port = 9001;
+config.server.port = 42024;
 
 config.mongo.uri = 'mongodb://127.0.0.1:27017/webgme_tests';
 config.mongo.options.poolSize = 2; // 5 is the default
@@ -46,5 +46,7 @@ config.server.log = {
 };
 
 config.plugin.basePaths.push(path.join(__dirname, '../test-karma/assets/plugins'));
+
+config.rest.components.ExampleRestRouter = './middleware/ExampleRestRouter';
 
 module.exports = config;
