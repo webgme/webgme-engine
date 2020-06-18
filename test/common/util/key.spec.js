@@ -121,7 +121,7 @@ describe('key generator', function () {
         return object;
     }
 
-    it('it should be faster to use rust SHA1 than regular for large objects', function () {
+    it.skip('it should be faster to use rust SHA1 than regular for large objects', function () {
         this.timeout(10000);
         const size = 100000;
         const iterations = 100;
@@ -145,7 +145,7 @@ describe('key generator', function () {
         expect(plainTime).to.be.above(rustTime);
     });
 
-    it('it should be faster to use rust SHA1 than regular small objects', function () {
+    it.skip('it should be faster to use rust SHA1 than regular small objects', function () {
         this.timeout(10000);
         const size = 100;
         const iterations = 100000;
@@ -169,7 +169,7 @@ describe('key generator', function () {
         // expect(plainTime).to.be.above(rustTime);
     });
 
-    it('it should be faster to use rust SHA1 than regular huge objects', function () {
+    it.skip('it should be faster to use rust SHA1 than regular huge objects', function () {
         this.timeout(30000);
         const size = 10000000;
         const iterations = 2;

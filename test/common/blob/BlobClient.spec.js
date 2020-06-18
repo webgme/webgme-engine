@@ -214,6 +214,73 @@ describe('BlobClient', function () {
             });
         });
 
+        it('should putFile streamed file', function (done) {
+            var bc = new BlobClient(bcParam),
+                rs = fs.createReadStream('./package.json'),
+                content = fs.readFileSync('./package.json');
+
+            bc.putFile('package.json', rs, function (err, hash) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                bc.getMetadata(hash, function (err, metadata) {
+                    if (err) {
+                        done(err);
+                        return;
+                    }
+                    expect(metadata.mime).to.equal('application/json');
+                    bc.getObject(hash, function (err, res) {
+                        if (err) {
+                            done(err);
+                            return;
+                        }
+                        expect(typeof res).to.equal('object');
+                        expect(typeof res.prototype).to.equal('undefined');
+                        expect(res).to.eql(content);
+                        //expect(res[1]).to.equal(2);
+                        done();
+                    });
+                });
+            });
+        });
+
+        it('should putFile streamed string', function (done) {
+            var bc = new BlobClient(bcParam),
+                stream = require('stream'),
+                mystring = 'just a test',
+                myBuffer = Buffer.from(mystring),
+                rs = new stream.Readable();
+
+            rs._read = () => {};
+            rs.push(myBuffer);
+            rs.push(null);
+            bc.putFile('package.json', rs, function (err, hash) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                bc.getMetadata(hash, function (err, metadata) {
+                    if (err) {
+                        done(err);
+                        return;
+                    }
+                    expect(metadata.mime).to.equal('application/json');
+                    bc.getObject(hash, function (err, res) {
+                        if (err) {
+                            done(err);
+                            return;
+                        }
+                        expect(typeof res).to.equal('object');
+                        expect(typeof res.prototype).to.equal('undefined');
+                        expect(res).to.eql(myBuffer);
+                        //expect(res[1]).to.equal(2);
+                        done();
+                    });
+                });
+            });
+        });
+
         it('getObjectAsString should create file from empty buffer and return as string', function (done) {
             var bc = new BlobClient(bcParam);
 
