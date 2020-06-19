@@ -662,11 +662,14 @@ function GMEAuth(session, gmeConfig) {
     }
 
     function _decrypt(encrypted) {
-        const isEncryptedObject = !(encrypted.iv && encrypted.encryptedData);
+        const isEncryptedData = encrypted.iv && encrypted.encryptedData;
+        const isEncryptedObject = !isEncryptedData && typeof encrypted === 'object';
         if (isEncryptedObject) {
-            return _.mapObject(encrypted, _decryptData);
-        } else {
+            return _.mapObject(encrypted, _decrypt);
+        } else if (isEncryptedData) {
             return _decryptData(encrypted);
+        } else {
+            return encrypted;
         }
     }
 
@@ -739,7 +742,7 @@ function GMEAuth(session, gmeConfig) {
             result = result[key];
         });
 
-        if (decrypt) {
+        if (decrypt && result) {
             result = _decrypt(result);
         }
 
