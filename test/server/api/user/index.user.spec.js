@@ -1757,6 +1757,25 @@ describe('USER REST API', function () {
                 assert.equal(response.body, newData);
             });
 
+            it('should get unencrypted user data GET /api/v1/user/data/user/test?decrypt=true', async function () {
+                const user = 'user_w_nesteddata1';
+                const newData = 'IAmNotASecret';
+                const keys = ['user', 'test'];
+                await gmeAuth.setUserDataField(user, keys, newData);
+                const response = await new Promise((resolve, reject) =>
+                    agent.get(server.getUrl() + '/api/v1/user/data/' + keys.join('/') + '?decrypt=true')
+                        .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                        .end(function (err, res) {
+                            if (err) {
+                                return reject(err);
+                            }
+                            resolve(res);
+                        })
+                );
+                assert.equal(response.status, 200);
+                assert.equal(response.body, newData);
+            });
+
             it('should get encrypted user data GET /api/v1/user/data/user/password?decrypt=true', async function () {
                 const user = 'user_w_nesteddata1';
                 const newData = 'IAmASecret';
