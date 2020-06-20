@@ -82,6 +82,15 @@ define([], function () {
             return resultAsArray ? resultArray : result;
         }
 
+        /**
+         * @description Method to set an attribute of a given node.
+         * @memberOf Client
+         * @instance
+         * @param {string} path - The path of the node in question.
+         * @param {string} name - The name of the attribute.
+         * @param {any} value - The value of the attribute to be set.
+         * @param {string} msg - The message that should be attached to the commit that covers  this update.
+         */
         function setAttribute(path, name, value, msg) {
             var error,
                 node = _getNode(path);
