@@ -89,7 +89,7 @@ define([], function () {
          * @param {string} path - The path of the node in question.
          * @param {string} name - The name of the attribute.
          * @param {any} value - The value of the attribute to be set.
-         * @param {string} msg - The message that should be attached to the commit that covers  this update.
+         * @param {string} msg - The message that should be attached to the commit that covers this update.
          */
         function setAttribute(path, name, value, msg) {
             var error,
@@ -107,6 +107,14 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Method to remove an attribute from a given node.
+         * @memberOf Client
+         * @instance
+         * @param {string} path - The path of the node in question.
+         * @param {string} name - The name of the attribute.
+         * @param {string} msg - The message that should be attached to the commit that covers this update.
+         */
         function delAttribute(path, name, msg) {
             var error,
                 node = _getNode(path);
@@ -122,6 +130,15 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Method to set a registry entry of a given node.
+         * @memberOf Client
+         * @instance
+         * @param {string} path - The path of the node in question.
+         * @param {string} name - The name of the registry.
+         * @param {any} value - The value of the registry to be set.
+         * @param {string} msg - The message that should be attached to the commit that covers this update.
+         */
         function setRegistry(path, name, value, msg) {
             var error,
                 node = _getNode(path);
@@ -138,6 +155,14 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Method to remove a registry entry of a given node.
+         * @memberOf Client
+         * @instance
+         * @param {string} path - The path of the node in question.
+         * @param {string} name - The name of the registry.
+         * @param {string} msg - The message that should be attached to the commit that covers this update.
+         */
         function delRegistry(path, name, msg) {
             var error,
                 node = _getNode(path);
@@ -153,6 +178,33 @@ define([], function () {
             }
         }
 
+        /**
+         * @example
+         *
+         * var nodeCopy1 = client.copyNode('/4', '');
+         * var nodeCopy2 = client.copyNode('/4', '', {
+         *   attributes: {
+         *     name: 'CopiedNode'
+         *   },
+         *   registry: {
+         *     position: {x: 100, y: 100}
+         *   }
+         * }, 'Created node with specific name and position.');
+         *
+         * @description Copies the given node into parent 
+         * (does not enforce meta-rules and requires all participating nodes to be loaded in the client)
+         * @function copyNode
+         * @memberOf Client
+         * @param {string} path - the id/path of the node to copy
+         * @param {string} parentId - the id/path of the parent where the new copy should be created
+         * @param {object} [desc={}] - named attributes and/or registries to set for the new node (see example)
+         * @param {object} [desc.attributes={}] - named attributes to set for the new node
+         * @param {object} [desc.registry={}] - named registries to set for the new node
+         * @param {string} [msg] - optional commit message, if not supplied a default one 
+         * with the function name and input parameters will be used
+         * @returns {GMENode|undefined} - the newly created node if it could be copied
+         * @instance
+         */
         function copyNode(path, parentPath, desc, msg) {
             var node = _getNode(path),
                 parentNode = _getNode(parentPath),
@@ -175,6 +227,33 @@ define([], function () {
             }
         }
 
+        /**
+         * @example
+         *
+         * client.copyMoreNodes({
+         *    parentId: '',
+         *    '/4': {},
+         *    '/5': {
+         *      attributes: {
+         *        name: 'MyNamedCopy'
+         *      },
+         *      registry: {
+         *        position: {x: 100, y:100}
+         *      }
+         *    }
+         * }, 'Copied two nodes with some additional init data.');
+         *
+         * @description Copies the given nodes into the parent (does not enforce meta-rules 
+         * and requires all participating nodes to be loaded in the client)
+         * @function copyMoreNodes
+         * @memberOf Client
+         * @param {object} parameters - the parameters holding parentId and nodes to be copied
+         * indexed by their ids/paths (see example)
+         * @param {string} parameters.parentId - the id/path of the parent where the new copies should be created
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function copyMoreNodes(parameters, msg) {
             var pathsToCopy = [],
                 parentNode = _getNode(parameters.parentId),
@@ -216,6 +295,33 @@ define([], function () {
             }
         }
 
+        /**
+         * @example
+         *
+         * client.moveMoreNodes({
+         *    parentId: '',
+         *    '/4': {},
+         *    '/5': {
+         *      attributes: {
+         *        name: 'MyNamedCopy'
+         *      },
+         *      registry: {
+         *        position: {x: 100, y:100}
+         *      }
+         *    }
+         * }, 'Copied two nodes with some additional init data.');
+         *
+         * @description Moves the given nodes into the parent (does not enforce meta-rules 
+         * and requires all participating nodes to be loaded in the client)
+         * @function moveMoreNodes
+         * @memberOf Client
+         * @param {object} parameters - the parameters holding parentId and nodes to be copied
+         * indexed by their ids/paths (see example)
+         * @param {string} parameters.parentId - the id/path of the parent where the new copies should be created
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function moveMoreNodes(parameters, msg) {
             var pathsToMove = [],
                 returnParams = {},
@@ -1352,6 +1458,23 @@ define([], function () {
             return null;
         }
 
+        /**
+         * @example
+         *
+         * var nodeCopies1 = client.copyNodes(['/4', '/3'], '');
+         * var nodeCopies2 = client.copyNodes('/4', '/3'], '', 'Copied two nodes');
+         *
+         * @description Copies the given nodes into the parent (does not enforce meta-rules and requires all participating nodes
+         * to be loaded in the client)
+         * @function copyNodes
+         * @memberOf Client
+         * @param {string[]} paths - array of the ids/paths of the nodes to copy
+         * @param {string} parentId - the id/path of the parent where the new copies should be created
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the function name and input
+         * parameters will be used
+         * @returns {GMENode[]|undefined} - the newly created nodes if all could be copied
+         * @instance
+         */
         function copyNodes(pathsToCopy, parentPath, msg) {
             var parentNode = _getNode(parentPath),
                 copyResult;
