@@ -480,7 +480,7 @@ describe('GME authentication', function () {
         it('should set/get encrypted field value', async function () {
             const newData = {hello: 'world'};
             const userData = await auth.setUserDataField(userId, 'test', newData, {encrypt: true});
-            const data = await auth.getUserDataField(userId, 'test', true);
+            const data = await auth.getUserDataField(userId, 'test');
             assert.deepEqual(data, newData);
             assert.notEqual(userData.test.hello, newData.hello);
         });
@@ -488,9 +488,7 @@ describe('GME authentication', function () {
         it('should set/get encrypted string value', async function () {
             const newData = 'testValue';
             await auth.setUserDataField(userId, 'test', newData, {encrypt: true});
-            const encryptedData = await auth.getUserDataField(userId, 'test');
-            assert.notEqual(encryptedData, newData);
-            const data = await auth.getUserDataField(userId, 'test', true);
+            const data = await auth.getUserDataField(userId, 'test');
             assert.equal(data, newData);
         });
 

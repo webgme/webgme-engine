@@ -662,11 +662,14 @@ function GMEAuth(session, gmeConfig) {
     }
 
     function _decrypt(encrypted) {
-        const isEncryptedObject = !(encrypted.iv && encrypted.encryptedData);
+        const isEncryptedData = encrypted.iv && encrypted.encryptedData;
+        const isEncryptedObject = !isEncryptedData && typeof encrypted === 'object';
         if (isEncryptedObject) {
-            return _.mapObject(encrypted, _decryptData);
-        } else {
+            return _.mapObject(encrypted, _decrypt);
+        } else if (isEncryptedData) {
             return _decryptData(encrypted);
+        } else {
+            return encrypted;
         }
     }
 
@@ -720,7 +723,7 @@ function GMEAuth(session, gmeConfig) {
         return _deleteUserObjectField(userId, fields);
     }
 
-    async function getUserDataField(userId, fields = [], decrypt = false) {
+    async function getUserDataField(userId, fields = []) {
         if (typeof fields === 'string') {
             fields = [fields];
         }
@@ -739,11 +742,7 @@ function GMEAuth(session, gmeConfig) {
             result = result[key];
         });
 
-        if (decrypt) {
-            result = _decrypt(result);
-        }
-
-        return result;
+        return _decrypt(result);
     }
 
     /**

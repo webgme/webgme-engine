@@ -381,9 +381,8 @@ function createAPI(app, mountPath, middlewareOpts) {
     router.get(/\/user\/data\/?(.*)/, ensureAuthenticated, function (req, res, next) {
         const userId = getUserId(req);
         const keys = getUserDataKeys(req);
-        const {decrypt = false} = req.query;
 
-        gmeAuth.getUserDataField(userId, keys, decrypt)
+        gmeAuth.getUserDataField(userId, keys)
             .then(function (data) {
                 res.json(data);
             })
