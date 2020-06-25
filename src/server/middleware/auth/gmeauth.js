@@ -723,7 +723,7 @@ function GMEAuth(session, gmeConfig) {
         return _deleteUserObjectField(userId, fields);
     }
 
-    async function getUserDataField(userId, fields = [], decrypt = false) {
+    async function getUserDataField(userId, fields = []) {
         if (typeof fields === 'string') {
             fields = [fields];
         }
@@ -742,11 +742,7 @@ function GMEAuth(session, gmeConfig) {
             result = result[key];
         });
 
-        if (decrypt && result) {
-            result = _decrypt(result);
-        }
-
-        return result;
+        return _decrypt(result);
     }
 
     /**
