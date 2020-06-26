@@ -358,6 +358,34 @@ define([], function () {
             return returnParams;
         }
 
+        /**
+         * @example
+         *
+         * client.createChildren({
+         *    parentId: '',
+         *    '/4': {},
+         *    '/5': {
+         *      attributes: {
+         *        name: 'MyVeryOwnName'
+         *      },
+         *      registry: {
+         *        position: {x: 100, y:100}
+         *      }
+         *    }
+         * }, 'Created new children of the root based on the list of existing nodes.');
+         *
+         * @description Creates instances as children of the parent node based on the list 
+         * of nodes among the parameters (does not enforce meta-rules 
+         * and requires all participating nodes to be loaded in the client).
+         * @function createChildren
+         * @memberOf Client
+         * @param {object} parameters - the parameters holding parentId and nodes to be instantiated
+         * indexed by their ids/paths (see example)
+         * @param {string} parameters.parentId - the id/path of the parent where the new nodes should be created
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function createChildren(parameters, msg) {
             //TODO we also have to check out what is happening with the sets!!!
             var result = {},
@@ -417,6 +445,15 @@ define([], function () {
             return result;
         }
 
+        /**
+         * @description Delete the given node.
+         * @function deleteNode
+         * @memberOf Client
+         * @param {string} path - the path/id of the node to be deleted from the model.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function deleteNode(path, msg) {
             var node = _getNode(path);
 
@@ -426,6 +463,15 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Delete the given node.
+         * @function deleteNodes
+         * @memberOf Client
+         * @param {string[]} paths - the path/id list of the nodes to be deleted from the model.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function deleteNodes(paths, msg) {
             var didDelete = false,
                 i,
@@ -444,6 +490,38 @@ define([], function () {
             }
         }
 
+        /**
+         * @example
+         *
+         * client.createNode({
+         *    parentId: '',
+         *    baseId:'/1',
+         *    guid:,
+         *    relid:'/aaa'
+         *   },
+         *   {
+         *     attributes: {
+         *        name: 'MyVeryOwnName'
+         *      },
+         *      registry: {
+         *        position: {x: 100, y:100}
+         *      }
+         *   },
+         *   'Created new node as the child of the root and instance of the FCO.');
+         *
+         * @description Creates a new node based on the given parameters.
+         * @function createNode
+         * @memberOf Client
+         * @param {object} parameters - the parameters holding necessary information for the creation.
+         * @param {string} parameters.parentId - the path/id of the container of the new node.
+         * @param {string} parameters.baseId - the path/id of the prototype of the new node.
+         * @param {string} parameters.parentId - the id/path of the parent where the new nodes should be created
+         * @param {string} [parameters.guid] - the unique identifier of the node we will create.
+         * @param {string} [parameters.relid] - the relative id of the node we will create.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function createNode(parameters, desc, msg) {
             var parentNode = _getNode(parameters.parentId),
                 baseNode = _getNode(parameters.baseId),
@@ -486,6 +564,18 @@ define([], function () {
             return newID;
         }
 
+        /**
+         * @description Sets the value of the pointer of the given node.
+         * @function setPointer
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that we will modify.
+         * @param {string} name - the name of the pointer to set.
+         * @param {string|null} target - the id/path of the target node of the pointer. If
+         * the value is null, there will be no target for the pointer.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setPointer(path, name, target, msg) {
             var node = _getNode(path),
                 targetNode;
@@ -502,6 +592,18 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes the pointer of the given node.
+         * Setting a pointer to null and deleting it is different! 
+         * (one is a value, the other means the absence of value)
+         * @function delPointer
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that we will modify.
+         * @param {string} name - the name of the pointer to set.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delPointer(path, name, msg) {
             var node = _getNode(path);
 
@@ -512,6 +614,18 @@ define([], function () {
         }
 
         // Mixed argument methods - START
+        /**
+         * @description Add a new member node to the given set of the
+         * specified node.
+         * @function addMember
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} memberPath - the path/id of the member node.
+         * @param {string} setId - the name of the set to expand.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function addMember(path, memberPath, setId, msg) {
             // FIXME: This will have to break due to switched arguments
             var node = _getNode(path),
@@ -523,6 +637,18 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes a member node from the given set of the
+         * specified node.
+         * @function removeMember
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} memberPath - the path/id of the member node.
+         * @param {string} setId - the name of the set to expand.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function removeMember(path, memberPath, setId, msg) {
             // FIXME: This will have to break due to switched arguments (sort of)
             var node = _getNode(path);
@@ -533,6 +659,20 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Set the given attribute value that is connected to the membership 
+         * (not the member node, so it only has a meaning in the context of the membership).
+         * @function setMemberAttribute
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} memberPath - the path/id of the member node.
+         * @param {string} setId - the name of the set where the member exists.
+         * @param {string} name - the name of the attribute.
+         * @param {object|string|null} value - the value of the attribute.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setMemberAttribute(path, memberPath, setId, name, value, msg) {
             // FIXME: This will have to break due to switched arguments
             var node = _getNode(path);
@@ -544,6 +684,19 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes the given attribute that is connected to the membership 
+         * from the node.
+         * @function delMemberAttribute
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} memberPath - the path/id of the member node.
+         * @param {string} setId - the name of the set to expand.
+         * @param {string} name - the name of the attribute.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delMemberAttribute(path, memberPath, setId, name, msg) {
             // FIXME: This will have to break due to switched arguments
             var node = _getNode(path);
@@ -555,6 +708,20 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Set the given registry value that is connected to the membership 
+         * (not the member node, so it only has a meaning in the context of the membership).
+         * @function setMemberRegistry
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} memberPath - the path/id of the member node.
+         * @param {string} setId - the name of the set to expand.
+         * @param {string} name - the name of the registry.
+         * @param {object|string|null} value - the value of the registry.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setMemberRegistry(path, memberPath, setId, name, value, msg) {
             // FIXME: This will have to break due to switched arguments
             var node = _getNode(path);
@@ -567,6 +734,19 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes the given registry that is connected to the membership 
+         * from the node.
+         * @function delMemberRegistry
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} memberPath - the path/id of the member node.
+         * @param {string} setId - the name of the set to expand.
+         * @param {string} name - the name of the registry.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delMemberRegistry(path, memberPath, setId, name, msg) {
             // FIXME: This will have to break due to switched arguments
             var node = _getNode(path);
@@ -579,7 +759,19 @@ define([], function () {
         }
 
         // Mixed argument methods - END
-
+        /**
+         * @description Set the given attribute value of the set of the node 
+         * (the value is connected to the node, but only in the context of the set).
+         * @function setSetAttribute
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} setName - the name of the set where the member exists.
+         * @param {string} attrName - the name of the attribute.
+         * @param {object|string|null} attrValue - the value of the attribute.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setSetAttribute(path, setName, attrName, attrValue, msg) {
             var node = _getNode(path);
 
@@ -591,6 +783,17 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes the given attribute that is connected to set of the node.
+         * @function delSetAttribute
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} setName - the name of the set to change.
+         * @param {string} attrName - the name of the attribute.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delSetAttribute(path, setName, attrName, msg) {
             var node = _getNode(path);
 
@@ -601,6 +804,19 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Set the given registry value of the set of the node 
+         * (the value is connected to the node, but only in the context of the set).
+         * @function setSetRegistry
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} setName - the name of the set where the member exists.
+         * @param {string} regName - the name of the registry.
+         * @param {object|string|null} regValue - the value of the registry.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setSetRegistry(path, setName, regName, regValue, msg) {
             var node = _getNode(path);
 
@@ -611,6 +827,17 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes the given registry that is connected to set of the node.
+         * @function delSetRegistry
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} setName - the name of the set to change.
+         * @param {string} attrName - the name of the registry.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delSetRegistry(path, setName, regName, msg) {
             var node = _getNode(path);
 
@@ -621,6 +848,16 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Creates a set that belongs to the node.
+         * @function createSet
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} setId - the name of the set.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function createSet(path, setId, msg) {
             var node = _getNode(path);
 
@@ -630,6 +867,16 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes a set that belongs to the node.
+         * @function delSet
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} setId - the name of the set.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delSet(path, setId, msg) {
             var node = _getNode(path),
                 error;
@@ -645,6 +892,17 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Changes the prototype node of the node.
+         * This function should only be used with care!
+         * @function setBase
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} basePath - the path/id of the new prototype node.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setBase(path, basePath, msg) {
             var node = _getNode(path),
                 baseNode = _getNode(basePath),
@@ -661,6 +919,16 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Moves a node into a new container.
+         * @function moveNode
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} parentPath - the path/id of the new container node.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function moveNode(path, parentPath, msg) {
             var node = _getNode(path),
                 parentNode = _getNode(parentPath),
@@ -674,6 +942,16 @@ define([], function () {
             return movedPath;
         }
 
+        /**
+         * @description Removes teh prototype ofd the node. Do not use this function
+         * as it is very dangerous!
+         * @function delBase
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delBase(path, msg) {
             var node = _getNode(path),
                 error;
@@ -690,6 +968,15 @@ define([], function () {
         }
 
         // META functions
+        /**
+         * @description Returns the JSON based meta description of the node.
+         * @function getMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function getMeta(path) {
             var node = _getNode(path),
                 meta = {children: {}, attributes: {}, pointers: {}, aspects: {}};
@@ -703,6 +990,17 @@ define([], function () {
             return meta;
         }
 
+        /**
+         * @description Set all the meta rules of a node based on a JSON.
+         * It has no effect on the inherited rules!
+         * @function setMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {object} meta - the directory of rules to be set.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setMeta(path, meta, msg) {
             var node = _getNode(path),
                 otherNode,
@@ -813,6 +1111,15 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes all Meta rules from the node (does not have effect on the inherited rules).
+         * @function clearMetaRules
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function clearMetaRules(path, msg) {
             var node = _getNode(path);
 
@@ -823,6 +1130,16 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Creates a mixin connection to the node.
+         * @function addMixin
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} addMixin - the path/id of the mixin node.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function addMixin(path, mixinPath, msg) {
             var error,
                 node = _getNode(path);
@@ -838,6 +1155,16 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes a mixin connection from the node.
+         * @function delMixin
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} addMixin - the path/id of the mixin node.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delMixin(path, mixinPath, msg) {
             var error,
                 node = _getNode(path);
@@ -853,6 +1180,7 @@ define([], function () {
             }
         }
 
+        //TODO add function description
         function setChildrenMetaAttribute(path, attrName, value, msg) {
             if (attrName !== 'items') {
                 var rawMeta = getMeta(path);
@@ -861,6 +1189,20 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Creates a containment rule for the node.
+         * @function setChildMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} childPath - the path/id of the child node.
+         * @param {number} min - the minimum allowed number of children of this type.
+         * -1 means that there is no lower limit.
+         * @param {number} max - the maximum allowed number of children of this type.
+         * -1 ,eams there is no upper limit.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setChildMeta(path, childPath, min, max, msg) {
             var node = _getNode(path),
                 childNode = _getNode(childPath),
@@ -878,6 +1220,41 @@ define([], function () {
             }
         }
 
+        /**
+         * @example
+         *
+         * client.setChildMeta(
+         *   '/a/b/c',
+         *   {
+         *     min: 0,
+         *     max: 10,
+         *     items:[
+         *       { id: 'a/b/dd',
+         *       min: 0,
+         *       max: 1 },
+         *       { id: 'a/b/ee',
+         *       min: 4,
+         *       max: 10 },
+         *     ]
+         *   },
+         *   'Adding containment rules to the node and setting global cardinality.');
+         *
+         * @description Creates multiple containment rules for the node.
+         * @function setChildMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {object} meta - the collection of containment rules.
+         * @param {object[]} meta.items - array of containment rules with child 
+         * type identification and cardinality rules.
+         * @param {string} meta.items[i].id - the path/id of the child.
+         * @param {string} meta.items[i].min - the lower bound of the cardinality for the given child type.
+         * @param {string} meta.items[i].max - the upper bound of the cardinality for the given child type.
+         * @param {number} [meta.min] - global lower limit on the number of children of the node.
+         * @param {number} [meta.min] - global lower limit on the number of children of the node.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setChildrenMeta(path, meta, msg) {
             var node = _getNode(path),
                 target,
@@ -1464,13 +1841,15 @@ define([], function () {
          * var nodeCopies1 = client.copyNodes(['/4', '/3'], '');
          * var nodeCopies2 = client.copyNodes('/4', '/3'], '', 'Copied two nodes');
          *
-         * @description Copies the given nodes into the parent (does not enforce meta-rules and requires all participating nodes
+         * @description Copies the given nodes into the parent 
+         * (does not enforce meta-rules and requires all participating nodes
          * to be loaded in the client)
          * @function copyNodes
          * @memberOf Client
          * @param {string[]} paths - array of the ids/paths of the nodes to copy
          * @param {string} parentId - the id/path of the parent where the new copies should be created
-         * @param {string} [msg] - optional commit message, if not supplied a default one with the function name and input
+         * @param {string} [msg] - optional commit message, if not supplied a default one with 
+         * the function name and input
          * parameters will be used
          * @returns {GMENode[]|undefined} - the newly created nodes if all could be copied
          * @instance
