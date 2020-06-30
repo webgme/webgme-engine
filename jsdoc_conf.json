@@ -27,7 +27,9 @@
       "src/server/storage/safestorage.js",
       "src/server/storage/userproject.js",
       "src/common/storage/constants.js",
-      "src/common/storage/storageclasses"
+      "src/common/storage/storageclasses",
+      "src/server/middleware/websocket-router",
+      "src/client/gmeNodeSetter.js"
     ]
   },
   "opts": {
@@ -49,7 +51,7 @@
   "templates": {
     "systemName": "WebGME",
     "footer": "",
-    "copyright": "Copyright (c) 2012-2018 Vanderbilt University, ISIS (MIT)",
+    "copyright": "Copyright (c) 2012-2020 Vanderbilt University, ISIS (MIT)",
     "includeDate": true,
     "navType": "inline",
     "theme": "slate",
