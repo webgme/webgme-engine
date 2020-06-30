@@ -1284,6 +1284,16 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes a containment rule from the node.
+         * @function delChildMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} typeId - the path/id of the child node.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delChildMeta(path, typeId, msg) {
             var node = _getNode(path),
                 error;
@@ -1299,6 +1309,27 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Creates an attribute meta rule for the node.
+         * @function setAttributeMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the attribute.
+         * @param {object} schema - the description of the attribute rule.
+         * @param {'string'|'integer'|'float'|'boolean'|'asset'} schema.type - 
+         * the type of the attribute.
+         * @param {string[]} [enum] - valid choices if the attrubite is an enumeration.
+         * @param {string|number|boolean} [default] - the default value of the attribute.
+         * @param {boolean} multiline - shows if the string attribute is a multiline one
+         * and should be edited in a code-editor style.
+         * @param {string} multilineType - show the style of the multiline 
+         * (c, js, java, ...). helps in functions like syntax highlighting.
+         * @param {boolean} isPassword - shows if the attribute should be handled
+         * sensitively on the UI.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setAttributeMeta(path, name, schema, msg) {
             var node = _getNode(path),
                 error;
@@ -1314,6 +1345,16 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes an attribute rule from the node.
+         * @function delAttributeMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the attribute.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delAttributeMeta(path, name, msg) {
             var node = _getNode(path),
                 error;
@@ -1329,6 +1370,21 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Add a potential target/member to a pointer/set rule.
+         * @function setPointerMetaTarget
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the pointer/set.
+         * @param {string} targetPath - the path/id of the new pointer target/member.
+         * @param {integer} min - the lower bound of the cardinality of the rule 
+         * (for pointer it should be always 0).
+         * @param {integer} max - the upper bound of the cardinality of the rule 
+         * (for pointer it should be always 1).
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setPointerMetaTarget(path, name, targetPath, min, max, msg) {
             var node = _getNode(path),
                 targetNode = _getNode(targetPath),
@@ -1346,6 +1402,19 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Moves a potential target/member to a pointer/set rule from another.
+         * @function movePointerMetaTarget
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the pointer/set.
+         * @param {string} targetPath - the path/id of the pointer target/member.
+         * @param {string} oldName - the name of the current pointer rule.
+         * @param {integer} newName - the name of the new pointer/set rule.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function movePointerMetaTarget(path, targetPath, oldName, newName, msg) {
             var node = _getNode(path),
                 targetNode = _getNode(targetPath);
@@ -1363,6 +1432,17 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes a target/member from a pointer/set rule.
+         * @function delPointerMetaTarget
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the pointer/set.
+         * @param {string} targetPath - the path/id of the pointer target/member.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delPointerMetaTarget(path, name, targetPath, msg) {
             var node = _getNode(path),
                 error;
@@ -1379,6 +1459,16 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes a complete pointer/set rule including all target/member rules.
+         * @function delPointerMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the pointer/set.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delPointerMeta(path, name, msg) {
             var node = _getNode(path),
                 error;
@@ -1394,6 +1484,54 @@ define([], function () {
             }
         }
 
+        /**
+         * @example
+         *
+         * client.setPointerMeta(
+         *   '/a/b/c',
+         *   'myPointer',
+         *   {
+         *     min: 0,
+         *     max: 1,
+         *     items:[
+         *       { id: 'a/b/dd',
+         *       min: 0,
+         *       max: 1 },
+         *       { id: 'a/b/ee',
+         *       min: 0,
+         *       max: 1 },
+         *     ]
+         *   },
+         *   'Adding pointer rules to the node.');
+         * @example
+         * * client.setPointerMeta(
+         *   '/a/b/c',
+         *   'mySet',
+         *   {
+         *     items:[
+         *       { id: 'a/b/dd'},
+         *       { id: 'a/b/ee'},
+         *     ]
+         *   },
+         *   'Adding set rules to the node.');
+         *
+         * @description Creates a pointer/set meta rule with multiple potential target/member.
+         * @function setPointerMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {object} meta - the collection of pointer/set rules.
+         * @param {object[]} meta.items - array of target/member rules.
+         * @param {string} meta.items[i].id - the path/id of the target/member.
+         * @param {string} meta.items[i].min - the lower bound of the cardinality for the given target/member.
+         * @param {string} meta.items[i].max - the upper bound of the cardinality for the given target/member.
+         * @param {number} [meta.min] - global lower limit on the number of target/member of the node.
+         * should be 0 for pointer!
+         * @param {number} [meta.max] - global upper limit on the number of target/member of the node.
+         * should be 1 for pointer!
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setPointerMeta(path, name, meta, msg) {
             var node = _getNode(path),
                 target,
@@ -1428,6 +1566,17 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Creates/extends an aspect rule set (filtered contaiment).
+         * @function setAspectMetaTarget
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the aspect.
+         * @param {string} targetPath - the path/id of the new member.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setAspectMetaTarget(path, name, targetPath, msg) {
             var node = _getNode(path),
                 targetNode = _getNode(targetPath),
@@ -1445,6 +1594,17 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes an element from an aspect rule set (filtered contaiment).
+         * @function delAspectMetaTarget
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the aspect.
+         * @param {string} targetPath - the path/id of the member.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delAspectMetaTarget(path, name, targetPath, msg) {
             var node = _getNode(path),
                 error;
@@ -1460,6 +1620,18 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Creates/extends an aspect rule set (filtered contaiment) 
+         * with multiple new targets.
+         * @function setAspectMetaTargets
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the aspect.
+         * @param {string[]} targetPaths - array of path/id of the new members.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function setAspectMetaTargets(path, name, targetPaths, msg) {
             var node = _getNode(path),
                 i,
@@ -1489,6 +1661,16 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Removes a complete aspect rule set (filtered contaiment).
+         * @function delAspectMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node that will be modified.
+         * @param {string} name - the name of the aspect.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * function name and input parameters will be used
+         * @instance
+         */
         function delAspectMeta(path, name, msg) {
             var node = _getNode(path),
                 error;
@@ -1504,9 +1686,19 @@ define([], function () {
             }
         }
 
-        // Deprecated meta-getters from core/users/meta
-        // TODO: These should be removed at next version bump.
-
+        /**
+         * @description Check if the given node is an instance of the type node.
+         * All participant nodes have to be loaded to the client
+         * @function isTypeOf
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @param {string} typePath - the path/id of the type node.
+         * @returns {boolean} - true if the node inherits from the type node, false otherwise 
+         * (or if one of the nodes is not accessible).
+         * @instance
+         */
         function isTypeOf(path, typePath) {
             var node = _getNode(path);
 
@@ -1517,6 +1709,22 @@ define([], function () {
             return false;
         }
 
+        /**
+         * @description Check if the given node is valid target for the pointer of the other node.
+         * All participant nodes have to be loaded to the client
+         * @function isValidTarget
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node that hold the pointer rule 
+         * (the source of the pointer).
+         * @param {string} name - the name of the pointer to check.
+         * @param {string} targetPath - the path/id of the target node.
+         * @returns {boolean} - true if the target node is a valid target for 
+         * the pointer of the node, false otherwise 
+         * (or if one of the nodes is not accessible).
+         * @instance
+         */
         function isValidTarget(path, name, targetPath) {
             var node = _getNode(path),
                 target = _getNode(targetPath);
@@ -1528,6 +1736,21 @@ define([], function () {
             return false;
         }
 
+        /**
+         * @description Filters out potential pointer targets based on wether they 
+         * would be valid targets.
+         * All participant nodes have to be loaded to the client
+         * @function filterValidTarget
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node that hold the pointer rule 
+         * (the source of the pointer).
+         * @param {string} name - the name of the pointer to check.
+         * @param {string[]} paths - the path/id of the target nodes.
+         * @returns {string[]} - list of path/id of valid target nodes.
+         * @instance
+         */
         function filterValidTarget(path, name, paths) {
             var targets = [];
 
@@ -1540,6 +1763,20 @@ define([], function () {
             return targets;
         }
 
+        /**
+         * @description Collects the meta node ids, that can be instantiated for a 
+         * valid target of the given pointer of the node.
+         * All participant nodes have to be loaded to the client
+         * @function getValidTargetTypes
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node that hold the pointer rule 
+         * (the source of the pointer).
+         * @param {string} name - the name of the pointer to check.
+         * @returns {string[]} - list of path/id of valid target meta-nodes.
+         * @instance
+         */
         function getValidTargetTypes(path, name) {
             var node = _getNode(path),
                 meta, i,
@@ -1558,6 +1795,21 @@ define([], function () {
             return targets;
         }
 
+        /**
+         * @description Collects the meta node ids, that can be instantiated for a 
+         * valid target of the given pointer of the node. Additionaly it filters out those
+         * that only valid due to inherioted rules.
+         * All participant nodes have to be loaded to the client
+         * @function getOwnValidTargetTypes
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node that hold the pointer rule 
+         * (the source of the pointer).
+         * @param {string} name - the name of the pointer to check.
+         * @returns {string[]} - list of path/id of valid target meta-nodes.
+         * @instance
+         */
         function getOwnValidTargetTypes(path, name) {
             var node = _getNode(path),
                 ownMeta;
@@ -1609,14 +1861,39 @@ define([], function () {
             return null;
         }
 
+        /**
+         * @description Identical to [getValidTargetTypes]{@link Client#getValidTargetTypes}.
+         * @function getValidTargetItems
+         * @memberOf Client
+         * @instance
+         */
         function getValidTargetItems(path, name) {
             return _getValidTargetItems(path, name, false);
         }
 
+        /**
+         * @description Identical to [getOwnValidTargetTypes]{@link Client#getOwnValidTargetTypes}.
+         * @function getOwnValidTargetItems
+         * @memberOf Client
+         * @instance
+         */
         function getOwnValidTargetItems(path, name) {
             return _getValidTargetItems(path, name, true);
         }
 
+        /**
+         * @description Checks if the node would be a valid child of the given parent.
+         * All participant nodes have to be loaded to the client
+         * @function getValidChildrenTypes
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} parentPath - the path/id of the parent node.
+         * @param {string} path - the path/id of the node.
+         * @returns {boolean} - true if the node would be a valid child of the parent, 
+         * false otherwise (or if any of the nodes is missing).
+         * @instance
+         */
         function isValidChild(parentPath, path) {
             var node = _getNode(path),
                 parentNode = _getNode(parentPath);
@@ -1628,6 +1905,18 @@ define([], function () {
             return false;
         }
 
+        /**
+         * @description Collects the meta node ids, that can be instantiated for a 
+         * valid child of the given node.
+         * All participant nodes have to be loaded to the client
+         * @function getValidChildrenTypes
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @returns {string[]} - list of path/id of valid target meta-nodes.
+         * @instance
+         */
         function getValidChildrenTypes(path) {
             var node = _getNode(path);
 
@@ -1638,6 +1927,17 @@ define([], function () {
             return [];
         }
 
+        /**
+         * @description Collects the names of the valid attributes of the node.
+         * All participant nodes have to be loaded to the client
+         * @function getValidAttributeNames
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @returns {string[]} - list of valid attribute names.
+         * @instance
+         */
         function getValidAttributeNames(path) {
             var node = _getNode(path);
 
@@ -1648,6 +1948,18 @@ define([], function () {
             return [];
         }
 
+        /**
+         * @description Collects the names of the valid attributes of the node.
+         * Additionally, it filters out those names that are inherited for the node.
+         * All participant nodes have to be loaded to the client
+         * @function getOwnValidAttributeNames
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @returns {string[]} - list of valid attribute names.
+         * @instance
+         */
         function getOwnValidAttributeNames(path) {
             var node = _getNode(path);
 
@@ -1658,6 +1970,19 @@ define([], function () {
             return [];
         }
 
+        /**
+         * @description Collects and returns the meta rules related to a pointer/set of the node.
+         * All participant nodes have to be loaded to the client
+         * @function getPointerMeta
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node that hold the pointer rule 
+         * (the source of the pointer).
+         * @param {string} name - the name of the pointer/set.
+         * @returns {object} - structured object of the rules related to the pointer/set.
+         * @instance
+         */
         function getPointerMeta(path, name) {
             var node = _getNode(path),
                 meta,
@@ -1687,6 +2012,18 @@ define([], function () {
             return null;
         }
 
+        /**
+         * @description Collects and returns the meta rules related to an attribute of the node.
+         * All participant nodes have to be loaded to the client
+         * @function getAttributeSchema
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @param {string} name - the name of the attribute.
+         * @returns {object} - structured collection of the rules of the attribute.
+         * @instance
+         */
         function getAttributeSchema(path, name) {
             var node = _getNode(path);
 
@@ -1697,6 +2034,17 @@ define([], function () {
             return;
         }
 
+        /**
+         * @description Collect and returns a list of aspects defined for the node.
+         * All participant nodes have to be loaded to the client
+         * @function getMetaAspectNames
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @returns {string[]} - list of valid aspect names.
+         * @instance
+         */
         function getMetaAspectNames(path) {
             var node = _getNode(path);
 
@@ -1707,6 +2055,18 @@ define([], function () {
             return [];
         }
 
+        /**
+         * @description Collect and returns a list of aspects defined for the node.
+         * Additionally, it filters out those aspects that are inherited for the node.
+         * All participant nodes have to be loaded to the client
+         * @function getOwnMetaAspectNames
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @returns {string[]} - list of valid aspect names.
+         * @instance
+         */
         function getOwnMetaAspectNames(path) {
             var node = _getNode(path);
 
@@ -1717,6 +2077,18 @@ define([], function () {
             return [];
         }
 
+        /**
+         * @description Collects and returns the meta rules related to an aspect of the node.
+         * All participant nodes have to be loaded to the client
+         * @function getMetaAspect
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @param {string} name - the name of the aspect.
+         * @returns {object} - structured collection of the rules of the aspect.
+         * @instance
+         */
         function getMetaAspect(path, name) {
             var node = _getNode(path),
                 meta;
@@ -1732,6 +2104,19 @@ define([], function () {
             return null;
         }
 
+        /**
+         * @description Checks if the node has meta rules of its own (not inherited).
+         * All participant nodes have to be loaded to the client
+         * @function hasOwnMetaRules
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @param {string} name - the name of the aspect.
+         * @returns {boolean} - true if the node has some rule of its own, 
+         * false if it only has inherited rules.
+         * @instance
+         */
         function hasOwnMetaRules(path) {
             var node = _getNode(path),
                 ownMeta, key;
@@ -1767,6 +2152,19 @@ define([], function () {
             return false;
         }
 
+        /**
+         * @description Collects and returns the meta rules related to containment of the node.
+         * All participant nodes have to be loaded to the client
+         * @see For reference check the correspondent 
+         * Core function [getChildrenMeta]{@link Core#getChildrenMeta}
+         * @function getChildrenMeta
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @returns {object} - structured collection of the rules of the containment.
+         * @instance
+         */
         function getChildrenMeta(path) {
             //the returned object structure is : {'min':0,'max':0,'items':[{'id':path,'min':0,'max':0},...]}
             var node = _getNode(path),
@@ -1794,6 +2192,7 @@ define([], function () {
             return null;
         }
 
+        //FIXME: what is this?
         function getChildrenMetaAttribute(path/*, attrName*/) {
             var childrenMeta = getChildrenMeta(path);
             if (childrenMeta) {
@@ -1802,6 +2201,18 @@ define([], function () {
             return null;
         }
 
+        /**
+         * @description Collects and returns the list of containment rules of the node.
+         * All participant nodes have to be loaded to the client
+         * @function getValidChildrenItems
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @returns {object} - structured collection of children types of the 
+         * containment with cardinality information.
+         * @instance
+         */
         function getValidChildrenItems(path) {
             var childrenMeta = getChildrenMeta(path);
             if (childrenMeta) {
@@ -1810,6 +2221,19 @@ define([], function () {
             return null;
         }
 
+        /**
+         * @description Collects and returns the list of containment rules of the node.
+         * Additionally the list filters out elements that are inherited.
+         * All participant nodes have to be loaded to the client
+         * @function getOwnValidChildrenTypes
+         * @memberOf Client
+         * @deprecated The function provided in GMENode class should be used! 
+         * (this one will be removed at the next major release)
+         * @param {string} path - the path/id of the node.
+         * @returns {object} - structured collection of children types of the 
+         * containment with cardinality information.
+         * @instance
+         */
         function getOwnValidChildrenTypes(path) {
             var node = _getNode(path),
                 ownMeta;
@@ -1825,6 +2249,16 @@ define([], function () {
             return [];
         }
 
+        /**
+         * @description Returns a client pattern that covers the given aspect of the node.
+         * All participant nodes have to be loaded to the client
+         * @function getAspectTerritoryPattern
+         * @memberOf Client
+         * @param {string} path - the path/id of the node.
+         * @param {string} name - the name of the aspect.
+         * @returns {object} - object representing the client territory
+         * @instance
+         */
         function getAspectTerritoryPattern(path, name) {
             var aspect = getMetaAspect(path, name);
 
@@ -1844,6 +2278,8 @@ define([], function () {
          * @description Copies the given nodes into the parent 
          * (does not enforce meta-rules and requires all participating nodes
          * to be loaded in the client)
+         * @see For reference check the correspondent 
+         * Core function [copyNodes]{@link Core#copyNodes}
          * @function copyNodes
          * @memberOf Client
          * @param {string[]} paths - array of the ids/paths of the nodes to copy
@@ -1878,6 +2314,22 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Renames a pointer of the node.
+         * Effectively, it moves the target of one pointer to another.
+         * All participant nodes have to be loaded to the client
+         * @see For reference check the correspondent 
+         * Core function [renamePointer]{@link Core#renamePointer}
+         * @function renamePointer
+         * @memberOf Client
+         * @param {string} path - the path/id of the node.
+         * @param {string} oldName - the name of the current pointer.
+         * @param {string} newName - the name of the new pointer.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with 
+         * the function name and input
+         * parameters will be used
+         * @instance
+         */
         function renamePointer(path, oldName, newName, msg) {
             var node = _getNode(path);
 
@@ -1893,6 +2345,22 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Renames an attribute of the node.
+         * Effectively, it moves the value of one attribute to another.
+         * All participant nodes have to be loaded to the client
+         * @see For reference check the correspondent 
+         * Core function [renameAttribute]{@link Core#renameAttribute}
+         * @function renameAttribute
+         * @memberOf Client
+         * @param {string} path - the path/id of the node.
+         * @param {string} oldName - the name of the current attribute.
+         * @param {string} newName - the name of the new attribute.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with 
+         * the function name and input
+         * parameters will be used
+         * @instance
+         */
         function renameAttribute(path, oldName, newName, msg) {
             var node = _getNode(path);
 
@@ -1908,6 +2376,22 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Renames an registry of the node.
+         * Effectively, it moves the value of one registry to another.
+         * All participant nodes have to be loaded to the client
+         * @see For reference check the correspondent 
+         * Core function [renameRegistry]{@link Core#renameRegistry}
+         * @function renameRegistry
+         * @memberOf Client
+         * @param {string} path - the path/id of the node.
+         * @param {string} oldName - the name of the current registry.
+         * @param {string} newName - the name of the new registry.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with 
+         * the function name and input
+         * parameters will be used
+         * @instance
+         */
         function renameRegistry(path, oldName, newName, msg) {
             var node = _getNode(path);
 
@@ -1923,6 +2407,22 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Renames a set of the node.
+         * Effectively, it moves the members of one set to another.
+         * All participant nodes have to be loaded to the client
+         * @see For reference check the correspondent 
+         * Core function [renameSet]{@link Core#renameSet}
+         * @function renameSet
+         * @memberOf Client
+         * @param {string} path - the path/id of the node.
+         * @param {string} oldName - the name of the current set.
+         * @param {string} newName - the name of the new set.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with 
+         * the function name and input
+         * parameters will be used
+         * @instance
+         */
         function renameSet(path, oldName, newName, msg) {
             var node = _getNode(path);
 
@@ -1938,6 +2438,22 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Moves an aspect target rule to a new aspect.
+         * All participant nodes have to be loaded to the client
+         * @see For reference check the correspondent 
+         * Core function [moveAspectMetaTarget]{@link Core#moveAspectMetaTarget}
+         * @function moveAspectMetaTarget
+         * @memberOf Client
+         * @param {string} path - the path/id of the node.
+         * @param {string} targetPath - the path/id of the target to be moved.
+         * @param {string} oldName - the name of the current aspect.
+         * @param {string} newName - the name of the new aspect.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with 
+         * the function name and input
+         * parameters will be used
+         * @instance
+         */
         function moveAspectMetaTarget(path, targetPath, oldName, newName, msg) {
             var node = _getNode(path),
                 targetNode = _getNode(targetPath);
@@ -1955,6 +2471,22 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Moves a set member to a new set.
+         * All participant nodes have to be loaded to the client
+         * @see For reference check the correspondent 
+         * Core function [moveMember]{@link Core#moveMember}
+         * @function moveMember
+         * @memberOf Client
+         * @param {string} path - the path/id of the node.
+         * @param {string} memberPath - the path/id of the member to be moved.
+         * @param {string} oldSetName - the name of the current set.
+         * @param {string} newSetName - the name of the new set.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with 
+         * the function name and input
+         * parameters will be used
+         * @instance
+         */
         function moveMember(path, memberPath, oldSetName, newSetName, msg) {
             var node = _getNode(path);
 
@@ -1970,6 +2502,21 @@ define([], function () {
             }
         }
 
+        /**
+         * @description Renames an attribute meta rule.
+         * All participant nodes have to be loaded to the client
+         * @see For reference check the correspondent 
+         * Core function [renameAttributeMeta]{@link Core#renameAttributeMeta}
+         * @function renameAttributeMeta
+         * @memberOf Client
+         * @param {string} path - the path/id of the node.
+         * @param {string} oldName - the name of the current attribute.
+         * @param {string} newName - the name of the new attribute.
+         * @param {string} [msg] - optional commit message, if not supplied a default one with 
+         * the function name and input
+         * parameters will be used
+         * @instance
+         */
         function renameAttributeMeta(path, oldName, newName, msg) {
             var node = _getNode(path);
 
