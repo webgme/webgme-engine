@@ -57,7 +57,7 @@ describe('USER REST API', function () {
                         gmeAuth.addUser('user_w_data', 'e@mail.com', 'plaintext', false, {overwrite: true}),
                         gmeAuth.addUser('user_w_data1', 'e@mail.com', 'plaintext', false, {
                             overwrite: true,
-                            data: {a: 1, array: [1,2,3]}
+                            data: {a: 1, array: [1, 2, 3]}
                         }),
                         gmeAuth.addUser('user_w_nesteddata1', 'e@mail.com', 'plaintext', false, {
                             overwrite: true,
@@ -1685,7 +1685,7 @@ describe('USER REST API', function () {
                     });
             });
 
-            it('should get user data array basic authentication GET /api/v1/user/data/a', function (done) {
+            it('should get user data array basic authentication GET /api/v1/user/data/array', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/data/array')
                     .set('Authorization', 'Basic ' + new Buffer('user_w_data1:plaintext').toString('base64'))
                     .end(function (err, res) {
