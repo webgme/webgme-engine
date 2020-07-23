@@ -1791,7 +1791,7 @@ describe('USER REST API', function () {
                     .set('Authorization', 'Basic ' + new Buffer('user_w_data1:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
-                        expect(res.body).to.deep.equal({a: 1});
+                        expect(res.body).to.deep.equal({a: 1, array: [1, 2, 3]});
                         done();
                     });
             });
