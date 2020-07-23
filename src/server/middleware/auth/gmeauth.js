@@ -663,7 +663,8 @@ function GMEAuth(session, gmeConfig) {
 
     function _decrypt(encrypted) {
         const isEncryptedData = encrypted.iv && encrypted.encryptedData;
-        const isEncryptedObject = !isEncryptedData && typeof encrypted === 'object';
+        const isEncryptedObject = !isEncryptedData &&
+            typeof encrypted === 'object' && !_.isArray(encrypted);
         if (isEncryptedObject) {
             return _.mapObject(encrypted, _decrypt);
         } else if (isEncryptedData) {
