@@ -3706,7 +3706,7 @@ define([
         };
 
         /**
-         * It updates a library in your project based on the input information. It will 'reaplace' the old
+         * It updates a library in your project based on the input information. It will 'replace' the old
          * version, keeping as much information as possible regarding the instances.
          * @param {module:Core~Node} node - any regular node in your project.
          * @param {string} name - the name of the library you want to update.
