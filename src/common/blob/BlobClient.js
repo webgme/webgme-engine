@@ -230,10 +230,10 @@ define([
         req.set('Content-Type', 'application/octet-stream');
 
         if (typeof window === 'undefined' && data instanceof stream.Readable) {
-            data.on('error', function (err) {
-                deferred.reject(err || new Error('Failed to send stream data completely'));
-                return;
-            });
+            const DEFAULT_ERROR = new Error('Failed to send stream data completely');
+            const errorHandler = err => deferred.reject(err || DEFAULT_ERROR);
+            data.on('error', errorHandler);
+            req.on('error', errorHandler);
             req.on('response', function (res) {
                 var response = res.body;
                 // Get the first one
