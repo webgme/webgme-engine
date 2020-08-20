@@ -245,6 +245,14 @@ describe('BlobClient', function () {
             });
         });
 
+        it('should not hide request errors on putFile w/ stream', async function () {
+            const bc = new BlobClient(bcParam);
+            const rs = fs.createReadStream('./package.json');
+
+            bc.getCreateURL = () => '/nonexistentURL';
+            await assert.rejects(() => bc.putFile('package.json', rs));
+        });
+
         it('should putFile streamed string', function (done) {
             var bc = new BlobClient(bcParam),
                 stream = require('stream'),
