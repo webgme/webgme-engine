@@ -441,7 +441,8 @@ define([
                     var contentType = req.xhr.getResponseHeader('content-type');
                     var response = req.xhr.response; // response is an arraybuffer
                     if (contentType === 'application/json') {
-                        response = JSON.parse(UINT.uint8ArrayToString(new Uint8Array(response)));
+                        // response = JSON.parse(UINT.uint8ArrayToString(new Uint8Array(response)));
+                        response = JSON.parse(response);
                     }
                     self.logger.debug('getObject - result', {metadata: response});
                     deferred.resolve(response);
@@ -514,7 +515,7 @@ define([
                     // This does currently not happen..
                     return content;
                 } else if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
-                    return UINT.uint8ArrayToString(new Uint8Array(content));
+                    return content.toString();
                 } else if (content instanceof ArrayBuffer) {
                     return UINT.uint8ArrayToString(new Uint8Array(content));
                 } else if (content !== null && typeof content === 'object') {
@@ -542,9 +543,11 @@ define([
                     // This does currently not happen..
                     return JSON.parse(content);
                 } else if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
-                    return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
+                    // return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
+                    return JSON.parse(content.toString());
                 } else if (content instanceof ArrayBuffer) {
-                    return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
+                    // return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
+                    return JSON.parse(content.toString());
                 } else if (content !== null && typeof content === 'object') {
                     return content;
                 } else {
