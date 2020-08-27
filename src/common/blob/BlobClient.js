@@ -542,13 +542,9 @@ define([
                     // This does currently not happen..
                     return JSON.parse(content);
                 } else if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
-                    var text = UINT.uint8ArrayToString(new Uint8Array(content));
-                    //text = content.toString();
-                    //require('fs').writeFileSync('outpout.json', text);
                     return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
                 } else if (content instanceof ArrayBuffer) {
                     return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
-                    return JSON.parse(decoder.decode(new Uint8Array(content)));
                 } else if (content !== null && typeof content === 'object') {
                     return content;
                 } else {
