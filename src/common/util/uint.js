@@ -11,8 +11,10 @@ define(function () {
     // As the earlier used escape function is outdated and crashed in some scenarios, we replaced with this approach
     var decoder = null;
     if (typeof window === 'undefined') {
+        //>>excludeStart("onlyBrowserExclude", pragmas.onlyBrowserExclude);
         var util = require('util');
         decoder = new util.TextDecoder();
+        //>>excludeEnd("onlyBrowserExclude");
     } else {
         decoder = new TextDecoder();
     }

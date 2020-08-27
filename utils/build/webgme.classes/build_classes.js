@@ -33,7 +33,10 @@ var requirejs = require('requirejs'),
             startFile: './utils/build/webgme.classes/start.frag',
             endFile: './utils/build/webgme.classes/end.frag'
         },
-        include: [requireJsPath]
+        include: [requireJsPath],
+        pragmas: {
+            onlyBrowserExclude: true
+        }
     };
 
 function doBuilds(callback) {
