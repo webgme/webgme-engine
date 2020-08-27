@@ -16,7 +16,7 @@ define(function () {
         for (i = 0; i < uintArray.byteLength; i++) {
             resultString += String.fromCharCode(uintArray[i]);
         }
-        return decodeURIComponent(escape(resultString));
+        return decodeURIComponent(encodeURIComponent(resultString));
     }
 
     return {
