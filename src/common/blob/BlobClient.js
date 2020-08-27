@@ -440,11 +440,8 @@ define([
                 } else {
                     var contentType = req.xhr.getResponseHeader('content-type');
                     var response = req.xhr.response; // response is an arraybuffer
-                    var decoder = new TextDecoder();
                     if (contentType === 'application/json') {
-                        // response = JSON.parse(UINT.uint8ArrayToString(new Uint8Array(response)));
-                        // response = JSON.parse(response);
-                        response = JSON.parse(decoder.decode(new Uint8Array(response)));
+                        response = JSON.parse(UINT.uint8ArrayToString(new Uint8Array(response)));
                     }
                     self.logger.debug('getObject - result', {metadata: response});
                     deferred.resolve(response);
@@ -511,17 +508,15 @@ define([
      */
     BlobClient.prototype.getObjectAsString = function (metadataHash, callback) {
         var self = this;
-        var decoder = new TextDecoder();
         return self.getObject(metadataHash)
             .then(function (content) {
                 if (typeof content === 'string') {
                     // This does currently not happen..
                     return content;
                 } else if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
-                    return content.toString();
+                    return UINT.uint8ArrayToString(new Uint8Array(content));
                 } else if (content instanceof ArrayBuffer) {
-                    return decoder.decode(new Uint8Array(content));
-                    // return content.toString();
+                    return UINT.uint8ArrayToString(new Uint8Array(content));
                 } else if (content !== null && typeof content === 'object') {
                     return JSON.stringify(content);
                 } else {
@@ -541,17 +536,18 @@ define([
      */
     BlobClient.prototype.getObjectAsJSON = function (metadataHash, callback) {
         var self = this;
-        var decoder = new TextDecoder();
         return self.getObject(metadataHash)
             .then(function (content) {
                 if (typeof content === 'string') {
                     // This does currently not happen..
                     return JSON.parse(content);
                 } else if (typeof Buffer !== 'undefined' && content instanceof Buffer) {
-                    // return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
-                    return JSON.parse(content.toString());
+                    var text = UINT.uint8ArrayToString(new Uint8Array(content));
+                    //text = content.toString();
+                    //require('fs').writeFileSync('outpout.json', text);
+                    return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
                 } else if (content instanceof ArrayBuffer) {
-                    // return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
+                    return JSON.parse(UINT.uint8ArrayToString(new Uint8Array(content)));
                     return JSON.parse(decoder.decode(new Uint8Array(content)));
                 } else if (content !== null && typeof content === 'object') {
                     return content;

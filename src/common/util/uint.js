@@ -8,15 +8,18 @@
 define(function () {
     'use strict';
 
+    // As the earlier used escape function is outdated and crashed in some scenarios, we replaced with this approach
+    var decoder = null;
+    if (typeof window === 'undefined') {
+        var util = require('util');
+        decoder = new util.TextDecoder();
+    } else {
+        decoder = new TextDecoder();
+    }
     //this helper function is necessary as in case of large json objects,
     // the library standard function causes stack overflow
     function uint8ArrayToString(uintArray) {
-        var resultString = '',
-            i;
-        for (i = 0; i < uintArray.byteLength; i++) {
-            resultString += String.fromCharCode(uintArray[i]);
-        }
-        return decodeURIComponent(encodeURIComponent(resultString));
+        return decoder.decode(uintArray);
     }
 
     return {

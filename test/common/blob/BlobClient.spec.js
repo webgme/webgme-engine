@@ -364,6 +364,23 @@ describe('BlobClient', function () {
                 .nodeify(done);
         });
 
+        //ISSUE weird escape crash...
+        it('getObjectAsJSON should create json and return as json', function (done) {
+            var bc = new BlobClient(bcParam),
+                path = require('path'),
+                input = fs.readFileSync(path.join(__dirname, 'artifacts', 'escape-crash.json'), 'utf8');
+
+            bc.putFile('test.json', input)
+                .then(function (hash) {
+                    return bc.getObjectAsJSON(hash);
+                })
+                .then(function (res) {
+                    expect(typeof res).to.equal('object');
+                    expect(res).to.deep.equal(JSON.parse(input));
+                })
+                .nodeify(done);
+        });
+
         if (typeof global !== 'undefined') {
             it('should create zip', function (done) {
                 var data = base64DecToArr('UEsDBAoAAAAAACNaNkWtbMPDBwAAAAcAAAAIAAAAZGF0YS5ia' +
