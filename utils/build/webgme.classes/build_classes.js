@@ -23,7 +23,8 @@ var requirejs = require('requirejs'),
             ejs: './common/lib/ejs/ejs',
             q: './common/lib/q/q',
             chance: './common/lib/chance/chance',
-            'webgme-ot': './common/lib/webgme-ot/webgme-ot'
+            'webgme-ot': './common/lib/webgme-ot/webgme-ot',
+            util: 'empty:'
         },
         optimize: 'none',
         generateSourceMaps: true,
