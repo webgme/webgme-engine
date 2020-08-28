@@ -1806,27 +1806,6 @@ describe.only('USER REST API', function () {
                 assert.equal(response.body, newData);
             });
 
-            it.only('should set unencrypted user data to null value GET /api/v1/user/data', async function () {
-                const user = 'user_w_nesteddata1';
-                const newData = null;
-                const oldData = 'Whatever';
-                const keys = ['user', 'test3'];
-                await gmeAuth.setUserDataField(user, keys, oldData);
-                await gmeAuth.setUserDataField(user, keys, newData);
-                const response = await new Promise((resolve, reject) =>
-                    agent.get(server.getUrl() + '/api/v1/user/data/' + keys.join('/'))
-                        .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
-                        .end(function (err, res) {
-                            if (err) {
-                                return reject(err);
-                            }
-                            resolve(res);
-                        })
-                );
-                assert.equal(response.status, 200);
-                assert.equal(response.body, newData);
-            });
-
             it('should get user data basic authentication GET /api/v1/user/data', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/data')
                     .set('Authorization', 'Basic ' + new Buffer('user_w_data1:plaintext').toString('base64'))
