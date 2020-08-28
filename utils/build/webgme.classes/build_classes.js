@@ -23,8 +23,7 @@ var requirejs = require('requirejs'),
             ejs: './common/lib/ejs/ejs',
             q: './common/lib/q/q',
             chance: './common/lib/chance/chance',
-            'webgme-ot': './common/lib/webgme-ot/webgme-ot',
-            util: 'empty:'
+            'webgme-ot': './common/lib/webgme-ot/webgme-ot'
         },
         optimize: 'none',
         generateSourceMaps: true,
@@ -33,10 +32,7 @@ var requirejs = require('requirejs'),
             startFile: './utils/build/webgme.classes/start.frag',
             endFile: './utils/build/webgme.classes/end.frag'
         },
-        include: [requireJsPath],
-        pragmas: {
-            onlyBrowserExclude: true
-        }
+        include: [requireJsPath]
     };
 
 function doBuilds(callback) {
