@@ -1715,6 +1715,64 @@ describe.only('USER REST API', function () {
                     });
             });
 
+            it('should set user data to null PUT /api/v1/user/data/test', function (done) {
+                const user = 'user_w_nesteddata1';
+                const newData = null;
+                agent.put(server.getUrl() + '/api/v1/user/data/test')
+                    .send(newData)
+                    .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        gmeAuth.getUser(user)
+                            .then(userData => {
+                                expect(userData.data.test).to.deep.equal(newData);
+                            })
+                            .nodeify(done);
+                    });
+            });
+
+            it('should set user data to array PUT /api/v1/user/data/test', function (done) {
+                const user = 'user_w_nesteddata1';
+                const newData = [1, 'b', true];
+                agent.put(server.getUrl() + '/api/v1/user/data/test')
+                    .send(newData)
+                    .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        gmeAuth.getUser(user)
+                            .then(userData => {
+                                assert(
+                                    Array.isArray(userData.data.test),
+                                    new Error('Expected data to be array')
+                                );
+                                assert(userData.data.test).to.deep.equal(newData);
+                                expect(userData.data.test).to.deep.equal(newData);
+                            })
+                            .nodeify(done);
+                    });
+            });
+
+            it.only('should set user data array index PUT /api/v1/user/data/array', function (done) {
+                const user = 'user_w_data1';
+                const newData = 'cat';
+                agent.put(server.getUrl() + '/api/v1/user/data/array/1')
+                    .send(newData)
+                    .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                    .end(function (err, res) {
+                        expect(res.status).equal(200, err);
+                        gmeAuth.getUser(user)
+                            .then(userData => {
+                                console.log(userData.data.array);
+                                assert(
+                                    Array.isArray(userData.data.array),
+                                    new Error('Expected data to be array')
+                                );
+                                expect(userData.data.array[1]).to.deep.equal(newData);
+                            })
+                            .nodeify(done);
+                    });
+            });
+
             it('should set nested key PUT /api/v1/user/data/test/b/d', function (done) {
                 const user = 'user_w_nesteddata1';
                 const newData = {b: 1};

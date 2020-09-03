@@ -468,6 +468,18 @@ describe('GME authentication', function () {
             assert.deepEqual(userData.test, newData);
         });
 
+        it('should set field value to array', async function () {
+            const newData = ['a', 'b', 'c'];
+            const userData = await auth.setUserDataField(userId, 'test', newData);
+            assert.deepEqual(userData.test, newData);
+        });
+
+        it('should set field value to null', async function () {
+            const newData = null;
+            const userData = await auth.setUserDataField(userId, 'test', newData);
+            assert.equal(userData.test, newData);
+        });
+
         it('should create objects as needed during set nested field ', async function () {
             const newData = 10;
             const keys = ['test-nested', 'a', 'b', 'c'];
