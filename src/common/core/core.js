@@ -1476,7 +1476,7 @@ define([
         };
 
         /**
-         * Sets the base node of the given node. The function doesn't touches the properties or the children of the node
+         * Sets the base node of the given node. The function doesn't touch the properties or the children of the node
          * so it can cause META rule violations that needs to be corrected manually.
          * @param {module:Core~Node} node - the node in question.
          * @param {module:Core~Node|null} base - the new base.
