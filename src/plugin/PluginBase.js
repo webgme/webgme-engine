@@ -858,6 +858,18 @@
     };
 
     /**
+     * Retrieves the file from blob storage in binary format.
+     * @param {string} metadataHash - the "id" of the file to retrieve.
+     * @param {string} [subpath] - optional file-like path to sub-object if complex blob
+     * @param {null|Error} callback.err - status of the call.
+     * @param {Buffer} callback.content - the file content.
+     * @return {external:Promise} If no callback is given, the result will be provided in a promise.
+     */
+    PluginBase.prototype.getBinFile = function (metadataHash, subpath, callback) {
+        return this.blobClient.getObject(metadataHash, callback || null, subpath || null);
+    };
+
+    /**
      * Retrieves all the files in the artifact from the blob storage.
      * @param {string} metadataHash - the "id" of the artifact to retrieve.
      * @param {null|Error} callback.err - status of the call.
