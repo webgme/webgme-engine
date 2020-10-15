@@ -773,7 +773,7 @@ describe('climanager', function () {
             .nodeify(done);
     });
 
-    it('should addFile/addArtifact with binary data and add to the plugin results and then getBinFile both', function (done) {
+    it('should addFile/addArtifact with binary data and then getBinFile on both', function (done) {
         var manager = new PluginCliManager(libContext.project, logger, gmeConfig),
             pluginConfig = {},
             context = {
@@ -806,7 +806,7 @@ describe('climanager', function () {
                 expect(plugin.result.artifacts[1]).to.equal(metadataHash);
                 return Q.allDone([
                     plugin.getBinFile(plugin.result.artifacts[0]),
-                    plugin.getBinFile(plugin.result.artifacts[1],'heart.png')
+                    plugin.getBinFile(plugin.result.artifacts[1], 'heart.png')
                 ]);
             })
             .then(function (res) {
