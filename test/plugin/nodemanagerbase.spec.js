@@ -19,6 +19,7 @@ describe('climanager', function () {
         project,
         projectName = 'cliManagerProject',
         branchName = 'master',
+        fs = require('fs'),
         commitHash,
 
         libContext = {
@@ -768,6 +769,49 @@ describe('climanager', function () {
             .then(function (res) {
                 expect(res[0]).to.equal('Hello World');
                 expect(res[1]).to.deep.equal(files);
+            })
+            .nodeify(done);
+    });
+
+    it('should addFile/addArtifact with binary data and then getBinFile on both', function (done) {
+        var manager = new PluginCliManager(libContext.project, logger, gmeConfig),
+            pluginConfig = {},
+            context = {
+                commitHash: libContext.commitHash,
+            },
+            binFile = fs.readFileSync('./test/plugin/assets/heart.png'),
+            files = {'test.txt': 'Hello World', 'test2.txt': 'Hello World2', 'heart.png': binFile},
+            plugin;
+
+        manager.initializePlugin(pluginName)
+            .then(function (plugin_) {
+                plugin = plugin_;
+
+                return manager.configurePlugin(plugin, pluginConfig, context);
+            })
+            .then(function () {
+                return plugin.addFile('heart.png', binFile);
+            })
+            .then(function (metadataHash) {
+                expect(typeof metadataHash).to.equal('string');
+                expect(metadataHash.length).to.equal(40);
+                expect(plugin.result.artifacts[0]).to.equal(metadataHash);
+            })
+            .then(function () {
+                return plugin.addArtifact('artie', files);
+            })
+            .then(function (metadataHash) {
+                expect(typeof metadataHash).to.equal('string');
+                expect(metadataHash.length).to.equal(40);
+                expect(plugin.result.artifacts[1]).to.equal(metadataHash);
+                return Q.allDone([
+                    plugin.getBinFile(plugin.result.artifacts[0]),
+                    plugin.getBinFile(plugin.result.artifacts[1], 'heart.png')
+                ]);
+            })
+            .then(function (res) {
+                expect(res[0]).to.deep.equal(binFile);
+                expect(res[1]).to.deep.equal(binFile);
             })
             .nodeify(done);
     });
