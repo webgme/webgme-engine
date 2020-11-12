@@ -106,11 +106,14 @@ BlobFSBackend.prototype.putObject = function (readStream, bucket, callback) {
         });
 
         readStream.on('close', function () {
-            self.logger.error('readStream on close');
-            if (writeStreamWasClosed === false) {
-                readStreamWasClosed = true;
-                writeStream.close();
-            }
+            self.logger.info('readStream on close');
+            setTimeout(() => {
+                if (writeStreamWasClosed === false) {
+                    self.logger.info('readStream on close processing');
+                    readStreamWasClosed = true;
+                    writeStream.close();
+                }
+            }, 100);
         });
 
         readStream.on('error', function (err) {
