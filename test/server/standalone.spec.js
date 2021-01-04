@@ -230,7 +230,6 @@ describe('standalone server', function () {
         requests: [
             // should not allow access without auth
             {code: 200, url: '/', redirectUrl: '/login'},
-            {code: 200, url: '/package.json', redirectUrl: '/login'},
             {code: 200, url: '/file._js', redirectUrl: '/login'},
             {code: 200, url: '/file.html', redirectUrl: '/login'},
             {code: 200, url: '/file.gif', redirectUrl: '/login'},
@@ -247,6 +246,7 @@ describe('standalone server', function () {
             {code: 200, url: '/common/storage/constants.js'},
             {code: 200, url: '/common/blob/BlobClient.js'},
             {code: 200, url: '/gmeConfig.json'},
+            {code: 200, url: '/package.json'},
 
             {code: 401, url: '/api/plugins'},
             {code: 401, url: '/api/decorators'},
