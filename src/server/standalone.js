@@ -769,7 +769,11 @@ class StandAloneServer {
             //client contents - js/html/css
             __app.get(/^\/.*\.(css|ico|ttf|woff|woff2|js|cur)$/, Express.static(__clientBaseDir));
 
-            __app.get('/package.json', ensureAuthenticated, Express.static(path.join(__baseDir, '..')));
+            // There is no secret inside the package.json so it is better if it can be downloaded before 
+            // authentication finishes/
+            
+            __app.get('/package.json', Express.static(path.join(__baseDir, '..')));
+
             __app.get(/^\/.*\.(_js|html|gif|png|bmp|svg|json|map)$/, 
                 ensureAuthenticated, Express.static(__clientBaseDir));
 
