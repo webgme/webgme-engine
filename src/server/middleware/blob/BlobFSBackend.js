@@ -50,10 +50,11 @@ BlobFSBackend.prototype.putObject = function (readStream, bucket, callback) {
         writeStream.on('close', function () {
             writeStreamWasClosed = true;
             self.logger.debug('writeStream on close, was read closed?', readStreamWasClosed);
+            /* TODO: check if there is really a requirement that readstream close should arrive before writestream close
             if (readStreamWasClosed) {
                 callback(new Error('ReadStream was closed while writing file!'));
                 return;
-            }
+            }*/
             // at this point the temporary file have been written out
             // now the file have been written out
             // finalizing hash and moving temporary file..
@@ -106,8 +107,9 @@ BlobFSBackend.prototype.putObject = function (readStream, bucket, callback) {
         });
 
         readStream.on('close', function () {
-            self.logger.error('readStream on close');
+            self.logger.debug('readStream on close, rsClosed?', readStreamWasClosed, 'wsClosed?', writeStreamWasClosed);
             if (writeStreamWasClosed === false) {
+                self.logger.info('readStream on close processing');
                 readStreamWasClosed = true;
                 writeStream.close();
             }
