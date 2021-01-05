@@ -967,7 +967,7 @@ define([
                     relativePath = CONSTANTS.PATH_SEP + getRelidFromPath(path) + relativePath;
                     if (getParentPath(path)) {
                         // we should stop before the ROOT
-                        return checkContainer(getParentGuid(diffExtension, path), relativePath);
+                        return checkContainer(getParentGuid(diffExtension, path) || getParentGuid(diffBase, path), relativePath);
                     }
 
                     return false;

@@ -11,6 +11,7 @@ describe('corediff-merge', function () {
     var gmeConfig = testFixture.getGmeConfig(),
         logger = testFixture.logger.fork('corediff.spec.merge'),
         expect = testFixture.expect,
+        fs = testFixture.fs,
         __should = testFixture.should, //eslint-disable-line
         Q = testFixture.Q,
         storage,
@@ -925,6 +926,20 @@ describe('corediff-merge', function () {
                         expect(core.getChildrenRelids(core.getParent(node))).to.have.length(1);
                     })
                     .nodeify(done);
+            });
+
+            it('424 - multi level new objects created should generate normal conflicts object', function () {
+                const diffA = JSON.parse(fs.readFileSync('test/common/core/corediff/i424ancestor2from.json','utf8'));
+                const diffB = JSON.parse(fs.readFileSync('test/common/core/corediff/i424ancestor2new.json','utf8'));
+                let conflict = core.tryToConcatChanges(diffA,diffB);
+                // console.log(conflict);
+                expect(conflict).not.to.eql(null);
+                expect(conflict.items).to.have.length(11);
+
+                conflict = core.tryToConcatChanges(diffB,diffA);
+                // console.log(conflict);
+                expect(conflict).not.to.eql(null);
+                expect(conflict.items).to.have.length(22);
             });
         });
     });

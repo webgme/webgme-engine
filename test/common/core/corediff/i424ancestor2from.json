@@ -1,0 +1,81 @@
+{
+    "K": {
+        "6": {
+            "guid": "0da64973-bf84-09b7-3833-22457cc0de81",
+            "removed": true,
+            "oGuids": {
+                "0da64973-bf84-09b7-3833-22457cc0de81": true,
+                "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                "e4b74efc-1168-0064-59b5-997c748ed43f": true,
+                "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                "90000000-0000-0000-0000-000000000000": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            },
+            "oBaseGuids": {
+                "0da64973-bf84-09b7-3833-22457cc0de81": true,
+                "e4b74efc-1168-0064-59b5-997c748ed43f": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            }
+        },
+        "childrenListChanged": true,
+        "guid": "d3c1841e-4b75-6e2a-cb70-3d27edc53021",
+        "oGuids": {
+            "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+            "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        },
+        "oBaseGuids": {
+            "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        }
+    },
+    "f": {
+        "Z": {
+            "attr": {
+                "thumbnail": "<svg viewbox=\"0 0 188.16145833333334 164\"><g id=\"connection-container\"><g id=\"conn-/f/Z/J\"><path fill=\"none\" d=\"M66.26041666666666,63L66.26041666666666,88\" marker-end=\"url(#arrowhead)\" stroke=\"#000000\" stroke-width=\"2\"></path></g></g><g class=\"item-container\"><g><g id=\"/f/Z/z\" class=\"position-offset\" transform=\"translate(12,12)\"><g class=\"centering-offset\" transform=\"translate(80.640625, 0)\"><g class=\"highlight\"></g><rect opacity=\"1\" class=\"layer-decorator\" height=\"50\" width=\"161.28125\" y=\"0\" x=\"-80.640625\" stroke=\"#78909c\" fill=\"#78909c\"></rect><text opacity=\"1\" class=\"name\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"black\" y=\"25\" style=\"font-size: 16px;\">GetCifar10Data</text><g id=\"ports\"></g><g fill=\"none\"></g></g><g class=\"item-icons\"></g></g></g><g><g id=\"/f/Z/k\" class=\"position-offset\" transform=\"translate(15.760416984558105,89)\"><g class=\"centering-offset\" transform=\"translate(50, 0)\"><g class=\"highlight\"></g><rect opacity=\"1\" class=\"layer-decorator\" height=\"50\" width=\"100\" y=\"0\" x=\"-50\" stroke=\"#b0bec5\" fill=\"#b0bec5\"></rect><text opacity=\"1\" class=\"name\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"black\" y=\"25\" style=\"font-size: 16px;\">Output</text><g fill=\"none\"><g><text y=\"15\" x=\"-38\" font-style=\"italic\" class=\"attr-title\" text-anchor=\"start\" dominant-baseline=\"middle\">saveName: </text><title></title></g><text y=\"15\" x=\"38\" class=\"attr-content\" text-anchor=\"end\" dominant-baseline=\"middle\">TestData</text></g><g id=\"ports\"></g></g><g class=\"item-icons\"></g></g></g></g><g id=\"update-buttons\"></g><g class=\"selection-container\"></g></svg>"
+            },
+            "set": {
+                "executions": {
+                    "/K/6": "*to*delete*"
+                }
+            },
+            "guid": "8c8b6ada-d3e6-a89a-e885-ea8649f4055c",
+            "oGuids": {
+                "8c8b6ada-d3e6-a89a-e885-ea8649f4055c": true,
+                "2bab91cd-f819-54a1-8df9-e6de185707ee": true,
+                "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                "77d65bcd-c286-b898-319f-f3e5ec4643c5": true,
+                "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                "90000000-0000-0000-0000-000000000000": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            },
+            "oBaseGuids": {
+                "8c8b6ada-d3e6-a89a-e885-ea8649f4055c": true,
+                "77d65bcd-c286-b898-319f-f3e5ec4643c5": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            }
+        },
+        "guid": "2bab91cd-f819-54a1-8df9-e6de185707ee",
+        "oGuids": {
+            "2bab91cd-f819-54a1-8df9-e6de185707ee": true,
+            "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        },
+        "oBaseGuids": {
+            "2bab91cd-f819-54a1-8df9-e6de185707ee": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        }
+    },
+    "guid": "03d36072-9e09-7866-cb4e-d0a36ff825f6",
+    "oGuids": {
+        "03d36072-9e09-7866-cb4e-d0a36ff825f6": true
+    },
+    "oBaseGuids": {
+        "03d36072-9e09-7866-cb4e-d0a36ff825f6": true
+    }
+}
