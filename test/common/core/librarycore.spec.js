@@ -1521,7 +1521,7 @@ describe('Library core ', function () {
         testFixture.importProject(storage,
             {
                 projectSeed: 'test/common/core/librarycore/project.webgmex',
-                projectName: 'importedLibrary',
+                projectName: 'metaNodeBookKeeping',
                 branchName: 'master',
                 gmeConfig: gmeConfig,
                 logger: logger
