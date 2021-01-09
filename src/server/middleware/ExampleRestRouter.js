@@ -106,8 +106,6 @@ function initialize(middlewareOpts) {
             })
             .then(userProject => {
                 context.project = userProject;
-
-                // console.log(userProject);
                 context.core = new Core(userProject, {
                     globConf: middlewareOpts.gmeConfig,
                     logger: logger.fork('core')
@@ -153,7 +151,7 @@ function initialize(middlewareOpts) {
                 if (result.status != 'SYNCED') {
                     throw new Error('cannot update project');
                 }
-                
+
                 res.sendStatus(200);
             })
             .catch(error => {
