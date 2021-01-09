@@ -84,7 +84,8 @@ function initialize(middlewareOpts) {
     // This example shows how routers can access projects, make modifications, and commit those changes.
     router.get('/updateExample/:projectId', function (req, res) {
         const userId = getUserId(req);
-        const context = {}; // the complete object that will contain all necessary info to start manipulating the project
+        // the complete object that will contain all necessary info to start manipulating the project
+        const context = {}; 
         // Checking if the project in question is valid
         safeStorage.getProjects({username: userId})
             .then(result => {
@@ -112,7 +113,7 @@ function initialize(middlewareOpts) {
                 });
                 return userProject.getBranches();
             })
-            .then(branches => {
+            .then((/*branches*/) => {
                 // this is optional if we know the name of the branch, or if it is an input
                 // the branches will be a name - commitHash collection so all branches can be opened
                 context.branchName = 'master';
@@ -143,12 +144,11 @@ function initialize(middlewareOpts) {
                     persisted.rootHash,
                     persisted.objects,
                     'example update finished');
-                res.sendStatus(200);
             })
             .then(result => {
                 // We expect a SYNCED result, otherwise we either forked or something bad happened.
                 // example result: { status: 'SYNCED', hash: '#fd692cc9ac18153149e9c53906cad13017aaebae' }
-                if (result.status != 'SYNCED') {
+                if (result.status !== 'SYNCED') {
                     throw new Error('cannot update project');
                 }
 
@@ -221,14 +221,14 @@ function stop(callback) {
  * This function creates an FCO instance as a child of the root
  * @param {object} projectContext 
  */
-function doExampleUpdate (projectContext) {
+function doExampleUpdate(projectContext) {
     const deferred = Q.defer();
     const FCOPath = '/1'; // the meta dictionary should always be traversed to get the proper info!!!
     const core = projectContext.core;
     let root = projectContext.root;
     const metaNodes = core.getAllMetaNodes(root);
 
-    const newNode = core.createNode({
+    core.createNode({
         parent: root,
         base: metaNodes[FCOPath]
     });

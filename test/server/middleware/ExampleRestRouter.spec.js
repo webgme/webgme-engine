@@ -14,71 +14,71 @@ describe('ExampleRestRouter', function () {
         agent = testFixture.superagent.agent(),
         expect = testFixture.expect;
 
-        describe('handles project', function () {
-            // FIXME: somehow the ordering of the test in this file matters...
+    describe('handles project', function () {
+        // FIXME: somehow the ordering of the test in this file matters...
 
-            let server = null;
-            let storage = null;
-            let gmeAuth = null;
-            let serverBaseUrl = '';
-            const logger = testFixture.logger.fork('ExampleRestRouter');
-            const projectName = 'RouterProject';
-            const gmeConfig = testFixture.getGmeConfig();
-    
-    
-            before(function (done) {
-                //adding some project to the database
-                this.timeout(10000);
-                server = testFixture.WebGME.standaloneServer(gmeConfig);
-                
-                testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
-                    .then(function (gmeAuth_) {
-                        gmeAuth = gmeAuth_;
-                        storage = testFixture.getMongoStorage(logger, gmeConfig, gmeAuth);
-                        return storage.openDatabase();
-                    })
-                    .then(function () {
-                        return testFixture.importProject(storage, {
-                            projectSeed: 'seeds/EmptyProject.webgmex',
-                            projectName: projectName,
-                            branchName: 'master',
-                            gmeConfig: gmeConfig,
-                            logger: logger
-                        });
-                    })
-                    .then(function () {
-                        return Q.ninvoke(server, 'start');
-                    })
-                    .then(function () {
-                        serverBaseUrl = server.getUrl();
-                    })
-                    .nodeify(done);
-            });
-    
-            after(function (done) {
-                if (server) {
-                    server.stop(done);
-                } else {
-                    done();
-                }
-            });
-    
-            it('should return 404 for ExampleRestRouter/updateExample/unknownProjectId', function (done) {
-                agent.get(serverBaseUrl + '/ExampleRestRouter/updateExample/unknownProjectId').end(function (err, res) {
-                    expect(err).not.equal(null);
-                    expect(res.status).equal(404);
-                    done(null);
-                });
-            });
-    
-            it('should update project for ExampleRestRouter/updateExample/guest+RouterProject', function (done) {
-                agent.get(serverBaseUrl + '/ExampleRestRouter/updateExample/guest+RouterProject').end(function (err, res) {
-                    expect(err).equal(null);
-                    expect(res.status).equal(200);
-                    done(null);
-                });
+        let server = null;
+        let storage = null;
+        let gmeAuth = null;
+        let serverBaseUrl = '';
+        const logger = testFixture.logger.fork('ExampleRestRouter');
+        const projectName = 'RouterProject';
+        const gmeConfig = testFixture.getGmeConfig();
+
+
+        before(function (done) {
+            //adding some project to the database
+            this.timeout(10000);
+            server = testFixture.WebGME.standaloneServer(gmeConfig);
+            
+            testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
+                .then(function (gmeAuth_) {
+                    gmeAuth = gmeAuth_;
+                    storage = testFixture.getMongoStorage(logger, gmeConfig, gmeAuth);
+                    return storage.openDatabase();
+                })
+                .then(function () {
+                    return testFixture.importProject(storage, {
+                        projectSeed: 'seeds/EmptyProject.webgmex',
+                        projectName: projectName,
+                        branchName: 'master',
+                        gmeConfig: gmeConfig,
+                        logger: logger
+                    });
+                })
+                .then(function () {
+                    return Q.ninvoke(server, 'start');
+                })
+                .then(function () {
+                    serverBaseUrl = server.getUrl();
+                })
+                .nodeify(done);
+        });
+
+        after(function (done) {
+            if (server) {
+                server.stop(done);
+            } else {
+                done();
+            }
+        });
+
+        it('should return 404 for ExampleRestRouter/updateExample/unknownProjectId', function (done) {
+            agent.get(serverBaseUrl + '/ExampleRestRouter/updateExample/unknownProjectId').end(function (err, res) {
+                expect(err).not.equal(null);
+                expect(res.status).equal(404);
+                done(null);
             });
         });
+
+        it('should update project for ExampleRestRouter/updateExample/guest+RouterProject', function (done) {
+            agent.get(serverBaseUrl + '/ExampleRestRouter/updateExample/guest+RouterProject').end(function (err, res) {
+                expect(err).equal(null);
+                expect(res.status).equal(200);
+                done(null);
+            });
+        });
+    });
 
     describe('uses server', function () {
         var server;
