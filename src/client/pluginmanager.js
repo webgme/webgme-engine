@@ -69,6 +69,12 @@ define([
             activeNodeId = context.managerConfig.activeNode;
             if (activeNodeId && pluginId) {
                 activeNode = client.getNode(activeNodeId);
+                if (activeNode === null) {
+                    logger.warn('Getting context for non-available' + 
+                        ' node is dangerous and could lead to failed plugin execution [' + 
+                        pluginId + '][' + activeNodeId + '].');
+                    return context;
+                }
                 do {
                     validPlugins = activeNode.getOwnRegistry('validPlugins');
                     if (validPlugins && validPlugins.indexOf(pluginId) > -1) {
