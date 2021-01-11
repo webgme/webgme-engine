@@ -156,6 +156,10 @@ function validateConfig(configOrFileName) {
         assertString('config.authentication.adminAccount', config.authentication.adminAccount);
     }
 
+    // api options
+    expectedKeys.push('api');
+    assertBoolean('config.api.useEnhancedStarterPage', config.api.useEnhancedStarterPage);
+    
     // bin scripts
     expectedKeys.push('bin');
     assertObject('config.bin', config.bin);

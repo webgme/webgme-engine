@@ -111,6 +111,11 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.authentication.resetUrl = '/profile/reset'`
  - Location of the reset page where the user should be guided to input the new password. The whole reset procedure can be done with purely REST API calls, but it is usually safer to include an email in the process.
 
+##### api
+
+- `config.api.useEnhancedStarterPage = false`
+ - When set to true, the index page will be returned as a fully featured HTML instead of the plain JSON response.
+
 ##### bin
 
 - `config.bin.log = see config`
@@ -140,6 +145,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
  - Custom title for app, if not given the default title will be the name/id of the open project (or WebGME).
 - `config.client.log.level = 'debug'`
  - When [debug](https://github.com/visionmedia/debug) is activated in the browser messages below this level will not be printed.
+
 ##### core
 
 - `config.core.enableCustomConstraints = false`

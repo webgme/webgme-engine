@@ -56,6 +56,10 @@ var path = require('path'),
             resetUrl: '/profile/reset'
         },
 
+        api: {
+            useEnhancedStarterPage: false
+        },
+        
         bin: {
             log: {
                 transports: [{

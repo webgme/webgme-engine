@@ -1,0 +1,9 @@
+html
+    head
+        title WebGME API index
+    body
+        h2 Please click on one of the available quick options
+        ul
+            each val in options
+                li
+                    a(href=val.link) #{val.title}
