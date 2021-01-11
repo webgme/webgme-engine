@@ -52,6 +52,10 @@ function createAPI(app, mountPath, middlewareOpts) {
         mailer = middlewareOpts.mailer,
         mailerAvailable = mailer === null ? false : true;
 
+
+    app.set('view engine', 'pug');
+    app.set('views', path.join(__dirname, 'views'));
+
     app.get(apiDocumentationMountPoint, function (req, res) {
         res.sendFile(path.join(__dirname, '..', '..', '..', 'docs', 'REST', 'index.html'));
     });
@@ -202,14 +206,30 @@ function createAPI(app, mountPath, middlewareOpts) {
     router.delete('*', ensureAuthenticated);
 
     router.get('/', function (req, res/*, next*/) {
-        res.json({
-            current_user_url: getFullUrl(req, '/user'),
-            organization_url: getFullUrl(req, '/orgs/{org}'),
-            project_url: getFullUrl(req, '/projects/{owner}/{project}'),
-            user_url: getFullUrl(req, '/users/{user}'),
-            api_documentation_url: req.protocol + '://' + req.headers.host + apiDocumentationMountPoint,
-            source_code_documentation_url: req.protocol + '://' + req.headers.host + '/docs/source/index.html'
-        });
+        if (gmeConfig.api.useEnhancedStarterPage) {
+            let options = [
+                {title: 'user info', link: getFullUrl(req, '/user')},
+                {title: 'oraginzations info', link: getFullUrl(req, '/orgs')},
+                {
+                    title: 'REST API documentation', 
+                    link: req.protocol + '://' + req.headers.host + apiDocumentationMountPoint
+                },
+                {
+                    title: 'Source code documentation', 
+                    link: req.protocol + '://' + req.headers.host + '/docs/source/index.html'
+                }
+            ];
+            res.render('index', {options: options});
+        } else {
+            res.json({
+                current_user_url: getFullUrl(req, '/user'),
+                organization_url: getFullUrl(req, '/orgs/{org}'),
+                project_url: getFullUrl(req, '/projects/{owner}/{project}'),
+                user_url: getFullUrl(req, '/users/{user}'),
+                api_documentation_url: req.protocol + '://' + req.headers.host + apiDocumentationMountPoint,
+                source_code_documentation_url: req.protocol + '://' + req.headers.host + '/docs/source/index.html'
+            });
+        }
     });
 
     function putUser(receivedData, req, res, next) {

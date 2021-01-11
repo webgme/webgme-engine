@@ -1,0 +1,504 @@
+{
+    "G": {
+        "childrenListChanged": true,
+        "X": {
+            "guid": "644191d7-8328-e924-d530-2d15bc79307a",
+            "removed": false,
+            "hash": "#e72a87f527b213cdd1147a258cf6af5d1c926273",
+            "pointer": {
+                "base": "/K/6/E/l/l/L"
+            },
+            "oGuids": {
+                "644191d7-8328-e924-d530-2d15bc79307a": true,
+                "cc4b4280-26d7-0422-0a41-45823097c745": true,
+                "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                "7fffd588-5c11-d50f-dcc2-6a60db530e1a": true,
+                "47be4562-39b6-ec0c-f956-355040826958": true,
+                "194635ac-64e2-3b2e-f990-081dfcb7ea49": true,
+                "d8e670eb-32f3-edb4-2cb1-6a43358488c9": true,
+                "0da64973-bf84-09b7-3833-22457cc0de81": true,
+                "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                "465ff2c6-ab8e-d3ca-20b1-07b11022dba8": true,
+                "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                "90000000-0000-0000-0000-000000000000": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            },
+            "oBaseGuids": {
+                "644191d7-8328-e924-d530-2d15bc79307a": true,
+                "7fffd588-5c11-d50f-dcc2-6a60db530e1a": true,
+                "465ff2c6-ab8e-d3ca-20b1-07b11022dba8": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            }
+        },
+        "G": {
+            "guid": "f7a6131d-2647-c2de-01dd-a74f3512ce82",
+            "removed": false,
+            "hash": "#10fecda4aa09621e30334deeb4fdf114771df81c",
+            "pointer": {
+                "base": "/K/6/E/l/l/L"
+            },
+            "oGuids": {
+                "f7a6131d-2647-c2de-01dd-a74f3512ce82": true,
+                "cc4b4280-26d7-0422-0a41-45823097c745": true,
+                "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                "7fffd588-5c11-d50f-dcc2-6a60db530e1a": true,
+                "47be4562-39b6-ec0c-f956-355040826958": true,
+                "194635ac-64e2-3b2e-f990-081dfcb7ea49": true,
+                "d8e670eb-32f3-edb4-2cb1-6a43358488c9": true,
+                "0da64973-bf84-09b7-3833-22457cc0de81": true,
+                "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                "465ff2c6-ab8e-d3ca-20b1-07b11022dba8": true,
+                "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                "90000000-0000-0000-0000-000000000000": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            },
+            "oBaseGuids": {
+                "f7a6131d-2647-c2de-01dd-a74f3512ce82": true,
+                "7fffd588-5c11-d50f-dcc2-6a60db530e1a": true,
+                "465ff2c6-ab8e-d3ca-20b1-07b11022dba8": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            }
+        },
+        "guid": "cc4b4280-26d7-0422-0a41-45823097c745",
+        "oGuids": {
+            "cc4b4280-26d7-0422-0a41-45823097c745": true,
+            "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        },
+        "oBaseGuids": {
+            "cc4b4280-26d7-0422-0a41-45823097c745": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        }
+    },
+    "K": {
+        "6": {
+            "attr": {
+                "executionId": "2ca74e692f47db0be350946b2c375ebde7692c28",
+                "startTime": 1600801762286,
+                "runId": "Pipeline_fd8668b980825efe4bfe65661723866337dcc12a_1600801762283_6324"
+            },
+            "reg": {
+                "position": {
+                    "x": 122,
+                    "y": 173
+                }
+            },
+            "E": {
+                "attr": {
+                    "jobInfo": "{\"hash\":\"5e3e8575c8cde6126823b9d6996dfc6f00fbe2f7\"}",
+                    "execFiles": "5e3e8575c8cde6126823b9d6996dfc6f00fbe2f7",
+                    "status": "success"
+                },
+                "reg": {
+                    "position": {
+                        "x": 106,
+                        "y": 120
+                    }
+                },
+                "guid": "d8e670eb-32f3-edb4-2cb1-6a43358488c9",
+                "oGuids": {
+                    "d8e670eb-32f3-edb4-2cb1-6a43358488c9": true,
+                    "0da64973-bf84-09b7-3833-22457cc0de81": true,
+                    "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                    "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                    "50043e3e-669e-46ff-cdb5-2fafc624c763": true,
+                    "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                    "90000000-0000-0000-0000-000000000000": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                },
+                "oBaseGuids": {
+                    "d8e670eb-32f3-edb4-2cb1-6a43358488c9": true,
+                    "50043e3e-669e-46ff-cdb5-2fafc624c763": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                }
+            },
+            "c": {
+                "reg": {
+                    "position": {
+                        "x": 130,
+                        "y": 253
+                    }
+                },
+                "guid": "0c70b875-7c12-abfd-dadb-7cdc4b8cf39c",
+                "oGuids": {
+                    "0c70b875-7c12-abfd-dadb-7cdc4b8cf39c": true,
+                    "0da64973-bf84-09b7-3833-22457cc0de81": true,
+                    "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                    "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                    "50043e3e-669e-46ff-cdb5-2fafc624c763": true,
+                    "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                    "90000000-0000-0000-0000-000000000000": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                },
+                "oBaseGuids": {
+                    "0c70b875-7c12-abfd-dadb-7cdc4b8cf39c": true,
+                    "50043e3e-669e-46ff-cdb5-2fafc624c763": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                }
+            },
+            "guid": "0da64973-bf84-09b7-3833-22457cc0de81",
+            "oGuids": {
+                "0da64973-bf84-09b7-3833-22457cc0de81": true,
+                "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                "e4b74efc-1168-0064-59b5-997c748ed43f": true,
+                "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                "90000000-0000-0000-0000-000000000000": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            },
+            "oBaseGuids": {
+                "0da64973-bf84-09b7-3833-22457cc0de81": true,
+                "e4b74efc-1168-0064-59b5-997c748ed43f": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            }
+        },
+        "childrenListChanged": true,
+        "N": {
+            "3": {
+                "pointer": {
+                    "base": "/9/Y/6"
+                },
+                "guid": "5e1cbdb3-990d-da05-d7ce-af43e117763e",
+                "hash": "#b62df44a7cabee2e1d250ba3eaafe7c4d4c654e0",
+                "oGuids": {
+                    "5e1cbdb3-990d-da05-d7ce-af43e117763e": true,
+                    "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                    "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                    "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                    "59aaedf9-272e-3a92-bcd9-ec9b023e9cb2": true,
+                    "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                    "90000000-0000-0000-0000-000000000000": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                },
+                "oBaseGuids": {
+                    "5e1cbdb3-990d-da05-d7ce-af43e117763e": true,
+                    "59aaedf9-272e-3a92-bcd9-ec9b023e9cb2": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                },
+                "removed": false
+            },
+            "guid": "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188",
+            "removed": false,
+            "hash": "#6e8b2f9976c4932c986badfeec0fa07189464453",
+            "pointer": {
+                "base": "/9/Y/V",
+                "origin": "/f/Z"
+            },
+            "oGuids": {
+                "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                "e4b74efc-1168-0064-59b5-997c748ed43f": true,
+                "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                "90000000-0000-0000-0000-000000000000": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            },
+            "oBaseGuids": {
+                "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                "e4b74efc-1168-0064-59b5-997c748ed43f": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            },
+            "M": {
+                "pointer": {
+                    "base": "/9/Y/z"
+                },
+                "m": {
+                    "pointer": {
+                        "base": "/9/Y/N"
+                    },
+                    "l": {
+                        "q": {
+                            "pointer": {
+                                "base": "/9/Y/f"
+                            },
+                            "guid": "ea583004-b62e-d201-8697-48af42fc2cd9",
+                            "hash": "#764d4c167cd484435fb016835d8495e61fd2b462",
+                            "oGuids": {
+                                "ea583004-b62e-d201-8697-48af42fc2cd9": true,
+                                "5bdfa6ec-1ce1-c598-aedf-1589eae0a446": true,
+                                "0527d622-41b5-12ba-ae19-28c456d52757": true,
+                                "e8655537-f08b-dc63-cb5e-6b632666c459": true,
+                                "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                                "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                                "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                                "465ff2c6-ab8e-d3ca-20b1-07b11022dba8": true,
+                                "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                                "90000000-0000-0000-0000-000000000000": true,
+                                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                            },
+                            "oBaseGuids": {
+                                "ea583004-b62e-d201-8697-48af42fc2cd9": true,
+                                "465ff2c6-ab8e-d3ca-20b1-07b11022dba8": true,
+                                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                            },
+                            "removed": false
+                        },
+                        "l": {
+                            "pointer": {
+                                "base": "/9/Y/f"
+                            },
+                            "guid": "85f5c481-fb07-6ea3-f470-f3f97731da49",
+                            "hash": "#7ae7c5bc8c0dd7b8d6218dbe044a8c10763bffb9",
+                            "oGuids": {
+                                "85f5c481-fb07-6ea3-f470-f3f97731da49": true,
+                                "5bdfa6ec-1ce1-c598-aedf-1589eae0a446": true,
+                                "0527d622-41b5-12ba-ae19-28c456d52757": true,
+                                "e8655537-f08b-dc63-cb5e-6b632666c459": true,
+                                "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                                "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                                "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                                "465ff2c6-ab8e-d3ca-20b1-07b11022dba8": true,
+                                "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                                "90000000-0000-0000-0000-000000000000": true,
+                                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                            },
+                            "oBaseGuids": {
+                                "85f5c481-fb07-6ea3-f470-f3f97731da49": true,
+                                "465ff2c6-ab8e-d3ca-20b1-07b11022dba8": true,
+                                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                            },
+                            "removed": false
+                        },
+                        "guid": "5bdfa6ec-1ce1-c598-aedf-1589eae0a446",
+                        "hash": "#56d9ad7c126203ae5f35ec879027f89e10a807ac",
+                        "oGuids": {
+                            "5bdfa6ec-1ce1-c598-aedf-1589eae0a446": true,
+                            "0527d622-41b5-12ba-ae19-28c456d52757": true,
+                            "e8655537-f08b-dc63-cb5e-6b632666c459": true,
+                            "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                            "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                            "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                            "aea4d9d5-abae-596a-66a1-16c9cb64d801": true,
+                            "f05ca91b-f6fa-8e48-6667-2b8477515b10": true,
+                            "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                            "90000000-0000-0000-0000-000000000000": true,
+                            "15817f58-aa30-fa75-6086-32d698f95e95": true,
+                            "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                        },
+                        "oBaseGuids": {
+                            "5bdfa6ec-1ce1-c598-aedf-1589eae0a446": true,
+                            "aea4d9d5-abae-596a-66a1-16c9cb64d801": true,
+                            "15817f58-aa30-fa75-6086-32d698f95e95": true,
+                            "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                        },
+                        "removed": false
+                    },
+                    "guid": "0527d622-41b5-12ba-ae19-28c456d52757",
+                    "hash": "#0952eaddd36a9a497e53355ead0ca7d68f4a452a",
+                    "oGuids": {
+                        "0527d622-41b5-12ba-ae19-28c456d52757": true,
+                        "e8655537-f08b-dc63-cb5e-6b632666c459": true,
+                        "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                        "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                        "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                        "f05ca91b-f6fa-8e48-6667-2b8477515b10": true,
+                        "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                        "90000000-0000-0000-0000-000000000000": true,
+                        "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                        "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                    },
+                    "oBaseGuids": {
+                        "0527d622-41b5-12ba-ae19-28c456d52757": true,
+                        "f05ca91b-f6fa-8e48-6667-2b8477515b10": true,
+                        "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                        "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                    },
+                    "removed": false,
+                    "w": {
+                        "guid": "8345c989-ce63-c88b-dac8-f1cc5e360bbf",
+                        "hash": "",
+                        "removed": false
+                    }
+                },
+                "guid": "e8655537-f08b-dc63-cb5e-6b632666c459",
+                "hash": "#d73c49634c821fc8a31e57c9f2c0cb6fe9ab184d",
+                "oGuids": {
+                    "e8655537-f08b-dc63-cb5e-6b632666c459": true,
+                    "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                    "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                    "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                    "50043e3e-669e-46ff-cdb5-2fafc624c763": true,
+                    "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                    "90000000-0000-0000-0000-000000000000": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                },
+                "oBaseGuids": {
+                    "e8655537-f08b-dc63-cb5e-6b632666c459": true,
+                    "50043e3e-669e-46ff-cdb5-2fafc624c763": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                },
+                "removed": false
+            },
+            "j": {
+                "pointer": {
+                    "base": "/9/Y/z"
+                },
+                "X": {
+                    "pointer": {
+                        "base": "/9/Y/8"
+                    },
+                    "guid": "77a49c51-233f-eba9-2529-81380795c19a",
+                    "hash": "#2e8015ee1a3bfe2a72b33a425d60ddb0bf7edfd3",
+                    "oGuids": {
+                        "77a49c51-233f-eba9-2529-81380795c19a": true,
+                        "15758acc-ed8a-cdfc-1920-7a7707f3142c": true,
+                        "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                        "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                        "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                        "a61658fe-54ff-c754-d216-431a32471309": true,
+                        "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                        "90000000-0000-0000-0000-000000000000": true,
+                        "f05ca91b-f6fa-8e48-6667-2b8477515b10": true,
+                        "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                        "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                    },
+                    "oBaseGuids": {
+                        "77a49c51-233f-eba9-2529-81380795c19a": true,
+                        "a61658fe-54ff-c754-d216-431a32471309": true,
+                        "f05ca91b-f6fa-8e48-6667-2b8477515b10": true,
+                        "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                        "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                    },
+                    "removed": false,
+                    "w": {
+                        "guid": "f1c683fa-ace9-3198-51f8-58300f76ed72",
+                        "hash": "#ff3b151b987ece85e2f905eaae202a3f66eef1a8",
+                        "removed": false,
+                        "D": {
+                            "guid": "4b223995-1b7d-5de4-ad2e-c0f909584d6f",
+                            "hash": "#8100197b3df1fcd38e04a4bf549f71b82335d378",
+                            "removed": false
+                        }
+                    },
+                    "l": {
+                        "guid": "295cec9f-7e6b-3c8b-25ef-bc75bba0428b",
+                        "hash": "",
+                        "removed": false
+                    }
+                },
+                "guid": "15758acc-ed8a-cdfc-1920-7a7707f3142c",
+                "hash": "#7559b2f74fc6ea3389ca613de0025e8893fdee7f",
+                "oGuids": {
+                    "15758acc-ed8a-cdfc-1920-7a7707f3142c": true,
+                    "d0bbd50a-d4c6-d6ab-e7ce-18bcae355188": true,
+                    "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+                    "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                    "50043e3e-669e-46ff-cdb5-2fafc624c763": true,
+                    "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                    "90000000-0000-0000-0000-000000000000": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                },
+                "oBaseGuids": {
+                    "15758acc-ed8a-cdfc-1920-7a7707f3142c": true,
+                    "50043e3e-669e-46ff-cdb5-2fafc624c763": true,
+                    "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                    "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+                },
+                "removed": false
+            }
+        },
+        "guid": "d3c1841e-4b75-6e2a-cb70-3d27edc53021",
+        "oGuids": {
+            "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+            "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        },
+        "oBaseGuids": {
+            "d3c1841e-4b75-6e2a-cb70-3d27edc53021": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        }
+    },
+    "f": {
+        "Z": {
+            "attr": {
+                "thumbnail": "<svg viewbox=\"0 0 188.16145833333334 164\"><g id=\"connection-container\"><g id=\"conn-/f/Z/J\"><path fill=\"none\" d=\"M66.26041666666666,63L66.26041666666666,88\" marker-end=\"url(#arrowhead)\" stroke=\"#000000\" stroke-width=\"2\"></path></g></g><g class=\"item-container\"><g><g id=\"/f/Z/z\" class=\"position-offset\" transform=\"translate(12,12)\"><g class=\"centering-offset\" transform=\"translate(80.640625, 0)\"><g class=\"highlight\"></g><rect opacity=\"1\" class=\"layer-decorator\" height=\"50\" width=\"161.28125\" y=\"0\" x=\"-80.640625\" stroke=\"#78909c\" fill=\"#78909c\"></rect><text opacity=\"1\" class=\"name\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"black\" y=\"25\" style=\"font-size: 16px;\">GetCifar10Data</text><g id=\"ports\"></g><g fill=\"none\"></g></g><g class=\"item-icons\"></g></g></g><g><g id=\"/f/Z/k\" class=\"position-offset\" transform=\"translate(15.760416984558105,89)\"><g class=\"centering-offset\" transform=\"translate(50, 0)\"><g class=\"highlight\"></g><rect opacity=\"1\" class=\"layer-decorator\" height=\"50\" width=\"100\" y=\"0\" x=\"-50\" stroke=\"#b0bec5\" fill=\"#b0bec5\"></rect><text opacity=\"1\" class=\"name\" text-anchor=\"middle\" dominant-baseline=\"middle\" fill=\"black\" y=\"25\" style=\"font-size: 16px;\">Output</text><g fill=\"none\"><g><text y=\"15\" x=\"-38\" font-style=\"italic\" class=\"attr-title\" text-anchor=\"start\" dominant-baseline=\"middle\">saveName: </text><title></title></g><text y=\"15\" x=\"38\" class=\"attr-content\" text-anchor=\"end\" dominant-baseline=\"middle\">TestData</text></g><g id=\"ports\"></g></g><g class=\"item-icons\"></g></g></g></g><g id=\"update-buttons\"></g><g class=\"selection-container\"></g></svg>"
+            },
+            "set": {
+                "executions": {
+                    "/K/N": {
+                        "attr": {},
+                        "reg": {}
+                    }
+                }
+            },
+            "guid": "8c8b6ada-d3e6-a89a-e885-ea8649f4055c",
+            "oGuids": {
+                "8c8b6ada-d3e6-a89a-e885-ea8649f4055c": true,
+                "2bab91cd-f819-54a1-8df9-e6de185707ee": true,
+                "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+                "77d65bcd-c286-b898-319f-f3e5ec4643c5": true,
+                "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+                "90000000-0000-0000-0000-000000000000": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            },
+            "oBaseGuids": {
+                "8c8b6ada-d3e6-a89a-e885-ea8649f4055c": true,
+                "77d65bcd-c286-b898-319f-f3e5ec4643c5": true,
+                "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+                "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+            }
+        },
+        "guid": "2bab91cd-f819-54a1-8df9-e6de185707ee",
+        "oGuids": {
+            "2bab91cd-f819-54a1-8df9-e6de185707ee": true,
+            "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        },
+        "oBaseGuids": {
+            "2bab91cd-f819-54a1-8df9-e6de185707ee": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        }
+    },
+    "o": {
+        "attr": {
+            "code": "# Custom serializers can be defined here. For example,\n#\n#  import deepforge\n#  import my_module\n#\n#  deepforge.serialization.register(my_module.my_class, serialize_fn, deserialize_fn)\n#\nimport tensorflow as tf\n\nfor \ndeepforge.serialization.register(tf.python.keras.engine.functional.Functional, lambda m, f: m.save(f.name), lambda f: keras.models.load_model(f.name))"
+        },
+        "guid": "654a840c-f9bf-73a8-7392-0f43cdf23f38",
+        "oGuids": {
+            "654a840c-f9bf-73a8-7392-0f43cdf23f38": true,
+            "03d36072-9e09-7866-cb4e-d0a36ff825f6": true,
+            "8a892547-ee45-72e2-7d5f-cc3a976b0347": true,
+            "103cd82b-3ba4-621b-d947-7187746a0cf3": true,
+            "90000000-0000-0000-0000-000000000000": true,
+            "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        },
+        "oBaseGuids": {
+            "654a840c-f9bf-73a8-7392-0f43cdf23f38": true,
+            "8a892547-ee45-72e2-7d5f-cc3a976b0347": true,
+            "5e5a7e09-7ce3-914f-3d83-4f0c20e7e5b3": true,
+            "cd891e7b-e2ea-e929-f6cd-9faf4f1fc045": true
+        }
+    },
+    "guid": "03d36072-9e09-7866-cb4e-d0a36ff825f6",
+    "oGuids": {
+        "03d36072-9e09-7866-cb4e-d0a36ff825f6": true
+    },
+    "oBaseGuids": {
+        "03d36072-9e09-7866-cb4e-d0a36ff825f6": true
+    }
+}

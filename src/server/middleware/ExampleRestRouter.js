@@ -11,9 +11,14 @@
 
 // http://expressjs.com/en/guide/routing.html
 var express = require('express'),
-    router = express.Router();
+    router = express.Router(),
+    Q = require('q');
 
 const WebsocketRouter = require('./websocket-router/WebsocketRouter');
+const webgme = require('../../../index');
+//const StorageUtil = webgme.requirejs('common/storage/util');
+const Core = webgme.requirejs('common/core/coreQ');
+
 let pingTimer = null;
 let wsRouter = null;
 let websocket = null;
@@ -34,7 +39,8 @@ let websocket = null;
 function initialize(middlewareOpts) {
     var logger = middlewareOpts.logger.fork('ExampleRestRouter'),
         ensureAuthenticated = middlewareOpts.ensureAuthenticated,
-        getUserId = middlewareOpts.getUserId;
+        getUserId = middlewareOpts.getUserId,
+        safeStorage = middlewareOpts.safeStorage;
 
     websocket = middlewareOpts.webSocket;
 
@@ -73,6 +79,85 @@ function initialize(middlewareOpts) {
 
     router.get('/error', function (req, res, next) {
         next(new Error('error example'));
+    });
+
+    // This example shows how routers can access projects, make modifications, and commit those changes.
+    router.get('/updateExample/:projectId', function (req, res) {
+        const userId = getUserId(req);
+        // the complete object that will contain all necessary info to start manipulating the project
+        const context = {}; 
+        // Checking if the project in question is valid
+        safeStorage.getProjects({username: userId})
+            .then(result => {
+                // result is an array where every element has projectId, owner, and projectName fields
+                let found = false;
+                result.forEach(project => {
+                    if (project._id === req.params.projectId) {
+                        found = true;
+                    }
+                });
+                if (!found) {
+                    throw new Error('Unknown project...');
+                }
+
+                return safeStorage.openProject({
+                    username: userId,
+                    projectId: req.params.projectId
+                });
+            })
+            .then(userProject => {
+                context.project = userProject;
+                context.core = new Core(userProject, {
+                    globConf: middlewareOpts.gmeConfig,
+                    logger: logger.fork('core')
+                });
+                return userProject.getBranches();
+            })
+            .then((/*branches*/) => {
+                // this is optional if we know the name of the branch, or if it is an input
+                // the branches will be a name - commitHash collection so all branches can be opened
+                context.branchName = 'master';
+                return context.project.getCommitObject('master');
+            })
+            .then(commitObject => {
+                //the commit object contains all important hashes
+                context.commitObject = commitObject;
+
+                return context.core.loadRoot(commitObject.root);
+            })
+            .then(root => {
+                // now that we loaded the root node, any update can happen
+                context.root = root;
+
+                // We just call the example function, that accepts the context and creates 
+                // a new FCO instance directly under the root node
+
+                return doExampleUpdate(context);
+            })
+            .then(() => {
+                // we will use the same context to create a commit and update the branch
+                const persisted = context.core.persist(context.root);
+
+                return context.project.makeCommit(
+                    context.branchName,
+                    [context.commitObject._id],
+                    persisted.rootHash,
+                    persisted.objects,
+                    'example update finished');
+            })
+            .then(result => {
+                // We expect a SYNCED result, otherwise we either forked or something bad happened.
+                // example result: { status: 'SYNCED', hash: '#fd692cc9ac18153149e9c53906cad13017aaebae' }
+                if (result.status !== 'SYNCED') {
+                    throw new Error('cannot update project');
+                }
+
+                res.sendStatus(200);
+            })
+            .catch(error => {
+                logger.error(error);
+                res.sendStatus(404);
+            });
     });
 
     logger.debug('ready');
@@ -132,7 +217,23 @@ function stop(callback) {
     }
     callback();
 }
+/**
+ * This function creates an FCO instance as a child of the root
+ * @param {object} projectContext 
+ */
+function doExampleUpdate(projectContext) {
+    const deferred = Q.defer();
+    const FCOPath = '/1'; // the meta dictionary should always be traversed to get the proper info!!!
+    const core = projectContext.core;
+    let root = projectContext.root;
+    const metaNodes = core.getAllMetaNodes(root);
 
+    core.createNode({
+        parent: root,
+        base: metaNodes[FCOPath]
+    });
+    deferred.resolve();
+}
 
 module.exports = {
     initialize: initialize,

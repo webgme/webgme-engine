@@ -1495,6 +1495,77 @@ describe('Library core ', function () {
         expect(Object.keys(core.getLibraryMetaNodes(fcoNode, 'basicLibrary'))).to.deep.equal(['/L/I']);
     });
 
+    it('should be able to get library meta nodes before and after update', function (done) {
+        var core, root,
+            buildLibrary = function () {
+                var lRoot = core.createNode(),
+                    lFco = core.createNode({parent: lRoot, base: null, relid: 'FCO'}),
+                    lCont = core.createNode({parent: lRoot, base: lFco, relid: 'Cont'}),
+                    lRem = core.createNode({parent: lCont, base: lFco, relid: 'toRemove'}),
+                    lMov = core.createNode({parent: lRoot, base: lFco, relid: 'toMove'});
+
+                core.setAttribute(lRoot, 'name', 'ROOT');
+                core.setAttribute(lFco, 'name', 'FCO');
+                core.setAttribute(lCont, 'name', 'container');
+                core.setAttribute(lRem, 'name', 'itemToremove');
+                core.setAttribute(lMov, 'name', 'itemToMove');
+
+                core.addMember(lRoot, 'MetaAspectSet', lFco);
+                core.addMember(lRoot, 'MetaAspectSet', lRem);
+                core.addMember(lRoot, 'MetaAspectSet', lMov);
+
+                core.persist(lRoot);
+                return core.getHash(lRoot);
+            };
+
+        testFixture.importProject(storage,
+            {
+                projectSeed: 'test/common/core/librarycore/project.webgmex',
+                projectName: 'metaNodeBookKeeping',
+                branchName: 'master',
+                gmeConfig: gmeConfig,
+                logger: logger
+            })
+            .then(function (importResult) {
+                core = importResult.core;
+                rootHash = importResult.rootHash;
+                project = importResult.project;
+                root = importResult.rootNode;
+                return buildLibrary();
+            })
+            .then(function (hash) {
+                var nodes;
+
+                expect(Object.keys(core.getLibraryMetaNodes(root, 'library'))).to.have.members([ '/a/1', '/a/q' ]);
+                nodes = core.getAllMetaNodes(root);
+                expect(nodes).not.to.equal(null);
+                expect(nodes['/1']).not.to.equal(undefined);
+                expect(nodes['/a/q']).not.to.equal(undefined);
+                expect(core.getAttribute(nodes['/a/q'], 'name')).to.equal('element');
+
+                return core.updateLibrary(root, 'library', hash, {}, {});
+            })
+            .then(function () {
+                expect(Object.keys(core.getLibraryMetaNodes(root, 'library')))
+                    .to.have.members([ '/a/Cont/toRemove', '/a/toMove', '/a/FCO' ]);
+                core.persist(root);
+                return core.loadRoot(core.getHash(root));
+            })
+            .then(function (root_) {
+                var nodes;
+
+                expect(Object.keys(core.getLibraryMetaNodes(root_, 'library')))
+                    .to.have.members([ '/a/Cont/toRemove', '/a/toMove', '/a/FCO' ]);
+                nodes = core.getAllMetaNodes(root_);
+                expect(nodes).not.to.equal(null);
+                expect(nodes['/1']).not.to.equal(undefined);
+                expect(nodes['/a/q']).to.equal(undefined);
+                expect(nodes['/a/toMove']).not.to.equal(undefined);
+                expect(core.getAttribute(nodes['/a/toMove'], 'name')).to.equal('itemToMove');
+            })
+            .nodeify(done);
+    });
+
     it('should generate a proper closure information', function (done) {
         Q.all([
             shareContext.core.loadByPath(shareContext.rootNode, '/E'),

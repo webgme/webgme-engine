@@ -989,6 +989,7 @@ define([
             return TASYNC.call(function (oldInfo, newInfo) {
                 var newNodePaths = [],
                     removedNodePaths = [],
+                    removedNodeInMeta = [],
                     addedToMetaPaths = [],
                     removedFromMetaPaths = [],
                     i,
@@ -1006,6 +1007,7 @@ define([
                 for (guid in oldInfo) {
                     if (!newInfo[guid]) {
                         removedNodePaths.push('/' + relid + oldInfo[guid].path);
+                        removedNodeInMeta.push(oldInfo[guid].isMeta);
                     }
                 }
 
@@ -1085,6 +1087,19 @@ define([
                             }
                         }
 
+                        //for bookkeping purposes we need to remove the to-delete nodes from the all-META set
+                        if (removedNodePaths.length > 0) {
+                            for (i = 0; i < removedNodePaths.length; i += 1) {
+                                if (removedNodeInMeta[i]) {
+                                    innerCore.delMember(
+                                        root,
+                                        CONSTANTS.META_SET_NAME,
+                                        removedNodePaths[i]
+                                    );
+                                }
+                            }
+                        }
+
                         root.libraryRoots[name] = newLibraryRoot;
 
                         return logs;
@@ -1134,14 +1149,19 @@ define([
                 path;
 
             for (path in allNodes) {
-                if (onlyOwn) {
-                    if (self.getNamespace(allNodes[path]) === name) {
-                        libraryNodes[path] = allNodes[path];
+                try {
+                    if (onlyOwn) {
+                        if (self.getNamespace(allNodes[path]) === name) {
+                            libraryNodes[path] = allNodes[path];
+                        }
+                    } else {
+                        if (self.getNamespace(allNodes[path]).indexOf(name) === 0) {
+                            libraryNodes[path] = allNodes[path];
+                        }
                     }
-                } else {
-                    if (self.getNamespace(allNodes[path]).indexOf(name) === 0) {
-                        libraryNodes[path] = allNodes[path];
-                    }
+                } catch (e) {
+                    // There is the occasional occurance that the list contains
+                    // already removed nodes, so they will throw exceptions...
                 }
             }
 

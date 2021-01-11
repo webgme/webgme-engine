@@ -38,6 +38,10 @@ describe('Plugin', function () {
             window.WebGMEGlobal.plugins.PluginForked = PluginForked;
             window.WebGMEGlobal.plugins.AbortPlugin = AbortPlugin;
             window.WebGMEGlobal.plugins.WaitPlugin = WaitPlugin;
+            window.WebGMEGlobal.State = {
+                getActiveSelection: () => [],
+                getActiveObject: () => ''
+            };
             superagent.get('/api/plugins')
                 .end(function (err, res) {
                     if (res.status === 200) {
