@@ -766,6 +766,9 @@ resourceTypes:
           application/json:
             example: !include webgme-api-visualizers.json
 
+/plugin:
+  description: Paths '/plugin/*' are deprecated and will be removed! The functionality was moved under '/plugins/*' paths as a harmonization effort among REST paths.
+  
 /plugins:
   get:
     description: Lists all available plugins
