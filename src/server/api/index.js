@@ -53,8 +53,8 @@ function createAPI(app, mountPath, middlewareOpts) {
         mailerAvailable = mailer === null ? false : true;
 
 
-    app.set("view engine", "pug");
-    app.set("views", path.join(__dirname, "views"));
+    app.set('view engine', 'pug');
+    app.set('views', path.join(__dirname, 'views'));
 
     app.get(apiDocumentationMountPoint, function (req, res) {
         res.sendFile(path.join(__dirname, '..', '..', '..', 'docs', 'REST', 'index.html'));
@@ -210,8 +210,14 @@ function createAPI(app, mountPath, middlewareOpts) {
             let options = [
                 {title: 'user info', link: getFullUrl(req, '/user')},
                 {title: 'oraginzations info', link: getFullUrl(req, '/orgs')},
-                {title: 'REST API documentation', link: req.protocol + '://' + req.headers.host + apiDocumentationMountPoint},
-                {title: 'Source code documentation', link: req.protocol + '://' + req.headers.host + '/docs/source/index.html'}
+                {
+                    title: 'REST API documentation', 
+                    link: req.protocol + '://' + req.headers.host + apiDocumentationMountPoint
+                },
+                {
+                    title: 'Source code documentation', 
+                    link: req.protocol + '://' + req.headers.host + '/docs/source/index.html'
+                }
             ];
             res.render('index', {options: options});
         } else {
