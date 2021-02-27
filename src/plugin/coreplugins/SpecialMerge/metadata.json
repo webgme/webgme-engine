@@ -1,0 +1,22 @@
+{
+    "id": "SpecialMerge",
+    "name": "Specialized Merge Base",
+    "version": "1.0.0",
+    "description": "Shows a few examples of how a specialized merge plugin could go.",
+    "icon": {
+      "src": "",
+      "class": "glyphicon glyphicon-log-in"
+    },
+    "disableServerSideExecution": false,
+    "disableBrowserSideExecution": true,
+    "writeAccessRequired": true,
+    "configStructure": [
+      {
+        "name": "commitToMerge",
+        "displayName": "Commit hash",
+        "description": "Commit Hash that should be merged into the current branch.",
+        "valueType": "string",
+        "readOnly": false
+      }
+    ]
+  }
