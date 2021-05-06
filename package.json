@@ -84,7 +84,7 @@
     "socket.io-client": "2.1.1",
     "socket.io-redis": "5.2.0",
     "superagent": "3.8.3",
-    "underscore": "1.9.1",
+    "underscore": "1.12.1",
     "webgme-ot": "0.0.16",
     "webgme-rust-components": "webgme/webgme-rust-components",
     "webgme-webhook-manager": "0.1.1",
