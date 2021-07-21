@@ -28,6 +28,12 @@ const crypto = require('crypto');
 const _ = require('underscore');
 const config = require('../../../../config/config.default');
 const INFERRED_USER_EMAIL = 'em@il';
+const getInferredIdFromEmail = email => {
+    let uid = '_iuid_'+email;
+    uid = uid.replace('@','_at_').replace('.','_p_');
+    return uid;
+};
+
 function loadEncryptionKey(gmeConfig) {
     const {algorithm, key} = gmeConfig.authentication.encryption;
 
@@ -379,15 +385,15 @@ function GMEAuth(session, gmeConfig) {
 
     function verifyJWToken(token, callback) {
         logger.debug('Verifying token..');
+        let userId = null;
+        let result = {
+            content: null,
+            renew: false,
+        };
         return Q.ninvoke(jwt, 'verify', token, PUBLIC_KEY, {algorithms: [gmeConfig.authentication.jwt.algorithm]})
             .then(function (content) {
-                var result = {
-                        content: content,
-                        renew: false,
-                    },
-                    query = {disabled: undefined},
-                    deferred = Q.defer();
-
+                result.content = content;
+                userId = content.userId;
                 logger.debug('Verified token!');
                 // Check if token is about to expire...
                 if (gmeConfig.authentication.jwt.renewBeforeExpires > 0 &&
@@ -396,34 +402,49 @@ function GMEAuth(session, gmeConfig) {
                     result.renew = true;
                 }
 
-                // Make sure the user exists - if not create an entry for it.
-                // TODO: Could this be expensive, consider caching the existing users..
-                self.getUser(content.userId, query)
-                    .then(function (userData) {
-                        if (userData.disabled === true) {
-                            deferred.reject(new Error('user has been disabled [' + content.userId + ']'));
-                        } else {
-                            deferred.resolve(result);
-                        }
-                    })
-                    .catch(function (err) {
-                        if (err.message.indexOf('no such user') === 0) {
-                            logger.info('Authenticated user did not exist in db, adding:', content.userId);
-                            self.addUser(content.userId, INFERRED_USER_EMAIL, GUID(),
-                                gmeConfig.authentication.inferredUsersCanCreate, {
-                                    overwrite: false,
-                                    displayName: content.displayName
-                                })
-                                .then(function () {
-                                    deferred.resolve(result);
-                                })
-                                .catch(deferred.reject);
-                        } else {
-                            deferred.reject(err);
-                        }
+                // if this option is turned on, we assume that the e-mail addresses are unique - except the default inferred
+                if (gmeConfig.authentication.useEmailForId && content.email) {
+                    return collection.findOne({email:content.email, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}});
+                } else {
+                    return Q(null);
+                }
+            })
+            .then(emailUserData => {
+                if (emailUserData && gmeConfig.authentication.useEmailForId) {
+                    userId = emailUserData._id;
+                }
+                return collection.findOne({_id:userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}});
+            })
+            .then(completeUserData => {
+                if(!completeUserData && (userId || result.content.email)) {
+                    // We create a new user - an inferred one that is if we got email or userid
+                    if (!userId && gmeConfig.authentication.useEmailForId) {
+                        userId = getInferredIdFromEmail(result.content.email);
+                    }
+                
+                    return self.addUser(userId, result.content.email || INFERRED_USER_EMAIL, GUID(),
+                        gmeConfig.authentication.inferredUsersCanCreate, {
+                            overwrite: false,
+                            displayName: result.content.displayName
+                        });
+                } else if(completeUserData && gmeConfig.authentication.useEmailForId && 
+                    result.content.email && completeUserData.email === INFERRED_USER_EMAIL) {
+                    // We should update the userdata with the email
+                    return self.addUser(userId, result.content.email, GUID(),
+                        gmeConfig.authentication.inferredUsersCanCreate, {
+                        overwrite: true,
+                        displayName: result.content.displayName
                     });
-
-                return deferred.promise;
+                } else {
+                    return Q(null);
+                }
+            })
+            .then(newUserData => {
+                return self.getUser(userId);
+            })
+            .then(userData => {
+                result.content.userId = userId;
+                return Q(result);
             })
             .nodeify(callback);
     }
@@ -880,7 +901,7 @@ function GMEAuth(session, gmeConfig) {
                     return collection.findOne({email: email, _id: {$ne: userId}});
                 })
                 .then(otherUserWithSameEmail => {
-                    if(gmeConfig.authentication.useEmailForId && otherUserWithSameEmail) {
+                    if(gmeConfig.authentication.useEmailForId && otherUserWithSameEmail && email !== INFERRED_USER_EMAIL) {
                         throw new Error('email address already in use');
                     }
 
