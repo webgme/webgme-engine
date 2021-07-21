@@ -141,6 +141,7 @@ function validateConfig(configOrFileName) {
     assertNumber('config.authentication.jwt.expiresIn', config.authentication.jwt.expiresIn);
     assertString('config.authentication.jwt.privateKey', config.authentication.jwt.privateKey);
     assertString('config.authentication.jwt.publicKey', config.authentication.jwt.publicKey);
+    assertString('config.authentication.jwt.logOutUrlField', config.authentication.jwt.logOutUrlField, true);
     assertArray('config.authentication.publicOrganizations', config.authentication.publicOrganizations);
     config.authentication.publicOrganizations.forEach(function (publicOrg, idx) {
         assertString('config.authentication.publicOrganizations[' + idx, ']', publicOrg);
@@ -151,6 +152,7 @@ function validateConfig(configOrFileName) {
     assertBoolean('config.authentication.allowPasswordReset', config.authentication.allowPasswordReset);
     assertNumber('config.authentication.allowedResetInterval', config.authentication.allowedResetInterval);
     assertNumber('config.authentication.resetTimeout', config.authentication.resetTimeout);
+    assertBoolean('config.authentication.useEmailforId', config.authentication.useEmailForId);
 
     if (config.authentication.adminAccount) {
         assertString('config.authentication.adminAccount', config.authentication.adminAccount);

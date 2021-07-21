@@ -26,6 +26,7 @@ var Mongodb = require('mongodb'),
 
 const crypto = require('crypto');
 const _ = require('underscore');
+const config = require('../../../../config/config.default');
 const INFERRED_USER_EMAIL = 'em@il';
 function loadEncryptionKey(gmeConfig) {
     const {algorithm, key} = gmeConfig.authentication.encryption;
@@ -876,6 +877,13 @@ function GMEAuth(session, gmeConfig) {
             Q.ninvoke(bcrypt, 'hash', password, gmeConfig.authentication.salts)
                 .then(function (hash) {
                     data.passwordHash = hash;
+                    return collection.findOne({email: email, _id: {$ne: userId}});
+                })
+                .then(otherUserWithSameEmail => {
+                    if(gmeConfig.authentication.useEmailForId && otherUserWithSameEmail) {
+                        throw new Error('email address already in use');
+                    }
+
                     if (!options.overwrite) {
                         return collection.insertOne(data);
                     } else {
