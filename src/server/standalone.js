@@ -359,25 +359,25 @@ class StandAloneServer {
                 token = req.query.token;
                 __gmeAuth.verifyJWToken(token)
                     .then(result => {
+                        req.userData = {
+                            userId: result.content.userId,
+                        };
+                        if (__gmeConfig.authentication.jwt.logOutUrlField && 
+                            result.content[__gmeConfig.authentication.jwt.logOutUrlField]) {
+                                res.cookie('webgme-logout-url', result.content[__gmeConfig.authentication.jwt.logOutUrlField]);
+                        }
                         if (result.renew === true) {
                             __gmeAuth.regenerateJWToken(token)
                                 .then(newToken => {
-                                    req.userData = {
-                                        token: newToken,
-                                        newToken: true,
-                                        userId: result.content.userId
-                                    };
+                                    req.userData.newToken = true;
+                                    req.userData.token = newToken;
                                     __logger.debug('generated new token for user', result.content.userId);
                                     res.cookie(__gmeConfig.authentication.jwt.cookieId, newToken);
                                     next();
                                 })
                                 .catch(next);
                         } else {
-                            req.userData = {
-                                token: token,
-                                userId: result.content.userId
-                            };
-    
+                            req.userData.token = token;
                             res.cookie(__gmeConfig.authentication.jwt.cookieId, token);
                             next();
                         }
@@ -606,6 +606,13 @@ class StandAloneServer {
                     redirectUrl = req.query.redirectUrl;
                     if (__gmeConfig.authentication.logOutUrl) {
                         logOutUrl = getLogOutUrl(req);
+                    }
+
+                    if (__gmeConfig.authentication.jwt.logOutUrlField) {
+
+                        if (req.cookies['webgme-logout-url']) {
+                            logOutUrl = req.cookies['webgme-logout-url'];
+                        }
                     }
 
                     res.clearCookie(__gmeConfig.authentication.jwt.cookieId);

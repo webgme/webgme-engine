@@ -3,9 +3,12 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
+const { agent } = require('superagent');
+
 describe('standalone http server with authentication turned on', function () {
     'use strict';
     var testFixture = require('../_globals.js'),
+        jwt = require('jsonwebtoken'),
         WebGME = testFixture.WebGME,
         safeStorage,
         webgmeToken,
@@ -47,6 +50,7 @@ describe('standalone http server with authentication turned on', function () {
         logger = testFixture.logger.fork('standalone.auth.spec');
         gmeConfig.authentication.enable = true;
         gmeConfig.authentication.allowGuests = false;
+        gmeConfig.authentication.jwt.logOutUrlField = 'iss';
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
             .then(function (gmeAuth_) {
@@ -271,7 +275,6 @@ describe('standalone http server with authentication turned on', function () {
     });
 
     it('should infer a user with displayName landing on index.html with a token in the query', function (done) {
-        var jwt = require('jsonwebtoken');
 
         return Q.nfcall(fs.readFile, gmeConfig.authentication.jwt.privateKey, 'utf8')
             .then(function (privateKey) {
@@ -310,7 +313,6 @@ describe('standalone http server with authentication turned on', function () {
 
     it('should not infer a user if one is there and disabled when landing on index.html with a token in the query',
         function (done) {
-            var jwt = require('jsonwebtoken');
 
             return Q.nfcall(fs.readFile, gmeConfig.authentication.jwt.privateKey, 'utf8')
                 .then(function (privateKey) {
@@ -345,4 +347,51 @@ describe('standalone http server with authentication turned on', function () {
                 .nodeify(done);
         }
     );
+
+    it('should infer a user and logout to address passed in token', function (done) {
+
+        return Q.nfcall(fs.readFile, gmeConfig.authentication.jwt.privateKey, 'utf8')
+            .then(function (privateKey) {
+                return Q.ninvoke(jwt, 'sign', {userId: 'mynumber', displayName: 'A pretty name', iss: 'https:/google.com'}, privateKey, {
+                    algorithm: 'RS256',
+                    expiresIn: 30,
+                });
+            })
+            .then(function (token) {
+                var deferred = Q.defer();
+                agent.get(server.getUrl() + '/?token=' + token)
+                    .end(function (err, res) {
+                        if (err) {
+                            deferred.reject(err);
+                            return;
+                        }
+                        try {
+                            expect(res.status).to.equal(200);
+                        } catch (e) {
+                            deferred.reject(e);
+                        }
+
+                        deferred.resolve();
+                    });
+
+                return deferred.promise;
+            })
+            .then(function () {
+                return gmeAuth.getUser('mynumber');
+            })
+            .then(function (userData) {
+                var deferred = Q.defer();
+                expect(userData.displayName).to.equal('A pretty name');
+                agent.get(server.getUrl() + '/logout').redirects(0)
+                .end((err, res) => {
+                    expect(res.statusCode).to.eql(302);
+                    expect(res.text).to.have.string('https:/google.com');
+                    expect(res.redirect).to.eql(true);
+                    // console.log(res.redirect);
+                    deferred.resolve();
+                });
+                return deferred.promise;
+            })
+            .nodeify(done);
+    });
 });
