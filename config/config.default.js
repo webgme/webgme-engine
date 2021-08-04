@@ -44,7 +44,8 @@ var path = require('path'),
                 tokenGenerator: path.join(__dirname, '../src/server/middleware/auth/localtokengenerator.js'),
                 algorithm: 'RS256',
                 // The private key is only needed if using the localtokengenerator
-                privateKey: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_PRIVATE_KEY')
+                privateKey: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_PRIVATE_KEY'),
+                logOutUrlField: null,
             },
             encryption: {
                 algorithm: 'aes-256-cbc',
@@ -53,7 +54,8 @@ var path = require('path'),
             allowPasswordReset: false,
             allowedResetInterval: 3600000,
             resetTimeout: 1200000,
-            resetUrl: '/profile/reset'
+            resetUrl: '/profile/reset',
+            useEmailForId: false,
         },
 
         api: {
