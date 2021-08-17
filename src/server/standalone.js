@@ -364,7 +364,9 @@ class StandAloneServer {
                         };
                         if (__gmeConfig.authentication.jwt.logOutUrlField && 
                             result.content[__gmeConfig.authentication.jwt.logOutUrlField]) {
-                                res.cookie('webgme-logout-url', result.content[__gmeConfig.authentication.jwt.logOutUrlField]);
+                            res.cookie(
+                                'webgme-logout-url', 
+                                result.content[__gmeConfig.authentication.jwt.logOutUrlField]);
                         }
                         if (result.renew === true) {
                             __gmeAuth.regenerateJWToken(token)

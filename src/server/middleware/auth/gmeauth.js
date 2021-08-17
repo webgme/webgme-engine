@@ -26,11 +26,11 @@ var Mongodb = require('mongodb'),
 
 const crypto = require('crypto');
 const _ = require('underscore');
-const config = require('../../../../config/config.default');
+// const config = require('../../../../config/config.default');
 const INFERRED_USER_EMAIL = 'em@il';
 const getInferredIdFromEmail = email => {
-    let uid = '_iuid_'+email;
-    uid = uid.replace('@','_at_').replace('.','_p_');
+    let uid = '_iuid_' + email;
+    uid = uid.replace('@', '_at_').replace('.', '_p_');
     return uid;
 };
 
@@ -402,21 +402,25 @@ function GMEAuth(session, gmeConfig) {
                     result.renew = true;
                 }
 
-                // if this option is turned on, we assume that the e-mail addresses are unique - except the default inferred
+                // if used, we assume that the e-mail addresses are unique - except the default inferred
                 if (gmeConfig.authentication.useEmailForId && content.email) {
-                    return collection.findOne({email:content.email, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}});
+                    return collection.findOne({
+                        email: content.email, 
+                        type: {$ne: CONSTANTS.ORGANIZATION}, 
+                        disabled: {$ne: true}
+                    });
                 } else {
                     return Q(null);
                 }
             })
             .then(emailUserData => {
                 if (emailUserData && gmeConfig.authentication.useEmailForId) {
-                    userId = emailUserData._id;
+                    userId = emailUserData['_id'];
                 }
-                return collection.findOne({_id:userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}});
+                return collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}});
             })
             .then(completeUserData => {
-                if(!completeUserData && (userId || result.content.email)) {
+                if (!completeUserData && (userId || result.content.email)) {
                     // We create a new user - an inferred one that is if we got email or userid
                     if (!userId && gmeConfig.authentication.useEmailForId) {
                         userId = getInferredIdFromEmail(result.content.email);
@@ -427,22 +431,23 @@ function GMEAuth(session, gmeConfig) {
                             overwrite: false,
                             displayName: result.content.displayName
                         });
-                } else if(completeUserData && gmeConfig.authentication.useEmailForId && 
+                } else if (completeUserData && gmeConfig.authentication.useEmailForId && 
                     result.content.email && completeUserData.email === INFERRED_USER_EMAIL) {
                     // We should update the userdata with the email
                     return self.addUser(userId, result.content.email, GUID(),
                         gmeConfig.authentication.inferredUsersCanCreate, {
-                        overwrite: true,
-                        displayName: result.content.displayName
-                    });
+                            overwrite: true,
+                            displayName: result.content.displayName
+                        }
+                    );
                 } else {
                     return Q(null);
                 }
             })
-            .then(newUserData => {
+            .then((/*newUserData*/) => {
                 return self.getUser(userId);
             })
-            .then(userData => {
+            .then((/*userData*/) => {
                 result.content.userId = userId;
                 return Q(result);
             })
@@ -901,7 +906,9 @@ function GMEAuth(session, gmeConfig) {
                     return collection.findOne({email: email, _id: {$ne: userId}});
                 })
                 .then(otherUserWithSameEmail => {
-                    if(gmeConfig.authentication.useEmailForId && otherUserWithSameEmail && email !== INFERRED_USER_EMAIL) {
+                    if (gmeConfig.authentication.useEmailForId && 
+                        otherUserWithSameEmail && 
+                        email !== INFERRED_USER_EMAIL) {
                         throw new Error('email address already in use');
                     }
 

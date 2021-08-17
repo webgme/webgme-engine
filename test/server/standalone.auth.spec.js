@@ -3,7 +3,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-const { agent } = require('superagent');
+// const { agent } = require('superagent');
 
 describe('standalone http server with authentication turned on', function () {
     'use strict';
@@ -352,10 +352,13 @@ describe('standalone http server with authentication turned on', function () {
 
         return Q.nfcall(fs.readFile, gmeConfig.authentication.jwt.privateKey, 'utf8')
             .then(function (privateKey) {
-                return Q.ninvoke(jwt, 'sign', {userId: 'mynumber', displayName: 'A pretty name', iss: 'https:/google.com'}, privateKey, {
-                    algorithm: 'RS256',
-                    expiresIn: 30,
-                });
+                return Q.ninvoke(jwt, 
+                    'sign', 
+                    {userId: 'mynumber', displayName: 'A pretty name', iss: 'https:/google.com'}, 
+                    privateKey, 
+                    { algorithm: 'RS256',
+                        expiresIn: 30}
+                );
             })
             .then(function (token) {
                 var deferred = Q.defer();
@@ -383,13 +386,13 @@ describe('standalone http server with authentication turned on', function () {
                 var deferred = Q.defer();
                 expect(userData.displayName).to.equal('A pretty name');
                 agent.get(server.getUrl() + '/logout').redirects(0)
-                .end((err, res) => {
-                    expect(res.statusCode).to.eql(302);
-                    expect(res.text).to.have.string('https:/google.com');
-                    expect(res.redirect).to.eql(true);
-                    // console.log(res.redirect);
-                    deferred.resolve();
-                });
+                    .end((err, res) => {
+                        expect(res.statusCode).to.eql(302);
+                        expect(res.text).to.have.string('https:/google.com');
+                        expect(res.redirect).to.eql(true);
+                        // console.log(res.redirect);
+                        deferred.resolve();
+                    });
                 return deferred.promise;
             })
             .nodeify(done);
