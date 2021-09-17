@@ -402,7 +402,8 @@ function genCreateOpenDeleteRenameProject(databaseAdapter, Q, expect) {
                 throw new Error('should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.contain('Project does not exist project9');
+                expect(err.message).to.contain('does not exist');
+                expect(err.message).to.contain('project9');
             })
             .nodeify(done);
     });
