@@ -48,7 +48,7 @@
     "adm-zip": "0.4.11",
     "agentkeepalive": "3.4.1",
     "archiver": "2.1.1",
-    "aws-sdk": "2.260.1",
+    "aws-sdk": "2.814.0",
     "bcryptjs": "2.4.3",
     "body-parser": "1.18.3",
     "browserify": "16.2.3",
