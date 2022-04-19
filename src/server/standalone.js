@@ -284,6 +284,7 @@ class StandAloneServer {
         };
 
         const ensureAuthenticated = (req, res, next) => {
+            console.log('WHY:', req.originalUrl);
             const authorization = req.get('Authorization');
             let username;
             let password;
