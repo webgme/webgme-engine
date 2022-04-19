@@ -57,6 +57,15 @@ var path = require('path'),
             resetTimeout: 1200000,
             resetUrl: '/profile/reset',
             useEmailForId: false,
+            azureActiveDirectory: {
+                enable: false,
+                clientId: 'Example_Client_Id',
+                authority: 'Example_authority_URI',
+                clientSecret: 'Example_client_Secret',
+                discoveryEndpoint: 'Example_discovery_key_endpoint',
+                cookieId: 'webgme_aad',
+                cookieKey: 'Do_your_job_and_make_a_decent_key'
+            },
         },
 
         api: {
