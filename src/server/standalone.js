@@ -38,6 +38,7 @@ const Mailer = require('./middleware/mailer/mailer');
 const getClientConfig = require('../../config/getclientconfig');
 const GmeAuth = require('./middleware/auth/gmeauth');
 const Logger = require('./logger');
+const AADClient = require('./middleware/auth/WebgmeAADClient');
 
 const AddOnEventPropagator = require('../addon/addoneventpropagator');
 const webgmeUtils = require('../utils');
@@ -197,6 +198,8 @@ class StandAloneServer {
         }
 
         this.__middlewareOptions.server = this;
+
+        this.__aadClient = new AADClient(gmeConfig, this.__logger);
     }
 
     getUrl() {
@@ -277,6 +280,7 @@ class StandAloneServer {
         };
 
         const ensureAuthenticated = (req, res, next) => {
+            console.log('WHY:', req.originalUrl);
             const authorization = req.get('Authorization');
             let username;
             let password;
@@ -637,6 +641,26 @@ class StandAloneServer {
                 } else {
                     res.sendStatus(404);
                 }
+            });
+
+            //AzureActiveDirectory direct login
+            __app.get('/aad', (req, res) => {
+                console.log('WAZZUP!!!');
+                // when this endpoint is called we always go for regular login even if the user might have a valid token
+                this.__aadClient.login(req, res);
+            });
+
+            //AAD login response
+            __app.post('/aad', (req, res) => {
+                console.log('kecso003');
+                this.__aadClient.cacheUser(req, (err) => {
+                    console.log('kecso004');
+                    if (err) {
+                        res.sendStatus(401);
+                    } else {
+                        res.sendStatus(200);
+                    }
+                });
             });
 
             __app.get('/bin/getconfig.js', ensureAuthenticated, (req, res) => {
