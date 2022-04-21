@@ -870,6 +870,7 @@ function GMEAuth(session, gmeConfig) {
                 orgs: [],
                 siteAdmin: options.siteAdmin,
                 displayName: options.displayName,
+                aadId: options.aadId
             };
 
         if (options.hasOwnProperty('data')) {
