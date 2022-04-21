@@ -284,7 +284,6 @@ class StandAloneServer {
         };
 
         const ensureAuthenticated = (req, res, next) => {
-            console.log('WHY:', req.originalUrl);
             const authorization = req.get('Authorization');
             let username;
             let password;
@@ -450,6 +449,7 @@ class StandAloneServer {
                         }
                     })
                     .catch(err => {
+                        console.log('kecso-002', err);
                         res.clearCookie(__gmeConfig.authentication.jwt.cookieId);
                         if (err.name === 'TokenExpiredError') {
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
