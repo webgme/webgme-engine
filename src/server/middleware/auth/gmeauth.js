@@ -895,6 +895,7 @@ function GMEAuth(session, gmeConfig) {
                 siteAdmin: options.siteAdmin,
                 displayName: options.displayName,
                 disabled: false,
+                aadId: options.aadId
             };
 
         if (options.hasOwnProperty('data')) {

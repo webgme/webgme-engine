@@ -18,6 +18,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const multipart = require('connect-multiparty');
+const cors = require('cors');
 const Http = require('http');
 const ejs = require('ejs');
 
@@ -168,6 +169,7 @@ class StandAloneServer {
         this.__middlewareOptions.webSocket = this.__webSocket;
 
         this.__logger.debug('Initializing basic core route functions');
+        this.__app.use(cors());
         this.__app.use(compression());
         this.__app.use(cookieParser());
         this.__app.use(bodyParser.json(gmeConfig.server.bodyParser.json));
@@ -199,7 +201,7 @@ class StandAloneServer {
 
         this.__middlewareOptions.server = this;
 
-        this.__aadClient = new AADClient(gmeConfig, this.__logger);
+        this.__aadClient = new AADClient(gmeConfig, this.__gmeAuth, this.__logger);
     }
 
     getUrl() {
@@ -280,7 +282,6 @@ class StandAloneServer {
         };
 
         const ensureAuthenticated = (req, res, next) => {
-            console.log('WHY:', req.originalUrl);
             const authorization = req.get('Authorization');
             let username;
             let password;
@@ -432,6 +433,7 @@ class StandAloneServer {
                         }
                     })
                     .catch(err => {
+                        console.log('kecso-002', err);
                         res.clearCookie(__gmeConfig.authentication.jwt.cookieId);
                         if (err.name === 'TokenExpiredError') {
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
@@ -648,20 +650,21 @@ class StandAloneServer {
 
             //AzureActiveDirectory direct login
             __app.get('/aad', (req, res) => {
-                console.log('WAZZUP!!!');
                 // when this endpoint is called we always go for regular login even if the user might have a valid token
                 this.__aadClient.login(req, res);
             });
 
             //AAD login response
             __app.post('/aad', (req, res) => {
-                console.log('kecso003');
-                this.__aadClient.cacheUser(req, (err) => {
-                    console.log('kecso004');
+                console.log('REDIRECT:', req.cookies['webgme-redirect'] );
+                const redirectUrl = req.cookies['webgme-redirect'] || '/';
+                
+                this.__aadClient.cacheUser(req, res, (err) => {
+                    res.clearCookie('webgme-redirect');
                     if (err) {
                         res.sendStatus(401);
                     } else {
-                        res.sendStatus(200);
+                        res.redirect(redirectUrl);
                     }
                 });
             });
