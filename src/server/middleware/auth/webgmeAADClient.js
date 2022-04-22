@@ -4,7 +4,9 @@
 const msal = require('@azure/msal-node');
 const jwt = require('jsonwebtoken');
 const GUID = requireJS('common/util/guid');
+const Q = require('q');
 
+const DATALAKE_SCOPE = "api://52094e65-d33d-4c6b-bd32-943bf4adec13/LeapDataLakeScope";
 
 
 class WebGMEAADClient {
@@ -38,7 +40,7 @@ class WebGMEAADClient {
 
     login(req, res) {
         const authCodeUrlParameters = {
-            scopes: ['user.read', 'offline_access'],
+            scopes: ['user.read', 'offline_access', DATALAKE_SCOPE],
             redirectUri: 'http://localhost:8888/aad',
             responseMode: 'form_post'
         };
@@ -97,16 +99,75 @@ class WebGMEAADClient {
             .then(userData => {
                 //no matter if it was a new user or an existing one, let's create a token for it
                 return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
+            })/*
+            .then(token => {
+                const account = this.__activeDirectoryClient.getTokenCache().getAccountByHomeId(claims.oid);
+                const tokenRequest = {
+                    scopes: [DATALAKE_SCOPE],
+                    account: account
+                };
+                return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
             })
+            .then(tokenResponse => {
+                const https = require('https');
+                const options = {
+                    headers: {
+                        'Authorization': 'Bearer ' + tokenResponse.accessToken,
+                    }
+                };            
+                const req = https.get(new URL('https://leappremonitiondev.azurewebsites.net/v2/Process/ListProcesses?permission=write'), options, (res) => {
+                    // console.log(res);
+                    console.log('RESPONSECOMINGBACKFROMPDP');
+                    res.setEncoding('utf8');
+                    console.log(Object.keys(res));
+                    console.log(res.statusCode);
+                    console.log(res.rawHeaders);
+                    console.log(res.body);
+                    res.on('data', (chunk) => {
+                        console.log(chunk);
+                    });
+                });
+                req.on('error', (err) => {
+                    console.log(err);
+                    callback(err);
+                });
+                req.end();
+            })*/
             .then(token => {
                 //save it to the token
                 res.cookie(this.__gmeConfig.authentication.jwt.cookieId, token);
                 callback(null);
             })
             .catch(error => {
+                console.log(error);
                 this.__logger.error(error);
                 callback(error);
             });
+    }
+
+    getAccessToken(uid, callback) {
+        const deferred = Q.defer();
+        this.__gmeAuth.getUser(uid)
+        .then(userData => {
+            console.log(userData);
+            if (userData.hasOwnProperty('aadId')) {
+                const account = this.__activeDirectoryClient.getTokenCache().getAccountByHomeId(userData.aadId);
+                const tokenRequest = {
+                    scopes: [DATALAKE_SCOPE],
+                    account: account
+                };
+                return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
+            } else {
+                throw new Error('Not AAD user, cannot retrieve accessToken');
+            }
+        })
+        .then(deferred.resolve)
+        .catch(error => {
+            this.__logger.error(error);
+            deferred.reject(error);
+        });
+
+        return deferred.promise.nodeify(callback);
     }
 }
 
