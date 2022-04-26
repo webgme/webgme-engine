@@ -14,6 +14,7 @@ class WebGMEAADClient {
         this.__logger = logger.fork('AADClient');
         this.__gmeConfig = gmeConfig;
         this.__gmeAuth = gmeAuth;
+        this.__redirectUri = gmeConfig.authentication.azureActiveDirectory.redirectUri || 'http://localhost:8888/aad';
         this.__activeDirectoryConfig = {
             auth: {
                 clientId: gmeConfig.authentication.azureActiveDirectory.clientId,
@@ -41,7 +42,7 @@ class WebGMEAADClient {
     login(req, res) {
         const authCodeUrlParameters = {
             scopes: ['user.read', 'offline_access', DATALAKE_SCOPE],
-            redirectUri: 'http://localhost:8888/aad',
+            redirectUri: this.__redirectUri,
             responseMode: 'form_post'
         };
         this.__activeDirectoryClient.getAuthCodeUrl(authCodeUrlParameters)
@@ -68,7 +69,7 @@ class WebGMEAADClient {
         const tokenRequest = {
             code: req.body.code,
             scopes: ['user.read', 'openid', 'email'],
-            redirectUri: 'http://localhost:8888/aad',
+            redirectUri: this.__redirectUri,
         };
         this.__activeDirectoryClient.acquireTokenByCode(tokenRequest)
             .then((response) => {
