@@ -245,7 +245,40 @@ describe('BlobClient', function () {
             });
         });
 
+        it('should putFile large streamed file', function (done) {
+            this.timeout(40000);
+            var bc = new BlobClient(bcParam),
+                rs = fs.createReadStream('./test/server/middleware/blob/BlobFsBackend/streamtest.png'),
+                content = fs.readFileSync('./test/server/middleware/blob/BlobFsBackend/streamtest.png');
+
+            bc.putFile('streamtest.png', rs, function (err, hash) {
+                if (err) {
+                    done(err);
+                    return;
+                }
+                bc.getMetadata(hash, function (err, metadata) {
+                    if (err) {
+                        done(err);
+                        return;
+                    }
+                    expect(metadata.mime).to.equal('image/png');
+                    bc.getObject(hash, function (err, res) {
+                        if (err) {
+                            done(err);
+                            return;
+                        }
+                        expect(typeof res).to.equal('object');
+                        expect(typeof res.prototype).to.equal('undefined');
+                        expect(res).to.eql(content);
+                        //expect(res[1]).to.equal(2);
+                        done();
+                    });
+                });
+            });
+        });
+
         it('should not hide request errors on putFile w/ stream', async function () {
+            this.timeout(40000);
             const bc = new BlobClient(bcParam);
             const rs = fs.createReadStream('./package.json');
 

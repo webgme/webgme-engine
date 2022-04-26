@@ -241,7 +241,26 @@ define([
                 self.logger.debug('putFile - result', hash);
                 deferred.resolve(hash);
             });
-            data.pipe(req);
+            data.on('data', chunk => {
+                // console.log('inchunk', chunk);
+                // req.attach(chunk);
+                req.write(chunk);
+            });
+            data.on('end', () => {
+                req.end((err, res) => {
+                    if (err) {
+                        errorHandler(err);
+                    } else {
+                        var response = res.body;
+                        // Get the first one
+                        var hash = Object.keys(response)[0];
+                        self.logger.debug('putFile - result', hash);
+                        deferred.resolve(hash);
+                    }
+                });
+            })
+
+            // data.pipe(req);
         } else {
             req.send(data)
                 .on('progress', function (event) {

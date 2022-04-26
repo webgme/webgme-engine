@@ -40,6 +40,15 @@ describe('BlobFSBackend.spec', function () {
         });
     });
 
+    it('should be able to upload from stream a larger file', function (done) {
+        var bb = new BlobFSBackend(gmeConfig, logger),
+            readStream = fs.createReadStream('./test/server/middleware/blob/BlobFsBackend/streamtest.png');
+        bb.putFile('fromStream.txt', readStream, function (err) {
+            expect(err).to.equal(null);
+            done();
+        });
+    });
+
     // TODO: this only make sense 
     // if we except that read sources can be closed accidentally and we should be able to get that...
     it.skip('should return abort error when putFile when passing in fs.createReadStream and destroy', function (done) {
