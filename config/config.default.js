@@ -172,7 +172,7 @@ var path = require('path'),
             basePaths: [path.join(__dirname, '../src/plugin/coreplugins')],
             displayAll: false,
             serverResultTimeout: 60000,
-            supressRegularNotifications: false
+            suppressRegularNotifications: false
         },
 
         requirejsPaths: {},
