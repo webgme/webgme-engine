@@ -395,7 +395,9 @@ define([
                         getSanitizedPluginEntry(runningPlugins[data.executionId]));
                 }
             } else {
-                client.dispatchEvent(client.CONSTANTS.NOTIFICATION, notification);
+                if(gmeConfig.plugin.supressRegularNotifications !== true) {
+                    client.dispatchEvent(client.CONSTANTS.NOTIFICATION, notification);
+                }
                 client.dispatchEvent(client.CONSTANTS.PLUGIN_NOTIFICATION, data);
             }
 
