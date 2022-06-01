@@ -47,8 +47,9 @@ class WebGMEAADClient {
         };
         this.__activeDirectoryClient.getAuthCodeUrl(authCodeUrlParameters)
             .then((response) => {
-                console.log('QUERY:',req.query);
-                res.cookie('webgme-redirect', req.query.redirect);
+                console.log(req.query);
+                console.log('QUERY:',req.query.redirect);
+                res.cookie('webgme-redirect', req.query.redirect || '');
                 res.redirect(response);
             })
             .catch((error) => {
