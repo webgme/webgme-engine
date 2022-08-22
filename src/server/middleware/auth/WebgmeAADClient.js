@@ -5,6 +5,7 @@ const msal = require('@azure/msal-node');
 const jwt = require('jsonwebtoken');
 const GUID = requireJS('common/util/guid');
 const Q = require('q');
+const JOSE = require('jose');
 
 const DATALAKE_SCOPE = "api://52094e65-d33d-4c6b-bd32-943bf4adec13/LeapDataLakeScope";
 
@@ -19,7 +20,8 @@ class WebGMEAADClient {
             auth: {
                 clientId: gmeConfig.authentication.azureActiveDirectory.clientId,
                 authority: gmeConfig.authentication.azureActiveDirectory.authority,
-                clientSecret: gmeConfig.authentication.azureActiveDirectory.clientSecret
+                clientSecret: gmeConfig.authentication.azureActiveDirectory.clientSecret,
+                // protocolMode: 'OIDC'
             },
             system: {
                 loggerOptions: {
@@ -47,7 +49,7 @@ class WebGMEAADClient {
         };
         this.__activeDirectoryClient.getAuthCodeUrl(authCodeUrlParameters)
             .then((response) => {
-                console.log(req.query);
+                // console.log(req.query);
                 console.log('QUERY:',req.query.redirect);
                 res.cookie('webgme-redirect', req.query.redirect || '');
                 res.redirect(response);
@@ -69,12 +71,13 @@ class WebGMEAADClient {
         let claims = null;
         const tokenRequest = {
             code: req.body.code,
-            scopes: ['user.read', 'openid', 'email'],
+            scopes: ['user.read', 'openid', 'email', DATALAKE_SCOPE],
             redirectUri: this.__redirectUri,
         };
         this.__activeDirectoryClient.acquireTokenByCode(tokenRequest)
             .then((response) => {
                 //TODO we might want to enhance user id deduction, but for now it should suffice
+                // console.log('initial claim: ', response);
                 claims = response.idTokenClaims;
                 uid = this.getUserIdFromEmail(claims.email);
                 return this.__gmeAuth.listUsers();
@@ -83,6 +86,7 @@ class WebGMEAADClient {
                 //TODO should be an easier way to search for the user...
                 let userFound = false;
                 users.forEach(userData => {
+                    // console.log(userData);
                     if (userData.email === claims.email) {
                         userFound = true;
                     }
@@ -101,15 +105,17 @@ class WebGMEAADClient {
             .then(userData => {
                 //no matter if it was a new user or an existing one, let's create a token for it
                 return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
-            })/*
+            })
             .then(token => {
+                // console.log('WEBGME-TOKEN:', token);
+                res.cookie(this.__gmeConfig.authentication.jwt.cookieId, token);
                 const account = this.__activeDirectoryClient.getTokenCache().getAccountByHomeId(claims.oid);
                 const tokenRequest = {
                     scopes: [DATALAKE_SCOPE],
                     account: account
                 };
                 return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
-            })
+            })/*
             .then(tokenResponse => {
                 const https = require('https');
                 const options = {
@@ -136,23 +142,31 @@ class WebGMEAADClient {
                 req.end();
             })*/
             .then(token => {
+                // const payload = JOSE.jwtVerify(token,);
+                // console.log(payload);
+                // console.log('AAD_TOKEN:',token);
                 //save it to the token
-                res.cookie(this.__gmeConfig.authentication.jwt.cookieId, token);
+                // res.cookie(this.__gmeConfig.authentication.jwt.cookieId, token);
+                res.cookie(this.__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
+
                 callback(null);
             })
             .catch(error => {
-                console.log(error);
+                // console.log(error);
                 this.__logger.error(error);
                 callback(error);
             });
     }
 
     getAccessToken(uid, callback) {
+        // console.log('chk001');
         const deferred = Q.defer();
         this.__gmeAuth.getUser(uid)
         .then(userData => {
-            console.log(userData);
+            // console.log('chk002');
+            // console.log(userData);
             if (userData.hasOwnProperty('aadId')) {
+                // console.log('chk003');
                 const account = this.__activeDirectoryClient.getTokenCache().getAccountByHomeId(userData.aadId);
                 const tokenRequest = {
                     scopes: [DATALAKE_SCOPE],
@@ -160,6 +174,7 @@ class WebGMEAADClient {
                 };
                 return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
             } else {
+                // console.log('chk004');
                 throw new Error('Not AAD user, cannot retrieve accessToken');
             }
         })
