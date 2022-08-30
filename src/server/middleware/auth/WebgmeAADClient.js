@@ -5,7 +5,6 @@ const msal = require('@azure/msal-node');
 const jwt = require('jsonwebtoken');
 const GUID = requireJS('common/util/guid');
 const Q = require('q');
-const JOSE = require('jose');
 
 const DATALAKE_SCOPE = "api://52094e65-d33d-4c6b-bd32-943bf4adec13/LeapDataLakeScope";
 
@@ -149,11 +148,6 @@ class WebGMEAADClient {
             })*/
             .then(token => {
                 this.__logger.error('caching user - we have aad-token');
-                // const payload = JOSE.jwtVerify(token,);
-                // console.log(payload);
-                // console.log('AAD_TOKEN:',token);
-                //save it to the token
-                // res.cookie(this.__gmeConfig.authentication.jwt.cookieId, token);
                 res.cookie(this.__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
 
                 callback(null);
