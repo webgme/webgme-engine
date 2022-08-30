@@ -67,6 +67,7 @@ class WebGMEAADClient {
     }
 
     cacheUser(req, res, callback) {
+        this.__logger.error('caching user');
         let uid = null;
         let claims = null;
         const tokenRequest = {
@@ -80,7 +81,9 @@ class WebGMEAADClient {
                 // console.log('initial claim: ', response);
                 claims = response.idTokenClaims;
                 uid = this.getUserIdFromEmail(claims.email);
+                this.__logger.error('caching user: ', uid);
                 return this.__gmeAuth.listUsers();
+                
             })
             .then(users => {
                 //TODO should be an easier way to search for the user...
@@ -104,16 +107,19 @@ class WebGMEAADClient {
             })
             .then(userData => {
                 //no matter if it was a new user or an existing one, let's create a token for it
+                this.__logger.error('caching user - user added');
                 return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
             })
             .then(token => {
                 // console.log('WEBGME-TOKEN:', token);
+                this.__logger.error('caching user- wtoken generated');
                 res.cookie(this.__gmeConfig.authentication.jwt.cookieId, token);
                 const account = this.__activeDirectoryClient.getTokenCache().getAccountByHomeId(claims.oid);
                 const tokenRequest = {
                     scopes: [DATALAKE_SCOPE],
                     account: account
                 };
+                this.__logger.error('caching user - we have account');
                 return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
             })/*
             .then(tokenResponse => {
@@ -142,6 +148,7 @@ class WebGMEAADClient {
                 req.end();
             })*/
             .then(token => {
+                this.__logger.error('caching user - we have aad-token');
                 // const payload = JOSE.jwtVerify(token,);
                 // console.log(payload);
                 // console.log('AAD_TOKEN:',token);
