@@ -47,6 +47,7 @@ const webgmeUtils = require('../utils');
 const servers = [];
 const CONSTANTS = requireJS('common/Constants');
 const isAbsUrlPath = new RegExp('^(?:[a-z]+:)?//', 'i');
+const jwt = require('jsonwebtoken');
 
 let mainLogger;
 const shutdown = () => {
@@ -407,19 +408,33 @@ class StandAloneServer {
                         }
                     });
             } else if (req.cookies[__gmeConfig.authentication.jwt.cookieId]) {
+                //TODO this is a forceful method of trying to renew aad token needs to be harmonized better
+                let webgmeTokenResult = null;
                 __logger.debug('jwtoken provided in cookie');
                 token = req.cookies[__gmeConfig.authentication.jwt.cookieId];
                 __gmeAuth.verifyJWToken(token)
                     .then(result => {
-                        if (result.renew === true) {
+                        webgmeTokenResult = result;
+                        if(__gmeConfig.authentication.azureActiveDirectory.enable) {
+                            return this.__aadClient.getAccessToken(result.content.userId);   
+                        } else {
+                            return Q(null);
+                        }
+                    })
+                    .then(token => {
+                        // console.log(aToken, token.accessToken);
+                        if (token) {
+                            res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
+                        }
+                        if (webgmeTokenResult.renew === true) {
                             __gmeAuth.regenerateJWToken(token)
                                 .then(newToken => {
                                     req.userData = {
                                         token: newToken,
                                         newToken: true,
-                                        userId: result.content.userId
+                                        userId: webgmeTokenResult.content.userId
                                     };
-                                    __logger.debug('generated new token for user', result.content.userId);
+                                    __logger.debug('generated new token for user', webgmeTokenResult.content.userId);
                                     res.cookie(__gmeConfig.authentication.jwt.cookieId, newToken);
                                     // Status code for new token??
                                     next();
@@ -428,13 +443,12 @@ class StandAloneServer {
                         } else {
                             req.userData = {
                                 token: token,
-                                userId: result.content.userId
+                                userId: webgmeTokenResult.content.userId
                             };
                             next();
                         }
                     })
                     .catch(err => {
-                        console.log('kecso-002', err);
                         res.clearCookie(__gmeConfig.authentication.jwt.cookieId);
                         if (err.name === 'TokenExpiredError') {
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
