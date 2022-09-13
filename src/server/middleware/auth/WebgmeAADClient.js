@@ -72,7 +72,7 @@ class WebGMEAADClient {
         const tokenRequest = {
             code: req.body.code,
             scopes: ['user.read', 'openid', 'email', DATALAKE_SCOPE],
-            redirectUri: this.__redirectUri,
+            redirectUri: this.__redirectUri
         };
         this.__activeDirectoryClient.acquireTokenByCode(tokenRequest)
             .then((response) => {
@@ -116,36 +116,12 @@ class WebGMEAADClient {
                 const account = this.__activeDirectoryClient.getTokenCache().getAccountByHomeId(claims.oid);
                 const tokenRequest = {
                     scopes: [DATALAKE_SCOPE],
-                    account: account
+                    account: account,
+                    forceRefresh: true
                 };
                 this.__logger.error('caching user - we have account');
                 return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
-            })/*
-            .then(tokenResponse => {
-                const https = require('https');
-                const options = {
-                    headers: {
-                        'Authorization': 'Bearer ' + tokenResponse.accessToken,
-                    }
-                };            
-                const req = https.get(new URL('https://leappremonitiondev.azurewebsites.net/v2/Process/ListProcesses?permission=write'), options, (res) => {
-                    // console.log(res);
-                    console.log('RESPONSECOMINGBACKFROMPDP');
-                    res.setEncoding('utf8');
-                    console.log(Object.keys(res));
-                    console.log(res.statusCode);
-                    console.log(res.rawHeaders);
-                    console.log(res.body);
-                    res.on('data', (chunk) => {
-                        console.log(chunk);
-                    });
-                });
-                req.on('error', (err) => {
-                    console.log(err);
-                    callback(err);
-                });
-                req.end();
-            })*/
+            })
             .then(token => {
                 this.__logger.error('caching user - we have aad-token');
                 res.cookie(this.__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
@@ -171,7 +147,8 @@ class WebGMEAADClient {
                 const account = this.__activeDirectoryClient.getTokenCache().getAccountByHomeId(userData.aadId);
                 const tokenRequest = {
                     scopes: [DATALAKE_SCOPE],
-                    account: account
+                    account: account,
+                    forceRefresh: true
                 };
                 return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
             } else {
