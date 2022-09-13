@@ -47,7 +47,7 @@ const webgmeUtils = require('../utils');
 const servers = [];
 const CONSTANTS = requireJS('common/Constants');
 const isAbsUrlPath = new RegExp('^(?:[a-z]+:)?//', 'i');
-// const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 
 let mainLogger;
 const shutdown = () => {
@@ -415,7 +415,7 @@ class StandAloneServer {
                 __gmeAuth.verifyJWToken(token)
                     .then(result => {
                         webgmeTokenResult = result;
-                        if (__gmeConfig.authentication.azureActiveDirectory.enable) {
+                        if(__gmeConfig.authentication.azureActiveDirectory.enable) {
                             return this.__aadClient.getAccessToken(result.content.userId);   
                         } else {
                             return Q(null);
@@ -449,7 +449,6 @@ class StandAloneServer {
                         }
                     })
                     .catch(err => {
-                        console.log('kecso-002', err);
                         res.clearCookie(__gmeConfig.authentication.jwt.cookieId);
                         if (err.name === 'TokenExpiredError') {
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
