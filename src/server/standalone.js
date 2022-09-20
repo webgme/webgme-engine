@@ -413,7 +413,7 @@ class StandAloneServer {
                     .then(result => {
                         webgmeTokenResult = result;
                         if(__gmeConfig.authentication.azureActiveDirectory.enable) {
-                            return this.__aadClient.getAccessToken(result.content.userId);   
+                            return this.__aadClient.getAccessToken(result.content.userId, req, res);   
                         } else {
                             return Q(null);
                         }
@@ -663,29 +663,18 @@ class StandAloneServer {
             //AzureActiveDirectory direct login
             __app.get('/aad', (req, res) => {
                 // when this endpoint is called we always go for regular login even if the user might have a valid token
-                // console.log('INITIAL_AAD_LOGIN:', req.url);
+                console.log('INITIAL_AAD_LOGIN:', req.url);
                 this.__aadClient.login(req, res);
             });
 
             __app.get('/aad/authenticate', (req,res) => {
-                // console.log('check001');
                 const webgmeToken = req.cookies[__gmeConfig.authentication.jwt.cookieId];
                 const aadToken = req.cookies[__gmeConfig.authentication.azureActiveDirectory.cookieId];
                 __gmeAuth.verifyJWToken(webgmeToken)
                 .then(user => {
-                    // console.log('check002');
-                    // console.log('we got user', user);
-                    //TODO maybe refresh both tokens??
-                    return this.__aadClient.getAccessToken(user.content.userId);
-                    if(req.query.redirect) {
-                        res.redirect(req.query.redirect);
-                    } else {
-                        res.sendStatus(200);
-                    }
+                    return this.__aadClient.getAccessToken(user.content.userId, req, res);
                 })
                 .then(token => {
-                    // console.log('check003');
-                    // console.log(token);
                     res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
                     if(req.query.redirect) {
                         res.redirect(req.query.redirect);
@@ -722,7 +711,7 @@ class StandAloneServer {
             //get access token from aad system
             __app.get('/aad/token', ensureAuthenticated, (req, res) => {
                 const uid = getUserId(req);
-                this.__aadClient.getAccessToken(uid, (err, token) => {
+                this.__aadClient.getAccessToken(uid, null, null, (err, token) => {
                     if(err) {
                         __logger.error(err);
                         res.status(401);
