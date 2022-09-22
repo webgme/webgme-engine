@@ -113,7 +113,10 @@ class WebGMEAADClient {
                 // console.log('WEBGME-TOKEN:', token);
                 this.__logger.error('caching user- wtoken generated');
                 res.cookie(this.__gmeConfig.authentication.jwt.cookieId, token);
-                const account = this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(claims.oid);
+                return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(claims.oid);
+                
+            })
+            .then(account => {
                 const tokenRequest = {
                     scopes: [DATALAKE_SCOPE],
                     account: account,
@@ -144,17 +147,20 @@ class WebGMEAADClient {
             // console.log(userData);
             if (userData.hasOwnProperty('aadId')) {
                 // console.log('chk003');
-                const account = this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
-                const tokenRequest = {
-                    scopes: [DATALAKE_SCOPE],
-                    account: account,
-                    forceRefresh: true
-                };
-                return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
+                return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
             } else {
                 // console.log('chk004');
                 throw new Error('Not AAD user, cannot retrieve accessToken');
             }
+        })
+        .then(account => {
+            // console.log(account);
+            const tokenRequest = {
+                scopes: [DATALAKE_SCOPE],
+                account: account,
+                forceRefresh: true
+            };
+            return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
         })
         .then(deferred.resolve)
         .catch(error => {
