@@ -61,7 +61,7 @@ class WebGMEAADClient {
 
     getUserIdFromEmail(email) {
         let uid = 'aadid_' + email;
-        uid = uid.replace(/@/g,'_at_').replace(/\./g,'_p_');
+        uid = uid.replace(/@/g,'_at_').replace(/\./g,'_p_').replace(/-/g,'_d_');
         return uid;
     }
 
@@ -113,7 +113,7 @@ class WebGMEAADClient {
                 // console.log('WEBGME-TOKEN:', token);
                 this.__logger.error('caching user- wtoken generated');
                 res.cookie(this.__gmeConfig.authentication.jwt.cookieId, token);
-                const account = this.__activeDirectoryClient.getTokenCache().getAccountByHomeId(claims.oid);
+                const account = this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(claims.oid);
                 const tokenRequest = {
                     scopes: [DATALAKE_SCOPE],
                     account: account,
@@ -144,7 +144,7 @@ class WebGMEAADClient {
             // console.log(userData);
             if (userData.hasOwnProperty('aadId')) {
                 // console.log('chk003');
-                const account = this.__activeDirectoryClient.getTokenCache().getAccountByHomeId(userData.aadId);
+                const account = this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
                 const tokenRequest = {
                     scopes: [DATALAKE_SCOPE],
                     account: account,
