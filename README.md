@@ -18,7 +18,7 @@ one of these libraries.
 
 ### Dependencies
  - [NodeJS](https://nodejs.org/) (version >= 4, CI tests are performed on versions 8.x, 10.x and LTS is recommended).
- - [MongoDB](https://www.mongodb.com/) (version >= 2.6).
+ - [MongoDB](https://www.mongodb.com/) (2.6 >= version <= 4.x).
  - [Git](https://git-scm.com) (must be available in PATH).
  - [Redis](https://redis.io/) needed to run all tests and if serving under multiple nodes.
 
