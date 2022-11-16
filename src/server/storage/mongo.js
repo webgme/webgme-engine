@@ -11,7 +11,7 @@
 
 var mongodb = require('mongodb'),
     Q = require('q'),
-
+    mongoUri = require('mongo-uri'),
     CONSTANTS = requireJS('common/storage/constants'),
     CANON = requireJS('common/util/canon'),
     REGEXP = requireJS('common/regexp');
@@ -24,6 +24,7 @@ function Mongo(mainLogger, gmeConfig) {
         logger = mainLogger.fork('mongo');
 
     this.client = null;
+    this.db = null;
     this.CONSTANTS = {
         TAGS: 'TAGS'
     };
@@ -367,9 +368,10 @@ function Mongo(mainLogger, gmeConfig) {
                 logger.debug('mongdb options', gmeConfig.mongo.uri, JSON.stringify(gmeConfig.mongo.options));
                 connectDeferred = Q.defer();
                 // connect to mongo
-                mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options, function (err, db) {
-                    if (!err && db) {
-                        self.client = db;
+                mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options, function (err, client) {
+                    if (!err && client) {
+                        self.client = client;
+                        self.db = client.db(mongoUri.parse(gmeConfig.mongo.uri).database);
                         disconnectDeferred = null;
                         logger.debug('Connected.');
                         connectDeferred.resolve();
@@ -425,8 +427,8 @@ function Mongo(mainLogger, gmeConfig) {
     function deleteProject(projectId, callback) {
         var deferred = Q.defer();
 
-        if (self.client) {
-            Q.ninvoke(self.client, 'dropCollection', projectId)
+        if (self.db) {
+            Q.ninvoke(self.db, 'dropCollection', projectId)
                 .then(function () {
                     deferred.resolve(true);
                 })
@@ -450,8 +452,8 @@ function Mongo(mainLogger, gmeConfig) {
 
         logger.debug('openProject', projectId);
 
-        if (self.client) {
-            Q.ninvoke(self.client, 'collection', projectId, {strict: true})
+        if (self.db) {
+            Q.ninvoke(self.db, 'collection', projectId, {strict: true})
                 .then(function (collection) {
                     deferred.resolve(new MongoProject(projectId, collection));
                 })
@@ -477,8 +479,8 @@ function Mongo(mainLogger, gmeConfig) {
 
         logger.debug('createProject', projectId);
 
-        if (self.client) {
-            Q.ninvoke(self.client, 'collection', projectId)
+        if (self.db) {
+            Q.ninvoke(self.db, 'collection', projectId)
                 .then(function (result) {
                     collection = result;
                     return Q.ninvoke(collection, 'insertMany', [
@@ -508,8 +510,8 @@ function Mongo(mainLogger, gmeConfig) {
     function renameProject(projectId, newProjectId, callback) {
         var deferred = Q.defer();
 
-        if (self.client) {
-            Q.ninvoke(self.client, 'renameCollection', projectId, newProjectId)
+        if (self.db) {
+            Q.ninvoke(self.db, 'renameCollection', projectId, newProjectId)
                 .then(function () {
                     deferred.resolve();
                 })
@@ -517,7 +519,7 @@ function Mongo(mainLogger, gmeConfig) {
                     err = err instanceof Error ? err : new Error(err);
                     if (err.message.indexOf('target namespace exists') > -1) {
                         deferred.reject(new Error('Project already exists ' + newProjectId));
-                    } else if (err.message.indexOf('source namespace does not exist') > -1) {
+                    } else if (err.message.indexOf('does not exist') > -1) {
                         deferred.reject(new Error('Project does not exist ' + projectId));
                     } else {
                         deferred.reject(err);
@@ -543,7 +545,9 @@ function Mongo(mainLogger, gmeConfig) {
             })
             .then(function (newProject_) {
                 newProject = newProject_;
-                return Q.ninvoke(project._collection, 'aggregate', [{$out: newProjectId}]);
+                return Q.ninvoke(project._collection, 'aggregate', [
+                    { $merge: newProjectId }
+                ]);
             })
             .then(function () {
                 return newProject;

@@ -3,7 +3,7 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-const { agent } = require('superagent');
+//const { agent } = require('superagent');
 
 describe('standalone http server with authentication turned on', function () {
     'use strict';

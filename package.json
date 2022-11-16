@@ -4,7 +4,7 @@
   "description": "WebGME server and Client API without a GUI",
   "main": "index.js",
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=14.0.0"
   },
   "scripts": {
     "start": "node ./src/bin/start_server.js",
@@ -70,7 +70,7 @@
     "mime": "^1.6.0",
     "minimatch": "3.0.4",
     "mongo-uri": "0.1.2",
-    "mongodb": "2.2.35",
+    "mongodb": "^3.7.3",
     "ncp": "2.0.0",
     "nodemailer": "^6.4.6",
     "pug": "^3.0.0",
