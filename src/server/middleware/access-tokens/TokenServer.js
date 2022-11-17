@@ -83,7 +83,7 @@ AccessTokens.prototype.list = async function (userId, sanitize = false) {
     if (sanitize) {
         projection.id = 0;
     }
-    const tokens = await this.tokenList.find({userId}, projection).toArray();
+    const tokens = await this.tokenList.find({userId}, { projection }).toArray();
     return tokens;
 };
 
@@ -141,7 +141,7 @@ AccessTokens.prototype.delete = async function (userId, displayName) {
 };
 
 AccessTokens.prototype.getUserId = async function (id) {
-    const token = await this.tokenList.findOne({id}, {_id: 0});
+    const token = await this.tokenList.findOne({id}, {projection: {_id: 0}});
     return token && token.userId;
 };
 

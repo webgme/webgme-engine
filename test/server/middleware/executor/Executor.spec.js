@@ -185,13 +185,17 @@ describe('ExecutorServer', function () {
                     assert.equal(res.status, 200, err);
                     assert.equal(typeof res.body.secret, 'string', res.body);
                     agent.post(serverBaseUrl + '/rest/executor/create/some_hash').end(function (err, res) {
-                        assert.equal(res.status, 200, err);
-                        assert.equal(
-                            typeof res.body.secret,
-                            'undefined',
-                            `Expected no secret. Found "${res.body.secret}"`
-                        );
-                        done();
+                        try {
+                            assert.equal(res.status, 200, err);
+                            assert.equal(
+                                typeof res.body.secret,
+                                'undefined',
+                                `Expected no secret. Found "${res.body.secret}"`
+                            );
+                            done();
+                        } catch (err) {
+                            done(err);
+                        }
                     });
                 });
             });

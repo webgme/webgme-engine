@@ -107,6 +107,7 @@ function GMEAuth(session, gmeConfig) {
      * projects: map from project name to object {read:, write:, delete: }
      */
     function addMongoOpsToPromize(collection_) {
+        // TODO: Drop this at some point - js has much better async support these days
         collection_.findOne = function () {
             var args = arguments;
             return collection_.then(function (c) {
@@ -123,6 +124,12 @@ function GMEAuth(session, gmeConfig) {
             var args = arguments;
             return collection_.then(function (c) {
                 return Q.npost(c, 'updateOne', args);
+            });
+        };
+        collection_.replaceOne = function (/*query, update, options*/) {
+            var args = arguments;
+            return collection_.then(function (c) {
+                return Q.npost(c, 'replaceOne', args);
             });
         };
         collection_.updateMany = function (/*query, update, options*/) {
@@ -585,10 +592,10 @@ function GMEAuth(session, gmeConfig) {
                     return Q.ninvoke(bcrypt, 'hash', userData.password, gmeConfig.authentication.salts)
                         .then(function (hash) {
                             oldUserData.passwordHash = hash;
-                            return collection.updateOne({_id: userId}, {$set: oldUserData}, {upsert: true});
+                            return collection.replaceOne({_id: userId}, oldUserData, {upsert: true});
                         });
                 } else {
-                    return collection.updateOne({_id: userId}, {$set: oldUserData}, {upsert: true});
+                    return collection.replaceOne({_id: userId}, oldUserData, {upsert: true});
                 }
             })
             .then(function () {
@@ -913,7 +920,7 @@ function GMEAuth(session, gmeConfig) {
                     if (!options.overwrite) {
                         return collection.insertOne(data);
                     } else {
-                        return collection.updateOne({_id: userId}, { $set: data }, {upsert: true});
+                        return collection.replaceOne({_id: userId}, data, {upsert: true});
                     }
                 })
                 .then(function (res) {
