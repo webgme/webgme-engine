@@ -1133,7 +1133,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
             .done();
     });
 
-    it.only('should contain branches and commits after duplicate', function (done) {
+    it('should contain branches and commits after duplicate', function (done) {
         var project,
             commitObj1 = {_id: '#commitHash1', time: 1, type: 'commit'},
             commitObj2 = {_id: '#commitHash2', time: 2, type: 'commit'},

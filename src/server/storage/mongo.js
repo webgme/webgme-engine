@@ -25,6 +25,7 @@ function Mongo(mainLogger, gmeConfig) {
 
     this.client = null;
     this.db = null;
+    this.dbName = mongoUri.parse(gmeConfig.mongo.uri).database;
     this.CONSTANTS = {
         TAGS: 'TAGS'
     };
@@ -371,7 +372,7 @@ function Mongo(mainLogger, gmeConfig) {
                 mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options, function (err, client) {
                     if (!err && client) {
                         self.client = client;
-                        self.db = client.db(mongoUri.parse(gmeConfig.mongo.uri).database);
+                        self.db = client.db(self.dbName);
                         disconnectDeferred = null;
                         logger.debug('Connected.');
                         connectDeferred.resolve();
@@ -546,8 +547,8 @@ function Mongo(mainLogger, gmeConfig) {
             .then(function (newProject_) {
                 newProject = newProject_;
                 return Q.ninvoke(project._collection, 'aggregate', [
-                    { $merge: newProjectId }
-                ]);
+                    { $out: `${self.dbName}.${newProjectId}` }
+                ], {});
             })
             .then(function () {
                 return newProject;
