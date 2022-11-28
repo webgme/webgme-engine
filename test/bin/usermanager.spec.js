@@ -18,7 +18,9 @@ describe('User manager command line interface (CLI)', function () {
         userManager = require('../../src/bin/usermanager'),
         GMEAuth = testFixture.GMEAuth,
         filename = require('path').normalize('src/bin/usermanager.js'),
+        mongoUriParser = require('mongo-uri'),
         mongoUri = gmeConfig.mongo.uri,
+        dbName = mongoUriParser.parse(gmeConfig.mongo.uri).database,
         uri = require('mongo-uri').parse(mongoUri);
 
     // N.B: child process does NOT generate coverage result and it is also somewhat slower.
@@ -67,6 +69,7 @@ describe('User manager command line interface (CLI)', function () {
             oldProcessStdoutWrite = process.stdout.write,
             dbConn,
             db,
+            client,
 
             auth,
 
@@ -112,8 +115,9 @@ describe('User manager command line interface (CLI)', function () {
             auth = new GMEAuth(null, gmeConfig);
 
             dbConn = Q.ninvoke(mongodb.MongoClient, 'connect', mongoUri, gmeConfig.mongo.options)
-                .then(function (db_) {
-                    db = db_;
+                .then(function (client_) {
+                    client = client_;
+                    db = client.db(dbName);
                     return Q.allDone([
                         Q.ninvoke(db, 'collection', '_users')
                             .then(function (collection_) {
@@ -155,7 +159,7 @@ describe('User manager command line interface (CLI)', function () {
         after(function (done) {
             // just to be safe
             restoreLogAndExit();
-            db.close(true, function (err) {
+            client.close(true, function (err) {
                 auth.unload(function (err1) {
                     done(err || err1 || null);
                 });
