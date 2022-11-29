@@ -1,0 +1,68 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Run Tests
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    name: testing
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [12]
+        mongodb-version: [4.4]
+        python-version: [3.8]
+        redis-version: [6]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+          repo-token: ${{ github.token }}
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          repo-token: ${{ github.token }}
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.3.0
+        with:
+          mongodb-version: '4.4'
+          repo-token: ${{ github.token }}
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.2.0
+        with:
+          redis-version: '6'
+          repo-token: ${{ github.token }}
+      - name: NPM install
+        run: npm install 
+      - name: NPM postinstall
+        run: npm run postinstall 
+      - name: Lint test
+        run: npm run lint
+#      - name: karma test
+#        run: node ./node_modules/karma/bin/karma start karma.conf.js --browsers Firefox --single-run
+      - name: Mocha addon test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/addon
+      - name: Mocha bin test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/bin
+      - name: Mocha common test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/common
+      - name: Mocha config test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/config
+      - name: Mocha issue test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/issue
+      - name: Mocha plugin test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exclude **/ExecutorPlugin/**/* --recursive ./test/plugin
+      - name: Mocha seeds test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/seeds
+      - name: Mocha client test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/client
+      - name: Mocha server test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/server
