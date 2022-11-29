@@ -194,7 +194,7 @@ function MetadataStorage(mainLogger /*, gmeConfig*/) {
                     projectData.info[infoKey] = info[infoKey] || projectData.info[infoKey];
                 });
 
-                return self.projectCollection.updateOne({_id: projectId}, projectData, {upsert: true});
+                return self.projectCollection.updateOne({_id: projectId}, {$set: projectData}, {upsert: true});
             })
             .then(function () {
                 return getProject(projectId);
@@ -249,7 +249,7 @@ function MetadataStorage(mainLogger /*, gmeConfig*/) {
                 // always update webhook information as a whole to allow remove and create and update as well
                 projectData.hooks = hooks;
 
-                return self.projectCollection.updateOne({_id: projectId}, projectData, {upsert: true});
+                return self.projectCollection.updateOne({_id: projectId}, {$set: projectData}, {upsert: true});
             })
             .then(function () {
                 return getProject(projectId);

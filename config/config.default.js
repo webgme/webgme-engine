@@ -146,7 +146,9 @@ var path = require('path'),
         mongo: {
             uri: 'mongodb://127.0.0.1:27017/multi',
             options: {
-                w: 1,
+                writeConcern: {
+                    w: 1
+                },
                 autoReconnect: true,
                 keepAlive: 1
             }

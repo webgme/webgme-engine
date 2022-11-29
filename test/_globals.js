@@ -26,6 +26,7 @@ process.env.NODE_ENV = (process.env.NODE_ENV && process.env.NODE_ENV.indexOf('te
 
 //adding a local storage class to the global Namespace
 var WebGME = require('../index'),
+    mongoUri = require('mongo-uri'),
     _gmeConfig,
     getGmeConfig = function () {
         // makes sure that for each request it returns with a unique object and tests will not interfere
@@ -304,32 +305,30 @@ Q.allDone = function (promises) {
 
 function clearDatabase(gmeConfigParameter, callback) {
     var deferred = Q.defer(),
+        client,
         db;
 
-    Q.ninvoke(exports.mongodb.MongoClient, 'connect', gmeConfigParameter.mongo.uri, gmeConfigParameter.mongo.options)
-        .then(function (db_) {
-            db = db_;
-            var colls = db.listCollections();
-            return Q.ninvoke(colls, 'toArray');
+    exports.mongodb.MongoClient.connect(gmeConfigParameter.mongo.uri, gmeConfigParameter.mongo.options)
+        .then(function (client_) {
+            client = client_;
+            db = client.db(mongoUri.parse(gmeConfigParameter.mongo.uri).database);
+            return db.listCollections().toArray();
         })
         .then(function (collectionNames) {
             var collectionPromises = [];
             collectionNames.map(function (collData) {
                 if (collData.name.indexOf('system.') === -1) {
-                    collectionPromises.push(Q.ninvoke(db, 'dropCollection', collData.name));
+                    collectionPromises.push(db.dropCollection(collData.name));
                 }
             });
-            return Q.allDone(collectionPromises);
+
+            return Promise.all(collectionPromises);
         })
         .then(function () {
-            return Q.ninvoke(db, 'close');
+            return client.close();
         })
-        .then(function () {
-            deferred.resolve();
-        })
-        .catch(function (err) {
-            deferred.reject(err);
-        });
+        .then(deferred.resolve)
+        .catch(deferred.reject);
 
     return deferred.promise.nodeify(callback);
 }

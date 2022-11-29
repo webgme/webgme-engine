@@ -388,7 +388,7 @@ ExecutorMaster.prototype.getJobList = async function (userId, status) {
     }
 
     this.addUserToQuery(userId, query);
-    const docs = await this.jobList.find(query, {_id: 0, secret: 0}).toArray();
+    const docs = await this.jobList.find(query, {projection: {_id: 0, secret: 0}}).toArray();
     const jobList = {};
     for (var i = 0; i < docs.length; i += 1) {
         jobList[docs[i].hash] = docs[i];
@@ -400,7 +400,7 @@ ExecutorMaster.prototype.getJobList = async function (userId, status) {
 
 ExecutorMaster.prototype.getJobInfo = function (userId, hash) {
     const query = this.getJobQuery(userId, hash);
-    return this.jobList.findOne(query, {_id: 0, secret: 0});
+    return this.jobList.findOne(query, {projection: {_id: 0, secret: 0}});
 };
 
 ExecutorMaster.prototype.createJob = async function (userId, info) {
@@ -412,7 +412,7 @@ ExecutorMaster.prototype.createJob = async function (userId, info) {
     jobInfo.secret = this.chance.guid();
 
     this.logger.debug('job creation info:', {metadata: info});
-    const doc = await this.jobList.findOne({hash: info.hash}, {_id: 0, secret: 0});
+    const doc = await this.jobList.findOne({hash: info.hash}, {projection: {_id: 0, secret: 0} });
     if (!doc) {
         await this.jobList.insertOne(jobInfo);
         delete jobInfo._id;
@@ -431,7 +431,7 @@ ExecutorMaster.prototype.restartCanceledJob = async function (oldJobInfo, newInf
 
         await this.clearOutput(oldJobInfo);
     }
-    await this.jobList.updateOne({hash: oldJobInfo.hash}, newInfo, {upsert: true});
+    await this.jobList.replaceOne({hash: oldJobInfo.hash}, newInfo, {upsert: true});
     return newInfo;
 };
 
@@ -450,7 +450,7 @@ ExecutorMaster.prototype.updateJob = async function (userId, info) {
         }
 
         jobInfo.secret = doc.secret;
-        const result = await this.jobList.updateOne(query, jobInfo);
+        const result = await this.jobList.replaceOne(query, jobInfo);
         if (result.matchedCount === 0) {
             throw new Error('Not Found');
         } else {
@@ -541,7 +541,7 @@ ExecutorMaster.prototype.getJobOutput = async function (userId, hash, start, end
 };
 
 ExecutorMaster.prototype.updateJobOutput = async function (userId, hash, outputInfo) {
-    await this.outputList.updateOne({_id: outputInfo._id}, outputInfo, {upsert: true});
+    await this.outputList.replaceOne({_id: outputInfo._id}, outputInfo, {upsert: true});
     const query = {hash};
     this.addUserToQuery(userId, query);
     const result = await this.jobList.updateOne(query, {

@@ -16,6 +16,7 @@ var Mongodb = require('mongodb'),
     bcrypt = require('bcryptjs'),
     jwt = require('jsonwebtoken'),
     Chance = require('chance'),
+    mongoUri = require('mongo-uri'),
     MetadataStorage = require('../../storage/metadatastorage'),
     UTIL = requireJS('common/util/util'),
     EventDispatcher = requireJS('common/EventDispatcher'),
@@ -26,7 +27,6 @@ var Mongodb = require('mongodb'),
 
 const crypto = require('crypto');
 const _ = require('underscore');
-const config = require('../../../../config/config.default');
 const INFERRED_USER_EMAIL = 'em@il';
 const getInferredIdFromEmail = email => {
     let uid = '_iuid_'+email;
@@ -71,6 +71,8 @@ function GMEAuth(session, gmeConfig) {
         logger = Logger.create('gme:server:auth:gmeauth', gmeConfig.server.log),
         _collectionName = '_users',
         _projectCollectionName = '_projects',
+        client,
+        dbName = mongoUri.parse(gmeConfig.mongo.uri).database,
         db,
         collection,
         projectCollection,
@@ -105,6 +107,7 @@ function GMEAuth(session, gmeConfig) {
      * projects: map from project name to object {read:, write:, delete: }
      */
     function addMongoOpsToPromize(collection_) {
+        // TODO: Drop this at some point - js has much better async support these days
         collection_.findOne = function () {
             var args = arguments;
             return collection_.then(function (c) {
@@ -121,6 +124,12 @@ function GMEAuth(session, gmeConfig) {
             var args = arguments;
             return collection_.then(function (c) {
                 return Q.npost(c, 'updateOne', args);
+            });
+        };
+        collection_.replaceOne = function (/*query, update, options*/) {
+            var args = arguments;
+            return collection_.then(function (c) {
+                return Q.npost(c, 'replaceOne', args);
             });
         };
         collection_.updateMany = function (/*query, update, options*/) {
@@ -274,8 +283,9 @@ function GMEAuth(session, gmeConfig) {
         logger.info('connecting to:', gmeConfig.mongo.uri);
         logger.debug('mongdb options', gmeConfig.mongo.uri, JSON.stringify(gmeConfig.mongo.options));
         return Q.ninvoke(Mongodb.MongoClient, 'connect', gmeConfig.mongo.uri, gmeConfig.mongo.options)
-            .then(function (db_) {
-                db = db_;
+            .then(function (client_) {
+                client = client_;
+                db = client.db(dbName);
                 return Q.ninvoke(db, 'collection', _collectionName);
             })
             .then(function (collection_) {
@@ -319,7 +329,7 @@ function GMEAuth(session, gmeConfig) {
     function unload(callback) {
         return Q.all([collection, projectCollection, authorizer.stop(), metadataStorage.stop(), tokenGenerator.stop()])
             .finally(function () {
-                return Q.ninvoke(db, 'close');
+                return Q.ninvoke(client, 'close');
             })
             .nodeify(callback);
     }
@@ -404,7 +414,7 @@ function GMEAuth(session, gmeConfig) {
 
                 // if this option is turned on, we assume that the e-mail addresses are unique - except the default inferred
                 if (gmeConfig.authentication.useEmailForId && content.email) {
-                    return collection.findOne({email:content.email, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}});
+                    return collection.findOne({email: content.email, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}});
                 } else {
                     return Q(null);
                 }
@@ -413,10 +423,10 @@ function GMEAuth(session, gmeConfig) {
                 if (emailUserData && gmeConfig.authentication.useEmailForId) {
                     userId = emailUserData._id;
                 }
-                return collection.findOne({_id:userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}});
+                return collection.findOne({_id: userId, type: {$ne: CONSTANTS.ORGANIZATION}, disabled: {$ne: true}});
             })
             .then(completeUserData => {
-                if(!completeUserData && (userId || result.content.email)) {
+                if (!completeUserData && (userId || result.content.email)) {
                     // We create a new user - an inferred one that is if we got email or userid
                     if (!userId && gmeConfig.authentication.useEmailForId) {
                         userId = getInferredIdFromEmail(result.content.email);
@@ -427,14 +437,14 @@ function GMEAuth(session, gmeConfig) {
                             overwrite: false,
                             displayName: result.content.displayName
                         });
-                } else if(completeUserData && gmeConfig.authentication.useEmailForId && 
+                } else if (completeUserData && gmeConfig.authentication.useEmailForId && 
                     result.content.email && completeUserData.email === INFERRED_USER_EMAIL) {
                     // We should update the userdata with the email
                     return self.addUser(userId, result.content.email, GUID(),
                         gmeConfig.authentication.inferredUsersCanCreate, {
-                        overwrite: true,
-                        displayName: result.content.displayName
-                    });
+                            overwrite: true,
+                            displayName: result.content.displayName
+                        });
                 } else {
                     return Q(null);
                 }
@@ -582,10 +592,10 @@ function GMEAuth(session, gmeConfig) {
                     return Q.ninvoke(bcrypt, 'hash', userData.password, gmeConfig.authentication.salts)
                         .then(function (hash) {
                             oldUserData.passwordHash = hash;
-                            return collection.updateOne({_id: userId}, oldUserData, {upsert: true});
+                            return collection.replaceOne({_id: userId}, oldUserData, {upsert: true});
                         });
                 } else {
-                    return collection.updateOne({_id: userId}, oldUserData, {upsert: true});
+                    return collection.replaceOne({_id: userId}, oldUserData, {upsert: true});
                 }
             })
             .then(function () {
@@ -870,6 +880,7 @@ function GMEAuth(session, gmeConfig) {
                 orgs: [],
                 siteAdmin: options.siteAdmin,
                 displayName: options.displayName,
+                disabled: false,
             };
 
         if (options.hasOwnProperty('data')) {
@@ -901,14 +912,15 @@ function GMEAuth(session, gmeConfig) {
                     return collection.findOne({email: email, _id: {$ne: userId}});
                 })
                 .then(otherUserWithSameEmail => {
-                    if(gmeConfig.authentication.useEmailForId && otherUserWithSameEmail && email !== INFERRED_USER_EMAIL) {
+                    if (gmeConfig.authentication.useEmailForId
+                        && otherUserWithSameEmail && email !== INFERRED_USER_EMAIL) {
                         throw new Error('email address already in use');
                     }
 
                     if (!options.overwrite) {
                         return collection.insertOne(data);
                     } else {
-                        return collection.updateOne({_id: userId}, data, {upsert: true});
+                        return collection.replaceOne({_id: userId}, data, {upsert: true});
                     }
                 })
                 .then(function (res) {
