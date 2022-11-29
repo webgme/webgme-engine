@@ -542,13 +542,14 @@ function Mongo(mainLogger, gmeConfig) {
         return self.openProject(projectId)
             .then(function (project_) {
                 project = project_;
+
+
                 return self.createProject(newProjectId);
             })
             .then(function (newProject_) {
                 newProject = newProject_;
-                return Q.ninvoke(project._collection, 'aggregate', [
-                    { $out: `${self.dbName}.${newProjectId}` }
-                ], {});
+                const pipelineStages = [{ $out: `${newProjectId}` }];
+                return project._collection.aggregate(pipelineStages, {}).toArray();
             })
             .then(function () {
                 return newProject;
