@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [12]
+        node: [16, 18]
         mongodb-version: [4.4]
         python-version: [3.8]
         redis-version: [6]
@@ -24,7 +24,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '12'
+          node-version: '${{ matrix.node }}'
           repo-token: ${{ github.token }}
       - uses: actions/setup-python@v2
         with:
@@ -44,8 +44,8 @@ jobs:
         run: npm install 
       - name: NPM postinstall
         run: npm run postinstall 
-      - name: Lint test
-        run: npm run lint
+#      - name: Lint test
+#        run: npm run lint
 #      - name: karma test
 #        run: node ./node_modules/karma/bin/karma start karma.conf.js --browsers Firefox --single-run
       - name: Mocha addon test
@@ -59,7 +59,7 @@ jobs:
       - name: Mocha issue test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/issue
       - name: Mocha plugin test
-        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exclude **/ExecutorPlugin/**/* --recursive ./test/plugin
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/plugin
       - name: Mocha seeds test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/seeds
       - name: Mocha client test
