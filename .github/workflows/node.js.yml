@@ -21,6 +21,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Chrome
+        uses: browser-actions/setup-chrome@latest
+        run: chrome --version
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
@@ -46,12 +49,12 @@ jobs:
         run: npm run postinstall 
 #      - name: Lint test
 #        run: npm run lint
-#      - name: karma test
-#        run: node ./node_modules/karma/bin/karma start karma.conf.js --browsers Firefox --single-run
       - name: Mocha addon test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/addon
       - name: Mocha bin test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/bin
+      - name: Mocha client test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/client
       - name: Mocha common test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/common
       - name: Mocha config test
@@ -62,7 +65,7 @@ jobs:
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/plugin
       - name: Mocha seeds test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/seeds
-      - name: Mocha client test
-        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/client
       - name: Mocha server test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/server
+      - name: karma test
+        run: node ./node_modules/karma/bin/karma start karma.conf.js --browsers Chrome --single-run
