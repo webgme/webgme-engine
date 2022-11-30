@@ -23,7 +23,6 @@ jobs:
           submodules: true
       - name: Chrome
         uses: browser-actions/setup-chrome@latest
-        run: chrome --version
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
