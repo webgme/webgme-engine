@@ -97,7 +97,7 @@ describe('VARIOUS REST API', function () {
 
             it('should get all organizations /api/v1/orgs if siteAdmin', function (done) {
                 agent.get(server.getUrl() + '/api/v1/orgs')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body.length).to.be.above(3);
@@ -151,7 +151,7 @@ describe('VARIOUS REST API', function () {
 
                 agent.get(server.getUrl() + '/api/v1/orgs')
                     .query({includeDisabled: true})
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         dOrgs = res.body;
                         report(err);
@@ -160,7 +160,7 @@ describe('VARIOUS REST API', function () {
 
             it('should get specific organization /api/v1/orgs/orgInit', function (done) {
                 agent.get(server.getUrl() + '/api/v1/orgs/orgInit')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body.admins).to.deep.equal(['userAdminOrg']);
@@ -182,7 +182,7 @@ describe('VARIOUS REST API', function () {
                         expect(res.status).equal(404, err); // user should not exist at this point
 
                         agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
-                            .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                             .send(newOrg)
                             .end(function (err, res2) {
                                 expect(res2.status).equal(200, err);
@@ -211,7 +211,7 @@ describe('VARIOUS REST API', function () {
                             expect(res.status).equal(404, err); // org should not exist at this point
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
-                                .set('Authorization', 'Basic ' + new Buffer('userCanCreate:plaintext')
+                                .set('Authorization', 'Basic ' + Buffer.from('userCanCreate:plaintext')
                                     .toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
@@ -242,7 +242,7 @@ describe('VARIOUS REST API', function () {
                             expect(res.status).equal(404);
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
-                                .set('Authorization', 'Basic ' + new Buffer('userCanCreate:plaintext')
+                                .set('Authorization', 'Basic ' + Buffer.from('userCanCreate:plaintext')
                                     .toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
@@ -271,7 +271,7 @@ describe('VARIOUS REST API', function () {
                             expect(res.status).equal(404, err); // org should not exist at this point
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
-                                .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext')
+                                .set('Authorization', 'Basic ' + Buffer.from('userCanNotCreate:plaintext')
                                     .toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
@@ -292,12 +292,12 @@ describe('VARIOUS REST API', function () {
                         };
 
                     agent.get(server.getUrl() + '/api/v1/orgs/' + orgId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
 
                             agent.put(server.getUrl() + '/api/v1/orgs/' + orgId)
-                                .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .send(newOrg)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(400, err);
@@ -319,7 +319,7 @@ describe('VARIOUS REST API', function () {
 
                 agent.patch(server.getUrl() + '/api/v1/orgs/' + orgId)
                     .send(newInfo)
-                    .set('Authorization', 'Basic ' + new Buffer('userAdminOrg:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('userAdminOrg:plaintext').toString('base64'))
                     .end(function (err, res) {
                         try {
                             expect(res.status).equal(200, err);
@@ -341,7 +341,7 @@ describe('VARIOUS REST API', function () {
 
                 agent.patch(server.getUrl() + '/api/v1/orgs/' + orgId)
                     .send(newInfo)
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         try {
                             expect(res.status).equal(200, err);
@@ -363,7 +363,7 @@ describe('VARIOUS REST API', function () {
 
                 agent.patch(server.getUrl() + '/api/v1/orgs/' + orgId)
                     .send(newInfo)
-                    .set('Authorization', 'Basic ' + new Buffer('userCanCreate:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('userCanCreate:plaintext').toString('base64'))
                     .end(function (err, res) {
                         try {
                             expect(res.status).equal(403, err);
@@ -383,7 +383,7 @@ describe('VARIOUS REST API', function () {
 
                     agent.patch(server.getUrl() + '/api/v1/orgs/' + orgId)
                         .send(newData)
-                        .set('Authorization', 'Basic ' + new Buffer('userAdminOrg:plaintext').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('userAdminOrg:plaintext').toString('base64'))
                         .end(function (err, res) {
                             try {
                                 expect(res.status).equal(403, err);
@@ -404,7 +404,7 @@ describe('VARIOUS REST API', function () {
 
                     agent.patch(server.getUrl() + '/api/v1/orgs/' + orgId)
                         .send(newData)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             try {
                                 expect(res.status).equal(400, err);
@@ -425,7 +425,7 @@ describe('VARIOUS REST API', function () {
 
                     agent.patch(server.getUrl() + '/api/v1/orgs/' + orgId)
                         .send(newData)
-                        .set('Authorization', 'Basic ' + new Buffer('userAdminOrg:plaintext').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('userAdminOrg:plaintext').toString('base64'))
                         .end(function (err, res) {
                             try {
                                 expect(res.status).equal(403, err);
@@ -446,7 +446,7 @@ describe('VARIOUS REST API', function () {
 
                     agent.patch(server.getUrl() + '/api/v1/orgs/' + orgId)
                         .send(newData)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             try {
                                 expect(res.status).to.equal(200, err);
@@ -464,17 +464,17 @@ describe('VARIOUS REST API', function () {
             it('should delete organization as site admin DELETE /api/v1/orgs/orgToDelete', function (done) {
                 var orgName = 'orgToDelete';
                 agent.get(server.getUrl() + '/api/v1/orgs/' + orgName)
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err); // org should exist at this point
 
                         agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
-                            .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                             .end(function (err, res2) {
                                 expect(res2.status).equal(204, err);
 
                                 agent.get(server.getUrl() + '/api/v1/orgs/' + orgName)
-                                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                     .end(function (err, res) {
                                         expect(res.status).equal(404, err); // org should not exist at this point
                                         done();
@@ -486,17 +486,17 @@ describe('VARIOUS REST API', function () {
             it('should delete organization as org admin DELETE /api/v1/orgs/orgToDelete2', function (done) {
                 var orgName = 'orgToDelete2';
                 agent.get(server.getUrl() + '/api/v1/orgs/' + orgName)
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err); // org should exist at this point
 
                         agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
-                            .set('Authorization', 'Basic ' + new Buffer('userAdminOrg2:plaintext').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('userAdminOrg2:plaintext').toString('base64'))
                             .end(function (err, res2) {
                                 expect(res2.status).equal(204, err);
 
                                 agent.get(server.getUrl() + '/api/v1/orgs/' + orgName)
-                                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                     .end(function (err, res) {
                                         expect(res.status).equal(404, err); // org should not exist at this point
                                         done();
@@ -510,7 +510,7 @@ describe('VARIOUS REST API', function () {
 
                 agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
                     .query({force: true})
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res2) {
                         try {
                             expect(res2.status).equal(204, err);
@@ -535,7 +535,7 @@ describe('VARIOUS REST API', function () {
 
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
                         .query({force: true})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res2) {
                             try {
                                 expect(res2.status).equal(204, err);
@@ -554,7 +554,7 @@ describe('VARIOUS REST API', function () {
 
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
                         .query({force: true})
-                        .set('Authorization', 'Basic ' + new Buffer('userAdminOrg:plaintext').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('userAdminOrg:plaintext').toString('base64'))
                         .end(function (err, res2) {
                             try {
                                 expect(res2.status).equal(403, err);
@@ -571,18 +571,18 @@ describe('VARIOUS REST API', function () {
                 function (done) {
                     var orgName = 'orgInit';
                     agent.get(server.getUrl() + '/api/v1/orgs/' + orgName)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err); // org should exist at this point
 
                             agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
-                                .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext')
+                                .set('Authorization', 'Basic ' + Buffer.from('userCanNotCreate:plaintext')
                                     .toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
 
                                     agent.get(server.getUrl() + '/api/v1/orgs/' + orgName)
-                                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                         .end(function (err, res) {
                                             expect(res.status).equal(200, err); // org should still exist at this point
                                             done();
@@ -600,7 +600,7 @@ describe('VARIOUS REST API', function () {
                             expect(res.status).equal(404, err); // org should not exist at this point
 
                             agent.del(server.getUrl() + '/api/v1/orgs/' + orgName)
-                                .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(404, err);
                                     done();
@@ -612,12 +612,12 @@ describe('VARIOUS REST API', function () {
             // add user to organization
             it('should add user to organization PUT /api/v1/orgs/orgInit/users/userAddedToOrg', function (done) {
                 agent.put(server.getUrl() + '/api/v1/orgs/orgInit/users/userAddedToOrg')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res2) {
                         expect(res2.status).equal(204, err);
 
                         agent.get(server.getUrl() + '/api/v1/users/userAddedToOrg')
-                            .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                             .end(function (err, res) {
                                 expect(res.status).equal(200, err);
                                 expect(res.body.orgs).to.deep.equal(['orgInit']);
@@ -629,7 +629,7 @@ describe('VARIOUS REST API', function () {
             it('should 403 when add user to organization and not admin PUT /api/v1/orgs/orgInit/users/userAddedToOrg',
                 function (done) {
                     agent.put(server.getUrl() + '/api/v1/orgs/orgInit/users/userAddedToOrg')
-                        .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('userCanNotCreate:plaintext').toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(403, err);
                             done();
@@ -640,7 +640,7 @@ describe('VARIOUS REST API', function () {
             it('should 404 when add user to non-existing organization PUT /api/v1/orgs/noExists/users/userAddedToOrg',
                 function (done) {
                     agent.put(server.getUrl() + '/api/v1/orgs/noExists/users/userAddedToOrg')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(404, err);
                             done();
@@ -651,7 +651,7 @@ describe('VARIOUS REST API', function () {
             it('should 404 when add non-existing user to organization PUT /api/v1/orgs/orgInit/users/noExists',
                 function (done) {
                     agent.put(server.getUrl() + '/api/v1/orgs/orgInit/users/noExists')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(404, err);
                             done();
@@ -665,18 +665,18 @@ describe('VARIOUS REST API', function () {
                     var orgId = 'orgToRemoveUser',
                         userId = 'userRemovedFromOrg';
                     agent.get(server.getUrl() + '/api/v1/users/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body.orgs).to.deep.equal([orgId]);
 
                             agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
-                                .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(204, err);
 
                                     agent.get(server.getUrl() + '/api/v1/users/' + userId)
-                                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                         .end(function (err, res) {
                                             expect(res.status).equal(200, err);
                                             expect(res.body.orgs).to.deep.equal([]);
@@ -692,19 +692,19 @@ describe('VARIOUS REST API', function () {
                     var orgId = 'orgInit',
                         userId = 'userAdminOrg';
                     agent.get(server.getUrl() + '/api/v1/users/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body.orgs).to.deep.equal([orgId]);
 
                             agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
-                                .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext')
+                                .set('Authorization', 'Basic ' + Buffer.from('userCanNotCreate:plaintext')
                                     .toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
 
                                     agent.get(server.getUrl() + '/api/v1/users/' + userId)
-                                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                         .end(function (err, res) {
                                             expect(res.status).equal(200, err);
                                             expect(res.body.orgs).to.deep.equal([orgId]);
@@ -721,7 +721,7 @@ describe('VARIOUS REST API', function () {
                         userId = 'userAdminOrg';
 
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin')
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin')
                             .toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(404, err);
@@ -736,7 +736,7 @@ describe('VARIOUS REST API', function () {
                         userId = 'noExist';
 
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/users/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin')
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin')
                             .toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(204, err);
@@ -751,12 +751,12 @@ describe('VARIOUS REST API', function () {
                     var orgId = 'orgToAddAdmin',
                         userId = 'userAddedToOrg';
                     agent.put(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(204, err);
 
                             agent.get(server.getUrl() + '/api/v1/orgs/' + orgId)
-                                .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .end(function (err, res) {
                                     expect(res.status).equal(200, err);
                                     expect(res.body.admins).to.deep.equal([userId]);
@@ -771,7 +771,7 @@ describe('VARIOUS REST API', function () {
                     var orgId = 'orgInit',
                         userId = 'userAddedToOrg';
                     agent.put(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('userCanNotCreate:plaintext').toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(403, err);
                             done();
@@ -784,7 +784,7 @@ describe('VARIOUS REST API', function () {
                     var orgId = 'noExist',
                         userId = 'userAddedToOrg';
                     agent.put(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(404, err);
                             done();
@@ -797,7 +797,7 @@ describe('VARIOUS REST API', function () {
                     var orgId = 'orgInit',
                         userId = 'noExist';
                     agent.put(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(404, err);
                             done();
@@ -810,18 +810,18 @@ describe('VARIOUS REST API', function () {
                     var orgId = 'orgToRemoveAdmin',
                         userId = 'userAdminOrg';
                     agent.get(server.getUrl() + '/api/v1/orgs/' + orgId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body.admins).to.deep.equal([userId]);
 
                             agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                                .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(204, err);
 
                                     agent.get(server.getUrl() + '/api/v1/orgs/' + orgId)
-                                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                         .end(function (err, res) {
                                             expect(res.status).equal(200, err);
                                             expect(res.body.admins).to.deep.equal([]);
@@ -837,7 +837,7 @@ describe('VARIOUS REST API', function () {
                     var orgId = 'orgInit',
                         userId = 'userAddedToOrg';
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('userCanNotCreate:plaintext').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('userCanNotCreate:plaintext').toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(403, err);
                             done();
@@ -850,7 +850,7 @@ describe('VARIOUS REST API', function () {
                 var orgId = 'noExist',
                     userId = 'userAddedToOrg';
                 agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res2) {
                         expect(res2.status).equal(404, err);
                         done();
@@ -862,7 +862,7 @@ describe('VARIOUS REST API', function () {
                     var orgId = 'orgInit',
                         userId = 'noExist';
                     agent.del(server.getUrl() + '/api/v1/orgs/' + orgId + '/admins/' + userId)
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res2) {
                             expect(res2.status).equal(204, err);
                             done();
@@ -1036,7 +1036,7 @@ describe('VARIOUS REST API', function () {
 
             it('should get combined /status as admin', function (done) {
                 agent.get(server.getUrl() + '/api/v1/status')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         try {
                             expect(res.status).equal(200, err);
@@ -1053,7 +1053,7 @@ describe('VARIOUS REST API', function () {
 
             it('should get /status/server-workers as admin', function (done) {
                 agent.get(server.getUrl() + '/api/v1/status/server-workers')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         try {
                             expect(res.status).equal(200, err);
@@ -1068,7 +1068,7 @@ describe('VARIOUS REST API', function () {
 
             it('should get /status/web-sockets as admin', function (done) {
                 agent.get(server.getUrl() + '/api/v1/status/web-sockets')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         try {
                             expect(res.status).equal(200, err);

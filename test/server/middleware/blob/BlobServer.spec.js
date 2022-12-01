@@ -132,7 +132,7 @@ describe('BlobServer', function () {
         });
     });
 
-    it('should return empty object at /rest/blob/metadata/ with no public metadata', function (done) {
+    it.only('should return empty object at /rest/blob/metadata/ with no public metadata', function (done) {
         var bc = new BlobClient(bcParam),
             artifact = new Artifact('notPublic', bc);
 
