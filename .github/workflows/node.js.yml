@@ -45,8 +45,7 @@ jobs:
 #      - name: Lint test
 #        run: npm run lint
       - name: karma test
-        run: Xvfb :99 & export DISPLAY=:99
-        run: node ./node_modules/karma/bin/karma start karma.conf.js --browsers Chrome --single-run
+        run: Xvfb :99 & export DISPLAY=:99 && node ./node_modules/karma/bin/karma start karma.conf.js --browsers Chrome --single-run
       - name: Mocha addon test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/addon
       - name: Mocha bin test
