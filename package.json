@@ -87,7 +87,7 @@
     "underscore": "1.12.1",
     "webgme-ot": "0.0.16",
     "webgme-rust": "0.1.0",
-    "winston": "2.4.3"
+    "winston": "^2.4.7"
   },
   "devDependencies": {
     "chai": "^4.1.2",

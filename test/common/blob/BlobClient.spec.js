@@ -103,7 +103,7 @@ describe('BlobClient', function () {
         it('should create file from empty buffer', function (done) {
             var bc = new BlobClient(bcParam);
 
-            bc.putFile('test.txt', Buffer.from(0), function (err, hash) {
+            bc.putFile('test.txt', Buffer.alloc(0), function (err, hash) {
                 if (err) {
                     done(err);
                     return;
@@ -292,7 +292,7 @@ describe('BlobClient', function () {
         it('getObjectAsString should create file from empty buffer and return as string', function (done) {
             var bc = new BlobClient(bcParam);
 
-            bc.putFile('test2.txt', Buffer.from(0))
+            bc.putFile('test2.txt', Buffer.alloc(0))
                 .then(function (hash) {
                     return bc.getObjectAsString(hash);
                 })
@@ -1258,7 +1258,7 @@ describe('BlobClient', function () {
     }
 
     function ab2buffer(ab) {
-        var buffer = Buffer.from(ab.byteLength);
+        var buffer = Buffer.alloc(ab.byteLength);
         var view = new Uint8Array(ab);
         for (var i = 0; i < buffer.length; ++i) {
             buffer[i] = view[i];

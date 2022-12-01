@@ -90,7 +90,10 @@ describe('GME authentication special tests', function () {
                 .then(user => {
                     expect(user._id).to.eql('user4');
                     expect(user.email).to.eql('user4@myemail.just');
-                    oldPwdHash = user.passwordHash;            
+                    oldPwdHash = user.passwordHash;
+                    return auth.addUser('user4', 'user4new@myemail.just', 'newpassword', false, { overwrite: true });
+                })
+                .then(user => {
                     expect(user._id).to.eql('user4');
                     expect(user.canCreate).to.eql(false);
                     expect(user.email).to.eql('user4new@myemail.just');
