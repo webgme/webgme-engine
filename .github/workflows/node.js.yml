@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [16]
+        node: [16.x]
         mongodb-version: [4.4]
         python-version: [3.8]
         redis-version: [6]
@@ -21,31 +21,27 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Chrome
-        uses: browser-actions/setup-chrome@latest
-      - name: Use Node.js
+      - name: Use Node.js {{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
-          node-version: '${{ matrix.node }}'
-          repo-token: ${{ github.token }}
+          node-version: ${{ matrix.node-version }}
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-          repo-token: ${{ github.token }}
-      - name: Start MongoDB
+      - name: Start MongoDB ${{ matrix.mongodb-version }}
         uses: supercharge/mongodb-github-action@1.3.0
         with:
-          mongodb-version: '4.4'
-          repo-token: ${{ github.token }}
-      - name: Start Redis
+          mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Start Redis ${{ matrix.redis-version }}
         uses: supercharge/redis-github-action@1.2.0
         with:
-          redis-version: '6'
-          repo-token: ${{ github.token }}
+          redis-version: ${{ matrix.redis-version }}
+      - name: Chrome
+        uses: browser-actions/setup-chrome@latest
       - name: NPM install
         run: npm install 
-      - name: NPM postinstall
-        run: npm run postinstall 
+      # - name: NPM postinstall
+      #   run: npm run postinstall 
 #      - name: Lint test
 #        run: npm run lint
       - name: Mocha addon test

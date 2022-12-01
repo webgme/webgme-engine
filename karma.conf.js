@@ -198,7 +198,7 @@ module.exports = function (config) {
 
 
         // enable / disable watching file and executing tests whenever any file changes
-        autoWatch: true,
+        autoWatch: false,
 
 
         // start these browsers
@@ -217,7 +217,7 @@ module.exports = function (config) {
         singleRun: true,
 
 
-        // forward these requests to the webgme server. All other files are server by the karma web server
+        // forward these requests to the webgme server. All other files are served by the karma web server
         proxies: {
             '/base/gmeConfig.json': 'http://localhost:' + gmeConfig.server.port + '/gmeConfig.json',
             '/docs': 'http://localhost:' + gmeConfig.server.port + '/docs',

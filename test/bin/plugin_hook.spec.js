@@ -5,7 +5,7 @@
  */
 'use strict';
 
-describe('plugin_hook', function () {
+describe.skip('plugin_hook', function () {
     var testFixture = require('../_globals.js'),
         gmeConfig = testFixture.getGmeConfig(),
         WebGME = testFixture.WebGME,
