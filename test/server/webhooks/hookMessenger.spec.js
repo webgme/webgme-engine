@@ -35,13 +35,13 @@ describe('Webhook Message sender', function () {
                     collection.insertMany([
                         {
                             _id: 'project',
-                            hooks: { hookOne: { events: ['needsMatch'], url: `http://localhost:${port}}` } }
+                            hooks: { hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` } }
                         },
                         {
                             _id: 'double',
                             hooks: {
-                                hookOne: { events: ['needsMatch'], url: `http://localhost:${port}}` },
-                                hookTwo: { events: 'all', url: `http://localhost:${port}}` }
+                                hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` },
+                                hookTwo: { events: 'all', url: `http://localhost:${port}` }
                             }
                         }
                     ], {}, function (err/*, result*/) {
@@ -68,7 +68,7 @@ describe('Webhook Message sender', function () {
     beforeEach(function () {
         acceptor = testFixture.express();
         acceptor.use(testFixture.bodyParser.json());
-        server = acceptor.listen(9000);
+        server = acceptor.listen(port);
     });
     afterEach(function () {
         server.close();

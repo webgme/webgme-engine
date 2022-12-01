@@ -31,7 +31,7 @@ describe('Redis Socket.IO event handler', function () {
         });
     });
 
-    it('should not handle WebGME like event from the exclude list', function (done) {
+    it('should not handle WebGME like event from the exclude list 1', function (done) {
         var eventFn = function () {
                 throw new Error('excluded event was posted!');
             },
@@ -48,7 +48,7 @@ describe('Redis Socket.IO event handler', function () {
         });
     });
 
-    it('should not handle WebGME like event from the exclude list', function (done) {
+    it('should not handle WebGME like event from the exclude list 2', function (done) {
         var eventFn = function () {
                 throw new Error('non-matching channel event was posted!');
             },

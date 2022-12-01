@@ -76,7 +76,7 @@
     "pug": "^3.0.0",
     "q": "1.5.1",
     "raml2html": "^3.0.1",
-    "redis": "3.1.1",
+    "redis": "^3.1.2",
     "require-uncached": "1.0.3",
     "requirejs": "2.3.5",
     "requirejs-text": "2.0.15",
@@ -87,7 +87,6 @@
     "underscore": "1.12.1",
     "webgme-ot": "0.0.16",
     "webgme-rust": "0.1.0",
-    "webgme-webhook-manager": "0.1.1",
     "winston": "2.4.3"
   },
   "devDependencies": {

@@ -7,8 +7,10 @@ var redis = require('redis'),
     Q = require('q');
 
 function redisSocketIoEventHandler(options) {
+    // eslint-disable-next-line camelcase
     var client = redis.createClient(options.uri || 'redis://127.0.0.1:6379', { return_buffers: true }),
         eventFn = options.eventFn || function (eventType, eventData) {
+            // eslint-disable-next-line no-console
             console.log('event: ', eventType, ' : ', eventData);
         },
         channelPattern = 'socket.io#/#*', // TODO find a pattern to exclude something
@@ -16,11 +18,13 @@ function redisSocketIoEventHandler(options) {
         startDeferred = Q.defer();
 
     client.on('pmessage', function (pattern, channel, buffer) {
+        // eslint-disable-next-line no-console
         console.log('got message:', channel.toString('utf-8'));
         var messageObject;
         try {
             messageObject = MSG.decode(buffer);
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.error('error during message decoding: ', e);
             return;
         }
@@ -33,6 +37,7 @@ function redisSocketIoEventHandler(options) {
     });
 
     client.on('psubscribe', function (channel) {
+        // eslint-disable-next-line no-console
         console.log('subscribed ', channel.toString('utf-8'));
         startDeferred.resolve();
     });

@@ -108,7 +108,7 @@ function RedisManager(mainLogger, gmeConfig) {
             if (gmeConfig.socketIO.adapter.options && gmeConfig.socketIO.adapter.options.uri) {
                 forkParameters.push('redis://' + gmeConfig.socketIO.adapter.options.uri);
             }
-            managerProcess = fork(path.join(__dirname, '_webhookManager.js'), forkParameters, {silent: true});
+            managerProcess = fork(path.join(__dirname, 'redisWebhookManager.js'), forkParameters, {silent: true});
 
             managerProcess.on('exit', function (code, signal) {
                 if (code !== 0 && signal !== 'SIGINT') {

@@ -3,11 +3,14 @@
  * @author kecso / https://github.com/kecso
  */
 var mongodb = require('mongodb'),
+    mongoUri = require('mongo-uri'),
     superagent = require('superagent'),
     Q = require('q');
 
 function hookMessenger(options) {
     var db = null,
+        client,
+        dbName,
         projectMetadataCollectionId = options.collection || '_projects',
         logger;
 
@@ -15,11 +18,14 @@ function hookMessenger(options) {
         logger = options.logger;
     } else {
         logger = console;
+        // eslint-disable-next-line no-console
         logger.debug = console.log;
     }
 
     options = options || {};
     options.uri = options.uri || 'mongodb://127.0.0.1:27017/multi';
+
+    dbName = mongoUri.parse(options.uri).database;
 
     function getProjectMetaData(projectId, callback) {
         if (db === null) {
@@ -54,9 +60,10 @@ function hookMessenger(options) {
         if (db) {
             deferred.resolve();
         }
-        mongodb.MongoClient.connect(options.uri, {}, function (err, db_) {
-            if (!err && db_) {
-                db = db_;
+        mongodb.MongoClient.connect(options.uri, {}, function (err, client_) {
+            if (!err && client_) {
+                client = client_;
+                db = client.db(dbName);
                 deferred.resolve();
             } else {
                 deferred.reject(err || new Error('cannot connect to mongoDB'));
@@ -68,7 +75,7 @@ function hookMessenger(options) {
 
     function stop(callback) {
         var deferred = Q.defer();
-        db.close(function (err) {
+        client.close(function (err) {
             if (err) {
                 deferred.reject(err);
             } else {

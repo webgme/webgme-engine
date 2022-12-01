@@ -4,6 +4,8 @@
  */
 
 
+// Testfixture from when webhooks were in a its own repo.
+
 var exports = {},
     EXPRESS_SERVER_PORT = 42025,
     gmeFixture = require('../../_globals.js'),
@@ -19,7 +21,7 @@ var exports = {},
 
 function EventGenerator() {
 
-    var pub = redis.createClient('redis://' + gmeFixture.getGmeConfig().socketIO.adapter.options.uri);
+    var pub = redis.createClient('redis://127.0.0.1:6379');
 
     function stop() {
         pub.quit();

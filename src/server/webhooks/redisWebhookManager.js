@@ -9,6 +9,7 @@ var EventHandler = require('./redisSocketIoEventHandler'),
 
 // graceful ending of the child process
 process.on('SIGINT', function () {
+    // eslint-disable-next-line no-console
     console.log('The webhook manager stops.');
     if (eventHandler) {
         eventHandler.stop();
@@ -37,10 +38,12 @@ eventHandler = new EventHandler({ eventFn: messenger.send, uri: redisUri });
 
 messenger.start(function (err) {
     if (err) {
+        // eslint-disable-next-line no-console
         console.error('failed to initiate connection to project metadata:', err);
         process.exit(1);
     } else {
         eventHandler.start(function () {
+            // eslint-disable-next-line no-console
             console.log('listening to events - ', mongoUri, ' - ', redisUri);
         });
 
