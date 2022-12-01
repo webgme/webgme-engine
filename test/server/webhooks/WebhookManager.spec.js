@@ -5,13 +5,13 @@
 
 var testFixture = require('../../_globals.js');
 
-describe.skip('Webhook Manager', function () {
+describe('Webhook Manager', function () {
     'use strict';
     var redis = require('redis'),
         MSG = require('msgpack-js'),
         express = require('express'),
         bodyParser = require('body-parser'),
-        WebhookManager = require('../../../src/server/util/WebhookManager'),
+        WebhookManager = require('../../../src/server/webhooks/WebhookManager'),
         CONSTANTS = testFixture.requirejs('common/storage/constants'),
         logger = testFixture.logger.fork('WebhookManager.spec.js'),
         gmeConfig = testFixture.getGmeConfig(),

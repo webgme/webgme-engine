@@ -7,9 +7,10 @@
 
 'use strict';
 
-var HookMessenger = require('webgme-webhook-manager/src/hookMessenger'),
+var HookMessenger = require('./hookMessenger'),
     CONSTANTS = requireJS('common/Constants'),
     fork = require('child_process').fork,
+    path = require('path'),
     Q = require('q');
 
 function MemoryManager(storage, mainLogger, gmeConfig) {
@@ -107,7 +108,7 @@ function RedisManager(mainLogger, gmeConfig) {
             if (gmeConfig.socketIO.adapter.options && gmeConfig.socketIO.adapter.options.uri) {
                 forkParameters.push('redis://' + gmeConfig.socketIO.adapter.options.uri);
             }
-            managerProcess = fork(require.resolve('webgme-webhook-manager'), forkParameters, {silent: true});
+            managerProcess = fork(path.join(__dirname, '_webhookManager.js'), forkParameters, {silent: true});
 
             managerProcess.on('exit', function (code, signal) {
                 if (code !== 0 && signal !== 'SIGINT') {
