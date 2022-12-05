@@ -81,7 +81,7 @@ describe('standalone http server with authentication turned on', function () {
             })
             .then(function () {
                 return Q.allDone([
-                    gmeAuth.addUser('user', 'user@example.com', 'plaintext', true, {overwrite: true}),
+                    gmeAuth.addUser('user', 'user@example.com', 'plaintext', true, { overwrite: true }),
                     gmeAuth.addUser('alreadyDisabled', 'user@example.com', 'plaintext', true, {
                         overwrite: true,
                         disabled: true,
@@ -90,7 +90,8 @@ describe('standalone http server with authentication turned on', function () {
             })
             .then(function () {
                 return gmeAuth.authorizeByUserId('user', testFixture.projectName2Id('project'),
-                    'create', {
+                    'create',
+                    {
                         read: true,
                         write: true,
                         delete: false
@@ -99,7 +100,8 @@ describe('standalone http server with authentication turned on', function () {
             })
             .then(function () {
                 return gmeAuth.authorizeByUserId('user', testFixture.projectName2Id('unauthorized_project'),
-                    'create', {
+                    'create',
+                    {
                         read: false,
                         write: false,
                         delete: false
@@ -130,7 +132,7 @@ describe('standalone http server with authentication turned on', function () {
     //});
 
     it('should return 401 POST /login with non-existing user', function (done) {
-        agent.post(serverBaseUrl + '/login').send({userId: 'test'}).end(function (err, res) {
+        agent.post(serverBaseUrl + '/login').send({ userId: 'test' }).end(function (err, res) {
             should.equal(res.status, 401);
             done();
         });
@@ -154,8 +156,8 @@ describe('standalone http server with authentication turned on', function () {
     it('should not log in with incorrect password', function (done) {
         agent.post(serverBaseUrl + '/login?redirect=%2F')
             .type('form')
-            .send({userId: 'user'})
-            .send({password: 'thisiswrong'})
+            .send({ userId: 'user' })
+            .send({ password: 'thisiswrong' })
             .end(function (err, res) {
                 should.equal(res.status, 401);
                 done();
@@ -168,7 +170,7 @@ describe('standalone http server with authentication turned on', function () {
             projectId = testFixture.projectName2Id(projectName);
         openSocketIo()
             .then(function (socket) {
-                return Q.ninvoke(socket, 'emit', 'openProject', {projectId: projectId, webgmeToken: webgmeToken})
+                return Q.ninvoke(socket, 'emit', 'openProject', { projectId: projectId, webgmeToken: webgmeToken })
                     .finally(function () {
                         socket.disconnect();
                     });
@@ -177,7 +179,7 @@ describe('standalone http server with authentication turned on', function () {
                 return authorizer.getAccessRights('user', projectId, projectAuthParams);
             })
             .then(function (authorized) {
-                authorized.should.deep.equal({read: true, write: true, delete: false});
+                authorized.should.deep.equal({ read: true, write: true, delete: false });
             })
             .nodeify(done);
     });
@@ -186,7 +188,7 @@ describe('standalone http server with authentication turned on', function () {
         var projectId = testFixture.projectName2Id('unauthorized_project');
         openSocketIo()
             .then(function (socket) {
-                return Q.ninvoke(socket, 'emit', 'openProject', {projectId: projectId, webgmeToken: webgmeToken})
+                return Q.ninvoke(socket, 'emit', 'openProject', { projectId: projectId, webgmeToken: webgmeToken })
                     .finally(function () {
                         socket.disconnect();
                     });
@@ -195,7 +197,7 @@ describe('standalone http server with authentication turned on', function () {
                 return authorizer.getAccessRights('user', projectId, projectAuthParams);
             })
             .then(function (authorized) {
-                authorized.should.deep.equal({read: true, write: true, delete: true});
+                authorized.should.deep.equal({ read: true, write: true, delete: true });
             })
             .nodeify(function (err) {
                 if (!err) {
@@ -251,7 +253,7 @@ describe('standalone http server with authentication turned on', function () {
                 return authorizer.getAccessRights('user', projectId, projectAuthParams);
             })
             .then(function (authorized) {
-                authorized.should.deep.equal({read: true, write: true, delete: true});
+                authorized.should.deep.equal({ read: true, write: true, delete: true });
             })
             .nodeify(done);
     });
@@ -278,7 +280,7 @@ describe('standalone http server with authentication turned on', function () {
 
         return Q.nfcall(fs.readFile, gmeConfig.authentication.jwt.privateKey, 'utf8')
             .then(function (privateKey) {
-                return Q.ninvoke(jwt, 'sign', {userId: '1801', displayName: 'A pretty name'}, privateKey, {
+                return Q.ninvoke(jwt, 'sign', { userId: '1801', displayName: 'A pretty name' }, privateKey, {
                     algorithm: 'RS256',
                     expiresIn: 30,
                 });
@@ -316,7 +318,8 @@ describe('standalone http server with authentication turned on', function () {
 
             return Q.nfcall(fs.readFile, gmeConfig.authentication.jwt.privateKey, 'utf8')
                 .then(function (privateKey) {
-                    return Q.ninvoke(jwt, 'sign', {userId: 'alreadyDisabled', displayName: 'A pretty name'}, privateKey,
+                    return Q.ninvoke(jwt, 'sign', { userId: 'alreadyDisabled', displayName: 'A pretty name' },
+                        privateKey,
                         {
                             algorithm: 'RS256',
                             expiresIn: 30,
@@ -338,7 +341,7 @@ describe('standalone http server with authentication turned on', function () {
                     return deferred.promise;
                 })
                 .then(function () {
-                    return gmeAuth.getUser('alreadyDisabled', {disabled: true});
+                    return gmeAuth.getUser('alreadyDisabled', { disabled: true });
                 })
                 .then(function (userData) {
                     expect(userData.displayName).to.equal(null);
@@ -352,10 +355,13 @@ describe('standalone http server with authentication turned on', function () {
 
         return Q.nfcall(fs.readFile, gmeConfig.authentication.jwt.privateKey, 'utf8')
             .then(function (privateKey) {
-                return Q.ninvoke(jwt, 'sign', {userId: 'mynumber', displayName: 'A pretty name', iss: 'https:/google.com'}, privateKey, {
-                    algorithm: 'RS256',
-                    expiresIn: 30,
-                });
+                return Q.ninvoke(
+                    jwt,
+                    'sign',
+                    { userId: 'mynumber', displayName: 'A pretty name', iss: 'https:/google.com' },
+                    privateKey,
+                    { algorithm: 'RS256', expiresIn: 30 }
+                );
             })
             .then(function (token) {
                 var deferred = Q.defer();
@@ -383,13 +389,13 @@ describe('standalone http server with authentication turned on', function () {
                 var deferred = Q.defer();
                 expect(userData.displayName).to.equal('A pretty name');
                 agent.get(server.getUrl() + '/logout').redirects(0)
-                .end((err, res) => {
-                    expect(res.statusCode).to.eql(302);
-                    expect(res.text).to.have.string('https:/google.com');
-                    expect(res.redirect).to.eql(true);
-                    // console.log(res.redirect);
-                    deferred.resolve();
-                });
+                    .end((err, res) => {
+                        expect(res.statusCode).to.eql(302);
+                        expect(res.text).to.have.string('https:/google.com');
+                        expect(res.redirect).to.eql(true);
+                        // console.log(res.redirect);
+                        deferred.resolve();
+                    });
                 return deferred.promise;
             })
             .nodeify(done);

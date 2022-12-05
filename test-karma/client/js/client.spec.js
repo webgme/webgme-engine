@@ -253,10 +253,7 @@ describe('GME client', function () {
 
         it('should connect to the database', function (done) {
             var client = new Client(gmeConfig);
-            client.connectToDatabase(function (err) {
-                expect(err).to.equal(null);
-                done();
-            });
+            client.connectToDatabase(done);
         });
 
         it('should getUserId', function (done) {

@@ -289,7 +289,7 @@ describe('USER REST API', function () {
 
             it('should support basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         done();
@@ -306,7 +306,7 @@ describe('USER REST API', function () {
             it('should use guest account with no password and no username basic authentication GET /api/v1/user',
                 function (done) {
                     agent.get(server.getUrl() + '/api/v1/user')
-                        .set('Authorization', 'Basic ' + new Buffer('').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body._id).to.equal('guest');
@@ -317,7 +317,7 @@ describe('USER REST API', function () {
 
             it('should use guest account with wrong password basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:wrong_password').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:wrong_password').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body._id).to.equal('guest');
@@ -327,7 +327,7 @@ describe('USER REST API', function () {
 
             it('should use guest account wrong username basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('unknown_username:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('unknown_username:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body._id).to.equal('guest');
@@ -346,7 +346,7 @@ describe('USER REST API', function () {
 
             it('should return with the same information GET /api/v1/user and /api/v1/users/guest', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         agent.get(server.getUrl() + '/api/v1/users/guest')
@@ -361,7 +361,7 @@ describe('USER REST API', function () {
 
             it('should fail to update user without authentication PATCH /api/v1/users/user_to_modify', function (done) {
                 agent.patch(server.getUrl() + '/api/v1/users/user_to_modify')
-                //.set('Authorization', 'Basic ' + new Buffer('unknown_username:guest').toString('base64'))
+                //.set('Authorization', 'Basic ' + Buffer.from('unknown_username:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(403, err);
                         done();
@@ -370,7 +370,7 @@ describe('USER REST API', function () {
 
             it('should fail to update user without siteAdmin role PATCH /api/v1/users/user_to_modify', function (done) {
                 agent.patch(server.getUrl() + '/api/v1/users/user_to_modify')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(403, err);
                         done();
@@ -388,7 +388,7 @@ describe('USER REST API', function () {
                         expect(res.status).equal(404, err);
 
                         agent.patch(server.getUrl() + '/api/v1/users/does_not_exist')
-                        //.set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        //.set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                             .send(updates)
                             .end(function (err, res2) {
                                 expect(res2.status).equal(403, err);
@@ -405,14 +405,14 @@ describe('USER REST API', function () {
                 };
 
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body.email).not.equal(updates.email);
                         expect(res.body.siteAdmin).not.equal(updates.siteAdmin);
 
                         agent.patch(server.getUrl() + '/api/v1/user')
-                            .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                             .send(updates)
                             .end(function (err, res2) {
                                 expect(res2.status).equal(403, err);
@@ -429,14 +429,14 @@ describe('USER REST API', function () {
                 };
 
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body.email).not.equal(updates.email);
                         expect(res.body.canCreate).not.equal(updates.canCreate);
 
                         agent.patch(server.getUrl() + '/api/v1/user')
-                            .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                             .send(updates)
                             .end(function (err, res2) {
                                 expect(res2.status).equal(403, err);
@@ -454,14 +454,14 @@ describe('USER REST API', function () {
                     };
 
                     agent.get(server.getUrl() + '/api/v1/user')
-                        .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body.email).not.equal(updates.email);
                             expect(res.body.siteAdmin).not.equal(true);
 
                             agent.patch(server.getUrl() + '/api/v1/users/guest')
-                                .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                                 .send(updates)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
@@ -479,14 +479,14 @@ describe('USER REST API', function () {
                     };
 
                     agent.get(server.getUrl() + '/api/v1/user')
-                        .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body.email).not.equal(updates.email);
                             expect(res.body.canCreate).not.equal(updates.canCreate);
 
                             agent.patch(server.getUrl() + '/api/v1/users/guest')
-                                .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                                 .send(updates)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
@@ -510,7 +510,7 @@ describe('USER REST API', function () {
                             expect(res.status).equal(404, err); // user should not exist at this point
 
                             agent.put(server.getUrl() + '/api/v1/users')
-                            //.set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                            //.set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                                 .send(newUser)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
@@ -548,7 +548,7 @@ describe('USER REST API', function () {
                         .end(function (err, res) {
                             expect(res.status).equal(404, err);
                             agent.del(server.getUrl() + '/api/v1/users/does_not_exist')
-                            //.set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                            //.set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
 
@@ -646,7 +646,7 @@ describe('USER REST API', function () {
             // AUTH METHODS
             it('should get all users /api/v1/users if authenticated and admin', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         //expect(res.body.length).gt(2);
@@ -665,7 +665,7 @@ describe('USER REST API', function () {
 
             it('should support basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         done();
@@ -681,7 +681,7 @@ describe('USER REST API', function () {
 
             it('should return an access_token when authed used for GET /api/v1/user/token', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/token')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body.webgmeToken.split('.').length).equal(3, 'Returned token not correct format');
@@ -824,7 +824,7 @@ describe('USER REST API', function () {
 
             it('should fail with wrong password basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:wrong_password').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:wrong_password').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(401, err);
                         done();
@@ -833,7 +833,7 @@ describe('USER REST API', function () {
 
             it('should fail with wrong username basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('unknown_username:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('unknown_username:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(401, err);
                         done();
@@ -848,14 +848,14 @@ describe('USER REST API', function () {
                 };
 
                 agent.get(server.getUrl() + '/api/v1/users/user_to_modify')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body.email).not.equal(updates.email);
                         expect(res.body.canCreate).not.equal(updates.canCreate);
 
                         agent.patch(server.getUrl() + '/api/v1/users/user_to_modify')
-                            .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                             .send(updates)
                             .end(function (err, res2) {
                                 expect(res2.status).equal(200, err);
@@ -878,13 +878,13 @@ describe('USER REST API', function () {
                     };
 
                     agent.get(server.getUrl() + '/api/v1/users/user_to_modify')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body.siteAdmin).not.equal(updates.siteAdmin);
 
                             agent.patch(server.getUrl() + '/api/v1/users/user_to_modify')
-                                .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .send(updates)
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(200, err);
@@ -899,7 +899,7 @@ describe('USER REST API', function () {
 
             it('should update user with no data PATCH /api/v1/users/user_to_modify', function (done) {
                 agent.patch(server.getUrl() + '/api/v1/users/user_to_modify')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     // no data
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
@@ -913,13 +913,13 @@ describe('USER REST API', function () {
                 };
 
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('user:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body.email).not.equal(updates.email);
 
                         agent.patch(server.getUrl() + '/api/v1/user')
-                            .set('Authorization', 'Basic ' + new Buffer('user:plaintext').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('user:plaintext').toString('base64'))
                             .send(updates)
                             .end(function (err, res2) {
                                 expect(res2.status).equal(200, err);
@@ -943,12 +943,12 @@ describe('USER REST API', function () {
                 };
 
                 agent.get(server.getUrl() + '/api/v1/users/new_user')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err); // user should not exist at this point
 
                         agent.put(server.getUrl() + '/api/v1/users')
-                            .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                             .send(newUser)
                             .end(function (err, res2) {
                                 expect(res2.status).equal(200, err);
@@ -971,12 +971,12 @@ describe('USER REST API', function () {
                     userId = 'new_user_param';
 
                 agent.get(server.getUrl() + '/api/v1/users/new_user_param')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err); // user should not exist at this point
 
                         agent.put(server.getUrl() + '/api/v1/users/' + userId)
-                            .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                             .send(newUser)
                             .end(function (err, res2) {
                                 expect(res2.status).equal(200, err);
@@ -999,12 +999,12 @@ describe('USER REST API', function () {
                 };
 
                 agent.get(server.getUrl() + '/api/v1/users/guest')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err); // user should not exist at this point
 
                         agent.put(server.getUrl() + '/api/v1/users')
-                            .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                             .send(newUser)
                             .end(function (err, res2) {
                                 expect(res2.status).equal(400, err);
@@ -1016,16 +1016,16 @@ describe('USER REST API', function () {
 
             it('should delete a specified user as site admin DELETE /api/v1/users/user_to_delete', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         agent.del(server.getUrl() + '/api/v1/users/user_to_delete')
-                            .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                             .end(function (err, res2) {
                                 expect(res2.status).equal(204, err);
 
                                 agent.get(server.getUrl() + '/api/v1/users')
-                                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                     .end(function (err, res2) {
                                         expect(res2.status).equal(200, err);
                                         expect(res.body.length - 1).equal(res2.body.length);
@@ -1038,16 +1038,16 @@ describe('USER REST API', function () {
 
             it('should delete a self user DELETE /api/v1/users/self_delete_2', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         agent.del(server.getUrl() + '/api/v1/users/self_delete_2')
-                            .set('Authorization', 'Basic ' + new Buffer('self_delete_2:plaintext').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('self_delete_2:plaintext').toString('base64'))
                             .end(function (err, res2) {
                                 expect(res2.status).equal(204, err);
 
                                 agent.get(server.getUrl() + '/api/v1/users')
-                                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                     .end(function (err, res2) {
                                         expect(res2.status).equal(200, err);
                                         expect(res.body.length - 1).equal(res2.body.length);
@@ -1060,16 +1060,16 @@ describe('USER REST API', function () {
 
             it('should delete a self user DELETE /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         agent.del(server.getUrl() + '/api/v1/user')
-                            .set('Authorization', 'Basic ' + new Buffer('self_delete_1:plaintext').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('self_delete_1:plaintext').toString('base64'))
                             .end(function (err, res2) {
                                 expect(res2.status).equal(204, err);
 
                                 agent.get(server.getUrl() + '/api/v1/users')
-                                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                     .end(function (err, res2) {
                                         expect(res2.status).equal(200, err);
                                         expect(res.body.length - 1).equal(res2.body.length);
@@ -1093,7 +1093,7 @@ describe('USER REST API', function () {
                         expect(res.status).equal(200, err);
 
                         agent.get(server.getUrl() + '/api/v1/user')
-                            .set('Authorization', 'Basic ' + new Buffer('reg_user:pass').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('reg_user:pass').toString('base64'))
                             .end(function (err, res) {
                                 expect(res.status).equal(200, err);
                                 expect(res.body._id).to.equal('reg_user');
@@ -1123,7 +1123,7 @@ describe('USER REST API', function () {
 
                                 agent.get(server.getUrl() + '/api/v1/user')
                                     .set('Authorization',
-                                        'Basic ' + new Buffer('reg_user_twice:pass').toString('base64'))
+                                        'Basic ' + Buffer.from('reg_user_twice:pass').toString('base64'))
                                     .end(function (err, res) {
                                         expect(res.status).equal(200, err);
                                         expect(res.body._id).to.equal('reg_user_twice');
@@ -1172,7 +1172,7 @@ describe('USER REST API', function () {
                         expect(res.status).equal(200, err);
 
                         agent.get(server.getUrl() + '/api/v1/user')
-                            .set('Authorization', 'Basic ' + new Buffer('reg_user_no_create:pass').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('reg_user_no_create:pass').toString('base64'))
                             .end(function (err, res) {
                                 expect(res.status).equal(200, err);
                                 expect(res.body._id).to.equal('reg_user_no_create');
@@ -1247,7 +1247,7 @@ describe('USER REST API', function () {
                     }
 
                     agent.get(server.getUrl() + '/api/v1/users')
-                        .set('Authorization', 'Basic ' + new Buffer('user2:plaintext').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('user2:plaintext').toString('base64'))
                         .end(function (err, res) {
                             // Regular user can only see details about him/herself.
                             try {
@@ -1266,7 +1266,7 @@ describe('USER REST API', function () {
                             }
 
                             agent.get(server.getUrl() + '/api/v1/users')
-                                .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .end(function (err, res) {
                                     // Admin can see all details about everyone.
                                     var gotData = false;
@@ -1301,7 +1301,7 @@ describe('USER REST API', function () {
 
             it('should GET /api/v1/users/user if non guest user but filter out email and projects', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users/user')
-                    .set('Authorization', 'Basic ' + new Buffer('user2:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user2:plaintext').toString('base64'))
                     .end(function (err, res) {
                         try {
                             expect(res.status).equal(200, err);
@@ -1316,7 +1316,7 @@ describe('USER REST API', function () {
 
             it('should GET /api/v1/users/user if admin and contain email', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users/user')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(Object.keys(res.body.projects).length).to.equal(1);
@@ -1328,7 +1328,7 @@ describe('USER REST API', function () {
 
             it('should GET /api/v1/users/guest if same user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users/guest')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
 
@@ -1350,7 +1350,7 @@ describe('USER REST API', function () {
             it('should fail to delete a specified user if not authenticated DELETE /api/v1/users/admin',
                 function (done) {
                     agent.get(server.getUrl() + '/api/v1/users/admin')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             agent.del(server.getUrl() + '/api/v1/users/admin')
@@ -1358,7 +1358,7 @@ describe('USER REST API', function () {
                                     expect(res2.status).equal(403, err);
 
                                     agent.get(server.getUrl() + '/api/v1/users/admin')
-                                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                         .end(function (err, res2) {
                                             expect(res.status).equal(200, err);
 
@@ -1374,16 +1374,16 @@ describe('USER REST API', function () {
             it('should fail to delete a specified user if acting user is not a site admin DELETE /api/v1/users/guest',
                 function (done) {
                     agent.get(server.getUrl() + '/api/v1/users/user')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             agent.del(server.getUrl() + '/api/v1/users/user')
-                            //.set('Authorization', 'Basic ' + new Buffer('user:plaintext').toString('base64'))
+                            //.set('Authorization', 'Basic ' + Buffer.from('user:plaintext').toString('base64'))
                                 .end(function (err, res2) {
                                     expect(res2.status).equal(403, err);
 
                                     agent.get(server.getUrl() + '/api/v1/users/user')
-                                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                         .end(function (err, res2) {
                                             expect(res.status).equal(200, err);
 
@@ -1441,7 +1441,7 @@ describe('USER REST API', function () {
 
                 agent.get(server.getUrl() + '/api/v1/users')
                     .query({includeDisabled: true})
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         dUsers = res.body;
                         report(err);
@@ -1457,7 +1457,7 @@ describe('USER REST API', function () {
                             var deferred = Q.defer();
                             agent.del(server.getUrl() + '/api/v1/users/' + userId)
                                 .query({force: true})
-                                .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .end(function (err, res) {
                                     try {
                                         expect(res.status).equal(204, err);
@@ -1492,7 +1492,7 @@ describe('USER REST API', function () {
                             var deferred = Q.defer();
                             agent.del(server.getUrl() + '/api/v1/users/' + userId)
                                 .query({force: true})
-                                .set('Authorization', 'Basic ' + new Buffer(userId + ':p').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from(userId + ':p').toString('base64'))
                                 .end(function (err, res) {
                                     try {
                                         expect(res.status).equal(204, err);
@@ -1531,7 +1531,7 @@ describe('USER REST API', function () {
                             var deferred = Q.defer();
                             agent.patch(server.getUrl() + '/api/v1/users/' + userId)
                                 .send({disabled: false})
-                                .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                                 .end(function (err, res) {
                                     try {
                                         expect(res.status).equal(200, err);
@@ -1563,7 +1563,7 @@ describe('USER REST API', function () {
                             var deferred = Q.defer();
                             agent.patch(server.getUrl() + '/api/v1/users/' + userId)
                                 .send({disabled: false})
-                                .set('Authorization', 'Basic ' + new Buffer(userId + ':p').toString('base64'))
+                                .set('Authorization', 'Basic ' + Buffer.from(userId + ':p').toString('base64'))
                                 .end(function (err, res) {
                                     try {
                                         expect(res.status).equal(403, err);
@@ -1589,7 +1589,7 @@ describe('USER REST API', function () {
 
             it('should support basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         done();
@@ -1614,7 +1614,7 @@ describe('USER REST API', function () {
 
             it('should return an access_token for admin for GET /api/v1/user/token', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/token')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body.webgmeToken.split('.').length).equal(3, 'Returned token not correct format');
@@ -1639,7 +1639,7 @@ describe('USER REST API', function () {
 
             it('should not check password of guest basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:wrong_password').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:wrong_password').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         done();
@@ -1648,7 +1648,7 @@ describe('USER REST API', function () {
 
             it('should fail with wrong password basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:wrong_password').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:wrong_password').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(401, err);
                         done();
@@ -1657,7 +1657,7 @@ describe('USER REST API', function () {
 
             it('should fail with wrong username basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('unknown_username:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('unknown_username:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(401, err);
                         done();
@@ -1667,7 +1667,7 @@ describe('USER REST API', function () {
             // User data methods /user/data
             it('should get empty user data basic authentication GET /api/v1/user/data', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/data')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_data:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_data:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({});
@@ -1677,7 +1677,7 @@ describe('USER REST API', function () {
 
             it('should get user data basic authentication GET /api/v1/user/data/a', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/data/a')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_data1:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_data1:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal(1);
@@ -1687,7 +1687,7 @@ describe('USER REST API', function () {
 
             it('should get user data array basic authentication GET /api/v1/user/data/array', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/data/array')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_data1:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_data1:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal([1, 2, 3]);
@@ -1697,7 +1697,7 @@ describe('USER REST API', function () {
 
             it('should get nested user data values GET /api/v1/user/data/a/b', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/data/a/b')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_nesteddata1:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_nesteddata1:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal(1);
@@ -1707,7 +1707,7 @@ describe('USER REST API', function () {
 
             it('should get user data key with special chars GET /api/v1/user/data/a%2Fc', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/data/a/b')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_nesteddata1:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_nesteddata1:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal(1);
@@ -1720,7 +1720,7 @@ describe('USER REST API', function () {
                 const newData = {b: 1};
                 agent.put(server.getUrl() + '/api/v1/user/data/b/d')
                     .send(newData)
-                    .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from(`${user}:plaintext`).toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         gmeAuth.getUser(user)
@@ -1736,7 +1736,7 @@ describe('USER REST API', function () {
                 const newData = 'IAmASecret';
                 agent.put(server.getUrl() + '/api/v1/user/data/user/password')
                     .send(newData)
-                    .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from(`${user}:plaintext`).toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         gmeAuth.getUser(user)
@@ -1755,7 +1755,7 @@ describe('USER REST API', function () {
                 await gmeAuth.setUserDataField(user, keys, newData, {encrypt: true});
                 const response = await new Promise((resolve, reject) => 
                     agent.get(server.getUrl() + '/api/v1/user/data/' + keys.join('/'))
-                        .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from(`${user}:plaintext`).toString('base64'))
                         .end(function (err, res) {
                             if (err) {
                                 return reject(err);
@@ -1774,7 +1774,7 @@ describe('USER REST API', function () {
                 await gmeAuth.setUserDataField(user, keys, newData);
                 const response = await new Promise((resolve, reject) =>
                     agent.get(server.getUrl() + '/api/v1/user/data/' + keys.join('/'))
-                        .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from(`${user}:plaintext`).toString('base64'))
                         .end(function (err, res) {
                             if (err) {
                                 return reject(err);
@@ -1794,7 +1794,7 @@ describe('USER REST API', function () {
                 await gmeAuth.setUserDataField(user, keys, newData);
                 const response = await new Promise((resolve, reject) =>
                     agent.get(server.getUrl() + '/api/v1/user/data/' + keys.join('/'))
-                        .set('Authorization', 'Basic ' + new Buffer(`${user}:plaintext`).toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from(`${user}:plaintext`).toString('base64'))
                         .end(function (err, res) {
                             if (err) {
                                 return reject(err);
@@ -1808,7 +1808,7 @@ describe('USER REST API', function () {
 
             it('should get user data basic authentication GET /api/v1/user/data', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/data')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_data1:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_data1:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({a: 1, array: [1, 2, 3]});
@@ -1819,7 +1819,7 @@ describe('USER REST API', function () {
             it('should overwrite user data basic authentication PUT /api/v1/user/data', function (done) {
                 agent.put(server.getUrl() + '/api/v1/user/data')
                     .send({b: 1})
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_data2:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_data2:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({b: 1});
@@ -1834,7 +1834,7 @@ describe('USER REST API', function () {
             it('should update user data basic authentication PATCH /api/v1/user/data', function (done) {
                 agent.patch(server.getUrl() + '/api/v1/user/data')
                     .send({b: 1})
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_data3:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_data3:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({a: 1, b: 1});
@@ -1848,7 +1848,7 @@ describe('USER REST API', function () {
 
             it('should delete user data basic authentication DELETE /api/v1/user/data', function (done) {
                 agent.del(server.getUrl() + '/api/v1/user/data')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_data4:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_data4:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(204, err);
                         gmeAuth.getUser('user_w_data4')
@@ -1862,7 +1862,7 @@ describe('USER REST API', function () {
             // User data methods /users/:username/data
             it('should get user data basic authentication "admin" GET /api/v1/users/:username/data', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users/user_w_data5/data')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({a: 1});
@@ -1874,7 +1874,7 @@ describe('USER REST API', function () {
                 function (done) {
                     agent.put(server.getUrl() + '/api/v1/users/user_w_data6/data')
                         .send({b: 1})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({b: 1});
@@ -1891,7 +1891,7 @@ describe('USER REST API', function () {
                 function (done) {
                     agent.patch(server.getUrl() + '/api/v1/users/user_w_data7/data')
                         .send({b: 1})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({a: 1, b: 1});
@@ -1907,7 +1907,7 @@ describe('USER REST API', function () {
             it('should delete user data basic authentication "admin" DELETE /api/v1/users/:username/data',
                 function (done) {
                     agent.del(server.getUrl() + '/api/v1/users/user_w_data8/data')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(204, err);
                             gmeAuth.getUser('user_w_data8')
@@ -1922,7 +1922,7 @@ describe('USER REST API', function () {
             // Component Settings
             it('should get empty user settings basic authentication GET /api/v1/componentSettings', function (done) {
                 agent.get(server.getUrl() + '/api/v1/componentSettings')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({});
@@ -1933,7 +1933,7 @@ describe('USER REST API', function () {
             it('should get empty user settings basic authentication GET /api/v1/componentSettings/componentId',
                 function (done) {
                     agent.get(server.getUrl() + '/api/v1/componentSettings/componentId')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({});
@@ -1945,7 +1945,7 @@ describe('USER REST API', function () {
             // User setting methods /user/settings
             it('should get empty user settings basic authentication GET /api/v1/user/settings', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/settings')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_data:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_data:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({});
@@ -1955,7 +1955,7 @@ describe('USER REST API', function () {
 
             it('should get user settings basic authentication GET /api/v1/user/settings', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/settings')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_settings1:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_settings1:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({comp1: {a: 1, b: 1}, comp2: {a: 2, b: 2}});
@@ -1966,7 +1966,7 @@ describe('USER REST API', function () {
             it('should overwrite user settings basic authentication PUT /api/v1/user/settings', function (done) {
                 agent.put(server.getUrl() + '/api/v1/user/settings')
                     .send({comp3: {a: 1, b: 1}})
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_settings2:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_settings2:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({comp3: {a: 1, b: 1}});
@@ -1981,7 +1981,7 @@ describe('USER REST API', function () {
             it('should update user settings basic authentication PATCH /api/v1/user/settings', function (done) {
                 agent.patch(server.getUrl() + '/api/v1/user/settings')
                     .send({comp2: {a: 1, b: 1}})
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_settings3:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_settings3:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({comp1: {a: 1, b: 1}, comp2: {a: 1, b: 1}});
@@ -1995,7 +1995,7 @@ describe('USER REST API', function () {
 
             it('should delete user settings basic authentication DELETE /api/v1/user/settings', function (done) {
                 agent.del(server.getUrl() + '/api/v1/user/settings')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_settings4:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_settings4:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(204, err);
                         gmeAuth.getUser('user_w_settings4')
@@ -2009,7 +2009,7 @@ describe('USER REST API', function () {
             // User setting methods /user/settings/:componentId
             it('should get empty user settings basic authentication GET /api/v1/user/settings/comp', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/settings/comp')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_data:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_data:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({});
@@ -2019,7 +2019,7 @@ describe('USER REST API', function () {
 
             it('should get user settings basic authentication GET /api/v1/user/settings/comp1', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user/settings/comp1')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_c_settings1:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_c_settings1:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({a: 1, b: 1});
@@ -2030,7 +2030,7 @@ describe('USER REST API', function () {
             it('should add user settings basic authentication PUT /api/v1/user/settings/comp3', function (done) {
                 agent.put(server.getUrl() + '/api/v1/user/settings/comp3')
                     .send({a: 3, b: 3})
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_c_settings2:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_c_settings2:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({a: 3, b: 3});
@@ -2049,7 +2049,7 @@ describe('USER REST API', function () {
             it('should overwrite user settings basic authentication PUT /api/v1/user/settings/comp2', function (done) {
                 agent.put(server.getUrl() + '/api/v1/user/settings/comp2')
                     .send({a: 3})
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_c_settings3:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_c_settings3:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({a: 3});
@@ -2067,7 +2067,7 @@ describe('USER REST API', function () {
             it('should update user settings basic authentication PATCH /api/v1/user/settings/comp2', function (done) {
                 agent.patch(server.getUrl() + '/api/v1/user/settings/comp2')
                     .send({b: 1})
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_c_settings4:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_c_settings4:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({a: 2, b: 1});
@@ -2084,7 +2084,7 @@ describe('USER REST API', function () {
 
             it('should delete user settings basic authentication DELETE /api/v1/user/settings/comp2', function (done) {
                 agent.del(server.getUrl() + '/api/v1/user/settings/comp2')
-                    .set('Authorization', 'Basic ' + new Buffer('user_w_c_settings5:plaintext').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('user_w_c_settings5:plaintext').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(204, err);
                         gmeAuth.getUser('user_w_c_settings5')
@@ -2099,7 +2099,7 @@ describe('USER REST API', function () {
             it('should get empty user settings basic authentication GET /api/v1/user/:username/settings',
                 function (done) {
                     agent.get(server.getUrl() + '/api/v1/users/user_w_data/settings')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({});
@@ -2110,7 +2110,7 @@ describe('USER REST API', function () {
 
             it('should get user settings basic authentication GET /api/v1/users/:username/settings', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users/users_w_settings1/settings')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body).to.deep.equal({comp1: {a: 1, b: 1}, comp2: {a: 2, b: 2}});
@@ -2122,7 +2122,7 @@ describe('USER REST API', function () {
                 function (done) {
                     agent.put(server.getUrl() + '/api/v1/users/users_w_settings2/settings')
                         .send({comp3: {a: 1, b: 1}})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({comp3: {a: 1, b: 1}});
@@ -2139,7 +2139,7 @@ describe('USER REST API', function () {
                 function (done) {
                     agent.patch(server.getUrl() + '/api/v1/users/users_w_settings3/settings')
                         .send({comp2: {a: 1, b: 1}})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({comp1: {a: 1, b: 1}, comp2: {a: 1, b: 1}});
@@ -2155,7 +2155,7 @@ describe('USER REST API', function () {
             it('should delete user settings basic authentication DELETE /api/v1/users/:username/settings',
                 function (done) {
                     agent.del(server.getUrl() + '/api/v1/users/users_w_settings4/settings')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(204, err);
                             gmeAuth.getUser('users_w_settings4')
@@ -2171,7 +2171,7 @@ describe('USER REST API', function () {
             it('should get empty user settings basic authentication GET /api/v1/users/:username/settings/comp',
                 function (done) {
                     agent.get(server.getUrl() + '/api/v1/users/user_w_data/settings/comp')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({});
@@ -2183,7 +2183,7 @@ describe('USER REST API', function () {
             it('should get user settings basic authentication GET /api/v1/users/:username/settings/comp1',
                 function (done) {
                     agent.get(server.getUrl() + '/api/v1/users/users_w_c_settings1/settings/comp1')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({a: 1, b: 1});
@@ -2196,7 +2196,7 @@ describe('USER REST API', function () {
                 function (done) {
                     agent.put(server.getUrl() + '/api/v1/users/users_w_c_settings2/settings/comp3')
                         .send({a: 3, b: 3})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({a: 3, b: 3});
@@ -2217,7 +2217,7 @@ describe('USER REST API', function () {
                 function (done) {
                     agent.put(server.getUrl() + '/api/v1/users/users_w_c_settings3/settings/comp2')
                         .send({a: 3})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({a: 3});
@@ -2237,7 +2237,7 @@ describe('USER REST API', function () {
                 function (done) {
                     agent.patch(server.getUrl() + '/api/v1/users/users_w_c_settings4/settings/comp2')
                         .send({b: 1})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(200, err);
                             expect(res.body).to.deep.equal({a: 2, b: 1});
@@ -2256,7 +2256,7 @@ describe('USER REST API', function () {
             it('should delete user settings basic authentication DELETE /api/v1/users/:username/settings/comp2',
                 function (done) {
                     agent.del(server.getUrl() + '/api/v1/users/users_w_c_settings5/settings/comp2')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(204, err);
                             gmeAuth.getUser('users_w_c_settings5')
@@ -2299,7 +2299,7 @@ describe('USER REST API', function () {
 
             it('should 404 basic authentication "admin" GET /api/v1/users/doesNotExist/data', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users/doesNotExist/data')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2309,7 +2309,7 @@ describe('USER REST API', function () {
             it('should 404 basic authentication "admin" PUT /api/v1/users/doesNotExist/data', function (done) {
                 agent.put(server.getUrl() + '/api/v1/users/doesNotExist/data')
                     .send({b: 1})
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2319,7 +2319,7 @@ describe('USER REST API', function () {
             it('should 404 basic authentication "admin" PATCH /api/v1/users/doesNotExist/data', function (done) {
                 agent.patch(server.getUrl() + '/api/v1/users/doesNotExist/data')
                     .send({b: 1})
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2328,7 +2328,7 @@ describe('USER REST API', function () {
 
             it('should 404 basic authentication "admin" DELETE /api/v1/users/doesNotExist/data', function (done) {
                 agent.del(server.getUrl() + '/api/v1/users/doesNotExist/data')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2338,7 +2338,7 @@ describe('USER REST API', function () {
             it('should 403 ensureSameUserOrSiteAdmin "guest" PUT /api/v1/users/doesNotExist/data', function (done) {
                 agent.put(server.getUrl() + '/api/v1/users/user_w_data/data')
                     .send({a: 1})
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(403, err);
                         done();
@@ -2347,7 +2347,7 @@ describe('USER REST API', function () {
 
             it('should 404 basic authentication "admin" GET /api/v1/users/doesNotExist/settings', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users/doesNotExist/settings')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2357,7 +2357,7 @@ describe('USER REST API', function () {
             it('should 404 basic authentication "admin" PUT /api/v1/users/doesNotExist/settings', function (done) {
                 agent.put(server.getUrl() + '/api/v1/users/doesNotExist/settings')
                     .send({b: 1})
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2367,7 +2367,7 @@ describe('USER REST API', function () {
             it('should 404 basic authentication "admin" PATCH /api/v1/users/doesNotExist/settings', function (done) {
                 agent.patch(server.getUrl() + '/api/v1/users/doesNotExist/settings')
                     .send({b: 1})
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2376,7 +2376,7 @@ describe('USER REST API', function () {
 
             it('should 404 basic authentication "admin" DELETE /api/v1/users/doesNotExist/settings', function (done) {
                 agent.del(server.getUrl() + '/api/v1/users/doesNotExist/settings')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2385,7 +2385,7 @@ describe('USER REST API', function () {
 
             it('should 404 basic authentication "admin" GET /api/v1/users/doesNotExist/settings/comp', function (done) {
                 agent.get(server.getUrl() + '/api/v1/users/doesNotExist/settings/comp')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2395,7 +2395,7 @@ describe('USER REST API', function () {
             it('should 404 basic authentication "admin" PUT /api/v1/users/doesNotExist/settings/comp', function (done) {
                 agent.put(server.getUrl() + '/api/v1/users/doesNotExist/settings/comp')
                     .send({b: 1})
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(404, err);
                         done();
@@ -2406,7 +2406,7 @@ describe('USER REST API', function () {
                 function (done) {
                     agent.patch(server.getUrl() + '/api/v1/users/doesNotExist/settings/comp')
                         .send({b: 1})
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(404, err);
                             done();
@@ -2417,7 +2417,7 @@ describe('USER REST API', function () {
             it('should 404 basic authentication "admin" DELETE /api/v1/users/doesNotExist/settings/comp',
                 function (done) {
                     agent.del(server.getUrl() + '/api/v1/users/doesNotExist/settings/comp')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             expect(res.status).equal(404, err);
                             done();
@@ -2427,7 +2427,7 @@ describe('USER REST API', function () {
 
             it('should 401 basic authentication empty user and password /api/v1/user', function (done) {
                 agent.del(server.getUrl() + '/api/v1/users/doesNotExist/settings/comp')
-                    .set('Authorization', 'Basic ' + new Buffer('').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(401, err);
                         done();
@@ -2488,7 +2488,7 @@ describe('USER REST API', function () {
 
                         agent.get(server.getUrl() + '/api/v1/user')
                             .set('Authorization',
-                                'Basic ' + new Buffer('a_new_user_starts_with_a:pass').toString('base64'))
+                                'Basic ' + Buffer.from('a_new_user_starts_with_a:pass').toString('base64'))
                             .end(function (err, res) {
                                 expect(res.status).equal(200, err);
                                 expect(res.body._id).to.equal('a_new_user_starts_with_a');
@@ -2585,7 +2585,7 @@ describe('USER REST API', function () {
 
             it('should use guest account GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body._id).to.deep.equal('guest');
@@ -2595,7 +2595,7 @@ describe('USER REST API', function () {
 
             it('should use guest account with wrong password basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('guest:wrong_password').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('guest:wrong_password').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body._id).to.deep.equal('guest');
@@ -2605,7 +2605,7 @@ describe('USER REST API', function () {
 
             it('should use guest account with wrong username basic authentication GET /api/v1/user', function (done) {
                 agent.get(server.getUrl() + '/api/v1/user')
-                    .set('Authorization', 'Basic ' + new Buffer('unknown_username:guest').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('unknown_username:guest').toString('base64'))
                     .end(function (err, res) {
                         expect(res.status).equal(200, err);
                         expect(res.body._id).to.deep.equal('guest');
@@ -2640,7 +2640,7 @@ describe('USER REST API', function () {
                 function (done) {
                     this.timeout(5000);
                     agent.get(server.getUrl() + '/api/v1/user/token')
-                        .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                        .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                         .end(function (err, res) {
                             var orginalToken = res.body.webgmeToken;
                             expect(res.status).equal(200, err);
@@ -2665,7 +2665,7 @@ describe('USER REST API', function () {
             it('should return 401 when using expired token', function (done) {
                 this.timeout(5000);
                 agent.get(server.getUrl() + '/api/v1/user/token')
-                    .set('Authorization', 'Basic ' + new Buffer('admin:admin').toString('base64'))
+                    .set('Authorization', 'Basic ' + Buffer.from('admin:admin').toString('base64'))
                     .end(function (err, res) {
                         var orginaltoken = res.body.webgmeToken;
                         expect(res.status).equal(200, err);
@@ -2717,7 +2717,7 @@ describe('USER REST API', function () {
                         expect(res.body._id).to.equal('veri_reg_user_2');
                         
                         agent.get(server.getUrl() + '/api/v1/user')
-                            .set('Authorization', 'Basic ' + new Buffer('veri_reg_user_2:pass').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('veri_reg_user_2:pass').toString('base64'))
                             .end(function (err, res) {
                                 expect(res.status).equal(401, err);
                                 done();
@@ -2739,14 +2739,14 @@ describe('USER REST API', function () {
                         expect(res.body._id).to.equal('veri_reg_user');
                         
                         agent.patch(server.getUrl() + '/api/v1/user/data')
-                            .set('Authorization', 'Basic ' + new Buffer('veri_reg_user:pass').toString('base64'))
+                            .set('Authorization', 'Basic ' + Buffer.from('veri_reg_user:pass').toString('base64'))
                             .send({disabled: false})
                             .end(function (err, res) {
                                 expect(res.status).equal(401, err);
                                 
                                 agent.patch(server.getUrl() + '/api/v1/user')
                                     .set('Authorization', 
-                                        'Basic ' + new Buffer('veri_reg_user:pass').toString('base64'))
+                                        'Basic ' + Buffer.from('veri_reg_user:pass').toString('base64'))
                                     .send({disabled: false})
                                     .end(function (err, res) {
                                         expect(res.status).equal(401, err);
@@ -2810,7 +2810,7 @@ describe('USER REST API', function () {
                                         expect(res.status).equal(200);
                                         agent.get(server.getUrl() + '/api/v1/user')
                                             .set('Authorization', 'Basic ' + 
-                                                new Buffer('reset_pwd_user:newpass').toString('base64'))
+                                                Buffer.from('reset_pwd_user:newpass').toString('base64'))
                                             .end(function (err, res) {
                                                 expect(res.status).equal(200);
                                                 expect(res.body._id).equal('reset_pwd_user');

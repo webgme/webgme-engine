@@ -6,7 +6,7 @@
 
 var testFixture = require('../../../_globals.js');
 
-describe('BlobServer', function () {
+describe('BlobRunPluginClient', function () {
     'use strict';
 
     var BlobClient = require('../../../../src/server/middleware/blob/BlobRunPluginClient'),
@@ -14,7 +14,7 @@ describe('BlobServer', function () {
         BlobMetadata = testFixture.requirejs('common/blob/BlobMetadata'),
         gmeConfig = testFixture.getGmeConfig(),
         blobBackend,
-        logger = testFixture.logger.fork('BlobServer'),
+        logger = testFixture.logger.fork('BlobRunPluginClient'),
         expect = testFixture.expect,
         rimraf = testFixture.rimraf;
 
@@ -86,7 +86,7 @@ describe('BlobServer', function () {
     it('should create file from empty buffer', function (done) {
         var bc = new BlobClient(blobBackend, logger.fork('blob'));
 
-        bc.putFile('test.txt', new Buffer(0), function (err, hash) {
+        bc.putFile('test.txt', Buffer.alloc(0), function (err, hash) {
             if (err) {
                 done(err);
                 return;
@@ -211,7 +211,7 @@ describe('BlobServer', function () {
     }
 
     function ab2buffer(ab) {
-        var buffer = new Buffer(ab.byteLength);
+        var buffer = Buffer.alloc(ab.byteLength);
         var view = new Uint8Array(ab);
         for (var i = 0; i < buffer.length; ++i) {
             buffer[i] = view[i];

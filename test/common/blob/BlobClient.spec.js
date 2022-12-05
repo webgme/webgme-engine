@@ -103,7 +103,7 @@ describe('BlobClient', function () {
         it('should create file from empty buffer', function (done) {
             var bc = new BlobClient(bcParam);
 
-            bc.putFile('test.txt', new Buffer(0), function (err, hash) {
+            bc.putFile('test.txt', Buffer.alloc(0), function (err, hash) {
                 if (err) {
                     done(err);
                     return;
@@ -292,7 +292,7 @@ describe('BlobClient', function () {
         it('getObjectAsString should create file from empty buffer and return as string', function (done) {
             var bc = new BlobClient(bcParam);
 
-            bc.putFile('test2.txt', new Buffer(0))
+            bc.putFile('test2.txt', Buffer.alloc(0))
                 .then(function (hash) {
                     return bc.getObjectAsString(hash);
                 })
@@ -398,7 +398,7 @@ describe('BlobClient', function () {
                     'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
                     'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
                     'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
-                createZip(new Buffer(data), done);
+                createZip(Buffer.from(data), done);
             });
         }
 
@@ -759,7 +759,7 @@ describe('BlobClient', function () {
                     'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
                     'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
                     'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
-                createZip(new Buffer(data), done);
+                createZip(Buffer.from(data), done);
             });
         }
 
@@ -1243,7 +1243,7 @@ describe('BlobClient', function () {
 
             }
         }
-        return typeof global === 'undefined' ? taBytes : new Buffer(taBytes);
+        return typeof global === 'undefined' ? taBytes : Buffer.from(taBytes);
     }
 
     function str2ab(str) {
@@ -1258,7 +1258,7 @@ describe('BlobClient', function () {
     }
 
     function ab2buffer(ab) {
-        var buffer = new Buffer(ab.byteLength);
+        var buffer = Buffer.alloc(ab.byteLength);
         var view = new Uint8Array(ab);
         for (var i = 0; i < buffer.length; ++i) {
             buffer[i] = view[i];
