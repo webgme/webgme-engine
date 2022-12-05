@@ -1944,17 +1944,19 @@ define([
         };
 
         // Constraints
-        this.setConstraint = function (path, name, constraintObj) {
+        this.setConstraint = function (path, name, constraintObj, msg) {
             if (state.core && state.nodes[path] && typeof state.nodes[path].node === 'object') {
                 state.core.setConstraint(state.nodes[path].node, name, constraintObj);
-                saveRoot('setConstraint(' + path + ',' + name + ')');
+                state.callSequence.push({ name: 'setConstraint', args: [...arguments] });
+                saveRoot(typeof msg === 'string' ? msg : 'setConstraint(' + path + ',' + name + ')');
             }
         };
 
-        this.delConstraint = function (path, name) {
+        this.delConstraint = function (path, name, msg) {
             if (state.core && state.nodes[path] && typeof state.nodes[path].node === 'object') {
                 state.core.delConstraint(state.nodes[path].node, name);
-                saveRoot('delConstraint(' + path + 'name' + ')');
+                state.callSequence.push({ name: 'delConstraint', args: [...arguments] });
+                saveRoot(typeof msg === 'string' ? msg : 'delConstraint(' + path + 'name' + ')');
             }
         };
 

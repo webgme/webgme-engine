@@ -60,6 +60,7 @@ describe('gmeNodeSetter', function () {
 
                 basicState = {
                     core: context.core,
+                    callSequence: [],
                     nodes: {
                         '': {node: context.rootNode}
                     }
@@ -102,6 +103,7 @@ describe('gmeNodeSetter', function () {
         lastWarning = null;
         lastCoreError = null;
         saveCalled = false;
+        basicState.callSequence = [];
     });
 
     afterEach(function (done) {
