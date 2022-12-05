@@ -18,6 +18,7 @@ var testFixture = require('./test/_globals.js'),
     logger = testFixture.logger.fork('karma.conf'),
     PROJECTS_TO_IMPORT = [
         {name: 'ProjectAndBranchOperationsTest', path: './test-karma/client/js/client/basicProject.webgmex'},
+        {name: 'CoreCallSequence', path: './test-karma/client/js/client/basicProject.webgmex'},
         {name: 'noBranchSeedProject', path: './test-karma/client/js/client/pluginProject.webgmex'},
         {name: 'alreadyExists', path: './test-karma/client/js/client/pluginProject.webgmex'},
         {name: 'createGenericBranch', path: './test-karma/client/js/client/pluginProject.webgmex'},

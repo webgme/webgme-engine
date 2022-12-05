@@ -102,6 +102,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setAttribute', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ?
                     msg : 'setAttribute(' + path + ',' + name + ',' + JSON.stringify(value) + ')');
             }
@@ -112,7 +113,7 @@ define([], function () {
          * @memberOf Client
          * @instance
          * @param {string} path - The path of the node in question.
-         * @param {string} name - The name of the attribute.
+         * @param {string} name - The name of the attributcallSequencee.
          * @param {string} msg - The message that should be attached to the commit that covers this update.
          */
         function delAttribute(path, name, msg) {
@@ -126,6 +127,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delAttribute', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ? msg : 'delAttribute(' + path + ',' + name + ')');
             }
         }
@@ -150,6 +152,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setRegistry', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ?
                     msg : 'setRegistry(' + path + ',' + name + ',' + JSON.stringify(value) + ')');
             }
@@ -174,6 +177,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delRegistry', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ? msg : 'delRegistry(' + path + ',' + name + ')');
             }
         }
@@ -221,6 +225,7 @@ define([], function () {
                 _setAttrAndRegistry(newNode, desc);
                 newPath = storeNode(newNode);
 
+                state.callSequence.push({ name: 'copyNode', args: [...arguments], return: newPath});
                 saveRoot(typeof msg === 'string' ?
                     msg : 'copyNode(' + path + ', ' + parentPath + ', ' + JSON.stringify(desc) + ')');
                 return newPath;
@@ -288,6 +293,7 @@ define([], function () {
                         }
                     }
 
+                    state.callSequence.push({ name: 'copyMoreNodes', args: [...arguments]});
                     saveRoot(msg);
                 }
             } else {
@@ -354,6 +360,7 @@ define([], function () {
                 }
             }
 
+            state.callSequence.push({ name: 'moveMoreNodes', args: [...arguments], return: returnParams});
             saveRoot(typeof msg === 'string' ? msg : 'moveMoreNodes(' + JSON.stringify(returnParams) + ')');
             return returnParams;
         }
@@ -440,6 +447,7 @@ define([], function () {
 
             }
 
+            state.callSequence.push({ name: 'createChildren', args: [...arguments], return: result});
             msg = typeof msg === 'string' ? msg : 'createChildren(' + JSON.stringify(result) + ')';
             saveRoot(msg);
             return result;
@@ -459,6 +467,7 @@ define([], function () {
 
             if (node) {
                 state.core.deleteNode(node);
+                state.callSequence.push({ name: 'deleteNode', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ? msg : 'deleteNode(' + path + ')');
             }
         }
@@ -486,6 +495,7 @@ define([], function () {
             }
 
             if (didDelete) {
+                state.callSequence.push({ name: 'deleteNodes', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ? msg : 'deleteNodes(' + paths + ')');
             }
         }
@@ -557,6 +567,8 @@ define([], function () {
 
                 storeNode(newNode);
                 newID = state.core.getPath(newNode);
+
+                state.callSequence.push({ name: 'createNode', args: [...arguments], return: newID});
                 saveRoot(typeof msg === 'string' ? msg :
                     'createNode(' + parameters.parentId + ',' + parameters.baseId + ',' + newID + ')');
             }
@@ -588,6 +600,8 @@ define([], function () {
                     state.core.setPointer(node, name, targetNode);
                 }
 
+
+                state.callSequence.push({ name: 'setPointer', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ? msg : 'setPointer(' + path + ',' + name + ',' + target + ')');
             }
         }
@@ -609,6 +623,8 @@ define([], function () {
 
             if (node) {
                 state.core.delPointer(node, name);
+                
+                state.callSequence.push({ name: 'delPointer', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ? msg : 'delPointer(' + path + ',' + name + ')');
             }
         }
@@ -633,6 +649,7 @@ define([], function () {
 
             if (node && memberNode) {
                 state.core.addMember(node, setId, memberNode);
+                state.callSequence.push({ name: 'addMember', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ? msg : 'addMember(' + path + ',' + memberPath + ',' + setId + ')');
             }
         }
@@ -655,6 +672,7 @@ define([], function () {
 
             if (node) {
                 state.core.delMember(node, setId, memberPath);
+                state.callSequence.push({ name: 'delMember', args: [...arguments]});
                 saveRoot(typeof msg === 'string' ? msg : 'removeMember(' + path + ',' + memberPath + ',' + setId + ')');
             }
         }

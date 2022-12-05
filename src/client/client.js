@@ -76,6 +76,7 @@ define([
                     callbacks: []
                 },
                 msg: '',
+                callSequence: [],
                 gHash: 0,
                 loadError: null,
                 ongoingTerritoryUpdateCounter: 0,
@@ -676,6 +677,8 @@ define([
                     );
 
                     state.msg = '';
+                    dispatchCoreCallSequence([...state.callSequence]);
+                    state.callSequence = [];
                 } else {
                     logger.debug('is in transaction - will NOT persist.');
 
@@ -1841,6 +1844,11 @@ define([
                 saveRoot(msg, callback);
             }
         };
+
+        // core-setters
+        function dispatchCoreCallSequence(callSequence) {
+            self.dispatchEvent(CONSTANTS.CORE_CALL_SEQUENCE, callSequence);
+        }
 
         //territory functions
         this.addUI = function (ui, fn, guid) {
