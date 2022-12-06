@@ -127,8 +127,10 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, { callSequence }) {
+            function (_client, eventData) {
                 try {
+                    // console.log(JSON.stringify(eventData, null, 2));
+                    const callSequence = eventData.callSequence;
                     expect(callSequence.length).to.equal(1);
                     cnt += 1;
                     if (cnt === 1) {
@@ -142,11 +144,15 @@ describe('Client Core Call Sequence', function () {
                 }
             },
             function () {
+                // console.log(testState);
                 if (testState === 'init') {
                     testState = 'checking';
                     client.setAttribute('/960660211', 'name', 'checkModified', 'basic set attribute test');
-                    client.setRegistry('/960660211', 'someReg', 'bah', 'basic set attribute test');
-                    return;
+                } else if (testState === 'checking') {
+                    testState = 'done';
+                    setTimeout(() => {
+                        client.setRegistry('/960660211', 'someReg', 'bah', 'basic set attribute test');
+                    });
                 }
             });
     });
