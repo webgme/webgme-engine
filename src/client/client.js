@@ -666,7 +666,7 @@ define([
                     }
 
                     // Make the commit on the storage (will emit hashUpdated)
-                    storage.makeCommit(
+                    const commitObj = storage.makeCommit(
                         state.project.projectId,
                         state.branchName,
                         [state.commitHash],
@@ -677,7 +677,15 @@ define([
                     );
 
                     state.msg = '';
-                    dispatchCoreCallSequence([...state.callSequence]);
+                    dispatchCoreCallSequence({
+                        projectId: state.project.projectId,
+                        branchName: state.project.branchName,
+                        rootHash: state.rootHash,
+                        newRootHash: state.rootHash,
+                        commitHash: state.commitHash,
+                        newCommitHash: commitObj._id,
+                        callSequence: [...state.callSequence]
+                    });
                     state.callSequence = [];
                 } else {
                     logger.debug('is in transaction - will NOT persist.');

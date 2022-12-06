@@ -93,7 +93,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -127,7 +127,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     cnt += 1;
@@ -160,7 +160,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(2);
                     expect(callSequence[0].name).to.equal('setAttribute');
@@ -191,7 +191,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -222,7 +222,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -253,7 +253,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -284,7 +284,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -316,7 +316,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -360,7 +360,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -404,7 +404,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -445,7 +445,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -476,7 +476,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -507,7 +507,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -547,7 +547,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
@@ -581,7 +581,7 @@ describe('Client Core Call Sequence', function () {
         setUpForTest(
             testId,
             { '/960660211': { children: 1 } },
-            function (_client, callSequence) {
+            function (_client, { callSequence }) {
                 try {
                     expect(callSequence.length).to.equal(1);
                     const c = callSequence[0];
