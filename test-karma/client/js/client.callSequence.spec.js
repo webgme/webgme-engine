@@ -84,6 +84,45 @@ describe('Client Core Call Sequence', function () {
         });
     }
 
+
+    it('dispatched event should contain all metadata', function (done) {
+        var testState = 'init',
+            testId = 'eventDataCheck';
+
+        currentTestId = testId;
+
+        setUpForTest(
+            testId,
+            { '/960660211': { children: 1 } },
+            function (_client, eventData) {
+                try {
+                    expect(eventData.projectId).to.equal('guest+CoreCallSequence');
+                    expect(eventData.branchName).to.equal(testId);
+                    expect(eventData.prevRootHash.startsWith('#')).to.equal(true);
+                    expect(eventData.prevCommitHash.startsWith('#')).to.equal(true);
+                    expect(eventData.commitObject._id.startsWith('#')).to.equal(true);
+                    expect(eventData.commitObject.root.startsWith('#')).to.equal(true);
+
+                    expect(eventData.prevRootHash === eventData.commitObject.root).to.equal(false);
+                    expect(eventData.prevCommitHash === eventData.commitObject._id).to.equal(false);
+
+                    expect(eventData.commitStatus).to.equal('SYNCED');
+                    expect(eventData.callSequence instanceof Array).to.equal(true);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            },
+            function () {
+                if (testState === 'init') {
+                    testState = 'checking';
+                    client.setAttribute('/960660211', 'name', 'checkModified', 'set attribute test');
+                    return;
+                }
+            });
+    });
+
+
     it('setAttribute should dispatch one call', function (done) {
         var testState = 'init',
             testId = 'setAttributeLone';

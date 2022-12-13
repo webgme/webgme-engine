@@ -694,7 +694,7 @@ define([
                     // This will be dispatched in the wrappedCallback.
                     state.pendingCallSequences[commitObj._id] = {
                         projectId: state.project.projectId,
-                        branchName: state.project.branchName,
+                        branchName: state.branchName,
                         prevRootHash: state.rootHash,
                         prevCommitHash: state.commitHash,
                         commitObject: commitObj,
