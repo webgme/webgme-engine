@@ -247,6 +247,8 @@ var path = require('path'),
                 forceNew: true
             },
             serverOptions: {
+                // Changed to 1Mb in 2.5.0 but doc still refers to old value of 1e8.
+                maxHttpBufferSize: 1e8
                 //transports: ['websocket', 'polling']
             },
             adapter: {
