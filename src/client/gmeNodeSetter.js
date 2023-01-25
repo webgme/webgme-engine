@@ -535,7 +535,6 @@ define([], function () {
          * @param {object} parameters - the parameters holding necessary information for the creation.
          * @param {string} parameters.parentId - the path/id of the container of the new node.
          * @param {string} parameters.baseId - the path/id of the prototype of the new node.
-         * @param {string} parameters.parentId - the id/path of the parent where the new nodes should be created
          * @param {string} [parameters.guid] - the unique identifier of the node we will create.
          * @param {string} [parameters.relid] - the relative id of the node we will create.
          * @param {string} [msg] - optional commit message, if not supplied a default one with the
