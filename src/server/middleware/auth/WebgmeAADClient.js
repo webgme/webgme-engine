@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const GUID = requireJS('common/util/guid');
 const Q = require('q');
 
-const DATALAKE_SCOPE = "api://52094e65-d33d-4c6b-bd32-943bf4adec13/LeapDataLakeScope";
+const DATALAKE_SCOPE = 'api://52094e65-d33d-4c6b-bd32-943bf4adec13/LeapDataLakeScope';
 
 
 class WebGMEAADClient {
@@ -49,7 +49,7 @@ class WebGMEAADClient {
         this.__activeDirectoryClient.getAuthCodeUrl(authCodeUrlParameters)
             .then((response) => {
                 // console.log(req.query);
-                console.log('QUERY:',req.query.redirect);
+                // console.log('QUERY:', req.query.redirect);
                 res.cookie('webgme-redirect', req.query.redirect || '');
                 res.redirect(response);
             })
@@ -61,7 +61,7 @@ class WebGMEAADClient {
 
     getUserIdFromEmail(email) {
         let uid = 'aadid_' + email;
-        uid = uid.replace(/@/g,'_at_').replace(/\./g,'_p_').replace(/-/g,'_d_');
+        uid = uid.replace(/@/g, '_at_').replace(/\./g, '_p_').replace(/-/g, '_d_');
         return uid;
     }
 
@@ -104,7 +104,7 @@ class WebGMEAADClient {
                     return this.__gmeAuth.addUser(uid, claims.email, GUID(), true, options);
                 }
             })
-            .then(userData => {
+            .then(() => {
                 //no matter if it was a new user or an existing one, let's create a token for it
                 this.__logger.error('caching user - user added');
                 return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
@@ -142,31 +142,31 @@ class WebGMEAADClient {
         // console.log('chk001');
         const deferred = Q.defer();
         this.__gmeAuth.getUser(uid)
-        .then(userData => {
-            // console.log('chk002');
-            // console.log(userData);
-            if (userData.hasOwnProperty('aadId')) {
-                // console.log('chk003');
-                return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
-            } else {
-                // console.log('chk004');
-                throw new Error('Not AAD user, cannot retrieve accessToken');
-            }
-        })
-        .then(account => {
-            // console.log(account);
-            const tokenRequest = {
-                scopes: [DATALAKE_SCOPE],
-                account: account,
-                forceRefresh: true
-            };
-            return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
-        })
-        .then(deferred.resolve)
-        .catch(error => {
-            this.__logger.error(error);
-            deferred.reject(error);
-        });
+            .then(userData => {
+                // console.log('chk002');
+                // console.log(userData);
+                if (userData.hasOwnProperty('aadId')) {
+                    // console.log('chk003');
+                    return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
+                } else {
+                    // console.log('chk004');
+                    throw new Error('Not AAD user, cannot retrieve accessToken');
+                }
+            })
+            .then(account => {
+                // console.log(account);
+                const tokenRequest = {
+                    scopes: [DATALAKE_SCOPE],
+                    account: account,
+                    forceRefresh: true
+                };
+                return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
+            })
+            .then(deferred.resolve)
+            .catch(error => {
+                this.__logger.error(error);
+                deferred.reject(error);
+            });
 
         return deferred.promise.nodeify(callback);
     }
