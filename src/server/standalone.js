@@ -47,7 +47,7 @@ const webgmeUtils = require('../utils');
 const servers = [];
 const CONSTANTS = requireJS('common/Constants');
 const isAbsUrlPath = new RegExp('^(?:[a-z]+:)?//', 'i');
-const jwt = require('jsonwebtoken');
+// const jwt = require('jsonwebtoken');
 
 let mainLogger;
 const shutdown = () => {
@@ -415,7 +415,7 @@ class StandAloneServer {
                 __gmeAuth.verifyJWToken(token)
                     .then(result => {
                         webgmeTokenResult = result;
-                        if(__gmeConfig.authentication.azureActiveDirectory.enable) {
+                        if (__gmeConfig.authentication.azureActiveDirectory.enable) {
                             return this.__aadClient.getAccessToken(result.content.userId);   
                         } else {
                             return Q(null);
@@ -670,39 +670,40 @@ class StandAloneServer {
                 this.__aadClient.login(req, res);
             });
 
-            __app.get('/aad/authenticate', (req,res) => {
+            __app.get('/aad/authenticate', (req, res) => {
                 // console.log('check001');
                 const webgmeToken = req.cookies[__gmeConfig.authentication.jwt.cookieId];
-                const aadToken = req.cookies[__gmeConfig.authentication.azureActiveDirectory.cookieId];
+                // const aadToken = req.cookies[__gmeConfig.authentication.azureActiveDirectory.cookieId];
                 __gmeAuth.verifyJWToken(webgmeToken)
-                .then(user => {
-                    // console.log('check002');
-                    // console.log('we got user', user);
-                    //TODO maybe refresh both tokens??
-                    return this.__aadClient.getAccessToken(user.content.userId);
-                    if(req.query.redirect) {
-                        res.redirect(req.query.redirect);
-                    } else {
-                        res.sendStatus(200);
-                    }
-                })
-                .then(token => {
-                    // console.log('check003');
-                    // console.log(token);
-                    res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
-                    if(req.query.redirect) {
-                        res.redirect(req.query.redirect);
-                    } else {
-                        res.sendStatus(200);
-                    }
-                })
-                .catch((err) => {
-                    // we assume no user, so redirect to aad login - but keep query string
-                    res.redirect(URL.format({
-                        pathname:'/aad',
-                        query:req.query,
-                      }));
-                  });
+                    .then(user => {
+                        // console.log('check002');
+                        // console.log('we got user', user);
+                        //TODO maybe refresh both tokens??
+                        return this.__aadClient.getAccessToken(user.content.userId);
+                        /*if (req.query.redirect) {
+                            res.redirect(req.query.redirect);
+                        } else {
+                            res.sendStatus(200);
+                        }*/
+                    })
+                    .then(token => {
+                        // console.log('check003');
+                        // console.log(token);
+                        res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
+                        if (req.query.redirect) {
+                            res.redirect(req.query.redirect);
+                        } else {
+                            res.sendStatus(200);
+                        }
+                    })
+                    .catch((err) => {
+                        // we assume no user, so redirect to aad login - but keep query string
+                        __logger.error('No AAD info found for user:', err);
+                        res.redirect(URL.format({
+                            pathname: '/aad',
+                            query: req.query,
+                        }));
+                    });
 
             });
 
@@ -726,14 +727,14 @@ class StandAloneServer {
             __app.get('/aad/token', ensureAuthenticated, (req, res) => {
                 const uid = getUserId(req);
                 this.__aadClient.getAccessToken(uid, (err, token) => {
-                    if(err) {
+                    if (err) {
                         __logger.error(err);
                         res.status(401);
                         res.end();
                     } else {
                         res.status(200);
                         res.setHeader('Content-type', 'application/json');
-                        res.end(JSON.stringify({accessToken:token}));
+                        res.end(JSON.stringify({accessToken: token}));
                     }
                 });
             });

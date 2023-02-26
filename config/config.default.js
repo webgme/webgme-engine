@@ -65,7 +65,7 @@ var path = require('path'),
                 discoveryEndpoint: 'Example_discovery_key_endpoint',
                 cookieId: 'webgme_aad',
                 cookieKey: 'Do_your_job_and_make_a_decent_key',
-                redirectUri: 'we need to set this temporarily, but would be nice to deduct it - behind reverse proxy it is hard'
+                redirectUri: 'need to set this temp, would be nice to deduct it'
             },
         },
 
