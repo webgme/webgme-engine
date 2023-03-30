@@ -739,6 +739,41 @@ class StandAloneServer {
                 });
             });
 
+            //device access to use webgme related services
+            const aad_verify = require('azure-ad-verify-token-commonjs');
+            const verify = aad_verify.verify;
+            const voptions = {
+                jwksUri: 'https://login.microsoftonline.com/common/discovery/keys',
+                issuer: 'https://login.microsoftonline.com/ba5a7f39-e3be-4ab3-b450-67fa80faecad/v2.0',
+                audience: '52094e65-d33d-4c6b-bd32-943bf4adec13' // TODO the LeapDataLake should be the audience
+            };
+
+            __app.get('/aad/device', (req, res) => {
+                if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+                    const token = req.headers.authorization.split(' ')[1];
+                    verify(token, voptions)
+                    .then(token => {
+                        console.log(token);
+                        if(token.preferred_username) {
+                            const uid = this.__aadClient.getUserIdFromEmail(token.preferred_username); //TODO not sure if this is appropriate
+                            return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
+                        } else {
+                            throw new Error('unknown user device trying to get access!!!', uid);
+                        }
+                    })
+                    .then(webgmeToken => {
+                        res.cookie(this.__gmeConfig.authentication.jwt.cookieId, webgmeToken);
+                        res.sendStatus(200);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        res.sendStatus(403);
+                    })
+                } else {
+                    res.sendStatus(403);
+                }
+            });
+
             __app.get('/bin/getconfig.js', ensureAuthenticated, (req, res) => {
                 res.status(200);
                 res.setHeader('Content-type', 'application/javascript');
