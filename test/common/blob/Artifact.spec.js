@@ -292,6 +292,7 @@ describe('Blob Artifact', function () {
                         done(err);
                         return;
                     }
+                    console.log(31);
                     artifact.save(function (err, artHash) {
                         console.log(4);
                         if (err) {
