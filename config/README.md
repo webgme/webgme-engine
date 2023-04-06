@@ -123,7 +123,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 
 ##### blob
 - `config.blob.allowListAll = false`
- - If true the end-point `/rest/blob/metadata` will return a listing of all available artifacts.
+ - If true the end-point `/rest/blob/metadata` will return a listing of all available artifacts, see [#308](https://github.com/webgme/webgme-engine/pull/308) for details.
 - `config.blob.compressionLevel = 0`
  - Compression level of DEFLATE (between 0 and 9) to use when serving bundled complex artifacts.
 - `config.blob.type = 'FS'`
