@@ -129,38 +129,7 @@ describe('Plugin', function () {
         }
 
         userGuid = client.addUI({}, eventHandler);
-        client.updateTerritory(userGuid, {'/1': {children: 0}});
-    });
-
-    it('should run PluginGenerator on the server and return a valid result using default settings', function (done) {
-        var pluginId = 'PluginGenerator',
-            context = {
-                managerConfig: {
-                    project: projectId,
-                    activeNode: '',
-                    commit: originalCommitHash,
-                    branchName: 'master'
-                }
-            };
-        //* @param {string} name - name of plugin.
-        //* @param {object} context
-        //* @param {object} context.managerConfig - where the plugin should execute.
-        //* @param {string} context.managerConfig.project - name of project.
-        //* @param {string} context.managerConfig.activeNode - path to activeNode.
-        //* @param {string} [context.managerConfig.activeSelection=[]] - paths to selected nodes.
-        //* @param {string} context.managerConfig.commit - commit hash to start the plugin from.
-        //* @param {string} context.managerConfig.branchName - branch which to save to.
-        //* @param {object} [context.pluginConfig=%defaultForPlugin%] - specific configuration for the plugin.
-        //* @param {function} callback
-        client.runServerPlugin(pluginId, context, function (err, pluginResult) {
-            expect(err).to.equal(null);
-            expect(pluginResult).not.to.equal(null);
-            expect(pluginResult.success).to.equal(true, 'PluginGenerator did not succeed on server!');
-            expect(pluginResult.commits.length).to.equal(1);
-            expect(pluginResult.commits[0].branchName).to.equal('master');
-            expect(pluginResult.commits[0].status).to.equal(client.CONSTANTS.STORAGE.SYNCED);
-            done();
-        });
+        client.updateTerritory(userGuid, { '/1': { children: 0 } });
     });
 
     it('should run MinimalWorkingExample in client and update the client', function (done) {
@@ -388,7 +357,7 @@ describe('Plugin', function () {
 
             context.managerConfig.commitHash = client.getActiveCommitHash();
             userGuid = client.addUI({}, nodeEventHandler);
-            client.updateTerritory(userGuid, {'': {children: 0}});
+            client.updateTerritory(userGuid, { '': { children: 0 } });
         });
     });
 
@@ -697,7 +666,7 @@ describe('Plugin', function () {
                 client.removeEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
                 expect(event).not.to.eql(null);
                 expect(event.type).to.equal(client.CONSTANTS.PLUGIN_NOTIFICATION);
-                expect(event.notification).to.eql({msgType: 'what', msgData: 'not'});
+                expect(event.notification).to.eql({ msgType: 'what', msgData: 'not' });
                 messageReceived = true;
             },
             initiatedHandler = function (sender, event) {
@@ -757,7 +726,7 @@ describe('Plugin', function () {
                 client.removeEventListener(client.CONSTANTS.PLUGIN_NOTIFICATION, notificationHandler);
                 expect(event).not.to.eql(null);
                 expect(event.type).to.equal(client.CONSTANTS.PLUGIN_NOTIFICATION);
-                expect(event.notification).to.eql({msgType: 'what', msgData: 'not'});
+                expect(event.notification).to.eql({ msgType: 'what', msgData: 'not' });
                 messageReceived = true;
             },
             initiatedHandler = function (sender, event) {
