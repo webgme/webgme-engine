@@ -60,9 +60,14 @@ describe('Blob Artifact', function () {
                         done(err);
                         return;
                     }
-                    should.equal(res.status, 200);
-                    should.equal(res.text, 'tttt');
-                    done();
+
+                    try {
+                        should.equal(res.status, 200);
+                        should.equal(res.text, 'tttt');
+                        done();
+                    } catch (err) {
+                        done(err);
+                    }
                 });
             });
         });
@@ -78,16 +83,27 @@ describe('Blob Artifact', function () {
                     done(err);
                     return;
                 }
-                should.equal(hashes.length, 1);
+
+                try {
+                    should.equal(hashes.length, 1);
+                } catch (err) {
+                    done(err);
+                    return;
+                }
                 var url = bc.getViewURL(hashes[0]);
                 agent.get(url).end(function (err, res) {
                     if (err) {
                         done(err);
                         return;
                     }
-                    should.equal(res.status, 200);
-                    should.equal(res.text, 'tttt');
-                    done();
+
+                    try {
+                        should.equal(res.status, 200);
+                        should.equal(res.text, 'tttt');
+                        done();
+                    } catch (err) {
+                        done(err);
+                    }
                 });
             });
         });
@@ -101,8 +117,13 @@ describe('Blob Artifact', function () {
                     done(err);
                     return;
                 }
-                expect(hashes).deep.equal([]);
-                done();
+
+                try {
+                    expect(hashes).deep.equal([]);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
         });
 
@@ -120,9 +141,14 @@ describe('Blob Artifact', function () {
                         done(err);
                         return;
                     }
-                    should.equal(res.status, 200);
-                    should.equal(res.text, 'tttt');
-                    done();
+
+                    try {
+                        should.equal(res.status, 200);
+                        should.equal(res.text, 'tttt');
+                        done();
+                    } catch (err) {
+                        done(err);
+                    }
                 });
             });
         });
@@ -138,16 +164,27 @@ describe('Blob Artifact', function () {
                     done(err);
                     return;
                 }
-                should.equal(hashes.length, 1);
+
+                try {
+                    should.equal(hashes.length, 1);
+                } catch (err) {
+                    done(err);
+                    return;
+                }
                 var url = bc.getViewURL(hashes[0]);
                 agent.get(url).end(function (err, res) {
                     if (err) {
                         done(err);
                         return;
                     }
-                    should.equal(res.status, 200);
-                    should.equal(res.text, 'tttt');
-                    done();
+
+                    try {
+                        should.equal(res.status, 200);
+                        should.equal(res.text, 'tttt');
+                        done();
+                    } catch (err) {
+                        done(err);
+                    }
                 });
             });
         });
@@ -161,8 +198,13 @@ describe('Blob Artifact', function () {
                     done(err);
                     return;
                 }
-                expect(hashes).deep.equal([]);
-                done();
+
+                try {
+                    expect(hashes).deep.equal([]);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
         });
 
@@ -256,9 +298,14 @@ describe('Blob Artifact', function () {
                                 done(err);
                                 return;
                             }
-                            should.equal(res.status, 200);
-                            should.equal(res.text, 'tttt');
-                            done();
+
+                            try {
+                                should.equal(res.status, 200);
+                                should.equal(res.text, 'tttt');
+                                done();
+                            } catch (err) {
+                                done(err);
+                            }
                         });
                     });
 
@@ -276,8 +323,13 @@ describe('Blob Artifact', function () {
                     done(err);
                     return;
                 }
-                expect(hashes).deep.equal([]);
-                done();
+
+                try {
+                    expect(hashes).deep.equal([]);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
         });
 
@@ -360,8 +412,13 @@ describe('Blob Artifact', function () {
                     done(new Error(err));
                     return;
                 }
-                expect(hashes).deep.equal([]);
-                done();
+
+                try {
+                    expect(hashes).deep.equal([]);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
         });
     });
