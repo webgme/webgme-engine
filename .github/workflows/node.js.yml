@@ -51,7 +51,17 @@ jobs:
       - name: Mocha client test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/client
       - name: Mocha common test
-        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/common
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit ./test/common
+      - name: Mocha common/blob test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/common/blob
+      - name: Mocha common/core test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/common/core
+      - name: Mocha common/executor test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/common/executor
+      - name: Mocha common/storage test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/common/storage
+      - name: Mocha common/util test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/common/util
       - name: Mocha config test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/config
       - name: Mocha issue test
