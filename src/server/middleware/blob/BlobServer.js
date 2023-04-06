@@ -64,7 +64,7 @@ function createExpressBlob(options) {
     }); */
 
     __app.get('/metadata', ensureAuthenticated, function (req, res) {
-        if (options.gmeConfig.debug) {
+        if (options.gmeConfig.debug || options.gmeConfig.blob.allowListAll) {
             blobBackend.listAllMetadata(req.query.all, function (err, metadata) {
                 if (err) {
                     logger.error(err);

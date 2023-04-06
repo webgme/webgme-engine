@@ -83,6 +83,7 @@ var path = require('path'),
 
         blob: {
             compressionLevel: 0,
+            allowListAll: false,
             type: 'FS', //'FS', 'S3'
             fsDir: './blob-local-storage',
             namespace: '',
