@@ -1,4 +1,5 @@
 /*eslint-env node, mocha*/
+/*eslint-disable no-console*/
 /**
  * @author pmeijer / https://github.com/pmeijer
  */
@@ -271,36 +272,45 @@ describe('Blob Artifact', function () {
             });
         });
 
-        it.skip('should addObjectHashes', function (done) {
+        it('should addObjectHashes', function (done) {
             var bc = new BlobClient(bcParam),
                 filesToAdd = {
                     'a.txt': 'tttt'
                 },
                 artifact = new Artifact('testartifact', bc);
+
+            console.log(1);
             bc.putFiles(filesToAdd, function (err, objHashes) {
+                console.log(2);
                 if (err) {
                     done(err);
                     return;
                 }
                 artifact.addObjectHashes(objHashes, function (err/*, hashes*/) {
+                    console.log(3);
                     if (err) {
                         done(err);
                         return;
                     }
                     artifact.save(function (err, artHash) {
+                        console.log(4);
                         if (err) {
                             done(err);
                             return;
                         }
                         var url = bc.getViewURL(artHash, 'a.txt');
+                        console.log(5);
                         agent.get(url).end(function (err, res) {
+                            console.log(6);
                             if (err) {
                                 done(err);
                                 return;
                             }
 
                             try {
+                                console.log(7);
                                 should.equal(res.status, 200);
+                                console.log(8);
                                 should.equal(res.text, 'tttt');
                                 done();
                             } catch (err) {
