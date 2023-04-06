@@ -122,6 +122,8 @@ Modification of arrays is not support, but non-existing config sub-group (object
  - Logger settings when running bin scripts.
 
 ##### blob
+- `config.blob.allowListAll = false`
+ - If true the end-point `/rest/blob/metadata` will return a listing of all available artifacts.
 - `config.blob.compressionLevel = 0`
  - Compression level of DEFLATE (between 0 and 9) to use when serving bundled complex artifacts.
 - `config.blob.type = 'FS'`
