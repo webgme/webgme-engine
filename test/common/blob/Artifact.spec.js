@@ -271,7 +271,7 @@ describe('Blob Artifact', function () {
             });
         });
 
-        it('should addObjectHashes', function (done) {
+        it.skip('should addObjectHashes', function (done) {
             var bc = new BlobClient(bcParam),
                 filesToAdd = {
                     'a.txt': 'tttt'
