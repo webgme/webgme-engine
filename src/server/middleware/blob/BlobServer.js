@@ -135,7 +135,6 @@ function createExpressBlob(options) {
     });
 
     __app.post('/createMetadata', ensureAuthenticated, function (req, res) {
-
         var data = '';
 
         req.addListener('data', function (chunk) {

@@ -1,6 +1,5 @@
 /*globals define, Uint8Array, ArrayBuffer, WebGMEGlobal*/
 /*eslint-env node, browser*/
-
 /**
  * Client module for accessing the blob.
  *
@@ -280,7 +279,10 @@ define([
             req;
         // FIXME: in production mode do not indent the json file.
         this.logger.debug('putMetadata', {metadata: metadataDescriptor});
-        if (typeof Blob !== 'undefined') {
+        if (typeof Blob !== 'undefined' && typeof window !== 'undefined') {
+            // This does not work using the "new" Blob class in nodejs - so make sure (for now at least) that
+            // we running under a brower even though Blob is defined.
+            // https://nodejs.org/api/buffer.html#class-blob
             blob = new Blob([JSON.stringify(metadata.serialize(), null, 4)], {type: 'text/plain'});
             contentLength = blob.size;
         } else {

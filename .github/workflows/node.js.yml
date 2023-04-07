@@ -10,22 +10,23 @@ jobs:
     name: testing
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        node: [16.x, 18.x]
+        node: [16, 18]
         mongodb-version: [4.4]
         python-version: [3.8]
         redis-version: [6]
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Use Node.js {{ matrix.node-version }}
-        uses: actions/setup-node@v2
+      - name: Use Node.js {{ matrix.node }}
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-      - uses: actions/setup-python@v2
+          node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Start MongoDB ${{ matrix.mongodb-version }}
@@ -38,6 +39,8 @@ jobs:
           redis-version: ${{ matrix.redis-version }}
       - name: Chrome
         uses: browser-actions/setup-chrome@latest
+      - name: node version
+        run: node --version
       - name: NPM install
         run: npm install 
       - name: ESLint Check

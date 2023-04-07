@@ -277,6 +277,7 @@ describe('Blob Artifact', function () {
                     'a.txt': 'tttt'
                 },
                 artifact = new Artifact('testartifact', bc);
+
             bc.putFiles(filesToAdd, function (err, objHashes) {
                 if (err) {
                     done(err);
