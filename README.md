@@ -1,5 +1,5 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://opensource.org/licenses/MIT)
-[![Build Status](https://travis-ci.org/webgme/webgme-engine.svg?branch=master)](https://travis-ci.org/webgme/webgme-engine)
+[![Build status](https://img.shields.io/github/actions/workflow/status/webgme/webgme-engine/ci.yml?branch=master&label=CI&logo=github&style=flat-square)](https://github.com/webgme/webgme-engine/actions/workflows/ci.yml)
 [![Version](https://badge.fury.io/js/webgme-engine.svg)](https://www.npmjs.com/package/webgme-engine)
 [![Downloads](http://img.shields.io/npm/dm/webgme-engine.svg?style=flat)](http://img.shields.io/npm/dm/webgme-engine.svg?style=flat)
 
