@@ -38,6 +38,8 @@ jobs:
           redis-version: ${{ matrix.redis-version }}
       - name: Chrome
         uses: browser-actions/setup-chrome@latest
+      - name: node version
+        run: node --version
       - name: NPM install
         run: npm install 
       - name: ESLint Check
