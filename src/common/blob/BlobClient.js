@@ -56,7 +56,7 @@ define([
                 self.logger.debug('File upload of', fName, e.percent, '%');
             };
         }
-        /*eslint-disable no-console*/
+
         this.logger.debug('ctor', {metadata: parameters});
 
         if (parameters) {
