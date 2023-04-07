@@ -278,41 +278,38 @@ define([
             contentLength,
             req;
         // FIXME: in production mode do not indent the json file.
-        console.log(3111);
         this.logger.debug('putMetadata', {metadata: metadataDescriptor});
-        if (typeof Blob !== 'undefined') {
-            console.log('Blob defined');
+        if (typeof Blob !== 'undefined' && typeof window !== 'undefined') {
+            // This does not work using the "new" Blob class in nodejs - so make sure (for now at least) that
+            // we running under a brower even though Blob is defined.
+            // https://nodejs.org/api/buffer.html#class-blob
             blob = new Blob([JSON.stringify(metadata.serialize(), null, 4)], {type: 'text/plain'});
             contentLength = blob.size;
         } else {
             blob = Buffer.from(JSON.stringify(metadata.serialize(), null, 4), 'utf8');
             contentLength = blob.length;
         }
-        console.log(3112);
+
         req = superagent.post(this.getCreateURL(metadataDescriptor.name, true));
         this._setAuthHeaders(req);
-        console.log(3113);
+
         if (typeof window === 'undefined') {
             req.agent(this.keepaliveAgent);
             req.set('Content-Length', contentLength);
         }
-        console.log(3114);
+
         req.set('Content-Type', 'application/octet-stream')
             .send(blob)
             .end(function (err, res) {
-                console.log(3115);
                 if (err || res.status > 399) {
                     deferred.reject(err || new Error(res.status));
                     return;
                 }
-                console.log(3116);
                 // Uploaded.
                 var response = JSON.parse(res.text);
                 // Get the first one
-                console.log(3117);
                 var hash = Object.keys(response)[0];
                 self.logger.debug('putMetadata - result', hash);
-                console.log(3118);
                 deferred.resolve(hash);
             });
 

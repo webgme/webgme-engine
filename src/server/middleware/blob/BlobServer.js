@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /*globals requireJS*/
 /*eslint-env node*/
 
@@ -136,27 +135,22 @@ function createExpressBlob(options) {
     });
 
     __app.post('/createMetadata', ensureAuthenticated, function (req, res) {
-        console.log('s1');
         var data = '';
 
         req.addListener('data', function (chunk) {
             data += chunk;
         });
 
-        console.log('s2');
         req.addListener('end', function () {
             var metadata;
             try {
                 metadata = new BlobMetadata(JSON.parse(data));
-                console.log('s3');
             } catch (e) {
                 res.status(500);
                 res.send(e);
                 return;
             }
-            console.log('s4');
             blobBackend.putMetadata(metadata, function (err, hash) {
-                console.log('s5');
                 if (err) {
                     logger.error(err);
                     res.status(err.statusCode || 500);
@@ -164,7 +158,6 @@ function createExpressBlob(options) {
                 } else {
                     // FIXME: it should be enough to send back the hash only
                     blobBackend.getMetadata(hash, function (err, metadataHash, metadata) {
-                        console.log('s6');
                         if (err) {
                             logger.error(err);
                             res.status(err.statusCode || 500);
@@ -174,7 +167,6 @@ function createExpressBlob(options) {
                             res.setHeader('Content-type', 'application/json');
                             var info = {};
                             info[hash] = metadata;
-                            console.log('s7');
                             res.end(JSON.stringify(info, null, 4));
                         }
                     });

@@ -277,8 +277,6 @@ define([
         var deferred = Q.defer();
 
         this.blobClient.putMetadata(this.descriptor, function (err, hash) {
-            /*eslint-disable no-console*/
-            console.log(311);
             if (err) {
                 deferred.reject(err);
             } else {
