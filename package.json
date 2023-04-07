@@ -110,6 +110,6 @@
     "pkginfo": "^0.4.1",
     "rimraf": "^2.6.2",
     "ssl-root-cas": "^1.3.1",
-    "webgme-executor-worker": "^3.0.3"
+    "webgme-executor-worker": "^3.1.1"
   }
 }
