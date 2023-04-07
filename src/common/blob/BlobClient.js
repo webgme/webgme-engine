@@ -281,6 +281,7 @@ define([
         console.log(3111);
         this.logger.debug('putMetadata', {metadata: metadataDescriptor});
         if (typeof Blob !== 'undefined') {
+            console.log('Blob defined');
             blob = new Blob([JSON.stringify(metadata.serialize(), null, 4)], {type: 'text/plain'});
             contentLength = blob.size;
         } else {
