@@ -10,6 +10,7 @@ jobs:
     name: testing
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         node: [16, 18]
         mongodb-version: [4.4]
