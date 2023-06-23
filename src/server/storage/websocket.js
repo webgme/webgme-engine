@@ -883,6 +883,14 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             // Worker commands
             socket.on('simpleRequest', function (data, callback) {
+                //TODO: parser needs to be moved to common place
+                const parseCookie = str => str
+                    .split(';')
+                    .map(v => v.split('='))
+                    .reduce((acc, v) => {
+                        acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+                        return acc;}, {});
+                const cookies = parseCookie(this.handshake.headers.cookie);
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
                         data.userId = userId;
@@ -894,6 +902,11 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     })
                     .then(function (newToken) {
                         data.webgmeToken = newToken;
+                        //TODO this should probably come from authenticator and not the request!!!
+                        if (gmeConfig.authentication.enable === true &&
+                            gmeConfig.authentication.azureActiveDirectory.enable === true) {
+                                data.aadToken = cookies[gmeConfig.authentication.azureActiveDirectory.cookieId] || null;
+                            }
                         workerManager.request(data, function (err, result) {
                             if (err) {
                                 callback(err.message, result);

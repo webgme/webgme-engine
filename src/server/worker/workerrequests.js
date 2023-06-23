@@ -188,7 +188,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {object} [context.executionId] - unique identifier of the execution necessary for proper messaging.
      * @param {function} callback
      */
-    function executePlugin(webgmeToken, socketId, pluginName, context, callback) {
+    function executePlugin(tokens, socketId, pluginName, context, callback) {
+        const webgmeToken = tokens.webgme;
+        const aadToken = tokens.aad;
         var storage,
             errResult,
             pluginContext,
@@ -287,6 +289,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             })
             .then(function (plugin_) {
                 plugin = plugin_;
+                //TODO we need to hash this one out
+                plugin.__aadToken = aadToken;
                 return pluginManager.configurePlugin(plugin, context.pluginConfig, pluginContext);
             })
             .then(function () {

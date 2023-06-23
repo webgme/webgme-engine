@@ -73,7 +73,7 @@ process.on('message', function (parameters) {
     logger.debug('Incoming message:', {metadata: parameters});
 
     if (parameters.command === CONSTANTS.workerCommands.executePlugin) {
-        wr.executePlugin(parameters.webgmeToken, parameters.socketId, parameters.name, parameters.context,
+        wr.executePlugin({webgme:parameters.webgmeToken,aad:parameters.aadToken}, parameters.socketId, parameters.name, parameters.context,
             function (err, result) {
                 safeSend({
                     pid: process.pid,
