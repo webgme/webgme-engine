@@ -450,7 +450,8 @@ class StandAloneServer {
                     })
                     .catch(err => {
                         res.clearCookie(__gmeConfig.authentication.jwt.cookieId);
-                        if (err.name === 'TokenExpiredError') {
+                        res.clearCookie(__gmeConfig.authentication.azureActiveDirectory.cookieId);
+                        if (err.name === 'TokenExpiredError' || err.name === 'MissingAADAccountForTokenError') {
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
                                 res.status(401);
                                 next(err);

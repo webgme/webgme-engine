@@ -92,6 +92,11 @@ class WebGMEAADClient {
                     if (userData.email === claims.email) {
                         userFound = true;
                     }
+
+                    //bugfix as some user was initially created without email...
+                    if(userData._id === uid) {
+                        options.overwrite = true;
+                    }
                 });
 
                 if (userFound) {
@@ -155,6 +160,12 @@ class WebGMEAADClient {
             })
             .then(account => {
                 // console.log(account);
+                if(!account) {
+                    const err = new Error('Cannot retrive token silently without account being cached!');
+                    err.name = 'MissingAADAccountForTokenError';
+
+                    throw err;
+                }
                 const tokenRequest = {
                     scopes: [DATALAKE_SCOPE],
                     account: account,
