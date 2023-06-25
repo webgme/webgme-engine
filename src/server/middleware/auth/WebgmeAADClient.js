@@ -87,7 +87,7 @@ class WebGMEAADClient {
             .then(users => {
                 //TODO should be an easier way to search for the user...
                 let userFound = false;
-                const options = {};
+                let options = {};
                 users.forEach(userData => {
                     // console.log(userData);
                     if (userData.email === claims.email) {
