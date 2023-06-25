@@ -61,7 +61,7 @@ class WebGMEAADClient {
 
     getUserIdFromEmail(email) {
         let uid = 'aadid_' + email;
-        uid = uid.replace(/@/g, '_at_').replace(/\./g, '_p_').replace(/-/g, '_d_');
+        uid = uid.replace(/@/g, '_at_').replace(/\./g, '_p_').replace(/-/g, '_d_').toLowerCase();
         return uid;
     }
 
