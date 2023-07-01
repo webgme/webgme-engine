@@ -750,7 +750,10 @@ class StandAloneServer {
             };
 
             __app.get('/aad/device', (req, res) => {
-                if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+                if(!this.__gmeConfig.authentication.enable || !this.__gmeConfig.authentication.azureActiveDirectory.enable) {
+                    res.cookie(this.__gmeConfig.authentication.jwt.cookieId || 'udcp_taxonomy_access', 'null-access-token');
+                    res.sendStatus(200);
+                } else if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
                     const token = req.headers.authorization.split(' ')[1];
                     verify(token, voptions)
                     .then(token => {
