@@ -86,6 +86,7 @@ class WebGMEAADClient {
             })
             .then(users => {
                 //TODO should be an easier way to search for the user...
+                this.__logger.error('caching user: user list arrived');
                 let userFound = false;
                 let options = {};
                 users.forEach(userData => {
