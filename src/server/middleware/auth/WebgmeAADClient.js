@@ -152,16 +152,20 @@ class WebGMEAADClient {
             .then(userData => {
                 // console.log('chk002');
                 // console.log(userData);
+                this.__logger.error('getting AAD token - 001 - ', userData);
                 if (userData.hasOwnProperty('aadId')) {
+                    this.__logger.error('getting AAD token - 002 - ');
                     // console.log('chk003');
                     return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
                 } else {
                     // console.log('chk004');
+                    this.__logger.error('getting AAD token - 003 - ');
                     throw new Error('Not AAD user, cannot retrieve accessToken');
                 }
             })
             .then(account => {
                 // console.log(account);
+                this.__logger.error('getting AAD token - 004 - ', account);
                 if(!account) {
                     const err = new Error('Cannot retrive token silently without account being cached!');
                     err.name = 'MissingAADAccountForTokenError';
