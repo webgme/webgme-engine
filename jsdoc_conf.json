@@ -34,7 +34,6 @@
   },
   "opts": {
     "encoding": "utf8",
-    "template": "./node_modules/ink-docstrap/template",
     "destination": "./docs/source",
     "recurse": true,
     "readme": "src/docs/main.md"
