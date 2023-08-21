@@ -199,7 +199,6 @@ describe('jsonPatcher', function () {
                     coreObjects[keys[i]] = coreObjects[keys[i]].newData;
                 } else {
                     // A regular object.
-                    coreObjects[keys[i]] = coreObjects[keys[i]];
                 }
             }
 
