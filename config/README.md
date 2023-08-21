@@ -95,6 +95,8 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.authentication.jwt.publicKey = './src/server/middleware/auth/EXAMPLE_PRIVATE_KEY'`
  - Public RSA256 key used when evaluating tokens.
 - `config.authentication.jwt.algorithm = 'RS256'`
+ - Allow RSA keys to be smaller than 2048-bits. This should be set to false to avoid warning message at config load.
+- `config.authentication.jwt.allowInsecureKeySizes = true`
  - The algorithm used for encryption (should not be edited w/o changing keys appropriately).
 - `config.authentication.jwt.tokenGenerator = './src/server/middleware/auth/localtokengenerator.js'`
  - Replaceable module for generating tokens in case webgme should not generated new tokens by itself.

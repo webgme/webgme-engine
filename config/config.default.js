@@ -43,6 +43,7 @@ var path = require('path'),
                 publicKey: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_PUBLIC_KEY'),
                 tokenGenerator: path.join(__dirname, '../src/server/middleware/auth/localtokengenerator.js'),
                 algorithm: 'RS256',
+                allowInsecureKeySizes: true,
                 // The private key is only needed if using the localtokengenerator
                 privateKey: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_PRIVATE_KEY'),
                 logOutUrlField: null,

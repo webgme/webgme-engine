@@ -20,6 +20,7 @@ function TokenGeneratorBase(mainLogger, gmeConfig, jwt) {
 
     this.jwtOptions = {
         algorithm: gmeConfig.authentication.jwt.algorithm,
+        allowInsecureKeySizes: gmeConfig.authentication.jwt.allowInsecureKeySizes,
         expiresIn: gmeConfig.authentication.jwt.expiresIn
     };
 

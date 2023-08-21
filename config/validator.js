@@ -141,6 +141,12 @@ function validateConfig(configOrFileName) {
     assertNumber('config.authentication.jwt.expiresIn', config.authentication.jwt.expiresIn);
     assertString('config.authentication.jwt.privateKey', config.authentication.jwt.privateKey);
     assertString('config.authentication.jwt.publicKey', config.authentication.jwt.publicKey);
+    if (config.authentication.enable && config.authentication.jwt.allowInsecureKeySizes) {
+        console.warn('config.authentication.jwt.allowInsecureKeySizes is true by default to avoid breaking changes ' +
+        'due to: https://github.com/auth0/node-jsonwebtoken/wiki/Migration-Notes:-v8-to-v9.');
+        console.warn('If you know your RSA key size is 2048 bits or greater you can avoid this warning by setting ' + 
+        'allowInsecureKeySizes to false.');
+    }
     assertString('config.authentication.jwt.logOutUrlField', config.authentication.jwt.logOutUrlField, true);
     assertArray('config.authentication.publicOrganizations', config.authentication.publicOrganizations);
     config.authentication.publicOrganizations.forEach(function (publicOrg, idx) {

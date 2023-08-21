@@ -750,7 +750,8 @@ describe('USER REST API', function () {
 
                 Q.ninvoke(jwt, 'sign', {userId: userId, displayName: dName}, privateKey, {
                     algorithm: gmeConfig.authentication.jwt.algorithm,
-                    expiresIn: gmeConfig.authentication.jwt.expiresIn
+                    expiresIn: gmeConfig.authentication.jwt.expiresIn,
+                    allowInsecureKeySizes: true,
                 })
                     .then(function (token) {
                         agent.get(server.getUrl() + '/api/v1/user')
@@ -777,7 +778,8 @@ describe('USER REST API', function () {
 
                 Q.ninvoke(jwt, 'sign', {userId: userId, displayName: dName}, privateKey, {
                     algorithm: gmeConfig.authentication.jwt.algorithm,
-                    expiresIn: gmeConfig.authentication.jwt.expiresIn
+                    expiresIn: gmeConfig.authentication.jwt.expiresIn,
+                    allowInsecureKeySizes: true,
                 })
                     .then(function (token) {
                         agent.get(server.getUrl() + '/api/v1/user')
