@@ -366,7 +366,7 @@ define([
             var keys = Object.keys(allMetaNodes),
                 occurrences, i, j, errorTxt;
 
-                // First check against direct GUID matches..
+            // First check against direct GUID matches..
             closureInformation.destinationBases = {};
             for (i = 0; i < keys.length; i += 1) {
                 closureInformation.destinationBases[self.getGuid(allMetaNodes[keys[i]])] = keys[i];

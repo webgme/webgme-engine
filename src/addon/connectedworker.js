@@ -55,7 +55,6 @@ function initialize(parameters) {
 //main message processing loop
 process.on('message', function (parameters) {
     parameters = parameters || {};
-    parameters.command = parameters.command;
 
     if (!initialized && parameters.command !== CONSTANTS.workerCommands.initialize) {
         return safeSend({

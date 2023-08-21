@@ -1,4 +1,4 @@
-/*globals requirejs, expect, console, before*/
+/*globals requirejs, expect*/
 /*eslint-env browser, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer

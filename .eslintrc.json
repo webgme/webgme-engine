@@ -10,6 +10,8 @@
   "rules": {
     "no-bitwise": 2,
     "camelcase": 2,
+    "no-prototype-builtins": "warn",
+    "no-redeclare": "warn",
     "curly": [
       2,
       "all"
