@@ -1,4 +1,4 @@
-/*globals require*/
+/*globals*/
 /*eslint-env node, mocha*/
 /**
  * @author kecso / https://github.com/kecso
@@ -19,7 +19,8 @@ describe('GME authentication special tests', function () {
         privateKey = null,
         jwtOptions = {
             algorithm: baseConfig.authentication.jwt.algorithm,
-            expiresIn: baseConfig.authentication.jwt.expiresIn
+            expiresIn: baseConfig.authentication.jwt.expiresIn,
+            allowInsecureKeySizes: true,
         },
         getToken = tokenData => {
             return Q.ninvoke(jwt, 'sign', tokenData, privateKey, jwtOptions);
