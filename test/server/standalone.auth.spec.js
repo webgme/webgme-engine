@@ -283,6 +283,7 @@ describe('standalone http server with authentication turned on', function () {
                 return Q.ninvoke(jwt, 'sign', { userId: '1801', displayName: 'A pretty name' }, privateKey, {
                     algorithm: 'RS256',
                     expiresIn: 30,
+                    allowInsecureKeySizes: true,
                 });
             })
             .then(function (token) {
@@ -323,6 +324,7 @@ describe('standalone http server with authentication turned on', function () {
                         {
                             algorithm: 'RS256',
                             expiresIn: 30,
+                            allowInsecureKeySizes: true,
                         });
                 })
                 .then(function (token) {
@@ -360,7 +362,7 @@ describe('standalone http server with authentication turned on', function () {
                     'sign',
                     { userId: 'mynumber', displayName: 'A pretty name', iss: 'https:/google.com' },
                     privateKey,
-                    { algorithm: 'RS256', expiresIn: 30 }
+                    { algorithm: 'RS256', expiresIn: 30, allowInsecureKeySizes: true }
                 );
             })
             .then(function (token) {
