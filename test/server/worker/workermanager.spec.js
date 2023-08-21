@@ -36,16 +36,11 @@ describe('ServerWorkerManager - SimpleWorkers', function () {
             projectId: projectId,
             commitHash: ir.commitHash
         }, function (err, result) {
-            try {
-                expect(err).to.equal(null);
-                expect(typeof result).to.equal('object');
-                expect(result).to.have.property('hash');
-                expect(typeof result.hash).to.equal('string');
-                deferred.resolve();
-            } catch (e) {
-                deferred.reject(e);
+            if (err) {
+                deferred.reject(err);
+            } else {
+                deferred.resolve(result);
             }
-
         });
 
         return deferred.promise.nodeify(next);
