@@ -73,5 +73,17 @@ jobs:
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/plugin
       - name: Mocha seeds test
         run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/seeds
-      - name: Mocha server test
-        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/server
+      - name: Mocha server root test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit ./test/server
+      - name: Mocha server/api test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/server/api
+      - name: Mocha server/middleware test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/server/middleware
+      - name: Mocha server/storage test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/server/storage
+      - name: Mocha server/util test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/server/util
+      - name: Mocha server/webhooks test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/server/webhooks
+      - name: Mocha server/worker test
+        run: node ./node_modules/mocha/bin/mocha --timeout 10000 --exit --recursive ./test/server/worker
