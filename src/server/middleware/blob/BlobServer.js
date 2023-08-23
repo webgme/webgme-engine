@@ -187,8 +187,8 @@ function createExpressBlob(options) {
                 if (subpartPath) {
                     filename = subpartPath.substring(subpartPath.lastIndexOf('/') + 1);
                 }
-
-                var mimeType = mime.getType(filename);
+                // https://github.com/broofa/mime/issues/195
+                var mimeType = mime.getType(filename) || 'application/octet-stream';
 
                 if (download || mimeType === 'application/octet-stream' || mimeType === 'application/zip') {
                     res.setHeader('Content-Disposition', contentDisposition(filename, {type: 'attachment'}));
