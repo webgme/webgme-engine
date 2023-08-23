@@ -42,8 +42,9 @@ describe('User manager command line interface (CLI)', function () {
             nodeUserManager.stderr.on('data', function (data) {
                 var dataStr = data.toString();
 
-                if (dataStr.indexOf('js-bson: Failed to load c++ bson extension, using pure JS version') > -1) {
-                    // ignore this error
+                if (dataStr.indexOf('js-bson: Failed to load c++ bson extension, using pure JS version') > -1 ||
+                    dataStr.indexOf('Debugger') > -1 || dataStr.indexOf('debugger') > -1) {
+                    // ignore these std.error
                 } else {
                     err = err || '';
                     err += dataStr;

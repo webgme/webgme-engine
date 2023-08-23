@@ -182,7 +182,7 @@ Object.defineProperties(exports, {
     rimraf: {
         get: function () {
             if (!_rimraf) {
-                _rimraf = require('rimraf');
+                _rimraf = require('rimraf').rimraf;
             }
             return _rimraf;
         }

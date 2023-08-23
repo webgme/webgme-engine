@@ -73,9 +73,13 @@ describe('Run plugin CLI', function () {
 
             runpluginProcess.on('close', function (code) {
                 //expect(stdout).to.contain('execution was successful');
-                expect(stderr).to.contain('This is an error message');
-                expect(code).to.equal(0);
-                done();
+                try {
+                    expect(stderr).to.contain('This is an error message');
+                    expect(code).to.equal(0);
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
         });
     });
@@ -159,32 +163,40 @@ describe('Run plugin CLI', function () {
         });
 
         it('should fail to run plugin if no plugin name and no project name is not given', function (done) {
-            process.exit = function () {
-                done();
-            };
+            try {
+                runPlugin.main(['node', filename],
+                    function (err/*, result*/) {
+                        if (err) {
+                            try {
+                                expect(err).to.match(/must be specified/);
+                                done();
+                            } catch (e) {
+                                done(err);
+                            }
+                            return;
+                        }
 
-            runPlugin.main(['node', filename],
-                function (err/*, result*/) {
-                    if (err) {
-                        expect(err).to.match(/must be specified/);
-                        return;
+                        done(new Error('should have failed to run plugin'));
                     }
-                    done(new Error('should have failed to run plugin'));
-                }
-            );
+                );
+            } catch (err) {
+                done(err);
+            }
         });
 
         it('should fail to run plugin if no project name is given', function (done) {
-            process.exit = function () {
-                done();
-            };
-
             runPlugin.main(['node', filename, projectName],
                 function (err) {
                     if (err) {
-                        expect(err).to.match(/must be specified/);
+                        try {
+                            expect(err).to.match(/must be specified/);
+                            done();
+                        } catch (e) {
+                            done(err);
+                        }
                         return;
                     }
+                    
                     done(new Error('should have failed to run plugin'));
                 }
             );
@@ -211,28 +223,25 @@ describe('Run plugin CLI', function () {
         });
 
         it('should run the AddOnGenerator and put files in plugin-blobs if -w specified', function (done) {
-            testFixture.rimraf(testFixture.path.join(process.cwd(), 'test-tmp/plugin-blobs'), function (err) {
-                if (err) {
-                    done(err);
-                    return;
-                }
+            testFixture.rimraf(testFixture.path.join(process.cwd(), 'test-tmp/plugin-blobs'))
+                .then(function () {
+                    runPlugin.main(['node', filename, 'AddOnGenerator', projectName, '-w', 'test-tmp/plugin-blobs'],
+                        function (err, result) {
+                            if (err) {
+                                done(new Error(err));
+                                return;
+                            }
+                            expect(result.success).to.equal(true);
+                            expect(result.error).to.equal(null);
 
-                runPlugin.main(['node', filename, 'AddOnGenerator', projectName, '-w', 'test-tmp/plugin-blobs'],
-                    function (err, result) {
-                        if (err) {
-                            done(new Error(err));
-                            return;
+                            expect(testFixture.fs.existsSync(
+                                testFixture.path.join(process.cwd(), 'test-tmp/plugin-blobs/NewAddOn.js'))
+                            ).to.equal(true);
+                            done();
                         }
-                        expect(result.success).to.equal(true);
-                        expect(result.error).to.equal(null);
-
-                        expect(testFixture.fs.existsSync(
-                            testFixture.path.join(process.cwd(), 'test-tmp/plugin-blobs/NewAddOn.js'))
-                        ).to.equal(true);
-                        done();
-                    }
-                );
-            });
+                    );
+                })
+                .catch(done);
         });
 
         it('should run and connect to server when serverUrl specified', function (done) {

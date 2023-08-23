@@ -61,8 +61,8 @@ describe('Worker Requests', function () {
             .nodeify(done);
     });
 
-    beforeEach(function (done) {
-        testFixture.rimraf(gmeConfig.blob.fsDir, done);
+    beforeEach(async function () {
+        await testFixture.rimraf(gmeConfig.blob.fsDir);
     });
 
     it('should _addZippedExportToBlob when using compressed DEFLATE', function (done) {

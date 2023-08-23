@@ -18,17 +18,9 @@ describe('BlobRunPluginClient', function () {
         expect = testFixture.expect,
         rimraf = testFixture.rimraf;
 
-    beforeEach(function (done) {
-        // TODO: delete blob directory
-
-        rimraf(gmeConfig.blob.fsDir, function (err) {
-            if (err) {
-                done(err);
-                return;
-            }
-            blobBackend = new BlobFSBackend(gmeConfig, logger);
-            done();
-        });
+    beforeEach(async function () {
+        await rimraf(gmeConfig.blob.fsDir);
+        blobBackend = new BlobFSBackend(gmeConfig, logger);
     });
 
     it('should have public API functions', function () {

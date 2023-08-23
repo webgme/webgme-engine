@@ -86,7 +86,10 @@ main = function (argv, callback) {
         .parse(argv);
 
     if (program.args.length < 2) {
-        program.help();
+        if (!global.TESTING) {
+            program.help();
+        }
+
         deferred.reject(new Error('A project and pluginName must be specified.'));
         return deferred.promise.nodeify(callback);
     }

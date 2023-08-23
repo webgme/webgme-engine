@@ -35,15 +35,15 @@ describe('Executor Plugin', function () {
     // COPY PASTED CODE STARTS FROM test/server/middleware/executor/worker/node_worker.spec.js
 
     function startServer(gmeConfig, workerNonce, callback) {
-        Q.nfcall(rimraf, './test-tmp/blob-local-storage')
+        rimraf('./test-tmp/blob-local-storage')
             .then(function () {
-                return Q.nfcall(rimraf, './test-tmp/executor');
+                return rimraf('./test-tmp/executor');
             })
             .then(function () {
-                return Q.nfcall(rimraf, './test-tmp/executor-tmp');
+                return rimraf('./test-tmp/executor-tmp');
             })
             .then(function () {
-                return Q.nfcall(rimraf, './test-tmp/worker_config.json');
+                return rimraf('./test-tmp/worker_config.json');
             })
             // creating a project
             .then(function () {

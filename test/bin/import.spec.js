@@ -21,10 +21,7 @@ describe('import CLI tests', function () {
         Q = testFixture.Q,
         logger = testFixture.logger.fork('import.spec'),
         storage,
-        gmeAuth,
-        oldLogFunction = console.log,
-        oldWarnFunction = console.warn,
-        oldStdOutFunction = process.stdout.write;
+        gmeAuth;
 
     function checkBranch(pId, branchArray) {
         var deferred = Q.defer(),
@@ -72,20 +69,7 @@ describe('import CLI tests', function () {
             .nodeify(done);
     });
 
-    beforeEach(function () {
-        console.log = function () {
-        };
-        process.stdout.write = function () {
-        };
-        console.warn = function () {
-
-        };
-    });
-
     afterEach(function (done) {
-        console.log = oldLogFunction;
-        console.warn = oldWarnFunction;
-        process.stdout.write = oldStdOutFunction;
         if (projectId) {
             storage.deleteProject({projectId: projectId})
                 .nodeify(done);

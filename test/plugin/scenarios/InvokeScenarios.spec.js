@@ -59,8 +59,8 @@ describe('Invoke scenarios', function () {
             .nodeify(done);
     });
 
-    beforeEach(function (done) {
-        testFixture.rimraf('./test-tmp/blob-local-storage', done);
+    beforeEach(async function () {
+        await testFixture.rimraf('./test-tmp/blob-local-storage');
     });
 
     after(function (done) {
