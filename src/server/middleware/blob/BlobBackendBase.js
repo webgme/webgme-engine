@@ -83,7 +83,7 @@ BlobBackendBase.prototype.putFile = function (name, readStream, callback) {
         var metadata = new BlobMetadata({
             name: name,
             size: length,
-            mime: mime.lookup(name),
+            mime: mime.getType(name),
             isPublic: false,
             tags: [],
             content: hash,

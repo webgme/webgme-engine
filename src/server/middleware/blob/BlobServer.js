@@ -188,7 +188,7 @@ function createExpressBlob(options) {
                     filename = subpartPath.substring(subpartPath.lastIndexOf('/') + 1);
                 }
 
-                var mimeType = mime.lookup(filename);
+                var mimeType = mime.getType(filename);
 
                 if (download || mimeType === 'application/octet-stream' || mimeType === 'application/zip') {
                     res.setHeader('Content-Disposition', contentDisposition(filename, {type: 'attachment'}));
