@@ -661,14 +661,8 @@ describe('BlobClient', function () {
             });
         });
 
-        beforeEach(function (done) {
-            rimraf('./test-tmp/blob-storage', function (err) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                done();
-            });
+        beforeEach(async function () {
+            await rimraf('./test-tmp/blob-storage');
         });
 
         after(function (done) {
@@ -1047,14 +1041,8 @@ describe('BlobClient', function () {
             });
         });
 
-        beforeEach(function (done) {
-            rimraf('./test-tmp/blob-storage', function (err) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                done();
-            });
+        beforeEach(async function () {
+            await rimraf('./test-tmp/blob-storage');
         });
 
         after(function (done) {
@@ -1125,14 +1113,8 @@ describe('BlobClient', function () {
             bcParam.webgmeToken = jwt;
         });
 
-        beforeEach(function (done) {
-            rimraf('./test-tmp/blob-storage', function (err) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                done();
-            });
+        beforeEach(async function () {
+            await rimraf('./test-tmp/blob-storage');
         });
 
         after(function (done) {
