@@ -29,8 +29,8 @@ describe('ExecutorServer', function () {
     describe('REST API', function () {
         before(async function () {
             await Q.allDone([
-                Q.ninvoke(testFixture, 'rimraf', './test-tmp/executor'),
-                Q.ninvoke(testFixture, 'rimraf', './test-tmp/executor-tmp')
+                testFixture.rimraf('./test-tmp/executor'),
+                testFixture.rimraf('./test-tmp/executor-tmp')
             ]);
             gmeConfig = testFixture.getGmeConfig();
             gmeConfig.executor.enable = true;
@@ -217,8 +217,8 @@ describe('ExecutorServer', function () {
     describe('REST API - different server settings', function () {
         beforeEach(async function () {
             await Q.allDone([
-                Q.ninvoke(testFixture, 'rimraf', './test-tmp/executor'),
-                Q.ninvoke(testFixture, 'rimraf', './test-tmp/executor-tmp')
+                testFixture.rimraf('./test-tmp/executor'),
+                testFixture.rimraf('./test-tmp/executor-tmp'),
             ]);
             gmeConfig = testFixture.getGmeConfig();
             gmeConfig.executor.enable = true;
