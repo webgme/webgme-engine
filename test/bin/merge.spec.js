@@ -103,7 +103,7 @@ describe('merge CLI test', function () {
         Q.allDone([
             gmeAuth.unload(),
             database.closeDatabase(),
-            rimraf('./test-tmp/mergeCli*')
+            rimraf('./test-tmp/mergeCli*', {glob: true})
         ])
             .nodeify(done);
     });
