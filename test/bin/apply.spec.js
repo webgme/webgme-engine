@@ -20,9 +20,6 @@ describe('apply CLI tests', function () {
         applyCLI = require('../../src/bin/apply'),
         Q = testFixture.Q,
         filename = require('path').normalize('src/bin/apply.js'),
-        oldLogFunction = console.log,
-        oldWarnFunction = console.warn,
-        oldStdOutFunction = process.stdout.write,
         projectName = 'applyCliTest',
         projectId = testFixture.projectName2Id(projectName, gmeConfig.authentication.guestAccount);
 
@@ -52,22 +49,6 @@ describe('apply CLI tests', function () {
             storage.closeDatabase()
         ])
             .nodeify(done);
-    });
-
-    beforeEach(function () {
-        console.log = function () {
-        };
-        process.stdout.write = function () {
-        };
-        console.warn = function () {
-
-        };
-    });
-
-    afterEach(function () {
-        console.log = oldLogFunction;
-        console.warn = oldWarnFunction;
-        process.stdout.write = oldStdOutFunction;
     });
 
     it('should have a main', function () {

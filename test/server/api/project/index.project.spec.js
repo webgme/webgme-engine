@@ -154,18 +154,21 @@ describe('PROJECT REST API', function () {
             });
 
             after(function (done) {
-                server.stop(function (err) {
-                    if (err) {
-                        done(new Error(err));
-                        return;
-                    }
-
-                    Q.allDone([
-                        gmeAuth.unload(),
-                        safeStorage.closeDatabase()
-                    ])
-                        .nodeify(done);
-                });
+                setTimeout(() => {
+                    // Give the server some breathing room before shutdown
+                    server.stop(function (err) {
+                        if (err) {
+                            done(new Error(err));
+                            return;
+                        }
+    
+                        Q.allDone([
+                            gmeAuth.unload(),
+                            safeStorage.closeDatabase()
+                        ])
+                            .nodeify(done);
+                    });
+                }, 200);
             });
 
             beforeEach(function () {

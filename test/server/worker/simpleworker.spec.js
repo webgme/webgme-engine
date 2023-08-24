@@ -674,7 +674,7 @@ describe('Simple worker', function () {
 
         gmeConfigMod.seedProjects.basePaths.push('./test/server/worker/workerrequests');
 
-        Q.ninvoke(testFixture, 'rimraf', gmeConfig.blob.fsDir)
+        Q.allDone([testFixture.rimraf(gmeConfig.blob.fsDir)])
             .then(function () {
                 return worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfigMod});
             })

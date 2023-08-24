@@ -18,7 +18,7 @@ describe('BlobServer', function () {
         serverBaseUrl,
         bcParam = {};
 
-    before(function (done) {
+    before(async function () {
         // we have to set the config here
         var gmeConfig = testFixture.getGmeConfig();
         gmeConfig.debug = true;
@@ -28,17 +28,10 @@ describe('BlobServer', function () {
         bcParam.httpsecure = false;
         bcParam.logger = testFixture.logger.fork('BlobServer:Blob');
 
-        rimraf('./test-tmp/blob-storage', function (err) {
-            if (err) {
-                done(err);
-                return;
-            }
+        await rimraf('./test-tmp/blob-storage');
 
-            server = testFixture.WebGME.standaloneServer(gmeConfig);
-            server.start(function (err) {
-                done(err);
-            });
-        });
+        server = testFixture.WebGME.standaloneServer(gmeConfig);
+        await server.start();
     });
 
     after(function (done) {

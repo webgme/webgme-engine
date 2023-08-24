@@ -13,7 +13,7 @@ var fs = require('fs'),
     Q = require('q'),
     path = require('path'),
     superagent = require('superagent'),
-    requireUncached = require('require-uncached'),
+    importFresh = require('import-fresh'),
     storageUtils = requireJS('common/storage/util'),
     SVGMapDeffered;
 
@@ -442,7 +442,7 @@ function getComponentsJson(logger, callback) {
 
     try {
         filePath = path.join(configDir, 'components.' + env + '.js');
-        result = requireUncached(filePath);
+        result = importFresh(filePath);
         deferred.resolve(result);
     } catch (e) {
         if (e.code !== 'MODULE_NOT_FOUND') {

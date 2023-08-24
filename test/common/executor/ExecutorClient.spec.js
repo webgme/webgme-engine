@@ -19,7 +19,7 @@ describe('ExecutorClient', function () {
         gmeConfig,
         server;
 
-    before(function (done) {
+    before(async function () {
         var param = {};
         gmeConfig = testFixture.getGmeConfig();
         OutputInfo = testFixture.requirejs('common/executor/OutputInfo');
@@ -29,17 +29,11 @@ describe('ExecutorClient', function () {
         param.httpsecure = false;
         param.logger = logger.fork('ExecutorClient');
 
-        rimraf('./test-tmp/executor', function (err) {
-            if (err) {
-                done(err);
-                return;
-            }
-            server = testFixture.WebGME.standaloneServer(gmeConfig);
-            server.start(function () {
-                executorClient = new ExecutorClient(param);
-                done();
-            });
-        });
+        await rimraf('./test-tmp/executor');
+
+        server = testFixture.WebGME.standaloneServer(gmeConfig);
+        await server.start();
+        executorClient = new ExecutorClient(param);
     });
 
     after(function (done) {

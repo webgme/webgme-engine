@@ -21,10 +21,7 @@ describe('export CLI tests', function () {
         Q = testFixture.Q,
         logger = testFixture.logger.fork('export.spec'),
         storage,
-        gmeAuth,
-        oldLogFunction = console.log,
-        oldWarnFunction = console.warn,
-        oldStdOutFunction = process.stdout.write;
+        gmeAuth;
 
     before(function (done) {
         testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
@@ -52,25 +49,9 @@ describe('export CLI tests', function () {
         Q.allDone([
             gmeAuth.unload(),
             storage.closeDatabase(),
-            Q.nfcall(testFixture.rimraf, outputPath)
+            testFixture.rimraf(outputPath),
         ])
             .nodeify(done);
-    });
-
-    beforeEach(function () {
-        console.log = function () {
-        };
-        process.stdout.write = function () {
-        };
-        console.warn = function () {
-
-        };
-    });
-
-    afterEach(function () {
-        console.log = oldLogFunction;
-        console.warn = oldWarnFunction;
-        process.stdout.write = oldStdOutFunction;
     });
 
     it('should have a main', function () {
