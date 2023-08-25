@@ -1,5 +1,29 @@
 # Changelog
 
+## [v2.25.3](https://github.com/webgme/webgme-engine/tree/v2.25.3) (2023-04-07)
+
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.25.2...v2.25.3)
+
+**Implemented enhancements:**
+
+- Warning: Accessing non-existent property 'padLevels' of module exports inside circular dependency [\#285](https://github.com/webgme/webgme-engine/issues/285)
+- Mongodb \> 4.x support [\#281](https://github.com/webgme/webgme-engine/issues/281)
+- Make API starter page 'human usable [\#249](https://github.com/webgme/webgme-engine/issues/249)
+- Add option to expose the end-point listing all available blob artifacts [\#308](https://github.com/webgme/webgme-engine/pull/308) ([pmeijer](https://github.com/pmeijer))
+- FIX: use old socket.io default for maxHttpBufferSize [\#301](https://github.com/webgme/webgme-engine/pull/301) ([pmeijer](https://github.com/pmeijer))
+- GitHub actions and working unit tests [\#294](https://github.com/webgme/webgme-engine/pull/294) ([pmeijer](https://github.com/pmeijer))
+- Mongo client upgrade from 2.2.35 -\> 3.7.3 [\#292](https://github.com/webgme/webgme-engine/pull/292) ([pmeijer](https://github.com/pmeijer))
+
+**Fixed bugs:**
+
+- Error in BlobClient with node 18x \(but works with 16x\) [\#284](https://github.com/webgme/webgme-engine/issues/284)
+- Fixes \#284 newly introduced Blob in nodejs not compatible with BlobClient [\#309](https://github.com/webgme/webgme-engine/pull/309) ([pmeijer](https://github.com/pmeijer))
+
+**Closed issues:**
+
+- Deploy inside docker connected to another docker hosting mongo [\#277](https://github.com/webgme/webgme-engine/issues/277)
+- Access project model/nodes using REST API [\#263](https://github.com/webgme/webgme-engine/issues/263)
+
 ## [v2.25.2](https://github.com/webgme/webgme-engine/tree/v2.25.2) (2021-01-11)
 
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.25.2-alpha...v2.25.2)

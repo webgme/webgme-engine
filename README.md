@@ -1,5 +1,5 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://opensource.org/licenses/MIT)
-[![Build Status](https://travis-ci.org/webgme/webgme-engine.svg?branch=master)](https://travis-ci.org/webgme/webgme-engine)
+[![Build status](https://img.shields.io/github/actions/workflow/status/webgme/webgme-engine/node.js.yml?branch=master&label=CI&logo=github&style=flat-square)](https://github.com/webgme/webgme-engine/actions/workflows/node.js.yml)
 [![Version](https://badge.fury.io/js/webgme-engine.svg)](https://www.npmjs.com/package/webgme-engine)
 [![Downloads](http://img.shields.io/npm/dm/webgme-engine.svg?style=flat)](http://img.shields.io/npm/dm/webgme-engine.svg?style=flat)
 
@@ -17,7 +17,7 @@ one of these libraries.
 ## Developers
 
 ### Dependencies
- - [NodeJS](https://nodejs.org/) (version >= 4, CI tests are performed on versions 8.x, 10.x and LTS is recommended).
+ - [NodeJS](https://nodejs.org/) (version >= 14, CI tests are performed on version 16.x and 18.x).
  - [MongoDB](https://www.mongodb.com/) (2.6 >= version).
  - [Git](https://git-scm.com) (must be available in PATH).
  - [Redis](https://redis.io/) needed to run all tests and if serving under multiple nodes.

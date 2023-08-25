@@ -83,7 +83,8 @@ BlobBackendBase.prototype.putFile = function (name, readStream, callback) {
         var metadata = new BlobMetadata({
             name: name,
             size: length,
-            mime: mime.lookup(name),
+            // https://github.com/broofa/mime/issues/195
+            mime: mime.getType(name) || 'application/octet-stream',
             isPublic: false,
             tags: [],
             content: hash,

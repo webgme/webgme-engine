@@ -1,0 +1,2567 @@
+#%RAML 1.0
+title: WebGME
+version: '1.0'
+securitySchemes:
+  basic:
+    description: Basic authentication scheme
+    type: Basic Authentication
+    describedBy:
+      responses:
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden
+      headers:
+        Authorization:
+          description: Basic authentication base64 encoded username and password
+          example: Basic Z3Vlc3Q6Z3Vlc3Q=
+          type: string
+  bearer:
+    description: JWT Bearer with authentication token.
+    type: 'x-{Bearer}'
+    describedBy:
+      responses:
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden
+      headers:
+        Authorization:
+          description: Token Bearer
+          example: Bearer eyJhbGcjOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkZW1vIiwiaWF0IjoxNDg3NjEyNjE0LCJleHAiOjE0ODgyMTc0MTR9.LAuYXXa4tQhLD1sUQl1MHZFwkaf6ua7_aA62WXFNAMEN-11tlmM576e5JuoE2KqxvoN2v8PZNXgPmL0vMpKSLc6orxnl5o6YABWGTCBPtbad-iAXnkm79MeQrRceYe3nW-Lhc9_PM6bJ3ftrtrmEUwtOL1bV6nhyBU4ICTE7m38
+          type: string
+resourceTypes:
+  collection:
+    description: Collection of available <<resourcePathName>> in WebGME.
+    get:
+      description: Get a list of <<resourcePathName>>. <<desc>>
+      responses:
+        '200':
+          body:
+            application/json:
+              example: |
+                <<exampleCollection>>
+      securedBy:
+        - basic
+        - bearer
+  collection-item:
+    description: Entity representing a <<resourcePathName|!singularize>>
+    get:
+      description: |
+        Get the <<resourcePathName|!singularize>>. <<getDesc>>
+      responses:
+        '200':
+          body:
+            application/json:
+              example: |
+                <<exampleItem>>
+        '404':
+          body:
+            application/json:
+              example:
+                message: <<resourcePathName|!singularize>> not found
+      securedBy:
+        - basic
+        - bearer
+    put:
+      description: |
+        Add a new <<resourcePathName|!singularize>> to WebGME. <<putDesc>>
+      responses:
+        '200':
+          body:
+            application/json:
+              example: <<exampleItem>>
+        '403': {}
+        '404': {}
+      body:
+        application/json:
+          example: |
+            <<putBody>>
+      securedBy:
+        - basic
+        - bearer
+    patch:
+      description: Update <<resourcePathName|!singularize>> within WebGME. <<patchDesc>>
+      responses:
+        '200':
+          body:
+            application/json:
+              example: <<exampleItem>>
+        '403': {}
+        '404': {}
+      body:
+        application/json:
+          example: |
+            <<patchBody>>
+      securedBy:
+        - basic
+        - bearer
+    delete:
+      description: Delete <<resourcePathName|!singularize>> from WebGME. <<deleteDesc>>
+      responses:
+        '204': {}
+        '403': {}
+        '404': {}
+      queryParameters:
+        force:
+          required: false
+          description: If true and <b>user.siteAdmin</b> user will be deleted from database
+          example: true
+          type: boolean
+          displayName: force
+      securedBy:
+        - basic
+        - bearer
+  project-tree:
+    get:
+      description: Retrieves the raw data object at given path within the project tree. Requires <b>read</b> access for project.
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                _id: '#41d009f2dc852dbbf783f900085b789b2f35d372'
+                atr:
+                  _relguid: fa8d13d9e1b0d3477a1f5541ec1c0d3b
+                reg:
+                  position:
+                    x: 158
+                    'y': 229
+        '403': {}
+        '404': {}
+/:
+  get:
+    description: WebGME API entry point
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              current_user_url: 'http://localhost:8888/api/user'
+              organization_url: 'http://localhost:8888/api/orgs/{org}'
+              project_url: 'http://localhost:8888/api/projects/{owner}/{project}'
+              user_url: 'http://localhost:8888/api/users/{user}'
+              documentation_url: 'http://localhost:8888/developer/api'
+            required: false
+/componentSettings:
+  description: End points for default deployment settings.
+  get:
+    description: 'Returns all component settings defined for the deployment, see https://github.com/webgme/webgme/wiki/Component-Settings'
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              Plugin_ConfigurationArtifact__0_1_0:
+                species: Horsie
+                age: 3
+                carnivore: false
+                classification: Vertebrates
+                color: '#FF0000'
+                file: ''
+              ICorePanel:
+                consoleWindow:
+                  logLevel: info
+                  verticalOrientation: false
+            required: false
+    securedBy:
+      - basic
+      - bearer
+  '/{componentId}':
+    get:
+      description: 'Returns a specific component settings defined for the deployment, see https://github.com/webgme/webgme/wiki/Component-Settings'
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                consoleWindow:
+                  logLevel: info
+                  verticalOrientation: false
+              required: false
+      securedBy:
+        - basic
+        - bearer
+    uriParameters:
+      componentId: {}
+/user:
+  description: End points for currently connected user.
+  get:
+    description: Returns with the current user
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              _id: demo
+              email: a@example.com
+              canCreate: true
+              projects:
+                guest+aaaaaa:
+                  read: true
+                  write: true
+                  delete: false
+                demo+ASDF:
+                  read: true
+                  write: true
+                  delete: true
+              orgs:
+                - ATeam
+              siteAdmin: true
+              data: {}
+            required: false
+    securedBy:
+      - basic
+      - bearer
+  delete:
+    description: Remove the current user
+    responses:
+      '204': {}
+    securedBy:
+      - basic
+      - bearer
+  /token:
+    get:
+      description: Creates and returns a token for the user
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                webgmeToken: eyJhbGcjOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkZW1vIiwiaWF0IjoxNDg3NjEyNjE0LCJleHAiOjE0ODgyMTc0MTR9.LAuYXXa4tQhLD1sUQl1MHZFwkaf6ua7_aA62WXFNAMEN-11tlmM576e5JuoE2KqxvoN2v8PZNXgPmL0vMpKSLc6orxnl5o6YABWGTCBPtbad-iAXnkm79MeQrRceYe3nW-Lhc9_PM6bJ3ftrtrmEUwtOL1bV6nhyBU4ICTE7m38
+              required: false
+      securedBy:
+        - basic
+        - bearer
+  /data:
+    description: Entity representing a datum. Nested values can be accessed via URI parameters such as `/user/data/key1/key2...`.
+    type:
+      collection-item:
+        exampleItem: |-
+          {
+            "country": "USA",
+            "organization": "Org",
+            "name": "Joe Smith"
+          }
+        putBody: |-
+          {
+            "country": "USA",
+            "organization": "Org",
+            "name": "Joe Smith"
+          }
+        patchBody: |-
+          {
+            "country": "USA"
+          }
+        getDesc: 'The user data field is an arbitrary object where developers can put custom data associated with a specific user. For preferences consider using settings instead, which provides options for server defaults.'
+        putDesc: Overwrites the data field.
+        patchDesc: Updates/overwrites the user's data with the sent values for matching keys.
+        deleteDesc: Clears out the user's data field (sets it to empty dictionary).
+    get:
+      description: |
+        Get the datum. The user data field is an arbitrary object where developers can put custom data associated with a specific user. For preferences consider using settings instead, which provides options for server defaults.
+      queryParameters:
+        decrypt:
+          required: false
+          description: Decrypt the requested data.
+          type: boolean
+      securedBy:
+        - basic
+        - bearer
+    put:
+      description: |
+        Add a new datum to WebGME. Overwrites the data field.
+      responses:
+        '403': {}
+        '404': {}
+      queryParameters:
+        encrypt:
+          required: false
+          description: Encrypt the submitted data before saving.
+          type: boolean
+      securedBy:
+        - basic
+        - bearer
+    patch:
+      description: Update datum within WebGME. Updates/overwrites the user's data with the sent values for matching keys.
+      responses:
+        '403': {}
+        '404': {}
+      queryParameters:
+        encrypt:
+          required: false
+          description: Encrypt the submitted data before saving.
+          type: boolean
+      securedBy:
+        - basic
+        - bearer
+    delete:
+      description: Delete datum from WebGME. Clears out the user's data field (sets it to empty dictionary).
+      responses:
+        '204': {}
+        '403': {}
+        '404': {}
+      securedBy:
+        - basic
+        - bearer
+  /settings:
+    description: Entity representing a setting
+    type:
+      collection-item:
+        exampleItem: |-
+          {
+            "Plugin_ConfigurationArtifact__0_1_0": {
+                "species":"Horsie",
+                "age":3,
+                "carnivore":false,
+                "classification":"Vertebrates",
+                "color":"#FF0000",
+                "file":""
+            },
+            "ICorePanel":{
+              "consoleWindow":{
+                "logLevel": "info",
+                "verticalOrientation":false
+              }
+            }
+          }
+        putBody: |-
+          {
+            "Plugin_ConfigurationArtifact__0_1_0": {
+                "species":"Horsie",
+                "age":3,
+                "carnivore":false,
+                "classification":"Vertebrates",
+                "color":"#FF0000",
+                "file":""
+            },
+            "ICorePanel":{
+              "consoleWindow":{
+                "logLevel": "info",
+                "verticalOrientation":false
+              }
+            }
+          }
+        patchBody: |-
+          {
+            "Plugin_ConfigurationArtifact__0_1_0": {
+                "carnivore":false
+            },
+            "ICorePanel":{
+              "consoleWindow":{
+                "verticalOrientation":true
+              }
+            }
+          }
+        getDesc: 'Gets all component-settings for a user, see https://github.com/webgme/webgme/wiki/Component-Settings'
+        putDesc: Overwrites the settings field.
+        patchDesc: Updates/overwrites the user's settings with the sent values for matching keys.
+        deleteDesc: Clears out the user's settings field (sets it to empty dictionary).
+    get:
+      description: |
+        Get the setting. Gets all component-settings for a user, see https://github.com/webgme/webgme/wiki/Component-Settings
+      securedBy:
+        - basic
+        - bearer
+    put:
+      description: |
+        Add a new setting to WebGME. Overwrites the settings field.
+      responses:
+        '403': {}
+        '404': {}
+      securedBy:
+        - basic
+        - bearer
+    patch:
+      description: Update setting within WebGME. Updates/overwrites the user's settings with the sent values for matching keys.
+      responses:
+        '403': {}
+        '404': {}
+      securedBy:
+        - basic
+        - bearer
+    delete:
+      description: Delete setting from WebGME. Clears out the user's settings field (sets it to empty dictionary).
+      responses:
+        '204': {}
+        '403': {}
+        '404': {}
+      securedBy:
+        - basic
+        - bearer
+    '/{componentId}':
+      description: Entity representing a setting
+      type:
+        collection-item:
+          exampleItem: |-
+            {
+              "consoleWindow": {
+                "logLevel": "info",
+                "verticalOrientation":false
+              }
+            }
+          putBody: |-
+            {
+              "consoleWindow": {
+                "logLevel": "info",
+                "verticalOrientation":false
+              }
+            }
+          patchBody: |-
+            {
+              "consoleWindow": {
+                "verticalOrientation":false
+              }
+            }
+          getDesc: 'Gets a specific component settings for a user, see https://github.com/webgme/webgme/wiki/Component-Settings'
+          putDesc: Overwrites the settings field for a specific component.
+          patchDesc: Updates/overwrites a specific component settings with the sent values for matching keys.
+          deleteDesc: Clears out the settings for a specific component.
+      get:
+        description: |
+          Get the setting. Gets a specific component settings for a user, see https://github.com/webgme/webgme/wiki/Component-Settings
+        securedBy:
+          - basic
+          - bearer
+      put:
+        description: |
+          Add a new setting to WebGME. Overwrites the settings field for a specific component.
+        responses:
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      patch:
+        description: Update setting within WebGME. Updates/overwrites a specific component settings with the sent values for matching keys.
+        responses:
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      delete:
+        description: Delete setting from WebGME. Clears out the settings for a specific component.
+        responses:
+          '204': {}
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      uriParameters:
+        componentId: {}
+/users:
+  description: End points for users on deployment. PUT/PATCH/DELETE requires that authenticated user is siteAdmin.
+  get:
+    description: Collection of available users in WebGME
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              - _id: aaaa23
+                email: asdf@alkfm.afdk
+                canCreate: 'true'
+                projects: {}
+                orgs: []
+                siteAdmin: false
+                data: {}
+              - _id: anonymous
+                email: anonymous
+                canCreate: true
+                projects: {}
+                orgs: []
+                siteAdmin: false
+              - _id: user
+                email: user@example.com
+                canCreate: null
+                projects: {}
+                orgs: []
+              - _id: guest
+                email: guest
+                canCreate: true
+                projects:
+                  guest+6c:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+2b:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+xmptest:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+t1:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+t3:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+aaaaaa:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+bbb:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+a234:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+rty:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+rtyui:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+corediff:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+d:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+rt:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+d12:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+aaaaaaa:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+ghjklo:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+oiuytre:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+ccccccc:
+                    read: true
+                    write: true
+                    delete: true
+                  guest+SFS:
+                    read: true
+                    write: true
+                    delete: true
+                orgs: []
+                siteAdmin: false
+                data: {}
+              - _id: demo
+                email: demo
+                canCreate: true
+                projects:
+                  guest+aaaaaa:
+                    read: true
+                    write: true
+                    delete: false
+                  demo+ASDF:
+                    read: true
+                    write: true
+                    delete: true
+                orgs: []
+                siteAdmin: false
+                data: {}
+            required: false
+    queryParameters:
+      includeDisabled:
+        required: false
+        description: If true and <b>user.siteAdmin</b> disabled users will be included in response.
+        example: true
+        type: boolean
+        displayName: includeDisabled
+      displayName:
+        required: false
+        description: If true users with display name will be listed (only id and displayName will be in the response).
+        example: true
+        type: boolean
+        displayName: displayName
+    securedBy:
+      - basic
+      - bearer
+  '/{username}':
+    get:
+      description: Retrives the user entry.
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                _id: demo
+                email: a@example.com
+                canCreate: true
+                projects:
+                  guest+aaaaaa:
+                    read: true
+                    write: true
+                    delete: false
+                  demo+ASDF:
+                    read: true
+                    write: true
+                    delete: true
+                orgs:
+                  - ATeam
+                siteAdmin: true
+                data: {}
+              required: false
+        '404': {}
+      securedBy:
+        - basic
+        - bearer
+    put:
+      description: Create a new user. Requires <b>user.siteAdmin</b>.
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                _id: demo
+                email: a@example.com
+                canCreate: true
+                projects:
+                  guest+aaaaaa:
+                    read: true
+                    write: true
+                    delete: false
+                  demo+ASDF:
+                    read: true
+                    write: true
+                    delete: true
+                orgs:
+                  - ATeam
+                siteAdmin: true
+                data: {}
+              required: false
+        '403': {}
+        '404': {}
+      body:
+        application/json:
+          example:
+            password: demo
+            email: a@example.com
+            canCreate: true
+            siteAdmin: true
+          type: See_example
+          required: false
+      securedBy:
+        - basic
+        - bearer
+    patch:
+      description: 'Updates the user if <b>user.siteAdmin</b> or same user. If {disabled ":" false} given and <b>user.siteAdmin</b> disabled user will be re-enabled.'
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                password: wordpass
+                email: a@example.com
+                canCreate: true
+                siteAdmin: true
+              required: false
+        '403': {}
+        '404': {}
+      securedBy:
+        - basic
+        - bearer
+    delete:
+      description: Deletes the user. Requires <b>user.siteAdmin</b> or same user.
+      responses:
+        '204': {}
+        '403': {}
+        '404': {}
+      queryParameters:
+        force:
+          required: false
+          description: If true and <b>user.siteAdmin</b> user at username will be permanently deleted from database.
+          example: true
+          type: boolean
+          displayName: force
+      securedBy:
+        - basic
+        - bearer
+    uriParameters:
+      username: {}
+    /data:
+      description: Entity representing a datum
+      type:
+        collection-item:
+          exampleItem: |-
+            {
+              "country": "USA",
+              "organization": "Org",
+              "name": "Joe Smith"
+            }
+          putBody: |-
+            {
+              "country": "USA",
+              "organization": "Org",
+              "name": "Joe Smith"
+            }
+          patchBody: |-
+            {
+              "country": "USA"
+            }
+          getDesc: 'The user data field is an arbitrary object where developers can put custom data associated with a specific user. Consider using settings instead, which provides options for server defaults.'
+          putDesc: Overwrites the user's data field. Requires is current user or <b>user.siteAdmin</b>.
+          patchDesc: Updates/overwrites the user's data with the sent values for matching keys. Requires is current user or <b>user.siteAdmin</b>.
+          deleteDesc: Clears out the user's data field (sets it to empty dictionary). Requires is current user or <b>user.siteAdmin</b>.
+      get:
+        description: |
+          Get the datum. The user data field is an arbitrary object where developers can put custom data associated with a specific user. Consider using settings instead, which provides options for server defaults.
+        securedBy:
+          - basic
+          - bearer
+      put:
+        description: |
+          Add a new datum to WebGME. Overwrites the user's data field. Requires is current user or <b>user.siteAdmin</b>.
+        responses:
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      patch:
+        description: Update datum within WebGME. Updates/overwrites the user's data with the sent values for matching keys. Requires is current user or <b>user.siteAdmin</b>.
+        responses:
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      delete:
+        description: Delete datum from WebGME. Clears out the user's data field (sets it to empty dictionary). Requires is current user or <b>user.siteAdmin</b>.
+        responses:
+          '204': {}
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+    /settings:
+      description: Entity representing a setting
+      type:
+        collection-item:
+          exampleItem: |-
+            {
+              "Plugin_ConfigurationArtifact__0_1_0": {
+                  "species":"Horsie",
+                  "age":3,
+                  "carnivore":false,
+                  "classification":"Vertebrates",
+                  "color":"#FF0000",
+                  "file":""
+              },
+              "ICorePanel":{
+                "consoleWindow":{
+                  "logLevel": "info",
+                  "verticalOrientation":false
+                }
+              }
+            }
+          putBody: |-
+            {
+              "Plugin_ConfigurationArtifact__0_1_0": {
+                  "species":"Horsie",
+                  "age":3,
+                  "carnivore":false,
+                  "classification":"Vertebrates",
+                  "color":"#FF0000",
+                  "file":""
+              },
+              "ICorePanel":{
+                "consoleWindow":{
+                  "logLevel": "info",
+                  "verticalOrientation":false
+                }
+              }
+            }
+          patchBody: |-
+            {
+              "Plugin_ConfigurationArtifact__0_1_0": {
+                  "carnivore":false
+              },
+              "ICorePanel":{
+                "consoleWindow":{
+                  "verticalOrientation":true
+                }
+              }
+            }
+          getDesc: 'Gets all component-settings for a user, see https://github.com/webgme/webgme/wiki/Component-Settings'
+          putDesc: Overwrites the settings field.
+          patchDesc: Updates/overwrites the user's settings with the sent values for matching keys.
+          deleteDesc: Clears out the user's settings field (sets it to empty dictionary).
+      get:
+        description: |
+          Get the setting. Gets all component-settings for a user, see https://github.com/webgme/webgme/wiki/Component-Settings
+        securedBy:
+          - basic
+          - bearer
+      put:
+        description: |
+          Add a new setting to WebGME. Overwrites the settings field.
+        responses:
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      patch:
+        description: Update setting within WebGME. Updates/overwrites the user's settings with the sent values for matching keys.
+        responses:
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      delete:
+        description: Delete setting from WebGME. Clears out the user's settings field (sets it to empty dictionary).
+        responses:
+          '204': {}
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      '/{componentId}':
+        description: Entity representing a setting
+        type:
+          collection-item:
+            exampleItem: |-
+              {
+                "consoleWindow": {
+                  "logLevel": "info",
+                  "verticalOrientation":false
+                }
+              }
+            putBody: |-
+              {
+                "consoleWindow": {
+                  "logLevel": "info",
+                  "verticalOrientation":false
+                }
+              }
+            patchBody: |-
+              {
+                "consoleWindow": {
+                  "verticalOrientation":false
+                }
+              }
+            getDesc: 'Gets a specific component settings for a user, see https://github.com/webgme/webgme/wiki/Component-Settings'
+            putDesc: Overwrites the settings field for a specific component.
+            patchDesc: Updates/overwrites a specific component settings with the sent values for matching keys.
+            deleteDesc: Clears out the settings for a specific component.
+        get:
+          description: |
+            Get the setting. Gets a specific component settings for a user, see https://github.com/webgme/webgme/wiki/Component-Settings
+          securedBy:
+            - basic
+            - bearer
+        put:
+          description: |
+            Add a new setting to WebGME. Overwrites the settings field for a specific component.
+          responses:
+            '403': {}
+            '404': {}
+          securedBy:
+            - basic
+            - bearer
+        patch:
+          description: Update setting within WebGME. Updates/overwrites a specific component settings with the sent values for matching keys.
+          responses:
+            '403': {}
+            '404': {}
+          securedBy:
+            - basic
+            - bearer
+        delete:
+          description: Delete setting from WebGME. Clears out the settings for a specific component.
+          responses:
+            '204': {}
+            '403': {}
+            '404': {}
+          securedBy:
+            - basic
+            - bearer
+        uriParameters:
+          componentId: {}
+/orgs:
+  description: End points for organizations on deployment. PUT/PATCH/DELETE requires that authenticated user is siteAdmin or admin in organization.
+  get:
+    description: Collection of available organizations in WebGME
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              - _id: webgme
+                projects:
+                  guest+aaaaaa:
+                    read: true
+                    write: true
+                    delete: false
+                  webgme+ASDF:
+                    read: true
+                    write: true
+                    delete: true
+                type: Organization
+                admins:
+                  - user1
+                  - user2
+                info: {}
+              - _id: org2
+                projects:
+                  webgme+ASDF:
+                    read: true
+                    write: false
+                    delete: false
+                type: Organization
+                admins:
+                  - pelleBlom
+                info: {}
+              - _id: org
+                projects: {}
+                type: Organization
+                admins:
+                  - guest
+                info: {}
+            required: false
+    queryParameters:
+      includeDisabled:
+        required: false
+        description: If true and <b>user.siteAdmin</b> disabled organizations will be included in response.
+        example: true
+        type: boolean
+        displayName: includeDisabled
+    securedBy:
+      - basic
+      - bearer
+  '/{orgId}':
+    get:
+      description: Retrives organization data including members.
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                _id: webgme
+                projects: {}
+                type: Organization
+                admins:
+                  - pelleBlom
+                info:
+                  description: My organization
+                  webpage: 'https://org.org'
+                users:
+                  - pelleBlom
+              required: false
+        '404': {}
+      securedBy:
+        - basic
+        - bearer
+    put:
+      description: Create a new organization. Requires <b>user.canCreate</b> or <b>user.siteAdmin</b>.
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                _id: webgme
+                projects: {}
+                type: Organization
+                admins:
+                  - pelleBlom
+                info:
+                  description: My organization
+                  webpage: 'https://org.org'
+                users:
+                  - pelleBlom
+              required: false
+        '403': {}
+        '404': {}
+      body:
+        application/json:
+          example:
+            info:
+              description: My organization
+              webpage: 'https://org.org'
+          type: See_example
+          required: false
+      securedBy:
+        - basic
+        - bearer
+    patch:
+      description: 'Updates the organization info if given which requires admin in organization or <b>user.siteAdmin</b>. If {disabled ":" false} given and <b>user.siteAdmin</b> disabled organization will be re-enabled.'
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                _id: webgme
+                projects: {}
+                type: Organization
+                admins:
+                  - pelleBlom
+                info:
+                  description: My organization
+                  webpage: 'https://org.org'
+                users:
+                  - pelleBlom
+              required: false
+        '403': {}
+        '404': {}
+      body:
+        application/json:
+          example:
+            info:
+              description: My organization
+              webpage: 'https://org.org'
+          type: See_example
+          required: false
+      securedBy:
+        - basic
+        - bearer
+    delete:
+      description: Delete an organization. Requires admin in organization or <b>user.siteAdmin</b>.
+      responses:
+        '204': {}
+        '403': {}
+        '404': {}
+      queryParameters:
+        force:
+          required: false
+          description: If true and <b>user.siteAdmin</b> the organization will be permanently deleted from database.
+          example: true
+          type: boolean
+          displayName: force
+      securedBy:
+        - basic
+        - bearer
+    uriParameters:
+      orgId: {}
+    '/users/{username}':
+      put:
+        description: Adds user to the organization. Requires admin in organization or <b>user.siteAdmin</b>.
+        responses:
+          '200': {}
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      delete:
+        description: Delete user from the organization. Requires admin in organization or <b>user.siteAdmin</b>.
+        responses:
+          '204': {}
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      uriParameters:
+        username: {}
+    '/admins/{username}':
+      put:
+        description: Make user admin for the organization. Requires admin in organization or <b>user.siteAdmin</b>.
+        responses:
+          '200': {}
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      delete:
+        description: Remove user from admins of the organization. Requires admin in organization or <b>user.siteAdmin</b>.
+        responses:
+          '204': {}
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      uriParameters:
+        username: {}
+/projects:
+  description: Collection of available projects in WebGME.
+  type:
+    collection:
+      exampleCollection: |-
+        [
+           {
+              "_id":"guest+FSM",
+              "owner":"guest",
+              "name":"FSM",
+              "fullName":"guest/FSM",
+              "info": {
+                "viewedAt": "2017-02-19T00:06:57.842Z",
+                "viewer": "guest",
+                "modifiedAt": "2017-02-13T20:34:23.217Z",
+                "modifier": "demo",
+                "createdAt": "2016-02-13T20:34:23.217Z",
+                "creator": "guest",
+                "kind": "FiniteStateMachine"
+              }
+           },
+           {
+              "_id":"guest+SFS",
+              "owner":"guest",
+              "name":"SFS",
+              "fullName":"guest/SFS",
+              "info": {
+                "viewedAt": "2017-02-19T00:06:57.842Z",
+                "viewer": "guest",
+                "modifiedAt": "2017-02-13T20:34:23.217Z",
+                "modifier": "demo",
+                "createdAt": "2016-02-13T20:34:23.217Z",
+                "creator": "guest",
+                "kind": "SignalFlowSystem"
+              }
+           }
+        ]
+      desc: Only lists the projects where the user has at least <b>read</b> access.
+  get:
+    description: Get a list of projects. Only lists the projects where the user has at least <b>read</b> access.
+    securedBy:
+      - basic
+      - bearer
+  '/{ownerId}':
+    '/{projectName}':
+      description: Entity representing a project
+      type:
+        collection-item:
+          exampleItem: |-
+            {
+              "_id": "demo+FSM",
+              "owner": "demo",
+              "name": "FSM",
+              "info": {
+                "createdAt": "2015-11-03T22:08:35.706Z",
+                "viewedAt": "2015-12-01T22:42:08.713Z",
+                "viewer": "demo",
+                "modifiedAt": "2015-12-01T22:42:08.713Z",
+                "modifier": "demo",
+                "creator": "demo",
+                "kind": "FiniteStateMachine"
+              },
+              "branches": {
+                "important_point": "#48e883fe1fbd1f370a34263218e1572cc885b0bc",
+                "master": "#bd5ea217510a3f6a3f7e98fbdae0d10669ef9c2d"
+              },
+              "hooks": {
+                "hookOne": {
+                  "events": [
+                    "COMMIT"
+                  ],
+                  "description": "The first ever webhook for WebGME",
+                  "url": "http://index.hu",
+                  "active": false
+                }
+            }
+          putBody: |-
+            {
+              "type": "db",
+              "seedName": "me+myOtherProject",
+              "seedBranch": "master",
+              "ownerId": "myOrganization"
+            }
+          patchBody: |-
+            {
+              "createdAt": "2015-11-03T22:08:35.706Z",
+              "viewedAt": "2015-12-01T22:42:08.713Z",
+              "viewer": "gurka",
+              "modifiedAt": "2015-12-01T22:42:08.713Z",
+              "modifier": "arnold",
+              "creator": "pelleBlom",
+              "kind": null
+            }
+          getDesc: Requires <b>read</b> access for project.
+          putDesc: Requires <b>user.canCreate</b>.
+          patchDesc: Requires <b>write</b> access for project.
+          deleteDesc: Requires <b>delete</b> access for project.
+      get:
+        description: |
+          Get the project. Requires <b>read</b> access for project.
+        securedBy:
+          - basic
+          - bearer
+      put:
+        description: |
+          Add a new project to WebGME. Requires <b>user.canCreate</b>.
+        responses:
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      patch:
+        description: Update project within WebGME. Requires <b>write</b> access for project.
+        responses:
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      delete:
+        description: Delete project from WebGME. Requires <b>delete</b> access for project.
+        responses:
+          '204': {}
+          '403': {}
+          '404': {}
+        securedBy:
+          - basic
+          - bearer
+      uriParameters:
+        projectName:
+          example: ActivePanels
+      /commits:
+        get:
+          description: Retrives an array of latested commits made to the project. Requires <b>read</b> access for project.
+          responses:
+            '200':
+              body:
+                application/json:
+                  example:
+                    - _id: '#f2a624d9cfbf883c927b04dd45800ba55537dff5'
+                      root: '#e1721a407ecce45c83b7352a62349cada71056bf'
+                      parents:
+                        - '#4ac76d63da6f50cc5baaa5bfb42c86138edc9396'
+                      updater:
+                        - guest
+                      time: 1449590037764
+                      message: '[setRegistry(/1054504320/354493498/496824070/2098980444,,rotation,0)]'
+                      type: commit
+                    - _id: '#4ac76d63da6f50cc5baaa5bfb42c86138edc9396'
+                      root: '#6fc60b12e9b17ebb69231fae3356455365d0f8b9'
+                      parents:
+                        - ''
+                      updater:
+                        - guest
+                      time: 1449589988631
+                      message: project created
+                      type: commit
+                  required: false
+            '403': {}
+          queryParameters:
+            'n':
+              required: false
+              description: Maximum number of commits to retrieve (default 100).
+              example: 2
+              type: number
+              displayName: 'n'
+        '/{commitId}':
+          get:
+            description: Retrieves the commit object associated with the commitId. Requires <b>read</b> access for project.
+            responses:
+              '200':
+                body:
+                  application/json:
+                    example:
+                      root: '#20d99ca1c0a2ec8a256d0beda8302d2bc0ddd300'
+                      parents:
+                        - '#8b2ce483f807d52d44a9377d08ac5a7573ddb07c'
+                      updater:
+                        - pmeijer
+                      time: 1448397167677
+                      message: '[setRegistry(/1036661779/588886926,,position,[object Object])]'
+                      type: commit
+                      _id: '#cdfc41958e056e5faf59ff3059394368204a7bbc'
+                    required: false
+              '403': {}
+          uriParameters:
+            commitId:
+              description: 'Commit hash, with or without URL-encoded ''#''.'
+              example: b83ee8d50034fc96f006176bba516e68ce50838a
+          /export:
+            get:
+              description: Retrieves the given state of the project as a webgmex file. Requires <b>read</b> access for project.
+              responses:
+                '200':
+                  body:
+                    application/octet-stream:
+                      required: false
+                '403': {}
+            '/{nodePath}':
+              get:
+                description: Retrieves the given state of a model - pointed by the path of its root node - as a webgmexm file. Requires <b>read</b> access for project.
+                responses:
+                  '200':
+                    body:
+                      application/octet-stream:
+                        required: false
+                  '403': {}
+              uriParameters:
+                nodePath:
+                  example: 1aB/CdE2
+          '/tree/{nodePath}':
+            type: project-tree
+            get:
+              description: Retrieves the raw data object at given path within the project tree. Requires <b>read</b> access for project.
+              responses:
+                '403': {}
+                '404': {}
+            uriParameters:
+              nodePath:
+                example: 1563412505/5585498754
+      /branches:
+        description: Collection of available branches in WebGME.
+        type:
+          collection:
+            exampleCollection: |-
+              {
+                 "dev":"#6d9f4a36be8339b6841c0ddf74eebdf4a6387288",
+                 "development":"#865778bd9f9f800ffaf280493fd88711531d1012",
+                 "master":"#d46d17982c3800c6a4c8226c89c3609fc4c0ab86",
+                 "merge":"#51228646fe143d04a36fc8fd369e2c1ccadfd173"
+              }
+            desc: Requires <b>read</b> access for project.
+        get:
+          description: Get a list of branches. Requires <b>read</b> access for project.
+          securedBy:
+            - basic
+            - bearer
+        '/{branchId}':
+          description: Entity representing a branch
+          type:
+            collection-item:
+              exampleItem: |-
+                {
+                   "projectId":"guest+2b",
+                   "branchName":"master",
+                   "commitObject":{
+                      "_id":"#d46d17982c3800c6a4c8226c89c3609fc4c0ab86",
+                      "root":"#6ed2563c110b9830fef84fc23a10e645580faf91",
+                      "parents":[
+                         "#6efa0d336ea87b167b336488aaa87999a4569bdf",
+                         "#9859beb3d5576e7fc9db815139fb22c6cbf9ac43"
+                      ],
+                      "updater":[
+                         "guest"
+                      ],
+                      "time":1441132232802,
+                      "message":"merge with resolved conflicts",
+                      "type":"commit"
+                   },
+                   "coreObjects":[
+                      {
+                         "1":"#11dcbaa8c6ffeda59b6d07d16fee199d4ced20cb",
+                         "313149126":"#631334e2a457548892986c4cf912bac5073b58f8",
+                         "1675786949":"#745d0a40cc3607cd2e7226ecd2d4de369365751f",
+                         "_id":"#6ed2563c110b9830fef84fc23a10e645580faf91",
+                         "_nullptr":{
+                            "atr":{
+                               "name":"_null_pointer"
+                            }
+                         },
+                         "ovr":{
+                            "":{
+                               "base":"/_nullptr"
+                            },
+                            "/_nullptr":{
+                               "base-inv":[
+                                  ""
+                               ]
+                            },
+                            "/_sets/MetaAspectSet/1453535609":{
+                               "member":"/1"
+                            },
+                            "/1":{
+                               "member-inv":[
+                                  "/_sets/MetaAspectSet/1453535609",
+                                  "/_sets/MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d/164185714",
+                                  "/_meta/children/_sets/items/206643370"
+                               ],
+                               "base-inv":[
+                                  "/313149126",
+                                  "/1675786949"
+                               ]
+                            },
+                            "/_sets/MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d/164185714":{
+                               "member":"/1"
+                            },
+                            "/_meta/children/_sets/items/206643370":{
+                               "member":"/1"
+                            },
+                            "/313149126":{
+                               "base":"/1"
+                            },
+                            "/1675786949":{
+                               "base":"/1"
+                            }
+                         },
+                         "atr":{
+                            "_relguid":"03d360729e097866cb4ed0a36ff825f6",
+                            "name":"ROOT"
+                         },
+                         "reg":{
+                            "MetaSheets":[
+                               {
+                                  "SetID":"MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d",
+                                  "order":0,
+                                  "title":"META"
+                               }
+                            ],
+                            "ProjectRegistry":{
+                               "FCO_ID":"/1"
+                            },
+                            "usedAddOns":"ConstraintAddOn",
+                            "validPlugins":"PluginGenerator MergeExample",
+                            "validDecorators":"ModelDecorator CircleDecorator MetaDecorator SVGDecorator UMLStateMachineDecorator DefaultDecorator",
+                            "validVisualizers":"ModelEditor METAAspect",
+                            "_sets_":6
+                         },
+                         "_sets":{
+                            "MetaAspectSet":{
+                               "1453535609":{
+                                  "reg":{
+                                     "_":"_",
+                                     "position":{
+                                        "x":100,
+                                        "y":100
+                                     }
+                                  }
+                               },
+                               "reg":{
+                                  "_":"_"
+                               }
+                            },
+                            "_nullptr":{
+                               "atr":{
+                                  "name":"_null_pointer"
+                               }
+                            },
+                            "ovr":{
+                               "":{
+                                  "MetaAspectSet":"/_nullptr",
+                                  "MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d":"/_nullptr"
+                               },
+                               "/_nullptr":{
+                                  "MetaAspectSet-inv":[
+                                     ""
+                                  ],
+                                  "MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d-inv":[
+                                     ""
+                                  ]
+                               }
+                            },
+                            "MetaAspectSet_68f8146d-b1b7-6c40-3464-f8c070e97e8d":{
+                               "164185714":{
+                                  "reg":{
+                                     "_":"_",
+                                     "position":{
+                                        "x":100,
+                                        "y":100
+                                     }
+                                  }
+                               },
+                               "reg":{
+                                  "_":"_"
+                               }
+                            }
+                         },
+                         "_meta":{
+                            "atr":{
+                               "name":{
+                                  "type":"string"
+                               }
+                            },
+                            "children":{
+                               "_sets":{
+                                  "items":{
+                                     "206643370":{
+                                        "reg":{
+                                           "_":"_"
+                                        },
+                                        "atr":{
+                                           "min":-1,
+                                           "max":-1
+                                        }
+                                     },
+                                     "reg":{
+                                        "_":"_"
+                                     }
+                                  },
+                                  "_nullptr":{
+                                     "atr":{
+                                        "name":"_null_pointer"
+                                     }
+                                  },
+                                  "ovr":{
+                                     "":{
+                                        "items":"/_nullptr"
+                                     },
+                                     "/_nullptr":{
+                                        "items-inv":[
+                                           ""
+                                        ]
+                                     }
+                                  }
+                               },
+                               "reg":{
+                                  "_sets_":4
+                               }
+                            }
+                         }
+                      }
+                   ]
+                }
+              putBody: '{ "hash": "#f2a624d9cfbf883c927b04dd45800ba55537dff5" }'
+              patchBody: '{ "oldHash": "#f2a624d9cfbf883c927b04dd45800ba55537dff5", "newHash": "#4ac76d63da6f50cc5baaa5bfb42c86138edc9396" }'
+              getDesc: Requires <b>read</b> access for project.
+              putDesc: Requires <b>write</b> access for project.
+              patchDesc: Requires <b>write</b> access for project.
+              deleteDesc: Requires <b>write</b> access for project.
+          get:
+            description: |
+              Get the branch. Requires <b>read</b> access for project.
+            securedBy:
+              - basic
+              - bearer
+          put:
+            description: |
+              Add a new branch to WebGME. Requires <b>write</b> access for project.
+            responses:
+              '403': {}
+              '404': {}
+            securedBy:
+              - basic
+              - bearer
+          patch:
+            description: Update branch within WebGME. Requires <b>write</b> access for project.
+            responses:
+              '403': {}
+              '404': {}
+            securedBy:
+              - basic
+              - bearer
+          delete:
+            description: Delete branch from WebGME. Requires <b>write</b> access for project.
+            responses:
+              '204': {}
+              '403': {}
+              '404': {}
+            securedBy:
+              - basic
+              - bearer
+          uriParameters:
+            branchId:
+              example: master
+          /commits:
+            get:
+              description: Retrives an array of the commit history for the branch. Requires <b>read</b> access for project.
+              responses:
+                '200':
+                  body:
+                    application/json:
+                      example:
+                        - _id: '#f2a624d9cfbf883c927b04dd45800ba55537dff5'
+                          root: '#e1721a407ecce45c83b7352a62349cada71056bf'
+                          parents:
+                            - '#4ac76d63da6f50cc5baaa5bfb42c86138edc9396'
+                          updater:
+                            - guest
+                          time: 1449590037764
+                          message: '[setRegistry(/1054504320/354493498/496824070/2098980444,,rotation,0)]'
+                          type: commit
+                        - _id: '#4ac76d63da6f50cc5baaa5bfb42c86138edc9396'
+                          root: '#6fc60b12e9b17ebb69231fae3356455365d0f8b9'
+                          parents:
+                            - ''
+                          updater:
+                            - guest
+                          time: 1449589988631
+                          message: project created
+                          type: commit
+                      required: false
+                '403': {}
+              queryParameters:
+                'n':
+                  required: false
+                  description: Maximum number of commits to retrieve (default 100).
+                  example: 2
+                  type: number
+                  displayName: 'n'
+          /export:
+            get:
+              description: Retrieves the given state of the project as a webgmex file. Requires <b>read</b> acces of project.
+              responses:
+                '200':
+                  body:
+                    application/octet-stream:
+                      required: false
+                '403': {}
+            '/{nodePath}':
+              get:
+                description: Retrieves the given state of a model - pointed by the path of its root - as a webgmexm file. Requires <b>read</b> access of project.
+                responses:
+                  '200':
+                    body:
+                      application/octet-stream:
+                        required: false
+                  '403': {}
+              uriParameters:
+                nodePath:
+                  example: a2B/b3C
+          '/tree/{nodePath}':
+            type: project-tree
+            get:
+              description: Retrieves the raw data object at given path within the project tree. Requires <b>read</b> access for project.
+              responses:
+                '403': {}
+                '404': {}
+            uriParameters:
+              nodePath:
+                example: 1563412505/5585498754
+      /tags:
+        description: Collection of available tags in WebGME.
+        type:
+          collection:
+            exampleCollection: |-
+              {
+                 "dev":"#6d9f4a36be8339b6841c0ddf74eebdf4a6387288",
+                 "development":"#865778bd9f9f800ffaf280493fd88711531d1012",
+                 "master":"#d46d17982c3800c6a4c8226c89c3609fc4c0ab86",
+                 "merge":"#51228646fe143d04a36fc8fd369e2c1ccadfd173"
+              }
+            desc: Requires <b>read</b> access for project.
+        get:
+          description: Get a list of tags. Requires <b>read</b> access for project.
+          securedBy:
+            - basic
+            - bearer
+        '/{tagId}':
+          description: Entity representing a tag
+          type:
+            collection-item:
+              exampleItem: |-
+                {
+                  "root": "#20d99ca1c0a2ec8a256d0beda8302d2bc0ddd300",
+                  "parents": [
+                    "#8b2ce483f807d52d44a9377d08ac5a7573ddb07c"
+                  ],
+                  "updater": [
+                    "pmeijer"
+                  ],
+                  "time": 1448397167677,
+                  "message": "[setRegistry(/1036661779/588886926,,position,[object Object])]",
+                  "type": "commit",
+                  "_id": "#cdfc41958e056e5faf59ff3059394368204a7bbc"
+                }
+              putBody: '{ "hash": "#f2a624d9cfbf883c927b04dd45800ba55537dff5" }'
+              patchBody: '{ "hash": "#f2a624d9cfbf883c927b04dd45800ba55537dff5" }'
+              getDesc: Requires <b>read</b> access for project.
+              putDesc: Requires <b>write</b> access for project.
+              patchDesc: Requires <b>delete</b> access for project.
+              deleteDesc: Requires <b>delete</b> access for project.
+          get:
+            description: |
+              Get the tag. Requires <b>read</b> access for project.
+            securedBy:
+              - basic
+              - bearer
+          put:
+            description: |
+              Add a new tag to WebGME. Requires <b>write</b> access for project.
+            responses:
+              '403': {}
+              '404': {}
+            securedBy:
+              - basic
+              - bearer
+          patch:
+            description: Update tag within WebGME. Requires <b>delete</b> access for project.
+            responses:
+              '403': {}
+              '404': {}
+            securedBy:
+              - basic
+              - bearer
+          delete:
+            description: Delete tag from WebGME. Requires <b>delete</b> access for project.
+            responses:
+              '204': {}
+              '403': {}
+              '404': {}
+            securedBy:
+              - basic
+              - bearer
+          uriParameters:
+            tagId:
+              example: myTag
+          /export:
+            get:
+              description: Retrieves the given state of the project as a webgmex file. Requires <b>read</b> access of project.
+              responses:
+                '200':
+                  body:
+                    application/octet-stream:
+                      required: false
+                '403': {}
+            '/{nodePath}':
+              get:
+                description: Retrieves the given state of a model - pointed by its root path - as a webgmexm file. Requires <b>read</b> access of project.
+                responses:
+                  '200':
+                    body:
+                      application/ocete-stream:
+                        required: false
+                  '403': {}
+              uriParameters:
+                nodePath:
+                  example: 23BC/aD42
+          '/tree/{nodePath}':
+            type: project-tree
+            get:
+              description: Retrieves the raw data object at given path within the project tree. Requires <b>read</b> access for project.
+              responses:
+                '403': {}
+                '404': {}
+            uriParameters:
+              nodePath:
+                example: 1563412505/5585498754
+      /hooks:
+        description: Returns with the list of webHooks.
+        type:
+          collection:
+            exampleCollection: |-
+              {
+                 "dev":"#6d9f4a36be8339b6841c0ddf74eebdf4a6387288",
+                 "development":"#865778bd9f9f800ffaf280493fd88711531d1012",
+                 "master":"#d46d17982c3800c6a4c8226c89c3609fc4c0ab86",
+                 "merge":"#51228646fe143d04a36fc8fd369e2c1ccadfd173"
+              }
+            desc: Requires <b>read</b> access for project.
+        get:
+          description: Get a list of hooks. Requires <b>read</b> access for project.
+          securedBy:
+            - basic
+            - bearer
+        '/{hookId}':
+          description: Returns with the webHook information.
+          type:
+            collection-item:
+              exampleItem: |-
+                {
+                  "root": "#20d99ca1c0a2ec8a256d0beda8302d2bc0ddd300",
+                  "parents": [
+                    "#8b2ce483f807d52d44a9377d08ac5a7573ddb07c"
+                  ],
+                  "updater": [
+                    "pmeijer"
+                  ],
+                  "time": 1448397167677,
+                  "message": "[setRegistry(/1036661779/588886926,,position,[object Object])]",
+                  "type": "commit",
+                  "_id": "#cdfc41958e056e5faf59ff3059394368204a7bbc"
+                }
+              putBody: '{ "events": ["commit","branchCreated"], "description": "Information about the hook", "url": "http://address/to/the/hook" }'
+              patchBody: '{ "active": false }'
+              getDesc: Requires <b>read</b> access for project.
+              putDesc: Requires <b>write</b> access for project.
+              patchDesc: Requires <b>write</b> access for project.
+              deleteDesc: Requires <b>write</b> access for project.
+          get:
+            description: |
+              Get the hook. Requires <b>read</b> access for project.
+            securedBy:
+              - basic
+              - bearer
+          put:
+            description: |
+              Add a new hook to WebGME. Requires <b>write</b> access for project.
+            responses:
+              '403': {}
+              '404': {}
+            securedBy:
+              - basic
+              - bearer
+          patch:
+            description: Update hook within WebGME. Requires <b>write</b> access for project.
+            responses:
+              '403': {}
+              '404': {}
+            securedBy:
+              - basic
+              - bearer
+          delete:
+            description: Delete hook from WebGME. Requires <b>write</b> access for project.
+            responses:
+              '204': {}
+              '403': {}
+              '404': {}
+            securedBy:
+              - basic
+              - bearer
+          uriParameters:
+            hookId:
+              example: myHook
+      /squash:
+        put:
+          description: Squash multi commits into a single one. Requires <b>write</b> access for project.
+          body:
+            application/json:
+              example:
+                fromCommit: '#6e41041cf8e6cf3f81039c101b3adfc46ab703d4'
+                toCommitOrBranch: master
+                message: feature 'A' squashed into a single commit
+              required: false
+          securedBy:
+            - basic
+            - bearer
+      '/authorize/{userOrOrgId}':
+        delete:
+          description: 'Remove user''s or organization''s access rights to the project. Requires at least one of the following from user; is <b>owner</b> of the project, is <b>admin in the organization</b> that owns the project, or is <b>siteAdmin</b>.'
+          responses:
+            '204': {}
+            '403': {}
+            '404': {}
+        uriParameters:
+          userOrOrgId:
+            example: demoUser
+        '/{rights}':
+          put:
+            description: 'Grants user or organization access to the project. Requires at least one of the following from user; is <b>owner</b> of the project, is <b>admin in the organization</b> that owns the project, or is <b>siteAdmin</b>.'
+            responses:
+              '204': {}
+              '403': {}
+              '404': {}
+          uriParameters:
+            rights:
+              description: 'Combination of r-read, w-write, d-delete'
+              example: rwd
+      '/compare/{branchOrCommitA}...{branchOrCommitB}':
+        get: {}
+        uriParameters:
+          branchOrCommitA: {}
+          branchOrCommitB: {}
+    uriParameters:
+      ownerId:
+        example: guest
+/status:
+  description: End points for server status. These paths are only available for siteAdmins when auth is turned on.
+  get:
+    description: Returns a combined object of all different statuses (if add-ons are disabled addOns will be null).
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              addOns:
+                guest+ANewProject:
+                  initRequested: true
+                  closeRequested: false
+                  renewingToken: false
+                  inStoppedAndStarted: 0
+                  branchMonitors:
+                    master:
+                      startRequested: true
+                      stopRequested: false
+                      branchIsOpen: true
+                      commitHash: '#0a1b4a3c4f1a4e4efcb4914192f227e801f421a3'
+                      runningAddOns: []
+                      lastActivity: 1520290354966
+                guest+LogicGates:
+                  initRequested: true
+                  closeRequested: false
+                  renewingToken: false
+                  inStoppedAndStarted: 0
+                  branchMonitors:
+                    master:
+                      startRequested: true
+                      stopRequested: false
+                      branchIsOpen: true
+                      commitHash: '#980a3e12e6c77efe51163989222b7f703026bcff'
+                      runningAddOns: []
+                      lastActivity: 1520290366899
+              serverWorkers:
+                waitingRequests: []
+                workers:
+                  - pid: '3668'
+                    state: working
+                    request:
+                      command: exportProjectToFile
+                      projectId: guest+ANewProject
+                      commitHash: '#0a1b4a3c4f1a4e4efcb4914192f227e801f421a3'
+                      withAssets: true
+                      userId: hans
+                      socketId: A2Vo2ji9PAxNCqaFAAAG
+                  - pid: '4692'
+                    state: free
+              webSockets:
+                - socketId: A2Vo2ji9PAxNCqaFAAAG
+                  userId: hans
+                  connectedSince: 'Mon Mar 05 2018 16:52:33 GMT-0600 (Central Standard Time)'
+                - socketId: hXhumKK5MuVSbAJHAAAH
+                  userId: olle
+                  connectedSince: 'Mon Mar 05 2018 16:52:34 GMT-0600 (Central Standard Time)'
+                - socketId: BgKWYImd4d0wSMFYAAAI
+                  userId: guest
+                  connectedSince: 'Mon Mar 05 2018 16:52:45 GMT-0600 (Central Standard Time)'
+                - socketId: T1PbWEZ_8nxL2hFpAAAJ
+                  userId: guest
+                  connectedSince: 'Mon Mar 05 2018 16:52:46 GMT-0600 (Central Standard Time)'
+                - socketId: '-WydaU_FsQcpCFwqAAAK'
+                  userId: ragnar
+                  connectedSince: 'Mon Mar 05 2018 16:53:50 GMT-0600 (Central Standard Time)'
+            required: false
+    securedBy:
+      - basic
+      - bearer
+  /add-ons:
+    get:
+      description: Returns status about running addons (404 if add-ons are disabled)
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                guest+ANewProject:
+                  initRequested: true
+                  closeRequested: false
+                  renewingToken: false
+                  inStoppedAndStarted: 0
+                  branchMonitors:
+                    master:
+                      startRequested: true
+                      stopRequested: false
+                      branchIsOpen: true
+                      commitHash: '#0a1b4a3c4f1a4e4efcb4914192f227e801f421a3'
+                      runningAddOns: []
+                      lastActivity: 1520290354966
+                guest+LogicGates:
+                  initRequested: true
+                  closeRequested: false
+                  renewingToken: false
+                  inStoppedAndStarted: 0
+                  branchMonitors:
+                    master:
+                      startRequested: true
+                      stopRequested: false
+                      branchIsOpen: true
+                      commitHash: '#980a3e12e6c77efe51163989222b7f703026bcff'
+                      runningAddOns: []
+                      lastActivity: 1520290366899
+              required: false
+      securedBy:
+        - basic
+        - bearer
+  /server-workers:
+    get:
+      description: Returns status about running server workers and request queue
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                waitingRequests: []
+                workers:
+                  - pid: '3668'
+                    state: working
+                    request:
+                      command: exportProjectToFile
+                      projectId: guest+ANewProject
+                      commitHash: '#0a1b4a3c4f1a4e4efcb4914192f227e801f421a3'
+                      withAssets: true
+                      userId: hans
+                      socketId: A2Vo2ji9PAxNCqaFAAAG
+                  - pid: '4692'
+                    state: free
+              required: false
+      securedBy:
+        - basic
+        - bearer
+  /web-sockets:
+    get:
+      description: Returns a list of all currently connected web-sockets
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                - socketId: A2Vo2ji9PAxNCqaFAAAG
+                  userId: hans
+                  connectedSince: 'Mon Mar 05 2018 16:52:33 GMT-0600 (Central Standard Time)'
+                - socketId: hXhumKK5MuVSbAJHAAAH
+                  userId: olle
+                  connectedSince: 'Mon Mar 05 2018 16:52:34 GMT-0600 (Central Standard Time)'
+                - socketId: BgKWYImd4d0wSMFYAAAI
+                  userId: guest
+                  connectedSince: 'Mon Mar 05 2018 16:52:45 GMT-0600 (Central Standard Time)'
+                - socketId: T1PbWEZ_8nxL2hFpAAAJ
+                  userId: guest
+                  connectedSince: 'Mon Mar 05 2018 16:52:46 GMT-0600 (Central Standard Time)'
+                - socketId: '-WydaU_FsQcpCFwqAAAK'
+                  userId: ragnar
+                  connectedSince: 'Mon Mar 05 2018 16:53:50 GMT-0600 (Central Standard Time)'
+              required: false
+      securedBy:
+        - basic
+        - bearer
+/decorators:
+  get:
+    description: Returns with all available decorators
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              - CircleDecorator
+              - DefaultDecorator
+              - MetaDecorator
+              - ModelDecorator
+              - SVGDecorator
+              - UMLStateMachineDecorator
+            required: false
+/seeds:
+  get:
+    description: Returns with all available seeds
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              - ActivePanels
+              - EmptyProject
+              - EmptyWithConstraint
+              - SignalFlowSystem
+            required: false
+  '/{seedName}':
+    get:
+      description: Returns info about specific seed. Currently only the blobHash of the seed is returned.
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                blobHash: da39a3ee5e6b4b0d3255bfef95601890afd80709
+              required: false
+        '404':
+          description: Seed does not exist
+      securedBy:
+        - basic
+        - bearer
+    uriParameters:
+      seedName: {}
+/visualizers:
+  get:
+    description: Returns with all available visualizers
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              - id: ModelEditor
+                title: Composition
+                panel: js/Panels/ModelEditor/ModelEditorPanel
+                DEBUG_ONLY: false
+              - id: Block Editor
+                title: Block Editor
+                panel: js/Panels/BlockEditor/BlockEditorPanel
+                DEBUG_ONLY: true
+              - id: METAAspect
+                title: Meta
+                panel: js/Panels/MetaEditor/MetaEditorPanel
+                DEBUG_ONLY: false
+              - id: SetEditor
+                title: Set membership
+                panel: js/Panels/SetEditor/SetEditorPanel
+                DEBUG_ONLY: false
+              - id: Crosscut
+                title: Crosscut
+                panel: js/Panels/Crosscut/CrosscutPanel
+                DEBUG_ONLY: false
+              - id: ContainmentGrid
+                title: Containment Grid - All
+                panel: js/Panels/Grid/GridPanel
+                DEBUG_ONLY: true
+              - id: ContainmentGridPointers
+                title: Containment Grid - Pointers
+                panel: js/Panels/Grid/GridPanelPointers
+                DEBUG_ONLY: true
+              - id: GridSets
+                title: Set explorer (DEBUG)
+                panel: js/Panels/Grid/GridPanelSets
+                DEBUG_ONLY: true
+              - id: GraphViz
+                title: Graph view
+                panel: js/Panels/GraphViz/GraphVizPanel
+                DEBUG_ONLY: false
+            required: false
+/plugin:
+  description: Paths '/plugin/\*' are deprecated and will be removed! The functionality was moved under '/plugins/\*' paths as a harmonization effort among REST paths.
+/plugins:
+  get:
+    description: Lists all available plugins
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              - AddOnGenerator
+              - ConfigurationArtifact
+              - ExecutorPlugin
+              - ExportImport
+              - MergeExample
+              - MetaGMEParadigmImporter
+              - MinimalWorkingExample
+              - PluginGenerator
+              - VisualizerGenerator
+            required: false
+  /metadata:
+    get:
+      description: Get an array of all metadata associated with the available plugins.
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                - id: ConstraintEvaluator
+                  name: Constraint Evaluator
+                  version: 1.7.0
+                  description: 'Plugin for developers to test, evaluate and add custom constraints.'
+                  icon:
+                    src: ''
+                    class: glyphicon glyphicon-ok-circle
+                  disableServerSideExecution: false
+                  disableBrowserSideExecution: false
+                  writeAccessRequired: true
+                  configStructure:
+                    - name: mode
+                      displayName: Execution mode
+                      description: 'Select if Constraints.js should be evaluated, generated or populated in model.'
+                      value: EvaluateConstraints
+                      valueType: string
+                      valueItems:
+                        - EvaluateConstraints
+                        - GenerateConstraints
+                        - PopulateFromConstraints
+                    - name: clear
+                      displayName: Clear existing constraints
+                      description: Clear all existing constraints when populating model with constraints.
+                      value: false
+                      valueType: boolean
+                - id: MinimalWorkingExample
+                  name: Minimal Working Example
+                  version: 1.7.0
+                  description: Simple plugin illustrating how to save to a model from a plugin.
+                  icon:
+                    src: ''
+                    class: glyphicon glyphicon-floppy-save
+                  disableServerSideExecution: false
+                  disableBrowserSideExecution: false
+                  writeAccessRequired: true
+                  configStructure:
+                    - name: shouldFail
+                      displayName: Should fail
+                      description: Example if the plugin execution fails
+                      value: false
+                      valueType: boolean
+                      readOnly: false
+                    - name: save
+                      displayName: Should save the model
+                      description: Will update the model if true
+                      value: true
+                      valueType: boolean
+                      readOnly: false
+              required: false
+  '/{pluginId}':
+    uriParameters:
+      pluginId: {}
+    /config:
+      get:
+        description: Gets the default configuration for the plugin.
+        responses:
+          '200':
+            body:
+              application/json:
+                example:
+                  pluginID: NewPlugin
+                  pluginName: New Plugin
+                  description: ''
+                  test: true
+                  templateType: None
+                  configStructure: false
+                  meta: true
+                required: false
+    /configStructure:
+      get:
+        description: Gets the conficuration structure for a plugin.
+        responses:
+          '200':
+            body:
+              application/json:
+                example:
+                  - name: pluginID
+                    displayName: Unique plugin identifier
+                    regex: '^(?!(?:do|if|in|for|let|new|try|var|case|else|enum|eval|false|null|this|true|void|with|break|catch|class|const|super|throw|while|yield|delete|export|import|public|return|static|switch|typeof|default|extends|finally|package|private|continue|debugger|function|arguments|interface|protected|implements|instanceof)$)[a-zA-Z_$][0-9a-zA-Z_$]*'
+                    regexMessage: No spaces and special characters allowed. This value is used as the name of the generated plugin class.
+                    description: Unique ID for the plugin.
+                    value: NewPlugin
+                    valueType: string
+                    readOnly: false
+                  - name: pluginName
+                    displayName: Name
+                    description: Short readable plugin name; spaces are allowed
+                    value: New Plugin
+                    valueType: string
+                    readOnly: false
+                  - name: description
+                    displayName: Description
+                    description: Optional description of the plugin.
+                    value: ''
+                    valueType: string
+                    readOnly: false
+                  - name: test
+                    displayName: Include testing script
+                    description: Generate template for unit-tests.
+                    value: true
+                    valueType: boolean
+                    readOnly: false
+                  - name: templateType
+                    displayName: Example template
+                    description: 'Ejs template for code generation, also illustrates how to save artifacts using the blobClient.'
+                    value: None
+                    valueType: string
+                    valueItems:
+                      - None
+                      - JavaScript
+                      - Python
+                      - CSharp
+                    readOnly: false
+                  - name: configStructure
+                    displayName: Include Configuration Structure.
+                    description: Configuration structure will populate this GUI with controls.
+                    value: false
+                    valueType: boolean
+                    readOnly: false
+                  - name: meta
+                    displayName: Generate META
+                    description: Generates a static listing of the meta objects to facilitate coding.
+                    value: true
+                    valueType: boolean
+                    readOnly: false
+                required: false
+    /metadata:
+      get:
+        description: Gets the metadata associated with the given plugin.
+        responses:
+          '200':
+            body:
+              application/json:
+                example:
+                  id: ConfigurationArtifact
+                  name: Configuration and Artifacts
+                  version: 2.22.0
+                  description: Illustrates how to setup a configuration for the plugin and how to generate and return artifacts.
+                  icon:
+                    src: ''
+                    class: glyphicon glyphicon-list-alt
+                  disableServerSideExecution: false
+                  disableBrowserSideExecution: false
+                  writeAccessRequired: false
+                  configStructure:
+                    - name: species
+                      displayName: Animal Species
+                      regex: '^[a-zA-Z]+$'
+                      regexMessage: Name can only contain English characters!
+                      description: Which species does the animal belong to.
+                      value: Horse
+                      valueType: string
+                      readOnly: false
+                    - name: age
+                      displayName: Age
+                      description: How old is the animal.
+                      value: 3
+                      valueType: number
+                      minValue: 0
+                      maxValue: 10000
+                      readOnly: false
+                      writeAccessRequired: true
+                    - name: gender
+                      displayName: Gender distribution
+                      description: What is the ratio between females and males?
+                      value: 0.5
+                      valueType: number
+                      minValue: 0
+                      maxValue: 1
+                      increment: 0.01
+                    - name: carnivore
+                      displayName: Carnivore
+                      description: Does the animal eat other animals?
+                      value: false
+                      valueType: boolean
+                      readOnly: false
+                    - name: isAnimal
+                      displayName: Is Animal
+                      description: 'Is this animal an animal? [Read-only]'
+                      value: true
+                      valueType: boolean
+                      readOnly: true
+                    - name: classification
+                      displayName: Classification
+                      description: ''
+                      value: Vertebrates
+                      valueType: string
+                      valueItems:
+                        - Vertebrates
+                        - Invertebrates
+                        - Unknown
+                    - name: color
+                      displayName: Color
+                      description: The hex color code for the animal.
+                      readOnly: false
+                      value: '#FF0000'
+                      regex: '^#([A-Fa-f0-9]{6})$'
+                      valueType: string
+                    - name: food
+                      displayName: Food
+                      description: Food preference ordered
+                      readOnly: false
+                      value:
+                        - Grass
+                        - Mushrooms
+                        - Leaves
+                        - Antilope
+                        - Rabbit
+                      valueType: sortable
+                      valueItems:
+                        - Grass
+                        - Mushrooms
+                        - Leaves
+                        - Antilope
+                        - Rabbit
+                    - name: file
+                      displayName: File
+                      description: ''
+                      value: ''
+                      valueType: asset
+                      readOnly: false
+                required: false
+    /execute:
+      post:
+        description: Executes a plugin on server side. Returns with a result id.
+        responses:
+          '200':
+            body:
+              application/json:
+                example:
+                  resultId: f30f619b-3c80-87b7-3e35-6aec08c4cc14
+                required: false
+        body:
+          application/json:
+            example:
+              projectId: guest+MyProject
+              branchName: master
+            required: false
+    /run:
+      post:
+        description: Runs a plugin on the server side and waits for it to finish.
+        responses:
+          '200':
+            body:
+              application/json:
+                example:
+                  success: true
+                  messages: []
+                  commits:
+                    - commitHash: '#f8af7999fd95efbddb7f7b4fc9446f0dac2e33c6'
+                      branchName: master
+                      status: SYNCED
+                  artifacts:
+                    - da47ded7c3391fc46cd84752c829fc383649bc94
+                  pluginName: 'Export, Import and Update Library'
+                  startTime: '2015-09-24T21:44:16.456Z'
+                  finishTime: '2015-09-24T21:45:02.047Z'
+                  error: null
+                required: false
+        body:
+          application/json:
+            example:
+              projectId: guest+MyProject
+              branchName: master
+            required: false
+    '/results/{resultId}':
+      get:
+        description: Gets a result for this plugin by resultId.
+        responses:
+          '200':
+            body:
+              application/json:
+                example:
+                  status: FINISHED
+                  result:
+                    success: true
+                    messages: []
+                    commits:
+                      - commitHash: '#f8af7999fd95efbddb7f7b4fc9446f0dac2e33c6'
+                        branchName: master
+                        status: SYNCED
+                    artifacts:
+                      - da47ded7c3391fc46cd84752c829fc383649bc94
+                    pluginName: 'Export, Import and Update Library'
+                    startTime: '2015-09-24T21:44:16.456Z'
+                    finishTime: '2015-09-24T21:45:02.047Z'
+                    error: null
+                required: false
+      uriParameters:
+        resultId: {}
+/reset:
+  description: passsword reset functionality related requests
+  get:
+    description: verify a reset request
+    responses:
+      '200': {}
+      '404': {}
+    queryParameters:
+      userId:
+        description: id of user in question
+        example: myWebgmeLogin
+        type: string
+      resetHash:
+        description: id of the reset request
+        example: someRandomCharacters
+        type: string
+  post:
+    description: initiate a reset request (response will only contain a resetHash if e-mail sending is not active for password resets)
+    responses:
+      '200':
+        body:
+          application/json:
+            example:
+              resetHash: someRandomCharacters
+            required: false
+      '404': {}
+    body:
+      application/json:
+        example:
+          userId: myLittleUserName
+        required: false
+  patch:
+    description: update password request
+    responses:
+      '200': {}
+      '404': {}
+    body:
+      application/json:
+        example: |
+          {
+            "userId": "myVeryOwnUserName",
+            "resetHash": "myValidResetRequestId",
+            "newPassword" "myNewAndSafePassword"
+          }
+        required: false
+/blob:
+  description: TO BE MOVED here from /rest/blob
+  /metadata:
+    get:
+      description: lists all metadata
+    '/{metadataHash}':
+      get:
+        description: gets a specific metadata descriptor based on the given hash
+      uriParameters:
+        metadataHash: {}
+  /createMetadata:
+    post: {}
+  '/view/{metadataHash}':
+    get:
+      description: 'views the content that is associated with the METADATA_HASH in the browser, in case the browser cannot display it then the content gets downloaded.'
+    uriParameters:
+      metadataHash: {}
+    /path/to/element.json:
+      get:
+        description: returns with the specified file content from a complex object.
+  '/download/{metadataHash}':
+    get:
+      description: 'downloads the stored file with a name and correct extension, if the content is a complex object then a zip package is returned containing all contents'
+    uriParameters:
+      metadataHash: {}
+    /path/to/element.json:
+      get:
+        description: downloads only a specific file from a complex content
+  '/createFile/{filename}':
+    post:
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                39aa77396352b2b19c8cab7450b06791a8652e6e:
+                  name: executor_config.json.zip
+                  size: 278
+                  mime: application/zip
+                  isPublic: false
+                  tags: []
+                  content: f9d5a93b1e76a5ead51d7762c9520e6998911cb5
+                  contentType: object
+                  lastModified: '2015-09-09T18:23:28.000Z'
+              required: false
+    uriParameters:
+      filename: {}
+/executor:
+  description: TO BE MOVED here from /rest/executor
+  get:
+    description: List all jobs
+  /worker:
+    get: {}
+    post: {}
+  '/info/{hash}':
+    get:
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                hash: 39aa77396352b2b19c8cab7450b06791a8652e6e
+                resultHashes: []
+                resultSuperSet: null
+                userId: []
+                status: RUNNING
+                createTime: '2015-09-09T18:58:40.877Z'
+                startTime: null
+                finishTime: null
+                worker: Adams-iMac_5436
+                labels: []
+                _id: aat06FquApMHW4Rj
+              required: false
+    uriParameters:
+      hash: {}
+  '/create/{hash}':
+    post:
+      responses:
+        '200':
+          body:
+            application/json:
+              example:
+                hash: 39aa77396352b2b19c8cab7450b06791a8652e6e
+                resultHashes: []
+                resultSuperSet: null
+                userId: []
+                status: CREATED
+                createTime: '2015-09-09T18:45:22.983Z'
+                startTime: null
+                finishTime: null
+                worker: null
+                labels: []
+              required: false
+    uriParameters:
+      hash: {}
+  '/update/{hash}':
+    post: {}
+    uriParameters:
+      hash: {}
+  '/cancel/{hash}':
+    post: {}
+    uriParameters:
+      hash: {}

@@ -103,13 +103,9 @@ describe('merge CLI test', function () {
         Q.allDone([
             gmeAuth.unload(),
             database.closeDatabase(),
-            Q.nfcall(rimraf, './test-tmp/mergeCli*')
+            rimraf('./test-tmp/mergeCli*', {glob: true})
         ])
             .nodeify(done);
-    });
-
-    beforeEach(function () {
-        suppressLogAndExit();
     });
 
     afterEach(function () {
@@ -117,10 +113,12 @@ describe('merge CLI test', function () {
     });
 
     it('should have a main', function () {
+        suppressLogAndExit();
         mergeCli.should.have.property('main');
     });
 
     it('should fail if parameters missing', function (done) {
+        suppressLogAndExit();
         mergeCli.main(['node', filename])
             .then(function () {
                 done(new Error('missing error handling'));
@@ -135,6 +133,7 @@ describe('merge CLI test', function () {
     });
 
     it('should fail with wrong owner', function (done) {
+        suppressLogAndExit();
         mergeCli.main(['node', filename,
             '-p', projectName,
             '-M', 'master',
@@ -155,6 +154,7 @@ describe('merge CLI test', function () {
     });
 
     it('should go create files if prefix is given', function (done) {
+        suppressLogAndExit();
         mergeCli.main(['node', filename,
             '-p', projectName,
             '-M', 'master',
@@ -175,6 +175,7 @@ describe('merge CLI test', function () {
     });
 
     it('should print to console without prefix', function (done) {
+        suppressLogAndExit();
         mergeCli.main(['node', filename,
             '-p', projectName,
             '-M', 'master',

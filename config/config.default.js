@@ -43,6 +43,7 @@ var path = require('path'),
                 publicKey: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_PUBLIC_KEY'),
                 tokenGenerator: path.join(__dirname, '../src/server/middleware/auth/localtokengenerator.js'),
                 algorithm: 'RS256',
+                allowInsecureKeySizes: true,
                 // The private key is only needed if using the localtokengenerator
                 privateKey: path.join(__dirname, '../src/server/middleware/auth/EXAMPLE_PRIVATE_KEY'),
                 logOutUrlField: null,
@@ -83,6 +84,7 @@ var path = require('path'),
 
         blob: {
             compressionLevel: 0,
+            allowListAll: false,
             type: 'FS', //'FS', 'S3'
             fsDir: './blob-local-storage',
             namespace: '',
@@ -247,6 +249,8 @@ var path = require('path'),
                 forceNew: true
             },
             serverOptions: {
+                // Changed to 1Mb in 2.5.0 but doc still refers to old value of 1e8.
+                maxHttpBufferSize: 1e8
                 //transports: ['websocket', 'polling']
             },
             adapter: {

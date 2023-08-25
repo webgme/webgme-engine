@@ -14,16 +14,215 @@ describe('ExecutorServer', function () {
     let gmeConfig,
         server;
 
+    const getExecutorUrl = (path) => `${server.getUrl()}/rest/executor/${path}`;
+    const assertCode = (done, statusCode) => (err, res) => {
+        try {
+            assert.equal(res.status, statusCode, err);
+            done();
+        } catch (e) {
+            done(e);
+        }
+    };
+
+    const assert404 = (done) => assertCode(done, 404);
+
     describe('REST API', function () {
-        beforeEach(async function () {
+        before(async function () {
             await Q.allDone([
-                Q.ninvoke(testFixture, 'rimraf', './test-tmp/executor'),
-                Q.ninvoke(testFixture, 'rimraf', './test-tmp/executor-tmp')
+                testFixture.rimraf('./test-tmp/executor'),
+                testFixture.rimraf('./test-tmp/executor-tmp')
             ]);
             gmeConfig = testFixture.getGmeConfig();
             gmeConfig.executor.enable = true;
             await testFixture.clearDatabase(gmeConfig);
             server = testFixture.WebGME.standaloneServer(gmeConfig);
+            await server.start();
+        });
+
+        after(async function () {
+            if (server) {
+                await server.stop();
+            }
+        });
+
+        it('should return 200 at rest/executor/worker/ with enableExecutor=true', function (done) {
+            agent.get(getExecutorUrl('worker/')).end(function (err, res) {
+                try {
+                    assert.equal(res.status, 200, err);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+
+        it('should return 200 GET rest/executor?status=SUCCESS', function (done) {
+            agent.get(getExecutorUrl('?status=SUCCESS')).end(function (err, res) {
+                try {
+                    assert.equal(res.status, 200, err);
+                    expect(res.body).to.deep.equal({});
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+
+        it('should return 404 POST rest/executor/info', function (done) {
+            agent.post(getExecutorUrl('info')).end(assert404(done));
+        });
+
+        it('should return 404 GET rest/executor/info/', function (done) {
+            agent.get(getExecutorUrl('info/')).end(assert404(done));
+        });
+
+        it('should return 404 GET rest/executor/info/does_not_exist', function (done) {
+            agent.get(getExecutorUrl('info/does_not_exist')).end(assert404(done));
+        });
+
+        it('should return 404 GET rest/executor/unknown_command', function (done) {
+            agent.get(getExecutorUrl('unknown_command')).end(assert404(done));
+        });
+
+
+        it('should return 404 PUT rest/executor/worker', function (done) {
+            agent.put(getExecutorUrl('worker')).end(assert404(done));
+        });
+
+        it('should return 404 PUT rest/executor/update', function (done) {
+            agent.put(getExecutorUrl('update')).end(assert404(done));
+        });
+
+        it('should return 404 POST rest/executor/update/does_not_exist', function (done) {
+            agent.post(getExecutorUrl('update/does_not_exist')).end(assert404(done));
+        });
+
+        it('should return 404 PUT rest/executor/create', function (done) {
+            agent.put(getExecutorUrl('create')).end(assert404(done));
+        });
+
+        it('should return 404 POST rest/executor/create', function (done) {
+            agent.post(getExecutorUrl('create')).end(assert404(done));
+        });
+
+        it('should return 200 POST rest/executor/create/some_hash', function (done) {
+            agent.post(getExecutorUrl('create/some_hash0')).end(function (err, res) {
+                try {
+                    assert.equal(res.status, 200, err);
+                    assert.equal(typeof res.body.secret, 'string', res.body);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+
+        it('should set userId in created job rest/executor/create/some_hash', function (done) {
+            agent.post(getExecutorUrl('create/some_hash1')).end(function (err, res) {
+                try {
+                    assert.equal(err, null);
+                    assert.equal(res.body.userId.length, 1);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+        });
+
+        it('should return 200 POST rest/executor/create/some_hash but no secret on second create', function (done) {
+
+            agent.post(getExecutorUrl('create/some_hash2')).end(function (err, res) {
+                try {
+                    assert.equal(res.status, 200, err);
+                    assert.equal(typeof res.body.secret, 'string', res.body);
+                } catch (e) {
+                    done(e);
+                    return;
+                }
+                agent.post(getExecutorUrl('create/some_hash2')).end(function (err, res) {
+                    try {
+                        assert.equal(res.status, 200, err);
+                        assert.equal(
+                            typeof res.body.secret,
+                            'undefined',
+                            `Expected no secret. Found "${res.body.secret}"`
+                        );
+                        done();
+                    } catch (err) {
+                        done(err);
+                    }
+                });
+            });
+        });
+
+        it('should return 404 POST rest/executor/cancel/hashDoesNotExist', function (done) {
+            agent.post(getExecutorUrl('cancel/hashDoesNotExist')).end(assert404(done));
+        });
+
+        it('should return 403 POST rest/executor/cancel/existingHash with no body', function (done) {
+
+            agent.post(getExecutorUrl('create/existingHash1')).end(function (err, res) {
+                try {
+                    assert.equal(res.status, 200, err);
+                } catch (e) {
+                    done(e);
+                    return;
+                }
+                agent.post(getExecutorUrl('cancel/existingHash1')).end(assertCode(done, 403));
+            });
+
+        });
+
+        it('should return 403 POST rest/executor/cancel/existingHash with wrong secret', function (done) {
+            agent.post(getExecutorUrl('create/existingHash2')).end(function (err, res) {
+                try {
+                    assert.equal(res.status, 200, err);
+                } catch (e) {
+                    done(e);
+                    return;
+                }
+                agent.post(getExecutorUrl('cancel/existingHash2'))
+                    .send({secret: 'bla_bla'})
+                    .end(assertCode(done, 403));
+            });
+        });
+
+        it('should return 200 POST rest/executor/cancel/existingHash with correct secret', function (done) {
+
+            agent.post(getExecutorUrl('create/existingHash3')).end(function (err, res) {
+                try {
+                    assert.equal(err, null);
+                    assert.equal(res.status, 200, err);
+                } catch (e) {
+                    done(e);
+                    return;
+                }
+                agent.post(getExecutorUrl('cancel/existingHash3'))
+                    .send({secret: res.body.secret})
+                    .end(function (err, res) {
+                        try {
+                            assert.equal(err, null);
+                            assert.equal(res.status, 200, err);
+                        } catch (e) {
+                            done(e);
+                            return;
+                        }
+
+                        agent.get(getExecutorUrl('info/existingHash3')).end(assertCode(done, 200));
+                    });
+            });
+        });
+    });
+
+    describe('REST API - different server settings', function () {
+        beforeEach(async function () {
+            await Q.allDone([
+                testFixture.rimraf('./test-tmp/executor'),
+                testFixture.rimraf('./test-tmp/executor-tmp'),
+            ]);
+            gmeConfig = testFixture.getGmeConfig();
+            gmeConfig.executor.enable = true;
+            await testFixture.clearDatabase(gmeConfig);
         });
 
         afterEach(async function () {
@@ -32,243 +231,22 @@ describe('ExecutorServer', function () {
             }
         });
 
-        it('should return 200 at rest/executor/worker/ with enableExecutor=true', function (done) {
+        it('should return 403 for job creation w/o token (if no guests)', function (done) {
+            gmeConfig.executor.authentication.allowGuests = false;
+            server = testFixture.WebGME.standaloneServer(gmeConfig);
             server.start(function () {
                 var serverBaseUrl = server.getUrl();
-                agent.get(serverBaseUrl + '/rest/executor/worker/').end(function (err, res) {
-                    assert.equal(res.status, 200, err);
-                    done();
-                });
+                agent.get(serverBaseUrl + '/rest/executor/create/').end(assertCode(done, 403));
             });
         });
+
 
         it('should return 404 at rest/executor/worker/ with enableExecutor=false', function (done) {
             gmeConfig.executor.enable = false;
             server = testFixture.WebGME.standaloneServer(gmeConfig);
             server.start(function () {
                 var serverBaseUrl = server.getUrl();
-                agent.get(serverBaseUrl + '/rest/executor/worker/').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-        it('should return 200 GET rest/executor?status=SUCCESS', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.get(serverBaseUrl + '/rest/executor?status=SUCCESS').end(function (err, res) {
-                    assert.equal(res.status, 200, err);
-                    expect(res.body).to.deep.equal({});
-                    done();
-                });
-            });
-        });
-
-        it('should return 404 POST rest/executor/info', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/info').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-        it('should return 404 GET rest/executor/info/', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.get(serverBaseUrl + '/rest/executor/info/').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-        it('should return 404 GET rest/executor/info/does_not_exist', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.get(serverBaseUrl + '/rest/executor/info/does_not_exist').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-
-        it('should return 404 GET rest/executor/unknown_command', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.get(serverBaseUrl + '/rest/executor/unknown_command').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-
-        it('should return 404 PUT rest/executor/worker', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.put(serverBaseUrl + '/rest/executor/worker').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-        it('should return 404 PUT rest/executor/update', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.put(serverBaseUrl + '/rest/executor/update').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-        it('should return 404 POST rest/executor/update/does_not_exist', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/update/does_not_exist').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-        it('should return 404 PUT rest/executor/create', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.put(serverBaseUrl + '/rest/executor/create').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-        it('should return 404 POST rest/executor/create', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/create').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-        it('should return 200 POST rest/executor/create/some_hash', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/create/some_hash').end(function (err, res) {
-                    assert.equal(res.status, 200, err);
-                    assert.equal(typeof res.body.secret, 'string', res.body);
-                    done();
-                });
-            });
-        });
-
-        it('should set userId in created job rest/executor/create/some_hash', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/create/some_hash').end(function (err, res) {
-                    assert.equal(res.body.userId.length, 1);
-                    done();
-                });
-            });
-        });
-
-        it('should return 200 POST rest/executor/create/some_hash but no secret on second create', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/create/some_hash').end(function (err, res) {
-                    assert.equal(res.status, 200, err);
-                    assert.equal(typeof res.body.secret, 'string', res.body);
-                    agent.post(serverBaseUrl + '/rest/executor/create/some_hash').end(function (err, res) {
-                        try {
-                            assert.equal(res.status, 200, err);
-                            assert.equal(
-                                typeof res.body.secret,
-                                'undefined',
-                                `Expected no secret. Found "${res.body.secret}"`
-                            );
-                            done();
-                        } catch (err) {
-                            done(err);
-                        }
-                    });
-                });
-            });
-        });
-
-        it('should return 404 POST rest/executor/cancel/hashDoesNotExist', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/cancel/hashDoesNotExist').end(function (err, res) {
-                    assert.equal(res.status, 404, err);
-                    done();
-                });
-            });
-        });
-
-        it('should return 403 POST rest/executor/cancel/existingHash with no body', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/create/existingHash').end(function (err, res) {
-                    assert.equal(res.status, 200, err);
-                    agent.post(serverBaseUrl + '/rest/executor/cancel/existingHash').end(function (err, res) {
-                        assert.equal(res.status, 403, err);
-                        done();
-                    });
-                });
-            });
-        });
-
-        it('should return 403 POST rest/executor/cancel/existingHash with wrong secret', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/create/existingHash').end(function (err, res) {
-                    assert.equal(res.status, 200, err);
-                    agent.post(serverBaseUrl + '/rest/executor/cancel/existingHash')
-                        .send({secret: 'bla_bla'})
-                        .end(function (err, res) {
-                            assert.equal(res.status, 403, err);
-                            done();
-                        });
-                });
-            });
-        });
-
-        it('should return 200 POST rest/executor/cancel/existingHash with correct secret', function (done) {
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.post(serverBaseUrl + '/rest/executor/create/existingHash').end(function (err, res) {
-                    assert.equal(err, null);
-                    assert.equal(res.status, 200, err);
-                    agent.post(serverBaseUrl + '/rest/executor/cancel/existingHash')
-                        .send({secret: res.body.secret})
-                        .end(function (err, res) {
-                            assert.equal(err, null, err);
-                            assert.equal(res.status, 200, err);
-                            agent.get(serverBaseUrl + '/rest/executor/info/existingHash')
-                                .end(function (err, res) {
-                                    assert.equal(res.status, 200, err);
-                                    done();
-                                });
-                        });
-                });
-            });
-        });
-
-        it('should return 403 for job creation w/o token (if no guests)', function (done) {
-            gmeConfig.executor.authentication.allowGuests = false;
-            server = testFixture.WebGME.standaloneServer(gmeConfig);
-            server.start(function () {
-                var serverBaseUrl = server.getUrl();
-                agent.get(serverBaseUrl + '/rest/executor/create/').end(function (err, res) {
-                    assert.equal(res.status, 403, err);
-                    done();
-                });
+                agent.get(serverBaseUrl + '/rest/executor/worker/').end(assert404(done));
             });
         });
     });
@@ -280,7 +258,7 @@ describe('ExecutorServer', function () {
         const Logger = reqSrc('server/logger');
         let app;
 
-        beforeEach(async () => {
+        before(async () => {
             gmeConfig = testFixture.getGmeConfig();
             gmeConfig.executor.authentication.enable = true;
             gmeConfig.executor.authentication.allowGuests = true;
@@ -303,7 +281,7 @@ describe('ExecutorServer', function () {
             app = await app.listen(gmeConfig.server.port);
         });
 
-        afterEach(async () => {
+        after(async () => {
             if (server) {
                 await server.stop();
             }
@@ -313,21 +291,21 @@ describe('ExecutorServer', function () {
         });
 
         it('should get userId in job info', async function () {
-            const hash = 'some_hash';
+            const hash = 'some_hash1';
             await server.master.createJob('brian', {hash});
             const jobInfo = await server.master.getJobInfo('brian', hash);
             assert(jobInfo.userId.includes('brian'));
         });
 
         it('should list jobs for the given user', async function () {
-            const hash = 'some_hash';
+            const hash = 'some_hash2';
             await server.master.createJob('brian', {hash});
             const jobs = await server.master.getJobList('brian');
             assert.notEqual(jobs[hash], undefined);
         });
 
         it('should not list jobs for other users', async function () {
-            const hash = 'some_hash';
+            const hash = 'some_hash3';
             await server.master.createJob('brian', {hash});
             await server.master.createJob('bob', {hash: 'def'});
             const jobs = await server.master.getJobList('brian');
@@ -335,27 +313,27 @@ describe('ExecutorServer', function () {
         });
 
         it('should not allow user to access other jobs', async function () {
-            const hash = 'some_hash';
+            const hash = 'some_hash4';
             await server.master.createJob('brian', {hash});
             const canAccess = await server.master.canUserAccessJob('bob', hash);
             assert.equal(canAccess, false);
         });
 
         it('should allow user to access own jobs', async function () {
-            const hash = 'some_hash';
+            const hash = 'some_hash5';
             await server.master.createJob('brian', {hash});
             const canAccess = await server.master.canUserAccessJob('brian', hash);
             assert.equal(canAccess, true);
         });
 
         it('should require correct secret when canceling jobs', async function () {
-            const hash = 'some_hash';
+            const hash = 'some_hash6';
             const {secret} = (await server.master.createJob('brian', {hash}));
             await server.master.cancelJob('brian', hash, secret);
         });
 
         it('should not cancel job w/ invalid secret', async function () {
-            const hash = 'some_hash';
+            const hash = 'some_hash7';
             const secret = 'someSecret';
             await server.master.createJob('brian', {hash, secret});
             await assert.rejects(
@@ -379,7 +357,7 @@ describe('ExecutorServer', function () {
         });
 
         it('should get canceled jobs', async function () {
-            const hash = 'some_hash';
+            const hash = 'some_hash8';
             const {secret} = (await server.master.createJob('brian', {hash}));
             await server.master.cancelJob('brian', hash, secret);
             const jobs = await server.master.getCanceledJobs([hash]);
@@ -388,10 +366,10 @@ describe('ExecutorServer', function () {
         });
 
         describe('startQueuedJobs', function () {
-            const userId = 'some_user';
-            const otherUserId = 'other_user';
-            const hash = 'some_hash';
-            const clientId = 'some_client_id';
+            let userId = 'some_user__';
+            let otherUserId = 'other_user__';
+            let hash = 'some_hash__';
+            let clientId = 'some_client_id__';
             let jobs;
 
             beforeEach(async () => {
@@ -418,7 +396,7 @@ describe('ExecutorServer', function () {
 
         it('should update job output for user job', async function () {
             const userId = 'some_user';
-            const hash = 'some_hash';
+            const hash = 'some_hash9';
             const outputInfo = {
                 hash,
                 outputNumber: 10,
@@ -432,7 +410,7 @@ describe('ExecutorServer', function () {
         it('should not update job output for other user\'s job', async function () {
             const userId = 'some_user';
             const otherUserId = 'other_user';
-            const hash = 'some_hash';
+            const hash = 'some_hash10';
             const outputInfo = {
                 hash,
                 outputNumber: 10,
@@ -445,7 +423,7 @@ describe('ExecutorServer', function () {
 
         it('should get job output for user job', async function () {
             const userId = 'some_user';
-            const hash = 'some_hash';
+            const hash = 'some_hash11';
             const outputInfo = {
                 hash,
                 outputNumber: 10,

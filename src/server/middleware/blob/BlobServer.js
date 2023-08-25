@@ -64,7 +64,7 @@ function createExpressBlob(options) {
     }); */
 
     __app.get('/metadata', ensureAuthenticated, function (req, res) {
-        if (options.gmeConfig.debug) {
+        if (options.gmeConfig.debug || options.gmeConfig.blob.allowListAll) {
             blobBackend.listAllMetadata(req.query.all, function (err, metadata) {
                 if (err) {
                     logger.error(err);
@@ -135,7 +135,6 @@ function createExpressBlob(options) {
     });
 
     __app.post('/createMetadata', ensureAuthenticated, function (req, res) {
-
         var data = '';
 
         req.addListener('data', function (chunk) {
@@ -188,8 +187,8 @@ function createExpressBlob(options) {
                 if (subpartPath) {
                     filename = subpartPath.substring(subpartPath.lastIndexOf('/') + 1);
                 }
-
-                var mimeType = mime.lookup(filename);
+                // https://github.com/broofa/mime/issues/195
+                var mimeType = mime.getType(filename) || 'application/octet-stream';
 
                 if (download || mimeType === 'application/octet-stream' || mimeType === 'application/zip') {
                     res.setHeader('Content-Disposition', contentDisposition(filename, {type: 'attachment'}));

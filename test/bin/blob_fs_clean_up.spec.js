@@ -19,10 +19,7 @@ describe('BLOB cleanup script tests', function () {
         storage,
         gmeAuth,
         importResult,
-        projectName = 'cleanupTestProject',
-        oldLogFunction = console.log,
-        oldWarnFunction = console.warn,
-        oldStdOutFunction = process.stdout.write;
+        projectName = 'cleanupTestProject';
 
     before(function (done) {
 
@@ -46,22 +43,6 @@ describe('BLOB cleanup script tests', function () {
                 importResult = importResult_;
             })
             .nodeify(done);
-    });
-
-    beforeEach(function () {
-        console.log = function () {
-        };
-        process.stdout.write = function () {
-        };
-        console.warn = function () {
-
-        };
-    });
-
-    afterEach(function () {
-        console.log = oldLogFunction;
-        console.warn = oldWarnFunction;
-        process.stdout.write = oldStdOutFunction;
     });
 
     it('should log if wrong input are given', function (done) {

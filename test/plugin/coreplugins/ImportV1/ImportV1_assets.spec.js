@@ -39,7 +39,7 @@ describe('Plugin ImportV1 - assets', function () {
         testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
             .then(function (gmeAuth_) {
                 gmeAuth = gmeAuth_;
-                return Q.ninvoke(testFixture, 'rimraf', gmeConfig.blob.fsDir);
+                return testFixture.rimraf(gmeConfig.blob.fsDir);
             })
             .then(function () {
                 storage = testFixture.getMemoryStorage(logger, gmeConfig, gmeAuth);
@@ -110,7 +110,7 @@ describe('Plugin ImportV1 - assets', function () {
 
         files = testFixture.fs.readdirSync(dir);
         // Clear the blob
-        Q.ninvoke(testFixture, 'rimraf', gmeConfig.blob.fsDir)
+        Q.allDone([testFixture.rimraf(gmeConfig.blob.fsDir)])
             .then(function () {
                 // Add the exported assets
                 return Q.allDone(files.map(function (fName) {

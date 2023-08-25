@@ -35,17 +35,12 @@ describe('Executor Plugin', function () {
     // COPY PASTED CODE STARTS FROM test/server/middleware/executor/worker/node_worker.spec.js
 
     function startServer(gmeConfig, workerNonce, callback) {
-        Q.nfcall(rimraf, './test-tmp/blob-local-storage')
-            .then(function () {
-                return Q.nfcall(rimraf, './test-tmp/executor');
-            })
-            .then(function () {
-                return Q.nfcall(rimraf, './test-tmp/executor-tmp');
-            })
-            .then(function () {
-                return Q.nfcall(rimraf, './test-tmp/worker_config.json');
-            })
-            // creating a project
+        Q.allDone([
+            rimraf('./test-tmp/blob-local-storage'),
+            rimraf('./test-tmp/executor'),
+            rimraf('./test-tmp/executor-tmp'),
+            rimraf('./test-tmp/worker_config.json'),
+        ])
             .then(function () {
                 return testFixture.clearDBAndGetGMEAuth(gmeConfig, projects);
             })
@@ -87,7 +82,7 @@ describe('Executor Plugin', function () {
                 clientsParam.executorNonce = gmeConfig.executor.nonce;
                 clientsParam.logger = logger.fork('blobOrExecutor');
 
-                workerConfig[server.getUrl()] = workerNonce ? {executorNonce: workerNonce} : {};
+                workerConfig[server.getUrl()] = workerNonce ? { executorNonce: workerNonce } : {};
                 return Q.nfcall(fs.writeFile, 'test-tmp/worker_config.json', JSON.stringify(workerConfig));
             })
             .then(function () {
@@ -102,7 +97,7 @@ describe('Executor Plugin', function () {
                     }, 5000);
 
                 nodeWorkerProcess = childProcess.spawn('node', args,
-                    {cwd: 'node_modules/webgme-executor-worker'});
+                    { cwd: 'node_modules/webgme-executor-worker' });
                 nodeWorkerProcess.stderr.on('data', function (data) {
                     stderr += data.toString();
                 });
@@ -111,13 +106,13 @@ describe('Executor Plugin', function () {
                     stdout += str;
                     if (str.indexOf('Connected to') > -1) {
                         clearTimeout(timeoutId);
-                        deferred.resolve({connected: true, stdout: stdout, stderr: stderr});
+                        deferred.resolve({ connected: true, stdout: stdout, stderr: stderr });
                     } else if (str.indexOf('Server returned 403') > -1) {
                         clearTimeout(timeoutId);
-                        deferred.resolve({connected: false, stdout: stdout, stderr: stderr});
+                        deferred.resolve({ connected: false, stdout: stdout, stderr: stderr });
                     } else if (str.indexOf('Error connecting to') > -1) {
                         clearTimeout(timeoutId);
-                        deferred.resolve({connected: false, stdout: stdout, stderr: stderr});
+                        deferred.resolve({ connected: false, stdout: stdout, stderr: stderr });
                     }
                 });
                 return deferred.promise;
@@ -145,7 +140,7 @@ describe('Executor Plugin', function () {
                     done();
                 } else {
                     done(new Error('Worker did not attach, stdout: ' + result.stdout + ', stderr: ' +
-                                   result.stderr));
+                        result.stderr));
                 }
             });
         });
