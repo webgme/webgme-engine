@@ -232,7 +232,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 ##### rest
 - `config.rest.components = {}`
  - Collection of external rest routes index by their (unique) ids. The value is an object with keys; `src` file-path (or name)
- to the module defining the router, `mount` where the router will be mounted relative the <host>, `options` an object with setting for the specific router.
+ to the module defining the router, `mount` where the router will be mounted relative to the root of the host, `options` an object with setting for the specific router.
  Use the `RestRouterGenerator` plugin to generate a template router (see the generated file for more info).
 
 ##### seedProjects
