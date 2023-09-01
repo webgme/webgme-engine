@@ -1,4 +1,20 @@
 # Changelog
+## [v2.26.0](https://github.com/webgme/webgme-engine/tree/v2.26.0) (2023-09-01)
+
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.25.3...v2.26.0)
+
+**Implemented enhancements:**
+
+- Bump minor and patch versions of node-modules [\#317](https://github.com/webgme/webgme-engine/pull/317) ([pmeijer](https://github.com/pmeijer))
+- Node-module major version bumps and test improvements [\#316](https://github.com/webgme/webgme-engine/pull/316) ([pmeijer](https://github.com/pmeijer))
+- Reuse server instance at executor tests [\#315](https://github.com/webgme/webgme-engine/pull/315) ([pmeijer](https://github.com/pmeijer))
+- Bump minor versions of dependencies [\#314](https://github.com/webgme/webgme-engine/pull/314) ([pmeijer](https://github.com/pmeijer))
+- Convert raml from v0.8 to v1.0 and update node-module [\#313](https://github.com/webgme/webgme-engine/pull/313) ([pmeijer](https://github.com/pmeijer))
+- First round of node-module updates [\#311](https://github.com/webgme/webgme-engine/pull/311) ([pmeijer](https://github.com/pmeijer))
+
+**Merged pull requests:**
+
+- Bump marked from 1.1.0 to 4.0.10 [\#266](https://github.com/webgme/webgme-engine/pull/266) ([dependabot[bot]](https://github.com/apps/dependabot))
 
 ## [v2.25.3](https://github.com/webgme/webgme-engine/tree/v2.25.3) (2023-04-07)
 
