@@ -26,6 +26,7 @@ function getClientConfig(gmeConfig) {
     delete clientConfig.authentication.allowedResetInterval;
     delete clientConfig.authentication.resetTimeout;
     delete clientConfig.authentication.resetUrl;
+    delete clientConfig.authentication.azureActiveDirectory;
 
     delete clientConfig.executor.nonce;
     delete clientConfig.mailer;
