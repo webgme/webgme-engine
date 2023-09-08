@@ -65,7 +65,10 @@ var path = require('path'),
                 discoveryEndpoint: 'Example_discovery_key_endpoint',
                 cookieId: 'webgme_aad',
                 cookieKey: 'Do_your_job_and_make_a_decent_key',
-                redirectUri: 'need to set this temp, would be nice to deduct it'
+                redirectUri: 'need to set this temp, would be nice to deduct it',
+                // optional, but if used an access token is will be fetched 
+                // after the authentication happens so router endpoints might use it
+                accessScope: null,
             },
         },
 

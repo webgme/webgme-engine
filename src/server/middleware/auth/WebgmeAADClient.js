@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const GUID = requireJS('common/util/guid');
 const Q = require('q');
 
-const DATALAKE_SCOPE = 'api://52094e65-d33d-4c6b-bd32-943bf4adec13/LeapDataLakeScope';
+// const DATALAKE_SCOPE = 'api://52094e65-d33d-4c6b-bd32-943bf4adec13/LeapDataLakeScope';
 
 
 class WebGMEAADClient {
@@ -14,6 +14,15 @@ class WebGMEAADClient {
         this.__logger = logger.fork('AADClient');
         this.__gmeConfig = gmeConfig;
         this.__gmeAuth = gmeAuth;
+        this.__authScopes = ['openid', 'email', 'profile'];
+        this.__acccessScope = [];
+        if (gmeConfig.azureActiveDirectory.accessScope) {
+            this.__authScopes.push(gmeConfig.azureActiveDirectory.accessScope);
+            this.__acccessScope = [gmeConfig.azureActiveDirectory.accessScope];
+        } else {
+            this.__acccessScope = ['openid'];
+        }
+
         this.__redirectUri = gmeConfig.authentication.azureActiveDirectory.redirectUri || 'http://localhost:8888/aad';
         this.__activeDirectoryConfig = {
             auth: {
@@ -42,7 +51,7 @@ class WebGMEAADClient {
 
     login(req, res) {
         const authCodeUrlParameters = {
-            scopes: ['user.read', 'offline_access', DATALAKE_SCOPE],
+            scopes: this.__authScopes,
             redirectUri: this.__redirectUri,
             responseMode: 'form_post'
         };
@@ -71,7 +80,7 @@ class WebGMEAADClient {
         let claims = null;
         const tokenRequest = {
             code: req.body.code,
-            scopes: ['user.read', 'openid', 'email', DATALAKE_SCOPE],
+            scopes: this.__authScopes,
             redirectUri: this.__redirectUri
         };
         this.__activeDirectoryClient.acquireTokenByCode(tokenRequest)
@@ -93,10 +102,16 @@ class WebGMEAADClient {
                     // console.log(userData);
                     if (userData.email === claims.email) {
                         userFound = true;
+                    } else if (claims.oid === userData.aadId) {
+                        // unfortunately the user email might change over time
+                        // and the only permanent identification is the oid
+                        // so let us hope we catch those here adn adjust our lookup
+                        userFound = true;
+                        uid = userData._id;
                     }
 
                     //bugfix as some user was initially created without email...
-                    if(userData._id === uid) {
+                    if (userData._id === uid) {
                         options.overwrite = true;
                     }
                 });
@@ -125,7 +140,7 @@ class WebGMEAADClient {
             })
             .then(account => {
                 const tokenRequest = {
-                    scopes: [DATALAKE_SCOPE],
+                    scopes: this.__acccessScope,
                     account: account,
                     forceRefresh: true
                 };
@@ -166,14 +181,14 @@ class WebGMEAADClient {
             .then(account => {
                 // console.log(account);
                 this.__logger.error('getting AAD token - 004 - ', account);
-                if(!account) {
+                if (!account) {
                     const err = new Error('Cannot retrive token silently without account being cached!');
                     err.name = 'MissingAADAccountForTokenError';
 
                     throw err;
                 }
                 const tokenRequest = {
-                    scopes: [DATALAKE_SCOPE],
+                    scopes: this.__acccessScope,
                     account: account,
                     forceRefresh: true
                 };

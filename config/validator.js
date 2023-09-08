@@ -164,6 +164,32 @@ function validateConfig(configOrFileName) {
         assertString('config.authentication.adminAccount', config.authentication.adminAccount);
     }
 
+    assertObject('config.authentication.azureActiveDirectory', 
+        config.authentication.azureActiveDirectory);
+    assertBoolean('config.authentication.azureActiveDirectory.enable', 
+        config.authentication.azureActiveDirectory.enable);
+    
+    if (config.authentication.azureActiveDirectory.enable) {
+        assertString('config.authentication.azureActiveDirectory.clientId', 
+            config.authentication.azureActiveDirectory.clientId);
+        assertString('config.authentication.azureActiveDirectory.authority', 
+            config.authentication.azureActiveDirectory.authority);
+        assertString('config.authentication.azureActiveDirectory.clientSecret', 
+            config.authentication.azureActiveDirectory.clientSecret);
+        assertString('config.authentication.azureActiveDirectory.discoveryEndpoint', 
+            config.authentication.azureActiveDirectory.discoveryEndpoint);
+        assertString('config.authentication.azureActiveDirectorycookieId',
+            config.authentication.azureActiveDirectory.cookieId);
+        assertString('config.authentication.azureActiveDirectory.cookieKey', 
+            config.authentication.azureActiveDirectory.cookieKey);
+        assertString('config.authentication.azureActiveDirectory.redirectUri', 
+            config.authentication.azureActiveDirectory.redirectUri);
+        if (config.authentication.azureActiveDirectory.accessScope) {
+            assertString('config.authentication.azureActiveDirectory.accessScope', 
+                config.authentication.azureActiveDirectory.accessScope);
+        }
+    }
+
     // api options
     expectedKeys.push('api');
     assertBoolean('config.api.useEnhancedStarterPage', config.api.useEnhancedStarterPage);
