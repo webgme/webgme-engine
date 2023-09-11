@@ -665,134 +665,149 @@ class StandAloneServer {
             });
 
             //AzureActiveDirectory direct login
-            __app.get('/aad', (req, res) => {
-                // when this endpoint is called we always go for regular login even if the user might have a valid token
-                // console.log('INITIAL_AAD_LOGIN:', req.url);
-                this.__aadClient.login(req, res);
-            });
+            if (this.__gmeConfig.authentication.enable &&
+                this.__gmeConfig.authentication.azureActiveDirectory.enable) {
+                    
+                __app.get('/aad', (req, res) => {
+                    // when this endpoint is called we always go for regular 
+                    // login even if the user might have a valid token
+                    // console.log('INITIAL_AAD_LOGIN:', req.url);
+                    this.__aadClient.login(req, res);
+                });
 
-            __app.get('/aad/authenticate', (req, res) => {
-                // console.log('check001');
-                const webgmeToken = req.cookies[__gmeConfig.authentication.jwt.cookieId];
-                // const aadToken = req.cookies[__gmeConfig.authentication.azureActiveDirectory.cookieId];
-                __gmeAuth.verifyJWToken(webgmeToken)
-                    .then(user => {
-                        // console.log('check002');
-                        // console.log('we got user', user);
-                        //TODO maybe refresh both tokens??
-                        return this.__aadClient.getAccessToken(user.content.userId);
-                        /*if (req.query.redirect) {
-                            res.redirect(req.query.redirect);
+                __app.get('/aad/authenticate', (req, res) => {
+                    // console.log('check001');
+                    const webgmeToken = req.cookies[__gmeConfig.authentication.jwt.cookieId];
+                    // const aadToken = req.cookies[__gmeConfig.authentication.azureActiveDirectory.cookieId];
+                    __gmeAuth.verifyJWToken(webgmeToken)
+                        .then(user => {
+                            // console.log('check002');
+                            // console.log('we got user', user);
+                            //TODO maybe refresh both tokens??
+                            return this.__aadClient.getAccessToken(user.content.userId);
+                            /*if (req.query.redirect) {
+                                res.redirect(req.query.redirect);
+                            } else {
+                                res.sendStatus(200);
+                            }*/
+                        })
+                        .then(token => {
+                            // console.log('check003');
+                            // console.log(token);
+                            res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
+                            if (req.query.redirect) {
+                                res.redirect(req.query.redirect);
+                            } else {
+                                res.sendStatus(200);
+                            }
+                        })
+                        .catch((err) => {
+                            // we assume no user, so redirect to aad login - but keep query string
+                            __logger.error('No AAD info found for user:', err);
+                            res.redirect(URL.format({
+                                pathname: '/aad',
+                                query: req.query,
+                            }));
+                        });
+        
+                });
+
+                //AAD login response
+                __app.post('/aad', (req, res) => {
+                    // console.log('REDIRECT:', req.cookies['webgme-redirect'] );
+                    const redirectUrl = req.cookies['webgme-redirect'] || '/';
+                    
+                    this.__aadClient.cacheUser(req, res, (err) => {
+                        // console.log('we should have a cookie here');
+                        res.clearCookie('webgme-redirect');
+                        if (err) {
+                            res.sendStatus(401);
                         } else {
-                            res.sendStatus(200);
-                        }*/
-                    })
-                    .then(token => {
-                        // console.log('check003');
-                        // console.log(token);
-                        res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
-                        if (req.query.redirect) {
-                            res.redirect(req.query.redirect);
-                        } else {
-                            res.sendStatus(200);
+                            res.redirect(redirectUrl);
                         }
-                    })
-                    .catch((err) => {
-                        // we assume no user, so redirect to aad login - but keep query string
-                        __logger.error('No AAD info found for user:', err);
-                        res.redirect(URL.format({
-                            pathname: '/aad',
-                            query: req.query,
-                        }));
                     });
-
-            });
-
-            //AAD login response
-            __app.post('/aad', (req, res) => {
-                // console.log('REDIRECT:', req.cookies['webgme-redirect'] );
-                const redirectUrl = req.cookies['webgme-redirect'] || '/';
-                
-                this.__aadClient.cacheUser(req, res, (err) => {
-                    // console.log('we should have a cookie here');
-                    res.clearCookie('webgme-redirect');
-                    if (err) {
-                        res.sendStatus(401);
-                    } else {
-                        res.redirect(redirectUrl);
-                    }
                 });
-            });
 
-            //get access token from aad system
-            __app.get('/aad/token', ensureAuthenticated, (req, res) => {
-                const uid = getUserId(req);
-                this.__aadClient.getAccessToken(uid, (err, token) => {
-                    if (err) {
-                        __logger.error(err);
-                        res.status(401);
-                        res.end();
-                    } else {
-                        res.status(200);
-                        res.setHeader('Content-type', 'application/json');
-                        res.end(JSON.stringify({accessToken: token}));
-                    }
-                });
-            });
-
-            //device access to use webgme related services
-            const aad_verify = require('azure-ad-verify-token-commonjs');
-            const verify = aad_verify.verify;
-            const voptions = {
-                jwksUri: 'https://login.microsoftonline.com/common/discovery/keys',
-                issuer: 'https://login.microsoftonline.com/ba5a7f39-e3be-4ab3-b450-67fa80faecad/v2.0',
-                audience: '52094e65-d33d-4c6b-bd32-943bf4adec13' // TODO the LeapDataLake should be the audience
-            };
-
-            __app.get('/aad/device', (req, res) => {
-                if(!this.__gmeConfig.authentication.enable || !this.__gmeConfig.authentication.azureActiveDirectory.enable) {
-                    res.cookie(this.__gmeConfig.authentication.jwt.cookieId || 'udcp_taxonomy_access', 'null-access-token');
-                    res.sendStatus(200);
-                } else if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-                    const token = req.headers.authorization.split(' ')[1];
-                    verify(token, voptions)
-                    .then(token => {
-                        console.log(token);
-                        if(token.preferred_username) {
-                            const uid = this.__aadClient.getUserIdFromEmail(token.preferred_username); //TODO not sure if this is appropriate
-                            return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
+                //get access token from aad system
+                __app.get('/aad/token', ensureAuthenticated, (req, res) => {
+                    const uid = getUserId(req);
+                    this.__aadClient.getAccessToken(uid, (err, token) => {
+                        if (err) {
+                            __logger.error(err);
+                            res.status(401);
+                            res.end();
                         } else {
-                            throw new Error('unknown user device trying to get access!!!', uid);
+                            res.status(200);
+                            res.setHeader('Content-type', 'application/json');
+                            res.end(JSON.stringify({accessToken: token}));
                         }
-                    })
-                    .then(webgmeToken => {
-                        res.cookie(this.__gmeConfig.authentication.jwt.cookieId, webgmeToken);
-                        res.sendStatus(200);
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        res.sendStatus(403);
-                    })
-                } else {
-                    res.sendStatus(403);
-                }
-            });
+                    });
+                });
 
-            //get access token from aad system
-            __app.get('/aad/token', ensureAuthenticated, (req, res) => {
-                const uid = getUserId(req);
-                this.__aadClient.getAccessToken(uid, (err, token) => {
-                    if(err) {
-                        __logger.error(err);
-                        res.status(401);
-                        res.end();
+                //device access to use webgme related services
+                const aadVerify = require('azure-ad-verify-token-commonjs');
+                const verify = aadVerify.verify;
+                const voptions = {
+                    //TODO is the first one really static??
+                    jwksUri: 'https://login.microsoftonline.com/common/discovery/keys', 
+                    issuer: this.__gmeConfig.authentication.azureActiveDirectory.authority,
+                    audience: this.__gmeConfig.authentication.azureActiveDirectory.accessScope || 
+                        this.__gmeConfig.authentication.azureActiveDirectory.clientId
+                };
+
+                __app.get('/aad/device', (req, res) => {
+                    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+                        const token = req.headers.authorization.split(' ')[1];
+                        verify(token, voptions)
+                            .then(token => {
+                                // console.log(token);
+                                /*if (token.preferred_username) {//TODO not sure if this is appropriate
+                                    const uid = this.__aadClient.getUserIdFromEmail(token.preferred_username);
+                                    return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
+                                } else {
+                                    throw new Error('unknown user device trying to get access!!!', uid);
+                                }*/
+                                if (token.oid) {
+                                    return this.__gmeAuth.getUser(
+                                        {$exist: true},
+                                        {aadId: {$eq: token.oid}}
+                                    );
+                                } else {
+                                    throw new Error('unknown user device trying to get access!!!', token);
+                                }
+                            })
+                            .then(webgmeUser => {
+                                return this.__gmeAuth.generateJWTokenForAuthenticatedUser(webgmeUser._id);
+                            })
+                            .then(webgmeToken => {
+                                res.cookie(this.__gmeConfig.authentication.jwt.cookieId, webgmeToken);
+                                res.sendStatus(200);
+                            })
+                            .catch(err => {
+                                console.log(err);
+                                res.sendStatus(403);
+                            });
                     } else {
-                        res.status(200);
-                        res.setHeader('Content-type', 'application/json');
-                        res.end(JSON.stringify({accessToken: token}));
+                        res.sendStatus(403);
                     }
                 });
-            });
+
+                //get access token from aad system
+                __app.get('/aad/token', ensureAuthenticated, (req, res) => {
+                    const uid = getUserId(req);
+                    this.__aadClient.getAccessToken(uid, (err, token) => {
+                        if (err) {
+                            __logger.error(err);
+                            res.status(401);
+                            res.end();
+                        } else {
+                            res.status(200);
+                            res.setHeader('Content-type', 'application/json');
+                            res.end(JSON.stringify({accessToken: token}));
+                        }
+                    });
+                });
+            }
 
             __app.get('/bin/getconfig.js', ensureAuthenticated, (req, res) => {
                 res.status(200);

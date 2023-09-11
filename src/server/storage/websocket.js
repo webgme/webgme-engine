@@ -889,7 +889,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .map(v => v.split('='))
                     .reduce((acc, v) => {
                         acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
-                        return acc;}, {});
+                        return acc;
+                    }, {});
                 const cookies = parseCookie(this.handshake.headers.cookie);
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
@@ -905,8 +906,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         //TODO this should probably come from authenticator and not the request!!!
                         if (gmeConfig.authentication.enable === true &&
                             gmeConfig.authentication.azureActiveDirectory.enable === true) {
-                                data.aadToken = cookies[gmeConfig.authentication.azureActiveDirectory.cookieId] || null;
-                            }
+                            data.aadToken = cookies[gmeConfig.authentication.azureActiveDirectory.cookieId] || null;
+                        }
                         workerManager.request(data, function (err, result) {
                             if (err) {
                                 callback(err.message, result);
