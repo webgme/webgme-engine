@@ -49,6 +49,7 @@
     "adm-zip": "0.5.10",
     "agentkeepalive": "3.4.1",
     "aws-sdk": "^2.1443.0",
+    "azure-ad-verify-token-commonjs": "^2.0.2",
     "bcryptjs": "2.4.3",
     "body-parser": "^1.20.2",
     "browserify": "17.0.0",
