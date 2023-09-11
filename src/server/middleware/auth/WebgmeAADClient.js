@@ -16,9 +16,9 @@ class WebGMEAADClient {
         this.__gmeAuth = gmeAuth;
         this.__authScopes = ['openid', 'email', 'profile'];
         this.__acccessScope = [];
-        if (gmeConfig.azureActiveDirectory.accessScope) {
-            this.__authScopes.push(gmeConfig.azureActiveDirectory.accessScope);
-            this.__acccessScope = [gmeConfig.azureActiveDirectory.accessScope];
+        if (gmeConfig.authentication.azureActiveDirectory.accessScope) {
+            this.__authScopes.push(gmeConfig.authentication.azureActiveDirectory.accessScope);
+            this.__acccessScope = [gmeConfig.authentication.azureActiveDirectory.accessScope];
         } else {
             this.__acccessScope = ['openid'];
         }
