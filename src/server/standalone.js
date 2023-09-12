@@ -744,54 +744,6 @@ class StandAloneServer {
                     });
                 });
 
-                //device access to use webgme related services
-                const aadVerify = require('azure-ad-verify-token-commonjs');
-                const verify = aadVerify.verify;
-                const voptions = {
-                    //TODO is the first one really static??
-                    jwksUri: 'https://login.microsoftonline.com/common/discovery/keys', 
-                    issuer: this.__gmeConfig.authentication.azureActiveDirectory.authority,
-                    audience: this.__gmeConfig.authentication.azureActiveDirectory.accessScope || 
-                        this.__gmeConfig.authentication.azureActiveDirectory.clientId
-                };
-
-                __app.get('/aad/device', (req, res) => {
-                    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-                        const token = req.headers.authorization.split(' ')[1];
-                        verify(token, voptions)
-                            .then(token => {
-                                // console.log(token);
-                                /*if (token.preferred_username) {//TODO not sure if this is appropriate
-                                    const uid = this.__aadClient.getUserIdFromEmail(token.preferred_username);
-                                    return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
-                                } else {
-                                    throw new Error('unknown user device trying to get access!!!', uid);
-                                }*/
-                                if (token.oid) {
-                                    return this.__gmeAuth.getUser(
-                                        {$exist: true},
-                                        {aadId: {$eq: token.oid}}
-                                    );
-                                } else {
-                                    throw new Error('unknown user device trying to get access!!!', token);
-                                }
-                            })
-                            .then(webgmeUser => {
-                                return this.__gmeAuth.generateJWTokenForAuthenticatedUser(webgmeUser._id);
-                            })
-                            .then(webgmeToken => {
-                                res.cookie(this.__gmeConfig.authentication.jwt.cookieId, webgmeToken);
-                                res.sendStatus(200);
-                            })
-                            .catch(err => {
-                                console.log(err);
-                                res.sendStatus(403);
-                            });
-                    } else {
-                        res.sendStatus(403);
-                    }
-                });
-
                 //get access token from aad system
                 __app.get('/aad/token', ensureAuthenticated, (req, res) => {
                     const uid = getUserId(req);
@@ -807,6 +759,57 @@ class StandAloneServer {
                         }
                     });
                 });
+                
+                //device access to use webgme related services
+                if (__gmeConfig.authentication.azureActiveDirectory.issuer && 
+                    __gmeConfig.authentication.azureActiveDirectory.audience) {
+
+                    const aadVerify = require('azure-ad-verify-token-commonjs');
+                    const verify = aadVerify.verify;
+                    const voptions = {
+                        //TODO is the first one really static??
+                        jwksUri: 'https://login.microsoftonline.com/common/discovery/keys', 
+                        issuer: __gmeConfig.authentication.azureActiveDirectory.issuer,
+                        audience: __gmeConfig.authentication.azureActiveDirectory.audience
+                    };
+
+                    __app.get('/aad/device', (req, res) => {
+                        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+                            const token = req.headers.authorization.split(' ')[1];
+                            verify(token, voptions)
+                                .then(token => {
+                                    // console.log(token);
+                                    /*if (token.preferred_username) {//TODO not sure if this is appropriate
+                                        const uid = this.__aadClient.getUserIdFromEmail(token.preferred_username);
+                                        return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
+                                    } else {
+                                        throw new Error('unknown user device trying to get access!!!', uid);
+                                    }*/
+                                    if (token.oid) {
+                                        return this.__gmeAuth.getUser(
+                                            {$exist: true},
+                                            {aadId: {$eq: token.oid}}
+                                        );
+                                    } else {
+                                        throw new Error('unknown user device trying to get access!!!', token);
+                                    }
+                                })
+                                .then(webgmeUser => {
+                                    return this.__gmeAuth.generateJWTokenForAuthenticatedUser(webgmeUser._id);
+                                })
+                                .then(webgmeToken => {
+                                    res.cookie(this.__gmeConfig.authentication.jwt.cookieId, webgmeToken);
+                                    res.sendStatus(200);
+                                })
+                                .catch(err => {
+                                    console.log(err);
+                                    res.sendStatus(403);
+                                });
+                        } else {
+                            res.sendStatus(403);
+                        }
+                    });
+                }
             }
 
             __app.get('/bin/getconfig.js', ensureAuthenticated, (req, res) => {

@@ -188,6 +188,14 @@ function validateConfig(configOrFileName) {
             assertString('config.authentication.azureActiveDirectory.accessScope', 
                 config.authentication.azureActiveDirectory.accessScope);
         }
+        if (config.authentication.azureActiveDirectory.issuer) {
+            assertString('config.authentication.azureActiveDirectory.issuer', 
+                config.authentication.azureActiveDirectory.issuer);
+        }
+        if (config.authentication.azureActiveDirectory.audience) {
+            assertString('config.authentication.azureActiveDirectory.audience', 
+                config.authentication.azureActiveDirectory.audience);
+        }
     }
 
     // api options

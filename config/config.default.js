@@ -61,6 +61,10 @@ var path = require('path'),
                 enable: false,
                 clientId: 'Example_Client_Id',
                 authority: 'Example_authority_URI',
+                // the following two are optionals, but if not 
+                // given, the device authentication will not work
+                issuer:'Example_token_issuer_for_verification',
+                audience: 'Example_audoence_for_token_validation',
                 clientSecret: 'Example_client_Secret',
                 discoveryEndpoint: 'Example_discovery_key_endpoint',
                 cookieId: 'webgme_aad',
