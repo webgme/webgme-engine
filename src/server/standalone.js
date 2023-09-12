@@ -759,7 +759,7 @@ class StandAloneServer {
                         }
                     });
                 });
-                
+
                 //device access to use webgme related services
                 if (__gmeConfig.authentication.azureActiveDirectory.issuer && 
                     __gmeConfig.authentication.azureActiveDirectory.audience) {
@@ -787,7 +787,7 @@ class StandAloneServer {
                                     }*/
                                     if (token.oid) {
                                         return this.__gmeAuth.getUser(
-                                            {$exist: true},
+                                            {$exists: true},
                                             {aadId: {$eq: token.oid}}
                                         );
                                     } else {
