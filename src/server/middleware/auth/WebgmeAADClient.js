@@ -102,6 +102,8 @@ class WebGMEAADClient {
                     // console.log(userData);
                     if (userData.email === claims.email) {
                         userFound = true;
+                        //making sure no weird discrepancy with capital letters
+                        uid = userData._id; 
                     } else if (claims.oid === userData.aadId) {
                         // unfortunately the user email might change over time
                         // and the only permanent identification is the oid
