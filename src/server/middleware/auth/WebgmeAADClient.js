@@ -5,9 +5,7 @@ const msal = require('@azure/msal-node');
 const jwt = require('jsonwebtoken');
 const GUID = requireJS('common/util/guid');
 const Q = require('q');
-
-// const DATALAKE_SCOPE = 'api://52094e65-d33d-4c6b-bd32-943bf4adec13/LeapDataLakeScope';
-
+const aadVerify = require('azure-ad-verify-token-commonjs').verify;
 
 class WebGMEAADClient {
     constructor(gmeConfig, gmeAuth, logger) {
@@ -162,31 +160,27 @@ class WebGMEAADClient {
             });
     }
 
-    getAccessToken(uid, callback) {
-        // console.log('chk001');
+    getAccessToken(uid, currentToken, callback) {
         const deferred = Q.defer();
-        this.__gmeAuth.getUser(uid)
+        const genNewToken = () => {
+            const newDef = Q.defer();
+            
+            this.__gmeAuth.getUser(uid)
             .then(userData => {
-                // console.log('chk002');
-                // console.log(userData);
-                this.__logger.error('getting AAD token - 001 - ', userData);
+                this.__logger.info('getting AAD token - 001 - ', userData);
                 if (userData.hasOwnProperty('aadId')) {
-                    this.__logger.error('getting AAD token - 002 - ');
-                    // console.log('chk003');
+                    this.__logger.info('getting AAD token - 002 - ');
                     return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
                 } else {
-                    // console.log('chk004');
-                    this.__logger.error('getting AAD token - 003 - ');
+                    this.__logger.info('getting AAD token - 003 - ');
                     throw new Error('Not AAD user, cannot retrieve accessToken');
                 }
             })
             .then(account => {
-                // console.log(account);
-                this.__logger.error('getting AAD token - 004 - ', account);
+                this.__logger.info('getting AAD token - 004 - ', account);
                 if (!account) {
                     const err = new Error('Cannot retrive token silently without account being cached!');
                     err.name = 'MissingAADAccountForTokenError';
-
                     throw err;
                 }
                 const tokenRequest = {
@@ -202,6 +196,31 @@ class WebGMEAADClient {
                 deferred.reject(error);
             });
 
+            return newDef.promise;
+        };
+        const vOptions = {
+            jwksUri: 'https://login.microsoftonline.com/common/discovery/keys'
+        };
+
+        if (currentToken) {
+            aadVerify(currentToken, vOptions)
+            .then(token => {
+               if(token.iss === this.__gmeConfig.authentication.azureActiveDirectory.issuer && 
+                    token.aud === this.__gmeConfig.authentication.azureActiveDirectory.audience &&
+                    token.exp - (Date.now()/1000) > 0) {
+                    return Q({accessToken:currentToken});
+                } else {
+                    //the token cannot be used anymore
+                    return genNewToken();
+                }
+            })
+            .then(deferred.resolve)
+            .catch(deferred.reject);
+        } else {
+            genNewToken()
+            .then(deferred.resolve)
+            .catch(deferred.reject);
+        }
         return deferred.promise.nodeify(callback);
     }
 }

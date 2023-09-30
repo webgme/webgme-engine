@@ -412,17 +412,17 @@ class StandAloneServer {
                 let webgmeTokenResult = null;
                 __logger.debug('jwtoken provided in cookie');
                 token = req.cookies[__gmeConfig.authentication.jwt.cookieId];
+                const aToken = req.cookies[__gmeConfig.authentication.azureActiveDirectory.cookieId];
                 __gmeAuth.verifyJWToken(token)
                     .then(result => {
                         webgmeTokenResult = result;
                         if (__gmeConfig.authentication.azureActiveDirectory.enable) {
-                            return this.__aadClient.getAccessToken(result.content.userId);   
+                            return this.__aadClient.getAccessToken(result.content.userId, aToken);   
                         } else {
                             return Q(null);
                         }
                     })
                     .then(token => {
-                        // console.log(aToken, token.accessToken);
                         if (token) {
                             res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
                         }
@@ -669,93 +669,19 @@ class StandAloneServer {
                 this.__gmeConfig.authentication.azureActiveDirectory.enable) {
                     
                 __app.get('/aad', (req, res) => {
-                    // when this endpoint is called we always go for regular 
-                    // login even if the user might have a valid token
-                    // console.log('INITIAL_AAD_LOGIN:', req.url);
                     this.__aadClient.login(req, res);
-                });
-
-                __app.get('/aad/authenticate', (req, res) => {
-                    // console.log('check001');
-                    const webgmeToken = req.cookies[__gmeConfig.authentication.jwt.cookieId];
-                    // const aadToken = req.cookies[__gmeConfig.authentication.azureActiveDirectory.cookieId];
-                    __gmeAuth.verifyJWToken(webgmeToken)
-                        .then(user => {
-                            // console.log('check002');
-                            // console.log('we got user', user);
-                            //TODO maybe refresh both tokens??
-                            return this.__aadClient.getAccessToken(user.content.userId);
-                            /*if (req.query.redirect) {
-                                res.redirect(req.query.redirect);
-                            } else {
-                                res.sendStatus(200);
-                            }*/
-                        })
-                        .then(token => {
-                            // console.log('check003');
-                            // console.log(token);
-                            res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
-                            if (req.query.redirect) {
-                                res.redirect(req.query.redirect);
-                            } else {
-                                res.sendStatus(200);
-                            }
-                        })
-                        .catch((err) => {
-                            // we assume no user, so redirect to aad login - but keep query string
-                            __logger.error('No AAD info found for user:', err);
-                            res.redirect(URL.format({
-                                pathname: '/aad',
-                                query: req.query,
-                            }));
-                        });
-        
                 });
 
                 //AAD login response
                 __app.post('/aad', (req, res) => {
-                    // console.log('REDIRECT:', req.cookies['webgme-redirect'] );
                     const redirectUrl = req.cookies['webgme-redirect'] || '/';
                     
                     this.__aadClient.cacheUser(req, res, (err) => {
-                        // console.log('we should have a cookie here');
                         res.clearCookie('webgme-redirect');
                         if (err) {
                             res.sendStatus(401);
                         } else {
                             res.redirect(redirectUrl);
-                        }
-                    });
-                });
-
-                //get access token from aad system
-                __app.get('/aad/token', ensureAuthenticated, (req, res) => {
-                    const uid = getUserId(req);
-                    this.__aadClient.getAccessToken(uid, (err, token) => {
-                        if (err) {
-                            __logger.error(err);
-                            res.status(401);
-                            res.end();
-                        } else {
-                            res.status(200);
-                            res.setHeader('Content-type', 'application/json');
-                            res.end(JSON.stringify({accessToken: token}));
-                        }
-                    });
-                });
-
-                //get access token from aad system
-                __app.get('/aad/token', ensureAuthenticated, (req, res) => {
-                    const uid = getUserId(req);
-                    this.__aadClient.getAccessToken(uid, (err, token) => {
-                        if (err) {
-                            __logger.error(err);
-                            res.status(401);
-                            res.end();
-                        } else {
-                            res.status(200);
-                            res.setHeader('Content-type', 'application/json');
-                            res.end(JSON.stringify({accessToken: token}));
                         }
                     });
                 });
@@ -778,13 +704,6 @@ class StandAloneServer {
                             const token = req.headers.authorization.split(' ')[1];
                             verify(token, voptions)
                                 .then(token => {
-                                    // console.log(token);
-                                    /*if (token.preferred_username) {//TODO not sure if this is appropriate
-                                        const uid = this.__aadClient.getUserIdFromEmail(token.preferred_username);
-                                        return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
-                                    } else {
-                                        throw new Error('unknown user device trying to get access!!!', uid);
-                                    }*/
                                     if (token.oid) {
                                         return this.__gmeAuth.getUser(
                                             {$exists: true},
@@ -802,7 +721,7 @@ class StandAloneServer {
                                     res.sendStatus(200);
                                 })
                                 .catch(err => {
-                                    console.log(err);
+                                    __logger.error(err);
                                     res.sendStatus(403);
                                 });
                         } else {
