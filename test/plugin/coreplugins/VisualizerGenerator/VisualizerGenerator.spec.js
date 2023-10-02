@@ -131,7 +131,7 @@ describe('VisualizerGenerator', function () {
         expect(Object.keys(pluginConfig).length).to.equal(pluginStructure.length);
 
         for (var i = pluginStructure.length; i--;) {
-            expect(pluginConfig.hasOwnProperty(pluginStructure[i].name)).to.equal(true);
+            expect(Object.hasOwn(pluginConfig, pluginStructure[i].name)).to.equal(true);
             expect(pluginConfig[pluginStructure[i].name]).to.equal(pluginStructure[i].value);
         }
     });

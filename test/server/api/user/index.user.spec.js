@@ -227,8 +227,8 @@ describe('USER REST API', function () {
             it('should get api links /api', function (done) {
                 agent.get(server.getUrl() + '/api').end(function (err, res) {
                     expect(res.status).equal(200, err);
-                    expect(res.body.hasOwnProperty('api_documentation_url')).true;
-                    expect(res.body.hasOwnProperty('source_code_documentation_url')).true;
+                    expect(Object.hasOwn(res.body, 'api_documentation_url')).true;
+                    expect(Object.hasOwn(res.body, 'source_code_documentation_url')).true;
                     done();
                 });
             });
@@ -236,7 +236,7 @@ describe('USER REST API', function () {
             it('should get api documentation link', function (done) {
                 agent.get(server.getUrl() + '/api').end(function (err, res) {
                     expect(res.status).equal(200, err);
-                    expect(res.body.hasOwnProperty('api_documentation_url')).true;
+                    expect(Object.hasOwn(res.body, 'api_documentation_url')).true;
                     agent.get(res.body.api_documentation_url).end(function (err, res) {
                         expect(res.status).equal(200, err);
                         done();
@@ -603,7 +603,7 @@ describe('USER REST API', function () {
             it('should get api documentation link', function (done) {
                 agent.get(server.getUrl() + '/api').end(function (err, res) {
                     expect(res.status).equal(200, err);
-                    expect(res.body.hasOwnProperty('api_documentation_url')).true;
+                    expect(Object.hasOwn(res.body, 'api_documentation_url')).true;
                     agent.get(res.body.api_documentation_url).end(function (err, res) {
                         expect(res.status).equal(200, err);
                         done();
@@ -2543,7 +2543,7 @@ describe('USER REST API', function () {
             it('should get api documentation link', function (done) {
                 agent.get(server.getUrl() + '/api').end(function (err, res) {
                     expect(res.status).equal(200, err);
-                    expect(res.body.hasOwnProperty('api_documentation_url')).true;
+                    expect(Object.hasOwn(res.body, 'api_documentation_url')).true;
                     agent.get(res.body.api_documentation_url).end(function (err, res) {
                         expect(res.status).equal(200, err);
                         done();

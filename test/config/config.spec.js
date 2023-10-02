@@ -192,7 +192,7 @@ describe('configuration and components', function () {
         config = require('../../config');
         clientConfig = getClientConfig(config);
 
-        should.equal(clientConfig.hasOwnProperty('mongo'), false);
+        should.equal(Object.hasOwn(clientConfig, 'mongo'), false);
     });
 
     it('clientconfig should not expose executor.nonce', function () {
@@ -202,7 +202,7 @@ describe('configuration and components', function () {
         config = require('../../config');
         clientConfig = getClientConfig(config);
 
-        should.equal(clientConfig.executor.hasOwnProperty('nonce'), false);
+        should.equal(Object.hasOwn(clientConfig.executor, 'nonce'), false);
     });
 
     it('clientconfig should only expose the port of the server', function () {
@@ -222,8 +222,8 @@ describe('configuration and components', function () {
         config = require('../../config');
         clientConfig = getClientConfig(config);
 
-        should.equal(clientConfig.authentication.jwt.hasOwnProperty('privateKey'), false);
-        should.equal(clientConfig.authentication.jwt.hasOwnProperty('publicKey'), false);
+        should.equal(Object.hasOwn(clientConfig.authentication.jwt, 'privateKey'), false);
+        should.equal(Object.hasOwn(clientConfig.authentication.jwt, 'publicKey'), false);
     });
 
     it('clientconfig should not expose storage.database', function () {
@@ -233,7 +233,7 @@ describe('configuration and components', function () {
         config = require('../../config');
         clientConfig = getClientConfig(config);
 
-        should.equal(clientConfig.storage.hasOwnProperty('database'), false);
+        should.equal(Object.hasOwn(clientConfig.storage, 'database'), false);
     });
 
     it('clientconfig should not expose socketIO.serverOptions nor socketIO.adapter', function () {
@@ -243,8 +243,8 @@ describe('configuration and components', function () {
         config = require('../../config');
         clientConfig = getClientConfig(config);
 
-        should.equal(clientConfig.socketIO.hasOwnProperty('serverOptions'), false);
-        should.equal(clientConfig.socketIO.hasOwnProperty('adapter'), false);
+        should.equal(Object.hasOwn(clientConfig.socketIO, 'serverOptions'), false);
+        should.equal(Object.hasOwn(clientConfig.socketIO, 'adapter'), false);
     });
 
     // These really only show up in the coverage..

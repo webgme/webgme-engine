@@ -393,7 +393,7 @@ describe('User manager command line interface (CLI)', function () {
                     return auth.getUser('passwd_user');
                 })
                 .then(function (data) {
-                    expect(data.projects.hasOwnProperty('dummyProject')).to.equal(true);
+                    expect(data.projects.hasOwn('dummyProject')).to.equal(true);
                     initUserData = data;
                     return userManager.main(['node', filename, '--db', mongoUri, 'passwd', 'passwd_user', 'wordpass2']);
                 })

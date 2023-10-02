@@ -887,15 +887,15 @@ define([
         this.createNode = function (parameters) {
             if (parameters) {
                 ensureType(parameters, 'parameters', 'object');
-                if (parameters.hasOwnProperty('parent') &&
+                if (Object.hasOwn(parameters, 'parent') &&
                     parameters.parent !== null && parameters.parent !== undefined) {
                     ensureNode(parameters.parent, 'parameters.parent');
                 }
-                if (parameters.hasOwnProperty('base') &&
+                if (Object.hasOwn(parameters, 'base') &&
                     parameters.base !== null && parameters.base !== undefined) {
                     ensureNode(parameters.base, 'parameters.base');
                 }
-                if (parameters.hasOwnProperty('guid') && parameters.guid !== undefined) {
+                if (Object.hasOwn(parameters, 'guid') && parameters.guid !== undefined) {
                     ensureGuid(parameters.guid, 'parameters.guid');
                 }
             }
@@ -3397,19 +3397,19 @@ define([
         this.getValidChildrenMetaNodes = function (parameters) {
             ensureType(parameters, 'parameters', 'object');
             ensureNode(parameters.node, 'parameters.node');
-            if (parameters.hasOwnProperty('children') && parameters.children !== undefined) {
+            if (Object.hasOwn(parameters, 'children') && parameters.children !== undefined) {
                 ensureInstanceOf(parameters.children, 'parameters.children', Array);
                 for (var i = 0; i < parameters.children.length; i += 1) {
                     ensureNode(parameters.children[i], 'parameters.children[i]');
                 }
             }
-            if (parameters.hasOwnProperty('sensitive') && parameters.sensitive !== undefined) {
+            if (Object.hasOwn(parameters, 'sensitive') && parameters.sensitive !== undefined) {
                 ensureType(parameters.sensitive, 'parameters.sensitive', 'boolean');
             }
-            if (parameters.hasOwnProperty('multiplicity')) {
+            if (Object.hasOwn(parameters, 'multiplicity')) {
                 ensureType(parameters.multiplicity, 'parameters.multiplicity', 'boolean');
             }
-            if (parameters.hasOwnProperty('aspect') && parameters.aspect !== undefined && parameters.aspect !== null) {
+            if (Object.hasOwn(parameters, 'aspect') && parameters.aspect !== undefined && parameters.aspect !== null) {
                 ensureType(parameters.aspect, 'parameters.aspect', 'string');
             }
 
@@ -3437,16 +3437,16 @@ define([
             ensureType(parameters, 'parameters', 'object');
             ensureNode(parameters.node, 'parameters.node');
             ensureType(parameters.name, 'parameters.name', 'string');
-            if (parameters.hasOwnProperty('members')) {
+            if (Object.hasOwn(parameters, 'members')) {
                 ensureInstanceOf(parameters.members, 'parameters.members', Array);
                 for (var i = 0; i < parameters.members.length; i += 1) {
                     ensureNode(parameters.members[i], 'parameters.members[i]');
                 }
             }
-            if (parameters.hasOwnProperty('sensitive')) {
+            if (Object.hasOwn(parameters, 'sensitive')) {
                 ensureType(parameters.sensitive, 'parameters.sensitive', 'boolean');
             }
-            if (parameters.hasOwnProperty('multiplicity')) {
+            if (Object.hasOwn(parameters, 'multiplicity')) {
                 ensureType(parameters.multiplicity, 'parameters.multiplicity', 'boolean');
             }
 
@@ -3688,13 +3688,13 @@ define([
             error = error || ensureHash(libraryRootHash, 'libraryRootHash', true);
             if (libraryInfo) {
                 error = error || ensureType(libraryInfo, 'libraryInfo', 'object', true);
-                if (libraryInfo.hasOwnProperty('projectId') && libraryInfo.projectId !== undefined) {
+                if (Object.hasOwn(libraryInfo, 'projectId') && libraryInfo.projectId !== undefined) {
                     error = error || ensureType(libraryInfo.projectId, 'libraryInfo.projectId', 'string', true);
                 }
-                if (libraryInfo.hasOwnProperty('branchName') && libraryInfo.branchName !== undefined) {
+                if (Object.hasOwn(libraryInfo, 'branchName') && libraryInfo.branchName !== undefined) {
                     error = error || ensureType(libraryInfo.branchName, 'libraryInfo.branchName', 'string', true);
                 }
-                if (libraryInfo.hasOwnProperty('commitHash') && libraryInfo.commitHash !== undefined) {
+                if (Object.hasOwn(libraryInfo, 'commitHash') && libraryInfo.commitHash !== undefined) {
                     error = error || ensureHash(libraryInfo.commitHash, 'libraryInfo.commitHash', true);
                 }
             }
@@ -3732,13 +3732,13 @@ define([
             error = error || ensureHash(libraryRootHash, 'libraryRootHash', true);
             if (libraryInfo) {
                 error = error || ensureType(libraryInfo, 'libraryInfo', 'object', true);
-                if (libraryInfo.hasOwnProperty('projectId') && libraryInfo.projectId !== undefined) {
+                if (Object.hasOwn(libraryInfo, 'projectId') && libraryInfo.projectId !== undefined) {
                     error = error || ensureType(libraryInfo.projectId, 'libraryInfo.projectId', 'string', true);
                 }
-                if (libraryInfo.hasOwnProperty('branchName') && libraryInfo.branchName !== undefined) {
+                if (Object.hasOwn(libraryInfo, 'branchName') && libraryInfo.branchName !== undefined) {
                     error = error || ensureType(libraryInfo.branchName, 'libraryInfo.branchName', 'string', true);
                 }
-                if (libraryInfo.hasOwnProperty('commitHash') && libraryInfo.commitHash !== undefined) {
+                if (Object.hasOwn(libraryInfo, 'commitHash') && libraryInfo.commitHash !== undefined) {
                     error = error || ensureHash(libraryInfo.commitHash, 'libraryInfo.commitHash', true);
                 }
             }
@@ -4010,17 +4010,17 @@ define([
             var error = ensureNode(root, 'root', true);
             if (options) {
                 error = error || ensureType(options, 'options', 'object');
-                if (options.hasOwnProperty('excludeRoot')) {
+                if (Object.hasOwn(options, 'excludeRoot')) {
                     error = error || ensureType(options.excludeRoot, 'options.excludeRoot', 'boolean', true);
                 }
-                if (options.hasOwnProperty('order')) {
+                if (Object.hasOwn(options, 'order')) {
                     error = error || ensureType(options.order, 'options.order', 'string', true);
                     if (options.order !== 'BFS' && options.order !== 'DFS') {
                         error = error ||
                             new CoreIllegalArgumentError('Parameter options.order must be either \'BFS\' or \'DFS\'.');
                     }
                 }
-                if (options.hasOwnProperty('stopOnError')) {
+                if (Object.hasOwn(options, 'stopOnError')) {
                     error = error || ensureType(options.stopOnError, 'options.stopOnError', 'boolean', true);
                 }
             }

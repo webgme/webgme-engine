@@ -107,7 +107,7 @@ function ConnectedHandler(options) {
 
         getConnectedStorage()
             .then(function () {
-                if (projects.hasOwnProperty(payload.projectId)) {
+                if (Object.hasOwn(projects, payload.projectId)) {
                     return projects[payload.projectId];
                 } else {
                     projects[payload.projectId] = Q.ninvoke(storage, 'openProject', payload.projectId)

@@ -166,35 +166,35 @@ class WebGMEAADClient {
             const newDef = Q.defer();
             
             this.__gmeAuth.getUser(uid)
-            .then(userData => {
-                this.__logger.info('getting AAD token - 001 - ', userData);
-                if (userData.hasOwnProperty('aadId')) {
-                    this.__logger.info('getting AAD token - 002 - ');
-                    return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
-                } else {
-                    this.__logger.info('getting AAD token - 003 - ');
-                    throw new Error('Not AAD user, cannot retrieve accessToken');
-                }
-            })
-            .then(account => {
-                this.__logger.info('getting AAD token - 004 - ', account);
-                if (!account) {
-                    const err = new Error('Cannot retrive token silently without account being cached!');
-                    err.name = 'MissingAADAccountForTokenError';
-                    throw err;
-                }
-                const tokenRequest = {
-                    scopes: this.__acccessScope,
-                    account: account,
-                    forceRefresh: true
-                };
-                return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
-            })
-            .then(deferred.resolve)
-            .catch(error => {
-                this.__logger.error(error);
-                deferred.reject(error);
-            });
+                .then(userData => {
+                    this.__logger.info('getting AAD token - 001 - ', userData);
+                    if (Object.hasOwn(userData, 'aadId')) {
+                        this.__logger.info('getting AAD token - 002 - ');
+                        return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
+                    } else {
+                        this.__logger.info('getting AAD token - 003 - ');
+                        throw new Error('Not AAD user, cannot retrieve accessToken');
+                    }
+                })
+                .then(account => {
+                    this.__logger.info('getting AAD token - 004 - ', account);
+                    if (!account) {
+                        const err = new Error('Cannot retrive token silently without account being cached!');
+                        err.name = 'MissingAADAccountForTokenError';
+                        throw err;
+                    }
+                    const tokenRequest = {
+                        scopes: this.__acccessScope,
+                        account: account,
+                        forceRefresh: true
+                    };
+                    return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
+                })
+                .then(deferred.resolve)
+                .catch(error => {
+                    this.__logger.error(error);
+                    deferred.reject(error);
+                });
 
             return newDef.promise;
         };
@@ -204,22 +204,22 @@ class WebGMEAADClient {
 
         if (currentToken) {
             aadVerify(currentToken, vOptions)
-            .then(token => {
-               if(token.iss === this.__gmeConfig.authentication.azureActiveDirectory.issuer && 
-                    token.aud === this.__gmeConfig.authentication.azureActiveDirectory.audience &&
-                    token.exp - (Date.now()/1000) > 0) {
-                    return Q({accessToken:currentToken});
-                } else {
-                    //the token cannot be used anymore
-                    return genNewToken();
-                }
-            })
-            .then(deferred.resolve)
-            .catch(deferred.reject);
+                .then(token => {
+                    if (token.iss === this.__gmeConfig.authentication.azureActiveDirectory.issuer && 
+                            token.aud === this.__gmeConfig.authentication.azureActiveDirectory.audience &&
+                            token.exp - (Date.now() / 1000) > 0) {
+                        return Q({accessToken: currentToken});
+                    } else {
+                        //the token cannot be used anymore
+                        return genNewToken();
+                    }
+                })
+                .then(deferred.resolve)
+                .catch(deferred.reject);
         } else {
             genNewToken()
-            .then(deferred.resolve)
-            .catch(deferred.reject);
+                .then(deferred.resolve)
+                .catch(deferred.reject);
         }
         return deferred.promise.nodeify(callback);
     }

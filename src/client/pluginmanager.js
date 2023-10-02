@@ -229,7 +229,7 @@ define([
                     return Q.ninvoke(pluginManager, 'runPluginMain', plugin);
                 })
                 .then(function (result) {
-                    if (runningPlugins.hasOwnProperty(executionId)) {
+                    if (Object.hasOwn(runningPlugins, executionId)) {
                         delete runningPlugins[executionId];
                     } else {
                         logger.error('Running plugin registry misses entry [' + pluginEntry.id +
@@ -240,7 +240,7 @@ define([
                     callback(null, result);
                 })
                 .catch(function (err) {
-                    if (runningPlugins.hasOwnProperty(executionId)) {
+                    if (Object.hasOwn(runningPlugins, executionId)) {
                         delete runningPlugins[executionId];
                     } else {
                         logger.error('Running plugin registry misses entry [' + pluginEntry.id +
@@ -311,7 +311,7 @@ define([
                         name: pluginId,
                         context: context
                     }, function (err, result) {
-                        if (runningPlugins.hasOwnProperty(executionId)) {
+                        if (Object.hasOwn(runningPlugins, executionId)) {
                             delete runningPlugins[executionId];
                         } else {
                             logger.error('Running plugin registry misses entry [' + pluginEntry.id +
@@ -389,7 +389,7 @@ define([
 
             logger.debug('plugin notification', data);
             if (data.notification && data.notification.type === CONSTANTS.STORAGE.PLUGIN_NOTIFICATION_TYPE.INITIATED) {
-                if (runningPlugins.hasOwnProperty(data.executionId)) {
+                if (Object.hasOwn(runningPlugins, data.executionId)) {
                     runningPlugins[data.executionId].socketId = data.pluginSocketId;
                     client.dispatchEvent(client.CONSTANTS.PLUGIN_INITIATED,
                         getSanitizedPluginEntry(runningPlugins[data.executionId]));
@@ -408,7 +408,7 @@ define([
                 executionIds = Object.keys(runningPlugins);
 
             executionIds.forEach(function (executionId) {
-                if (runningPlugins.hasOwnProperty(executionId)) {
+                if (Object.hasOwn(runningPlugins, executionId)) {
                     sanitizedData[executionId] = getSanitizedPluginEntry(runningPlugins[executionId]);
                 }
             });

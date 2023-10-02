@@ -31,7 +31,7 @@ define([], function () {
 
             if (desc.attributes) {
                 for (name in desc.attributes) {
-                    if (desc.attributes.hasOwnProperty(name)) {
+                    if (Object.hasOwn(desc.attributes, name)) {
                         state.core.setAttribute(node, name, desc.attributes[name]);
                     }
                 }
@@ -39,7 +39,7 @@ define([], function () {
 
             if (desc.registry) {
                 for (name in desc.registry) {
-                    if (desc.registry.hasOwnProperty(name)) {
+                    if (Object.hasOwn(desc.registry, name)) {
                         state.core.setRegistry(node, name, desc.registry[name]);
                     }
                 }
@@ -262,7 +262,7 @@ define([], function () {
 
             if (parentNode) {
                 for (nodePath in parameters) {
-                    if (parameters.hasOwnProperty(nodePath) && nodePath !== 'parentId') {
+                    if (Object.hasOwn(parameters, nodePath) && nodePath !== 'parentId') {
                         pathsToCopy.push(nodePath);
                     }
                 }
@@ -283,7 +283,7 @@ define([], function () {
                     }
 
                     for (nodePath in newNodes) {
-                        if (newNodes.hasOwnProperty(nodePath) && parameters[nodePath]) {
+                        if (Object.hasOwn(newNodes, nodePath) && parameters[nodePath]) {
                             _setAttrAndRegistry(newNodes[nodePath], parameters[nodePath]);
                         }
                     }
@@ -329,7 +329,7 @@ define([], function () {
                 newNode;
 
             for (i in parameters) {
-                if (parameters.hasOwnProperty(i)) {
+                if (Object.hasOwn(parameters, i)) {
                     if (i !== 'parentId') {
                         pathsToMove.push(i);
                     }

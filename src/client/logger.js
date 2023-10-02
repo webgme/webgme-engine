@@ -30,7 +30,7 @@ define(['debug'], function (_debug) {
         if (!options) {
             throw new Error('options required in logger');
         }
-        if (options.hasOwnProperty('level') === false) {
+        if (Object.hasOwn(options, 'level') === false) {
             throw new Error('options.level required in logger');
         }
         level = levels[options.level];

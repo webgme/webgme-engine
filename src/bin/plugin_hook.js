@@ -126,7 +126,7 @@ function PluginHandler(options) {
                         }
                         logger.error('Error getting hooks', err);
                         hookDeferred.reject(err);
-                    } else if (res.body.hasOwnProperty(HOOK_ID)) {
+                    } else if (Object.hasOwn(res.body, HOOK_ID)) {
                         superagent
                             .patch(hookUrl)
                             .send(webHook)

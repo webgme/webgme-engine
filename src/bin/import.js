@@ -201,7 +201,7 @@ main = function (argv) {
                             makeCommitParams.parentCommit = [program.commit];
                             makeCommitParams.commitMessage = 'Updating commit\'' +
                                 program.commit + '\' from project package.';
-                        } else if (projects[i].branches.hasOwnProperty(program.branch)) {
+                        } else if (Object.hasOwn(projects[i].branches, program.branch)) {
                             makeCommitParams.branch = program.branch;
                             makeCommitParams.parentCommit = [projects[i].branches[program.branch]];
                             makeCommitParams.commitMessage = 'Updating branch\'' +

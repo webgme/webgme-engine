@@ -128,7 +128,7 @@ define([
                     return;
                 }
 
-                if (self.descriptor.content.hasOwnProperty(name)) {
+                if (Object.hasOwn(self.descriptor.content, name)) {
                     deferred.reject(new Error('Another content with the same name was already added. ' +
                         JSON.stringify(self.descriptor.content[name])));
 
@@ -161,7 +161,7 @@ define([
         var self = this,
             deferred = Q.defer(),
             addMetadata = function (size) {
-                if (self.descriptor.content.hasOwnProperty(name)) {
+                if (Object.hasOwn(self.descriptor.content, name)) {
                     deferred.reject(new Error('Another content with the same name was already added. ' +
                         JSON.stringify(self.descriptor.content[name])));
 

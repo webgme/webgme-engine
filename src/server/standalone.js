@@ -21,7 +21,6 @@ const multipart = require('connect-multiparty');
 const cors = require('cors');
 const Http = require('http');
 const ejs = require('ejs');
-const URL = require('url');
 
 const MongoAdapter = require('./storage/mongo');
 const RedisAdapter = require('./storage/datastores/redisadapter');
@@ -508,11 +507,11 @@ class StandAloneServer {
                 if (restComponent) {
                     __logger.debug('Mounting external REST component [' + src + '] at /' + mount);
     
-                    if (restComponent.hasOwnProperty('initialize') && restComponent.hasOwnProperty('router')) {
+                    if (Object.hasOwn(restComponent, 'initialize') && Object.hasOwn(restComponent, 'router')) {
                         restComponent.initialize(this.__middlewareOptions);
                         __app.use('/' + mount, restComponent.router);
     
-                        if (restComponent.hasOwnProperty('start') && restComponent.hasOwnProperty('stop')) {
+                        if (Object.hasOwn(restComponent, 'start') && Object.hasOwn(restComponent, 'stop')) {
                             __routeComponents.push(restComponent);
                         } else {
                             __logger.warn('Deprecated restRouter, [' + src + '] does not have start/stop methods.');
@@ -799,7 +798,7 @@ class StandAloneServer {
             __app.get(/^\/assets\/DecoratorSVG\/.*/, ensureAuthenticated, (req, res, next) => {
                 webgmeUtils.getSVGMap(__gmeConfig, __logger)
                     .then(svgMap => {
-                        if (svgMap.hasOwnProperty(req.path)) {
+                        if (Object.hasOwn(svgMap, req.path)) {
                             res.sendFile(svgMap[req.path]);
                         } else {
                             __logger.warn('Requested DecoratorSVG not found', req.path);
@@ -918,7 +917,7 @@ class StandAloneServer {
                 __logger.debug('socket connected (added to list) ' + socketId);
     
                 socket.on('close', () => {
-                    if (this.__sockets.hasOwnProperty(socketId)) {
+                    if (Object.hasOwn(this.__sockets, socketId)) {
                         __logger.debug('socket closed (removed from list) ' + socketId);
                         delete this.__sockets[socketId];
                     }
@@ -1047,7 +1046,7 @@ class StandAloneServer {
             let numDestroyedSockets = 0;
             // destroy all open sockets i.e. keep-alive and socket-io connections, etc.
             for (let key in this.__sockets) {
-                if (this.__sockets.hasOwnProperty(key)) {
+                if (Object.hasOwn(this.__sockets, key)) {
                     this.__sockets[key].destroy();
                     delete this.__sockets[key];
                     __logger.debug('destroyed open socket ' + key);

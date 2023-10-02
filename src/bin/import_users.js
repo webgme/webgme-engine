@@ -64,7 +64,7 @@ main = function (argv) {
 
 
         for (projectName in user.projects) {
-            if (user.projects.hasOwnProperty(projectName)) {
+            if (Object.hasOwn(user.projects, projectName)) {
                 rights = '';
                 if (user.projects[projectName].read) {
                     rights += 'r';
