@@ -157,13 +157,13 @@ define([
                 diff = {added: [], removed: []};
 
             for (relid in sRelids) {
-                if (tRelids.hasOwnProperty(relid) === false) {
+                if (Object.hasOwn(tRelids, relid) === false) {
                     diff.removed.push({relid: relid, hash: sHashes[relid]});
                 }
             }
 
             for (relid in tRelids) {
-                if (sRelids.hasOwnProperty(relid) === false) {
+                if (Object.hasOwn(sRelids, relid) === false) {
                     diff.added.push({relid: relid, hash: tHashes[relid]});
                 }
             }

@@ -375,7 +375,7 @@ function createAPI(app, mountPath, middlewareOpts) {
                 var receivedData = req.body;
 
                 if (userData.siteAdmin !== true &&
-                    (receivedData.hasOwnProperty('siteAdmin') || receivedData.hasOwnProperty('canCreate'))) {
+                    (Object.hasOwn(receivedData, 'siteAdmin') || Object.hasOwn(receivedData, 'canCreate'))) {
                     res.status(403);
                     throw new Error('setting siteAdmin and/or canCreate property requires site admin role');
                 }
@@ -703,12 +703,12 @@ function createAPI(app, mountPath, middlewareOpts) {
         ensureSameUserOrSiteAdmin(req, res)
             .then(function (userData) {
                 if (userData.siteAdmin !== true &&
-                    (req.body.hasOwnProperty('siteAdmin') || req.body.hasOwnProperty('canCreate'))) {
+                    (Object.hasOwn(req.body, 'siteAdmin') || Object.hasOwn(req.body, 'canCreate'))) {
                     res.status(403);
                     throw new Error('setting siteAdmin and/or canCreate property requires site admin role');
                 }
 
-                if (req.body.hasOwnProperty('disabled') && req.body.disabled === false) {
+                if (Object.hasOwn(req.body, 'disabled') && req.body.disabled === false) {
                     if (userData.siteAdmin === true) {
                         return gmeAuth.reEnableUser(req.params.username);
                     } else {
@@ -1067,7 +1067,7 @@ function createAPI(app, mountPath, middlewareOpts) {
         //"disabled": false, // Only applicable if false -> will re-enable org
         function updateOrg() {
             var userId;
-            if (req.body.hasOwnProperty('disabled') && req.body.disabled === false) {
+            if (Object.hasOwn(req.body, 'disabled') && req.body.disabled === false) {
                 userId = getUserId(req);
                 return gmeAuth.getUser(userId)
                     .then(function (userData) {
@@ -1790,7 +1790,7 @@ function createAPI(app, mountPath, middlewareOpts) {
 
         safeStorage.getTags(data)
             .then(function (result) {
-                if (result.hasOwnProperty(req.params.tagId) === true) {
+                if (Object.hasOwn(result, req.params.tagId) === true) {
                     res.redirect(req.baseUrl + '/projects/' + req.params.ownerId + '/' + req.params.projectName +
                         '/commits/' + result[req.params.tagId].substring(1));
                 } else {
@@ -1826,7 +1826,7 @@ function createAPI(app, mountPath, middlewareOpts) {
 
         safeStorage.getTags(data)
             .then(function (tags) {
-                if (tags.hasOwnProperty(req.params.tagId) !== true) {
+                if (Object.hasOwn(tags, req.params.tagId) !== true) {
                     throw new Error('Tag does not exist ' + req.params.tagId);
                 }
                 return loadNodePathByCommitHash(userId, projectId, tags[req.params.tagId],
@@ -2322,11 +2322,11 @@ function createAPI(app, mountPath, middlewareOpts) {
 
         webgmeUtils.getSeedDictionary(gmeConfig)
             .then(function (seedDictionary) {
-                if (seedDictionary.hasOwnProperty(seedName) === false) {
+                if (Object.hasOwn(seedDictionary, seedName) === false) {
                     res.status(404);
                     throw new Error('Requested seed [' + seedName + '], does not exist among: '
                         + Object.keys(seedDictionary));
-                } else if (seedToBlobHash.hasOwnProperty(seedName)) {
+                } else if (Object.hasOwn(seedToBlobHash, seedName)) {
                     // It was already requested and exists on the blob-storage.
                     return seedToBlobHash[seedName];
                 } else {
@@ -2534,7 +2534,7 @@ function createAPI(app, mountPath, middlewareOpts) {
             res.status(err.status || 500);
         }
 
-        if (errorMessage.hasOwnProperty(res.statusCode)) {
+        if (Object.hasOwn(errorMessage, res.statusCode)) {
             message = errorMessage[res.statusCode];
         }
 

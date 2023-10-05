@@ -59,7 +59,7 @@ define([
             visitFn = function (node, next) {
                 var oldGuid = self.core.getGuid(node),
                     newGuid;
-                if (guids.hasOwnProperty(oldGuid)) {
+                if (Object.hasOwn(guids, oldGuid)) {
                     hasCollision = true;
                     if (currentConfiguration.checkOnly) {
                         self.createMessage(node, 'guid collision with: ' + guids[oldGuid]);

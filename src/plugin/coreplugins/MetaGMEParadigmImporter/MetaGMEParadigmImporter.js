@@ -154,7 +154,7 @@ define([
         };
 
         self.logger.debug('Checking for important key values in xmp');
-        if (xmpData.hasOwnProperty('paradigm')) {
+        if (Object.hasOwn(xmpData, 'paradigm')) {
             // create Language object in root
             paradigm = xmpData.paradigm;
             error = self.createLanguageNode(paradigm);
@@ -165,7 +165,7 @@ define([
             return new Error('Invalid xmpData: paradigm key does not exist.');
         }
 
-        if (paradigm.hasOwnProperty('folder') === false) {
+        if (Object.hasOwn(paradigm, 'folder') === false) {
             return new Error('Invalid xmpData.paradigm: folder key does not exist.');
         }
 
@@ -175,7 +175,7 @@ define([
             return new Error('Invalid xmpData.paradigm.folder: does not have a valid first element in the array.');
         }
 
-        if (rootFolder.hasOwnProperty('attrdef') === false) {
+        if (Object.hasOwn(rootFolder, 'attrdef') === false) {
             return new Error('Invalid xmpData.paradigm.folder[0]: attrdef key does not exist.');
         }
 
@@ -223,11 +223,11 @@ define([
         self.core.setAttribute(languageNode, 'mdate', paradigm['@mdate']);
 
         self.core.setAttributeMeta(languageNode, 'author', {type: 'string', default: ''});
-        if (paradigm.author.hasOwnProperty('#text')) {
+        if (Object.hasOwn(paradigm.author, '#text')) {
             self.core.setAttribute(languageNode, 'author', paradigm.author['#text']);
         }
         self.core.setAttributeMeta(languageNode, 'comment', {type: 'string', default: ''});
-        if (paradigm.comment.hasOwnProperty('#text')) {
+        if (Object.hasOwn(paradigm.comment, '#text')) {
             self.core.setAttribute(languageNode, 'comment', paradigm.comment['#text']);
         }
 
@@ -254,7 +254,7 @@ define([
 
         for (j = 0; j < types.length; j += 1) {
             type = types[j];
-            if (rootFolder.hasOwnProperty(type)) {
+            if (Object.hasOwn(rootFolder, type)) {
                 for (i = 0; i < rootFolder[type].length; i += 1) {
                     self.createNode(rootFolder[type][i]);
                 }
@@ -285,10 +285,10 @@ define([
             base: self.META.FCO
         });
 
-        if (xmpMetaNode.hasOwnProperty('@attributes')) {
+        if (Object.hasOwn(xmpMetaNode, '@attributes')) {
             // add attributes
             attributeNames = xmpMetaNode['@attributes'].split(' ');
-            if (xmpMetaNode.hasOwnProperty('attrdef')) {
+            if (Object.hasOwn(xmpMetaNode, 'attrdef')) {
                 for (i = 0; i < xmpMetaNode.attrdef.length; i += 1) {
                     xmpLocalAttributes[xmpMetaNode.attrdef[i]['@name']] = xmpMetaNode.attrdef[i];
                 }
@@ -332,7 +332,7 @@ define([
             }
         }
 
-        if (xmpMetaNode.hasOwnProperty('role')) {
+        if (Object.hasOwn(xmpMetaNode, 'role')) {
             for (i = 0; i < xmpMetaNode.role.length; i += 1) {
                 // FIXME: check if role already exists and maps to a different kind
                 self.cache.roles[xmpMetaNode.role[i]['@name']] = xmpMetaNode.role[i]['@kind'];
@@ -409,17 +409,17 @@ define([
             node = self.cache.nodes[xmpMetaName];
             xmpNode = self.cache.xmpMetaNode[xmpMetaName];
 
-            if (xmpNode.hasOwnProperty('@subfolders')) {
+            if (Object.hasOwn(xmpNode, '@subfolders')) {
                 childObjectNames = xmpNode['@subfolders'].split(' ');
                 self.addValidChildren(node, childObjectNames);
             }
 
-            if (xmpNode.hasOwnProperty('@rootobjects')) {
+            if (Object.hasOwn(xmpNode, '@rootobjects')) {
                 childObjectNames = xmpNode['@rootobjects'].split(' ');
                 self.addValidChildren(node, childObjectNames);
             }
 
-            if (xmpNode.hasOwnProperty('role')) {
+            if (Object.hasOwn(xmpNode, 'role')) {
                 childObjectNames = [];
                 for (j = 0; j < xmpNode.role.length; j += 1) {
                     childObjectNames.push(xmpNode.role[j]['@kind']);
@@ -427,10 +427,10 @@ define([
                 self.addValidChildren(node, childObjectNames);
             }
 
-            if (xmpNode.hasOwnProperty('aspect')) {
+            if (Object.hasOwn(xmpNode, 'aspect')) {
                 for (j = 0; j < xmpNode.aspect.length; j += 1) {
                     aspect = xmpNode.aspect[j];
-                    if (aspect.hasOwnProperty('part')) {
+                    if (Object.hasOwn(aspect, 'part')) {
                         for (k = 0; k < aspect.part.length; k += 1) {
                             part = aspect.part[k];
                             childNode = self.cache.nodes[part['@role']];
@@ -445,12 +445,12 @@ define([
                 }
             }
 
-            if (xmpNode.hasOwnProperty('connjoint')) {
+            if (Object.hasOwn(xmpNode, 'connjoint')) {
                 // add possible connection rules
                 self.addValidPointerSpecs(node, xmpNode.connjoint);
             }
 
-            if (xmpNode.hasOwnProperty('pointerspec')) {
+            if (Object.hasOwn(xmpNode, 'pointerspec')) {
                 // references and sets
                 self.addValidPointerSpecs(node, xmpNode);
             }
@@ -460,7 +460,7 @@ define([
                 maxAttrInThisRow = 0;
             }
 
-            if (xmpNode.hasOwnProperty('@attributes')) {
+            if (Object.hasOwn(xmpNode, '@attributes')) {
                 maxAttrInThisRow = Math.max(maxAttrInThisRow, xmpNode['@attributes'].split(' ').length);
             }
 
@@ -517,14 +517,14 @@ define([
         for (i = 0; i < hasPointerSpecsObject.pointerspec.length; i += 1) {
             pointerSpec = hasPointerSpecsObject.pointerspec[i];
             pointerName = pointerSpec['@name'];
-            if (pointerSpec.hasOwnProperty('pointeritem')) {
+            if (Object.hasOwn(pointerSpec, 'pointeritem')) {
                 for (j = 0; j < pointerSpec.pointeritem.length; j += 1) {
                     pointerItem = pointerSpec.pointeritem[j];
                     targetNames = pointerItem['@desc'].split(' ');
                     // get the last element from the list
                     targetName = targetNames[targetNames.length - 1];
 
-                    if (self.cache.nodes.hasOwnProperty(targetName)) {
+                    if (Object.hasOwn(self.cache.nodes, targetName)) {
                         targetNode = self.cache.nodes[targetName];
                     } else {
                         targetNode = self.cache.nodes[self.cache.roles[targetName]];

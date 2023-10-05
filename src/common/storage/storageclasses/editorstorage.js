@@ -734,7 +734,7 @@ define([
         };
 
         this._pullNextQueuedCommit = function (projectId, branchName, callback) {
-            assert(projects.hasOwnProperty(projectId), 'Project not opened: ' + projectId);
+            assert(Object.hasOwn(projects, projectId), 'Project not opened: ' + projectId);
             var project = projects[projectId],
                 branch = project.branches[branchName],
                 error,
@@ -931,11 +931,11 @@ define([
             }
 
             for (projectId in projects) {
-                if (projects.hasOwnProperty(projectId)) {
+                if (Object.hasOwn(projects, projectId)) {
                     project = projects[projectId];
                     logger.debug('_rejoinBranchRooms found project', projectId);
                     for (branchName in project.branches) {
-                        if (project.branches.hasOwnProperty(branchName)) {
+                        if (Object.hasOwn(project.branches, branchName)) {
                             logger.debug('_rejoinBranchRooms joining branch', projectId, branchName);
 
                             branchRooms.push({

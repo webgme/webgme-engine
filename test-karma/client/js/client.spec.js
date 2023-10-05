@@ -50,7 +50,7 @@ describe('GME client', function () {
         it('should have public functions', function () {
             var client = new Client(gmeConfig);
 
-            expect(client.hasOwnProperty('gmeConfig')).to.equal(true, 'gmeConfig');
+            expect(Object.hasOwn(client, 'gmeConfig')).to.equal(true, 'gmeConfig');
 
             //event related API
             expect(typeof client.addEventListener).to.equal('function');
@@ -200,15 +200,15 @@ describe('GME client', function () {
             );
 
             //simple request commands
-            expect(client.hasOwnProperty('runServerPlugin')).to.equal(true, 'runServerPlugin');
-            expect(client.hasOwnProperty('importProjectFromFile')).to.equal(true, 'importProjectFromFile');
-            expect(client.hasOwnProperty('seedProject')).to.equal(true, 'seedProject');
-            expect(client.hasOwnProperty('updateLibrary')).to.equal(true, 'updateLibrary');
-            expect(client.hasOwnProperty('addLibrary')).to.equal(true, 'addLibrary');
-            expect(client.hasOwnProperty('autoMerge')).to.equal(true, 'autoMerge');
-            expect(client.hasOwnProperty('resolve')).to.equal(true, 'resolve');
-            expect(client.hasOwnProperty('checkMetaRules')).to.equal(true, 'checkMetaRules');
-            expect(client.hasOwnProperty('checkCustomConstraints')).to.equal(true, 'checkCustomConstraints');
+            expect(Object.hasOwn(client, 'runServerPlugin')).to.equal(true, 'runServerPlugin');
+            expect(Object.hasOwn(client, 'importProjectFromFile')).to.equal(true, 'importProjectFromFile');
+            expect(Object.hasOwn(client, 'seedProject')).to.equal(true, 'seedProject');
+            expect(Object.hasOwn(client, 'updateLibrary')).to.equal(true, 'updateLibrary');
+            expect(Object.hasOwn(client, 'addLibrary')).to.equal(true, 'addLibrary');
+            expect(Object.hasOwn(client, 'autoMerge')).to.equal(true, 'autoMerge');
+            expect(Object.hasOwn(client, 'resolve')).to.equal(true, 'resolve');
+            expect(Object.hasOwn(client, 'checkMetaRules')).to.equal(true, 'checkMetaRules');
+            expect(Object.hasOwn(client, 'checkCustomConstraints')).to.equal(true, 'checkCustomConstraints');
 
         });
 

@@ -163,7 +163,7 @@ define([
                             } else {
                                 //Add the resultHashes even though job failed (for user to debug).
                                 for (key in jInfo.resultHashes) {
-                                    if (jInfo.resultHashes.hasOwnProperty(key)) {
+                                    if (Object.hasOwn(jInfo.resultHashes, key)) {
                                         self.result.addArtifact(jInfo.resultHashes[key]);
                                     }
                                 }
@@ -193,12 +193,12 @@ define([
                         newName = JSON.parse(String.fromCharCode.apply(null, new Uint16Array(newName)));
                     }
                     for (key in newName) {
-                        if (newName.hasOwnProperty(key)) {
+                        if (Object.hasOwn(newName, key)) {
                             self.core.setAttribute(self.activeNode, 'name', newName[key]);
                         }
                     }
                     for (key in finalJobInfo.resultHashes) {
-                        if (finalJobInfo.resultHashes.hasOwnProperty(key)) {
+                        if (Object.hasOwn(finalJobInfo.resultHashes, key)) {
                             self.result.addArtifact(finalJobInfo.resultHashes[key]);
                         }
                     }
@@ -206,7 +206,7 @@ define([
                     return self.save('Updated new name from execution');
                 } else {
                     for (key in finalJobInfo.resultHashes) {
-                        if (finalJobInfo.resultHashes.hasOwnProperty(key)) {
+                        if (Object.hasOwn(finalJobInfo.resultHashes, key)) {
                             self.result.addArtifact(finalJobInfo.resultHashes[key]);
                         }
                     }

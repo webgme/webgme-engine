@@ -379,7 +379,7 @@ define([
                 result = false;
 
             if (ancestor) {
-                result = self.getChildrenRelids(ancestor, true).hasOwnProperty(childRelid);
+                result = Object.hasOwn(self.getChildrenRelids(ancestor, true), childRelid);
             }
 
             return result;
@@ -966,8 +966,8 @@ define([
             // Setting the preserved relations
             // create the relations, that have to be preserved
             for (i = 0; i < relationsToPreserve.length; i += 1) {
-                if (old2NewPath.hasOwnProperty(relationsToPreserve[i].sourceBase) &&
-                    old2NewPath.hasOwnProperty(relationsToPreserve[i].targetBase)) {
+                if (Object.hasOwn(old2NewPath, relationsToPreserve[i].sourceBase) &&
+                    Object.hasOwn(old2NewPath, relationsToPreserve[i].targetBase)) {
                     source = relationsToPreserve[i].source.replace(
                         relationsToPreserve[i].sourceBase,
                         old2NewPath[relationsToPreserve[i].sourceBase]

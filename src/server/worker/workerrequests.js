@@ -121,7 +121,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             if (typeof tagName === 'string') {
                 internalPromise = project.getTags();
             } else if (typeof branchName === 'string') {
-                if (branches.hasOwnProperty(branchName) === false) {
+                if (Object.hasOwn(branches, branchName) === false) {
                     deferred.reject(new Error('Branch did not exist [' + branchName + ']'));
                     return;
                 }
@@ -130,7 +130,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             internalPromise
                 .then(function (tags) {
                     if (tags) {
-                        if (tags.hasOwnProperty(tagName) === false) {
+                        if (Object.hasOwn(tags, tagName) === false) {
                             deferred.reject(new Error('Tag did not exist [' + tagName + ']'));
                             return;
                         }
@@ -342,7 +342,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
                 if (gmeConfig.seedProjects.enable !== true) {
                     throw new Error('File seeding is disabled from gmeConfig');
-                } else if (seedMap.hasOwnProperty(name) === false) {
+                } else if (Object.hasOwn(seedMap, name) === false) {
                     throw new Error('unknown file seed [' + name + ']');
                 }
 
@@ -961,7 +961,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
                     getNetworkStatusChangeHandler(finish));
 
-                if (parameters.hasOwnProperty('parentPath') === false) {
+                if (Object.hasOwn(parameters, 'parentPath') === false) {
                     throw new Error('No parentPath given');
                 }
                 return _getCoreAndRootNode(storage, parameters.projectId, null, parameters.branchName, null);

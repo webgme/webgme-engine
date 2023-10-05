@@ -52,7 +52,7 @@ define([], function () {
     }
 
     Graph.prototype.addVertex = function (id) {
-        if (this.vertices.hasOwnProperty(id)) {
+        if (Object.hasOwn(this.vertices, id)) {
             return false;
         } else {
             this.vertices[id] = new Vertex(id);
@@ -61,11 +61,11 @@ define([], function () {
     };
 
     Graph.prototype.connectVertices = function (id1, id2) {
-        if (this.vertices.hasOwnProperty(id1) === false) {
+        if (Object.hasOwn(this.vertices, id1) === false) {
             throw new Error('Vertex [' + id1 + '] was never added to graph!');
         }
 
-        if (this.vertices.hasOwnProperty(id2) === false) {
+        if (Object.hasOwn(this.vertices, id2) === false) {
             throw new Error('Vertex [' + id2 + '] was never added to graph!');
         }
 

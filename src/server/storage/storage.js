@@ -262,7 +262,7 @@ Storage.prototype.makeCommit = function (data, callback) {
 
                                 self.dispatchEvent(CONSTANTS.COMMIT, commitEventData);
 
-                                if (data.hasOwnProperty('socket') && self.gmeConfig.storage.broadcastProjectEvents) {
+                                if (Object.hasOwn(data, 'socket') && self.gmeConfig.storage.broadcastProjectEvents) {
                                     commitEventData.socket = data.socket;
                                 }
 
@@ -290,7 +290,7 @@ Storage.prototype.makeCommit = function (data, callback) {
                                                 webgmeToken: data.webgmeToken
                                             };
 
-                                        if (data.hasOwnProperty('socket')) {
+                                        if (Object.hasOwn(data, 'socket')) {
                                             fullEventData.socket = data.socket;
                                             if (self.gmeConfig.storage.broadcastProjectEvents) {
                                                 eventData.socket = data.socket;
@@ -679,7 +679,7 @@ Storage.prototype.setBranchHash = function (data, callback) {
             return project.setBranchHash(data.branchName, data.oldHash, data.newHash);
         })
         .then(function () {
-            if (data.hasOwnProperty('socket')) {
+            if (Object.hasOwn(data, 'socket')) {
                 fullEventData.socket = data.socket;
                 if (self.gmeConfig.storage.broadcastProjectEvents) {
                     eventData.socket = data.socket;

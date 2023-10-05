@@ -289,7 +289,7 @@
     PluginBase.prototype.updateMETA = function (generatedMETA) {
         var name;
         for (name in this.META) {
-            if (this.META.hasOwnProperty(name)) {
+            if (Object.hasOwn(this.META, name)) {
                 generatedMETA[name] = this.META[name];
             }
         }
@@ -344,7 +344,7 @@
             baseName = namespace + '.' + baseName;
         }
 
-        return self.META.hasOwnProperty(baseName) &&
+        return Object.hasOwn(self.META, baseName) &&
             self.core.getGuid(self.META[baseName]) === self.core.getGuid(baseNode);
     };
 
@@ -762,9 +762,9 @@
                 pluginConfig = pluginInstance.getDefaultConfig();
 
                 // 2. If the current-plugin has a sub-config for this plugin (from the default UI) - add those.
-                if (self._currentConfig.hasOwnProperty('_dependencies') &&
-                    self._currentConfig._dependencies.hasOwnProperty(pluginId) &&
-                    self._currentConfig._dependencies[pluginId].hasOwnProperty('pluginConfig')) {
+                if (Object.hasOwn(self._currentConfig, '_dependencies') &&
+                    Object.hasOwn(self._currentConfig._dependencies, pluginId) &&
+                    Object.hasOwn(self._currentConfig._dependencies[pluginId], 'pluginConfig')) {
 
                     for (cfgKey in self._currentConfig._dependencies[pluginId].pluginConfig) {
                         pluginConfig[cfgKey] = self._currentConfig._dependencies[pluginId].pluginConfig[cfgKey];

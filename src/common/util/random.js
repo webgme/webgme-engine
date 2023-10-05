@@ -76,7 +76,7 @@ define(['chance', 'common/Constants'], function (ChanceJs, CONSTANTS) {
                 relid += getRandomCharacter(relidPool);
             }
             tries += 1;
-        } while (object.hasOwnProperty(relid) === true || isValidRelid(relid) === false);
+        } while (Object.hasOwn(object, relid) === true || isValidRelid(relid) === false);
 
         return relid;
     }

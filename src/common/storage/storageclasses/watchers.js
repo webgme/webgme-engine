@@ -96,7 +96,7 @@ define([
         this.webSocket.addEventListener(CONSTANTS.BRANCH_CREATED + projectId, eventHandler);
         this.webSocket.addEventListener(CONSTANTS.BRANCH_HASH_UPDATED + projectId, eventHandler);
 
-        this.watchers.projects[projectId] = this.watchers.projects.hasOwnProperty(projectId) ?
+        this.watchers.projects[projectId] = Object.hasOwn(this.watchers.projects, projectId) ?
             this.watchers.projects[projectId] + 1 : 1;
         this.logger.debug('Nbr of watchers for project:', projectId, this.watchers.projects[projectId]);
         if (this.watchers.projects[projectId] === 1) {
@@ -118,7 +118,7 @@ define([
         this.webSocket.removeEventListener(CONSTANTS.BRANCH_CREATED + projectId, eventHandler);
         this.webSocket.removeEventListener(CONSTANTS.BRANCH_HASH_UPDATED + projectId, eventHandler);
 
-        this.watchers.projects[projectId] = this.watchers.projects.hasOwnProperty(projectId) ?
+        this.watchers.projects[projectId] = Object.hasOwn(this.watchers.projects, projectId) ?
             this.watchers.projects[projectId] - 1 : -1;
         if (this.watchers.projects[projectId] === 0) {
             this.logger.debug('No more watchers will exit project room:', projectId);
@@ -193,7 +193,7 @@ define([
                     }
                 }
 
-                if (eData.hasOwnProperty('selection') && !self.reconnecting) {
+                if (Object.hasOwn(eData, 'selection') && !self.reconnecting) {
                     atSelection({
                         selection: eData.selection ?
                             otClient.transformSelection(ot.Selection.fromJSON(eData.selection)) : null,
@@ -241,8 +241,8 @@ define([
                                 return;
                             }
 
-                            if (self.watchers.documents.hasOwnProperty(initData.docId) &&
-                                self.watchers.documents[initData.docId].hasOwnProperty(watcherId)) {
+                            if (Object.hasOwn(self.watchers.documents, initData.docId) &&
+                                Object.hasOwn(self.watchers.documents[initData.docId], watcherId)) {
                                 self.watchers.documents[initData.docId][watcherId].awaitingAck = null;
                                 self.watchers.documents[initData.docId][watcherId].otClient.serverAck(revision);
                             } else {
@@ -290,8 +290,8 @@ define([
 
         if (typeof data.watcherId !== 'string') {
             deferred.reject(new Error('data.watcherId not provided - use the one given at watchDocument.'));
-        } else if (this.watchers.documents.hasOwnProperty(data.docId) === false ||
-            this.watchers.documents[data.docId].hasOwnProperty(data.watcherId) === false) {
+        } else if (Object.hasOwn(this.watchers.documents, data.docId) === false ||
+            Object.hasOwn(this.watchers.documents[data.docId], data.watcherId) === false) {
             deferred.reject(new Error('Document is not being watched ' + data.docId +
                 ' by watcherId [' + data.watcherId + ']'));
         } else {
@@ -338,8 +338,8 @@ define([
         // TODO: Do we need to add a callback for confirmation here?
         if (typeof data.watcherId !== 'string') {
             throw new Error('data.watcherId not provided - use the one given at watchDocument.');
-        } else if (this.watchers.documents.hasOwnProperty(data.docId) &&
-            this.watchers.documents[data.docId].hasOwnProperty(data.watcherId) &&
+        } else if (Object.hasOwn(this.watchers.documents, data.docId) &&
+            Object.hasOwn(this.watchers.documents[data.docId], data.watcherId) &&
             this.watchers.documents[data.docId][data.watcherId].otClient instanceof ot.Client) {
 
             this.watchers.documents[data.docId][data.watcherId].selection = data.selection;
@@ -363,8 +363,8 @@ define([
 
         if (typeof data.watcherId !== 'string') {
             throw new Error('data.watcherId not provided - use the one given at watchDocument.');
-        } else if (this.watchers.documents.hasOwnProperty(data.docId) &&
-            this.watchers.documents[data.docId].hasOwnProperty(data.watcherId) &&
+        } else if (Object.hasOwn(this.watchers.documents, data.docId) &&
+            Object.hasOwn(this.watchers.documents[data.docId], data.watcherId) &&
             this.watchers.documents[data.docId][data.watcherId].otClient instanceof ot.Client) {
 
             otClient = this.watchers.documents[data.docId][data.watcherId].otClient;
@@ -403,7 +403,7 @@ define([
         }
 
         for (projectId in this.watchers.projects) {
-            if (this.watchers.projects.hasOwnProperty(projectId) && this.watchers.projects[projectId] > 0) {
+            if (Object.hasOwn(this.watchers.projects, projectId) && this.watchers.projects[projectId] > 0) {
                 this.logger.debug('Rejoining project room', projectId, this.watchers.projects[projectId]);
                 promises.push(this.webSocket.watchProject({projectId: projectId, join: true}));
             }
@@ -472,8 +472,8 @@ define([
                                     return;
                                 }
 
-                                if (self.watchers.documents.hasOwnProperty(docId) &&
-                                    self.watchers.documents[docId].hasOwnProperty(watcherId)) {
+                                if (Object.hasOwn(self.watchers.documents, docId) &&
+                                    Object.hasOwn(self.watchers.documents[docId], watcherId)) {
                                     self.watchers.documents[docId][watcherId].awaitingAck = null;
                                     self.watchers.documents[docId][watcherId].otClient.serverAck(sendData.revision);
                                 } else {

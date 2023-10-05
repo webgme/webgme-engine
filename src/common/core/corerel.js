@@ -271,7 +271,7 @@ define([
         function putEntryIntoOverlayShard(node, shardId, source, name, target) {
 
             if (node.overlays[shardId].itemCount >= _shardSize &&
-                node.overlays[shardId].items.hasOwnProperty(source) === false) {
+                Object.hasOwn(node.overlays[shardId].items, source) === false) {
                 shardId = addNewOverlayShard(node);
                 node.minimalOverlayShardId = shardId;
             }
@@ -293,7 +293,7 @@ define([
             var shardId;
 
             for (shardId in node.overlays) {
-                if (node.overlays[shardId].items.hasOwnProperty(source)) {
+                if (Object.hasOwn(node.overlays[shardId].items, source)) {
                     putEntryIntoOverlayShard(node, shardId, source, name, target);
                     return;
                 }
@@ -628,7 +628,7 @@ define([
                 }
             } else {
                 ordinaryOverlays = self.getProperty(node, CONSTANTS.OVERLAYS_PROPERTY) || {};
-                if (ordinaryOverlays.hasOwnProperty(source)) {
+                if (Object.hasOwn(ordinaryOverlays, source)) {
                     if (typeof name === 'string') {
                         result.value = typeof ordinaryOverlays[source][name] === 'string' ?
                             ordinaryOverlays[source][name] : null;

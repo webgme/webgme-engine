@@ -79,7 +79,7 @@ define([
 
                 if (typeof obj === 'undefined') {
                     for (commitId in self.queuedPersists) {
-                        if (self.queuedPersists.hasOwnProperty(commitId) && self.queuedPersists[commitId][hash]) {
+                        if (Object.hasOwn(self.queuedPersists, commitId) && self.queuedPersists[commitId][hash]) {
                             obj = self.queuedPersists[commitId][hash];
                             break;
                         }
@@ -102,7 +102,7 @@ define([
                 cachedObject = backup[key];
                 if (typeof cachedObject === 'undefined') {
                     for (commitId in self.queuedPersists) {
-                        if (self.queuedPersists.hasOwnProperty(commitId) && self.queuedPersists[commitId][key]) {
+                        if (Object.hasOwn(self.queuedPersists, commitId) && self.queuedPersists[commitId][key]) {
                             cachedObject = self.queuedPersists[commitId][key];
                             break;
                         }

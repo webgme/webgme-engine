@@ -211,7 +211,7 @@ function MetadataStorage(mainLogger /*, gmeConfig*/) {
             }
         } else {
             for (i = 0; i < events.length; i += 1) {
-                if (CONSTANTS.WEBHOOK_EVENTS.hasOwnProperty(events[i]) === false) {
+                if (Object.hasOwn(CONSTANTS.WEBHOOK_EVENTS, events[i]) === false) {
                     throw new Error('Event [' + events[i] + '] not among valid events. Valid events: ' +
                         Object.keys(CONSTANTS.WEBHOOK_EVENTS));
                 }
@@ -270,7 +270,7 @@ function MetadataStorage(mainLogger /*, gmeConfig*/) {
                     throw new Error('hookId empty or not a string [' + hookId + ']');
                 }
 
-                if (hooks.hasOwnProperty(hookId) === false) {
+                if (Object.hasOwn(hooks, hookId) === false) {
                     throw new Error('no such hook [' + hookId + ']');
                 }
 
@@ -311,7 +311,7 @@ function MetadataStorage(mainLogger /*, gmeConfig*/) {
                     _ensureValidEvents(data.events);
                 }
 
-                if (hooks.hasOwnProperty(hookId) === true) {
+                if (Object.hasOwn(hooks, hookId) === true) {
                     throw new Error('hook already exists [' + hookId + ']');
                 }
 
@@ -397,7 +397,7 @@ function MetadataStorage(mainLogger /*, gmeConfig*/) {
                     throw new Error('hookId empty or not a string [' + hookId + ']');
                 }
 
-                if (hooks.hasOwnProperty(hookId) === false) {
+                if (Object.hasOwn(hooks, hookId) === false) {
                     throw new Error('no such hook [' + hookId + ']');
                 }
 

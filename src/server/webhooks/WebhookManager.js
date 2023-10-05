@@ -33,7 +33,7 @@ function MemoryManager(storage, mainLogger, gmeConfig) {
         var cleanData,
             key;
 
-        if (data.hasOwnProperty('socket') || data.hasOwnProperty('webgmeToken')) {
+        if (Object.hasOwn(data, 'socket') || Object.hasOwn(data, 'webgmeToken')) {
             cleanData = {};
             for (key in data) {
                 if (key !== 'socket' && key !== 'webgmeToken') {

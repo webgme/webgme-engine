@@ -264,7 +264,7 @@ function Memory(mainLogger, gmeConfig) {
             var deferred = Q.defer(),
                 tags = storage.getItem(database + SEPARATOR + projectId + SEPARATOR + TAGS);
 
-            if (tags.hasOwnProperty(name) === true) {
+            if (Object.hasOwn(tags, name) === true) {
                 deferred.reject(new Error('Tag already exists [' + name + ']'));
             } else {
                 tags[name] = commitHash;

@@ -84,7 +84,7 @@ SafeStorage.prototype.getProjects = function (data, callback) {
         check(typeof data.projectId === 'undefined' || REGEXP.PROJECT.test(data.projectId), deferred,
             'data.projectId failed regexp: ' + data.projectId);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -183,7 +183,7 @@ SafeStorage.prototype.deleteProject = function (data, callback) {
         check(typeof data.projectId === 'string', deferred, 'data.projectId is not a string.') ||
         check(REGEXP.PROJECT.test(data.projectId), deferred, 'data.projectId failed regexp: ' + data.projectId);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -249,7 +249,7 @@ SafeStorage.prototype.createProject = function (data, callback) {
         check(REGEXP.PROJECT_NAME.test(data.projectName), deferred,
             'data.projectName failed regexp: ' + data.projectName);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -357,7 +357,7 @@ SafeStorage.prototype.transferProject = function (data, callback) {
         check(REGEXP.PROJECT.test(data.projectId), deferred, 'data.projectId failed regexp: ' + data.projectId) ||
         check(typeof data.newOwnerId === 'string', deferred, 'data.newOwnerId is not a string.');
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -443,7 +443,7 @@ SafeStorage.prototype.duplicateProject = function (data, callback) {
         check(REGEXP.PROJECT_NAME.test(data.projectName), deferred,
             'data.projectName failed regexp: ' + data.projectName);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -543,7 +543,7 @@ SafeStorage.prototype.getBranches = function (data, callback) {
         check(typeof data.projectId === 'string', deferred, 'data.projectId is not a string.') ||
         check(REGEXP.PROJECT.test(data.projectId), deferred, 'data.projectId failed regexp: ' + data.projectId);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -603,7 +603,7 @@ SafeStorage.prototype.getCommits = function (data, callback) {
             'data.before is not a number nor a valid hash.');
     }
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -660,7 +660,7 @@ SafeStorage.prototype.getHistory = function (data, callback) {
             deferred, 'data.start is not a string or array') ||
         check(typeof data.number === 'number', deferred, 'data.number is not a number');
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -728,7 +728,7 @@ SafeStorage.prototype.getLatestCommitData = function (data, callback) {
         check(typeof data.branchName === 'string', deferred, 'data.branchName is not a string.') ||
         check(REGEXP.BRANCH.test(data.branchName), deferred, 'data.branchName failed regexp: ' + data.branchName);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -808,7 +808,7 @@ SafeStorage.prototype.makeCommit = function (data, callback) {
         }
     }
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -863,7 +863,7 @@ SafeStorage.prototype.squashCommits = function (data, callback) {
         check(typeof data.toCommitOrBranch === 'string', deferred,
             'data.toCommitOrBranch not a string.');
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -911,7 +911,7 @@ SafeStorage.prototype.getBranchHash = function (data, callback) {
         check(typeof data.branchName === 'string', deferred, 'data.branchName is not a string.') ||
         check(REGEXP.BRANCH.test(data.branchName), deferred, 'data.branchName failed regexp: ' + data.branchName);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -966,7 +966,7 @@ SafeStorage.prototype.setBranchHash = function (data, callback) {
         check(data.newHash === '' || REGEXP.HASH.test(data.newHash), deferred,
             'data.newHash is not a valid hash: ' + data.newHash);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1018,7 +1018,7 @@ SafeStorage.prototype.getCommonAncestorCommit = function (data, callback) {
         check(data.commitB === '' || REGEXP.HASH.test(data.commitB), deferred,
             'data.commitB is not a valid hash: ' + data.commitB);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1073,7 +1073,7 @@ SafeStorage.prototype.createBranch = function (data, callback) {
     data.oldHash = '';
     data.newHash = data.hash;
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1121,7 +1121,7 @@ SafeStorage.prototype.deleteBranch = function (data, callback) {
         check(typeof data.branchName === 'string', deferred, 'data.branchName is not a string.') ||
         check(REGEXP.BRANCH.test(data.branchName), deferred, 'data.branchName failed regexp: ' + data.branchName);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1178,7 +1178,7 @@ SafeStorage.prototype.createTag = function (data, callback) {
         check(data.commitHash === '' || REGEXP.HASH.test(data.commitHash), deferred,
             'data.hash is not a valid hash: ' + data.commitHash);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1226,7 +1226,7 @@ SafeStorage.prototype.deleteTag = function (data, callback) {
         check(typeof data.tagName === 'string', deferred, 'data.tagName is not a string.') ||
         check(REGEXP.TAG.test(data.tagName), deferred, 'data.tagName failed regexp: ' + data.tagName);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1279,7 +1279,7 @@ SafeStorage.prototype.getTags = function (data, callback) {
         check(typeof data.projectId === 'string', deferred, 'data.projectId is not a string.') ||
         check(REGEXP.PROJECT.test(data.projectId), deferred, 'data.projectId failed regexp: ' + data.projectId);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1346,7 +1346,7 @@ SafeStorage.prototype._getProject = function (data, callback) {
         check(typeof data.projectId === 'string', deferred, 'data.projectId is not a string.') ||
         check(REGEXP.PROJECT.test(data.projectId), deferred, 'data.projectId failed regexp: ' + data.projectId);
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1391,7 +1391,7 @@ SafeStorage.prototype.loadObjects = function (data, callback) {
         check(REGEXP.PROJECT.test(data.projectId), deferred, 'data.projectId failed regexp: ' + data.projectId) ||
         check(data.hashes instanceof Array, deferred, 'data.hashes is not an array: ' + JSON.stringify(data.hashes));
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1446,7 +1446,7 @@ SafeStorage.prototype.loadPaths = function (data, callback) {
         check(data.pathsInfo instanceof Array, deferred,
             'data.pathsInfo is not an array: ' + JSON.stringify(data.hashes));
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;
@@ -1484,7 +1484,7 @@ SafeStorage.prototype.traverse = function (data, callback) {
         check(typeof data.visitFn === 'function', deferred,
             'data.visitFn is not a function');
 
-    if (data.hasOwnProperty('username')) {
+    if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');
     } else {
         data.username = this.gmeConfig.authentication.guestAccount;

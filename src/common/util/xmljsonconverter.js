@@ -71,7 +71,7 @@ define(['common/util/sax'], function (sax) {
 
             var ns = {};
             for (key in node.attributes) {
-                if (node.attributes.hasOwnProperty(key)) {
+                if (Object.hasOwn(node.attributes, key)) {
                     if (key.substr(0, 6) === 'xmlns:') {
                         ns[key.substr('xmlns:'.length)] = node.attributes[key];
                     }
@@ -88,7 +88,7 @@ define(['common/util/sax'], function (sax) {
             } else {
                 for (i = self.nsStack.length - 1; i >= 0; i--) {
                     for (key in self.nsStack[i]) {
-                        if (!ns.hasOwnProperty(key) && self.nsStack[i].hasOwnProperty(key)) {
+                        if (!Object.hasOwn(ns, key) && Object.hasOwn(self.nsStack[i], key)) {
                             ns[key] = self.nsStack[i][key];
                         }
                     }
@@ -103,7 +103,7 @@ define(['common/util/sax'], function (sax) {
                 if (opts.arrayElements) {
                     self.arrayElements = opts.arrayElements;
                     if (self.arrayElements[nodeName]) {
-                        if (parentNode.hasOwnProperty(nodeName)) {
+                        if (Object.hasOwn(parentNode, nodeName)) {
                             parentNode[nodeName].push(jsonNode);
                         } else {
                             parentNode[nodeName] = [jsonNode];
@@ -112,7 +112,7 @@ define(['common/util/sax'], function (sax) {
                         parentNode[nodeName] = jsonNode;
                     }
                 } else {
-                    if (parentNode.hasOwnProperty(nodeName)) {
+                    if (Object.hasOwn(parentNode, nodeName)) {
                         if (parentNode[nodeName] instanceof Array) {
                             parentNode[nodeName].push(jsonNode);
                         } else {
@@ -125,7 +125,7 @@ define(['common/util/sax'], function (sax) {
             }
             self.stack.push(jsonNode);
             for (key in node.attributes) {
-                if (node.attributes.hasOwnProperty(key)) {
+                if (Object.hasOwn(node.attributes, key)) {
                     var namespaceKey = mapNamespace(ns, key);
                     if (namespaceKey === 'xsi:type') {
                         // the attribute value should be mapped too

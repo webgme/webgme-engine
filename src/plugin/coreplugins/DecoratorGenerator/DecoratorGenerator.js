@@ -91,7 +91,7 @@ define([
             templateName;
 
         for (templateName in TEMPLATES_MINIMAL) {
-            if (TEMPLATES_MINIMAL.hasOwnProperty(templateName)) {
+            if (Object.hasOwn(TEMPLATES_MINIMAL, templateName)) {
                 path = templateName.substring(0, templateName.length - '.ejs'.length);
                 path = baseDir + path.replace('__ID__', config.decoratorName);
                 filesToAdd[path] = ejs.render(TEMPLATES_MINIMAL[templateName], dataModel);
@@ -110,7 +110,7 @@ define([
             templateName;
 
         for (templateName in TEMPLATES_INHERIT) {
-            if (TEMPLATES_INHERIT.hasOwnProperty(templateName)) {
+            if (Object.hasOwn(TEMPLATES_INHERIT, templateName)) {
                 path = templateName.substring(0, templateName.length - '.ejs'.length);
                 path = baseDir + path.replace('__ID__', config.decoratorName);
                 filesToAdd[path] = ejs.render(TEMPLATES_INHERIT[templateName], dataModel);

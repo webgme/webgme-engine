@@ -89,7 +89,7 @@ define([
             var metaNodes = innerCore.getRoot(node).metaNodes;
 
             if (metaNodes) {
-                return metaNodes.hasOwnProperty(innerCore.getPath(node));
+                return Object.hasOwn(metaNodes, innerCore.getPath(node));
             } else {
                 // The meta-cache layer is not used - fallback to check if it's a member of the MetaAspectSet.
                 return isOnMetaSheet(node);
@@ -496,7 +496,7 @@ define([
         this.setAttributeMeta = function (node, name, value) {
             var defaultValue;
 
-            if (value.hasOwnProperty('default')) {
+            if (Object.hasOwn(value, 'default')) {
                 defaultValue = value.default;
                 value = JSON.parse(JSON.stringify(value));
                 delete value.default;

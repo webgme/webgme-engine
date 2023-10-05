@@ -24,7 +24,7 @@ define([
         var persisted = parameters.core.persist(parameters.root),
             newRootHash;
 
-        if (persisted.hasOwnProperty('objects') === false || Object.keys(persisted.objects).length === 0) {
+        if (Object.hasOwn(persisted, 'objects') === false || Object.keys(persisted.objects).length === 0) {
             parameters.logger.warn('empty patch was inserted - not making commit');
             return Q({
                 hash: parameters.parents[0], //if there is no change, we return the first parent!!!
@@ -190,7 +190,7 @@ define([
 
                     if (typeof nodePath === 'string') {
                         subPath = path.substr(nodePath.length);
-                        if (conflictNodePaths.hasOwnProperty(nodePath)) {
+                        if (Object.hasOwn(conflictNodePaths, nodePath)) {
                             conflictNodePaths[nodePath][subPath] = index;
                             return null;
                         } else {

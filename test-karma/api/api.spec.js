@@ -30,7 +30,7 @@ describe('API access from webbrowser', function () {
     it('should get source code documentation link', function (done) {
         superagent.get('/api').end(function (err, res) {
             expect(res.status).equal(200, err);
-            expect(res.body.hasOwnProperty('source_code_documentation_url')).to.equal(true);
+            expect(Object.hasOwn(res.body, 'source_code_documentation_url')).to.equal(true);
             superagent.get(res.body.source_code_documentation_url).end(function (err, res) {
                 expect(res.status).equal(200, err);
                 done();

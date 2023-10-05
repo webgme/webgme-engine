@@ -240,7 +240,7 @@ define([
 
                     if (readOnlyKeys[key] || writeAccessKeys[key]) {
                         // Parameter is not allowed to be modified, check if it was.
-                        if (pluginConfig.hasOwnProperty(key) &&
+                        if (Object.hasOwn(pluginConfig, key) &&
                             pluginConfig[key] !== defaultConfig[key]) {
                             faultyKeys.push(key);
                         }
