@@ -44,7 +44,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 
 ## Configuration groups
 
-##### addOn
+#### addOn
 
 - `config.addOn.enable = false`
  - If true enables add-ons.
@@ -55,7 +55,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.addOn.basePaths = ['./src/addon/core']`
  - Note, this is handled by [webgme-cli](https://github.com/webgme/webgme-cli). Array of paths to custom add-ons. If you have an add-on at `C:/SomeAddOns/MyAddOn/MyAddOn.js` the path to append would be `C:/SomeAddOns` or a relative path (from the current working directory). N.B. this will also expose any other add-on in that directory, e.g. `C:/SomeAddOns/MyOtherAddOn/MyOtherAddOn.js`.
 
-##### authentication
+#### authentication
 
 - `config.authentication.enable = false`
  - If true certain parts will require that users are authenticated.
@@ -113,17 +113,46 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.authentication.resetUrl = '/profile/reset'`
  - Location of the reset page where the user should be guided to input the new password. The whole reset procedure can be done with purely REST API calls, but it is usually safer to include an email in the process.
 
-##### api
+##### azureActiveDirectory
+- `config.authentication.azureActiveDirectory.enable = false`
+ - When set to true, WebGME will try to authenticate users with the configured azure endpoints. It is also going to
+ maintain an additional token in case there is an azure service also configured. Check for further config and deployment info on the [wiki page](https://github.com/webgme/webgme/wiki/Using-Azure-Active-Directory).
+- `config.authentication.azureActiveDirectory.clientId = 'Example_Client_Id'`
+ - The id of the azure app that is configured to cover the WebGME deployment.
+- `config.authentication.azureActiveDirectory.authority = 'Example_authority_URI'`
+ - The URI of the azure endpoint that handles the authentication (usually the org that has the accounts).
+- `config.authentication.azureActiveDirectory.jwksUri = 'https://login.microsoftonline.com/common/discovery/keys'`
+ - The URI where WebGME can ask for the JSON web key sets for AAD issued token verification.
+- `config.authentication.azureActiveDirectory.issuer = 'Example_token_issuer_for_verification'`
+ - The URI of the entity who issued the token - almost the same as the authority, but this one is version sensitive
+ so they cannot share the config value.
+- `config.authentication.azureActiveDirectory.audience = 'Example_audience_for_token_validation'`
+ - The azure application id who was the target of the token. When an accessScope is defined, this id should be
+ the application id of the scope's provider. Without it, it can simply be the WebGME azure application id (clientId).
+- `config.authentication.azureActiveDirectory.clientSecret = 'Example_client_Secret'`
+ - This is the secret that is generated on azure so the web application and the 'WebGME client' can share it for
+ authentication purposes - be sure not to make it public in any way.
+- `config.authentication.azureActiveDirectory.cookieId = 'webgme_aad'`
+ - The cookieId for the access token - if configured.
+- `config.authentication.azureActiveDirectory.redirectUri = 'need to set this temp, would be nice to deduct it'`
+ - The URI where azure should send the post 'response' request once the user gets authenticated. This configuration
+ has to match to one entry in the azure configuration of the WebGME.
+- `config.authentication.azureActiveDirectory.accessScope = null`
+ - If set, it points to an azure service that the users/WebGME components might want to access. The token cookie will
+ only get populated if this field is set. Also, as we only deal with access tokens, fields 
+ `cookieId, jwksUri, issuer, audience` are only used (but also required) if this field is set.
+
+#### api
 
 - `config.api.useEnhancedStarterPage = false`
  - When set to true, the index page will be returned as a fully featured HTML instead of the plain JSON response.
 
-##### bin
+#### bin
 
 - `config.bin.log = see config`
  - Logger settings when running bin scripts.
 
-##### blob
+#### blob
 - `config.blob.allowListAll = false`
  - If true the end-point `/rest/blob/metadata` will return a listing of all available artifacts, see [#308](https://github.com/webgme/webgme-engine/pull/308) for details.
 - `config.blob.compressionLevel = 0`
@@ -137,7 +166,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.blob.s3 = {}`
  - S3 configuration passed to `aws-sdk` module. See config.default.js for local mock example.
 
-##### client
+#### client
 
 - `config.client.appDir = './src/client'`
  - Directory from where to serve the static files for the webapp.
@@ -150,24 +179,24 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.client.log.level = 'debug'`
  - When [debug](https://github.com/visionmedia/debug) is activated in the browser messages below this level will not be printed.
 
-##### core
+#### core
 
 - `config.core.enableCustomConstraints = false`
  - If true will enable validation (which takes place on the server) of custom constraints defined in the meta nodes.
 
-##### debug
+#### debug
 
 - `config.debug = false`
  - If true will add extra debug messages.
 
-##### documentEditing
+#### documentEditing
 
 - `config.documentEditing.enable = true`
  - Set to false to disable channels for document editing.
 - `config.documentEditing.disconnectTimeout = 20000`
  - In milliseconds, the amount of time to keep a document channel with only disconnected users open.
 
-##### executor
+#### executor
 
 - `config.executor.enable = false`
  - If true will enable the executor.
@@ -186,7 +215,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.executor.labelJobs = './labelJobs.json'`
  - Path to configuration file for label jobs for the workers.
 
-##### mailer
+#### mailer
 - `config.mailer.enable = false`
  - Switch to turn on the mail sending services of WebGME. To see what this service can do, please check the [mailer readme](https://github.com/webgme/webgme-engine/blob/master/src/server/middleware/mailer/README.md).
 - `config.mailer.service = ''`
@@ -204,13 +233,13 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.mailer.sendPasswordReset = false`
  - If used, the reset request on the REST API will send an e-mail to the user and not respond with the resetHash.
 
-##### mongo
+#### mongo
 - `config.mongo.uri = 'mongodb://127.0.0.1:27017/multi'`
  - MongoDB connection [uri](http://docs.mongodb.org/manual/reference/connection-string/)
 - `config.mongo.options = see config`
  - Options for [MongoClient.connect](https://mongodb.github.io/node-mongodb-native/api-generated/mongoclient.html#connect)
 
-##### plugin
+#### plugin
 - `config.plugin.allowBrowserExecution = true`
  - If true will enable execution of plugins in the browser.
 - `config.plugin.allowServerExecution = false`
@@ -223,19 +252,19 @@ Modification of arrays is not support, but non-existing config sub-group (object
  - Time, in milliseconds, results will be stored on the server after they have finished (when invoked via the REST api).
 
 
-##### requirejsPaths
+#### requirejsPaths
 - `config.requirejsPaths = {}`
  - Custom paths that will be added to the `paths` of [requirejs configuration](http://requirejs.org/docs/api.html#config).
  Paths added here will also be served under the given key, i.e. `{myPath: './aPath/aSubPath/'}` will expose files via `<host>/myPath/someFile.js`.
 
 
-##### rest
+#### rest
 - `config.rest.components = {}`
  - Collection of external rest routes index by their (unique) ids. The value is an object with keys; `src` file-path (or name)
  to the module defining the router, `mount` where the router will be mounted relative to the root of the host, `options` an object with setting for the specific router.
  Use the `RestRouterGenerator` plugin to generate a template router (see the generated file for more info).
 
-##### seedProjects
+#### seedProjects
 - `config.seedProjects.enable = true`
  - Enables creation of new projects using seeds.
 - `config.seedProjects.allowDuplication = true`
@@ -259,7 +288,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 }
 ```
 
-##### server
+#### server
 - `config.server.port = 8888`
  - Port the server is hosted from.
 - `config.server.handle = null`
@@ -279,13 +308,13 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.server.behindSecureProxy = false`
  - Indicate if the webgme server is behind a secure proxy (needed for adding correct OG Metadata in index.html).
 
-##### socketIO
+#### socketIO
 - `config.socketIO.clientOptions = see config`
  - Options passed to the [socketIO client](https://github.com/socketio/socket.io-client#managerurlstring-optsobject) when connecting to the sever.
 - `config.socketIO.serverOptions = see config`
  - Options passed to the [socketIO server](https://github.com/socketio/engine.io#methods-1) when attaching to the server.
 
-##### storage
+#### storage
 - `config.storage.cache = 2000`
  - Number of core-objects stored before emptying cache (server side).
 - `config.storage.clientCache = 2000`
@@ -311,7 +340,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.storage.database.options = '{}'`
  - Options passed to database client (unless mongo is specified, in that case `config.mongo.options` are used).
 
-##### visualization
+#### visualization
 Note that although these can be used for serving files from different locations - they are mainly targeted for serving the generic UI and visual extensions added to it.
 
 - `config.visualization.decoratorPaths = []`
@@ -325,7 +354,7 @@ Note that although these can be used for serving files from different locations 
 - `config.visualization.layout.basePaths = []`
  - Array of base paths for the layouts.
 
-##### webhooks
+#### webhooks
 - `config.webhooks.enable = true`
  - If true will start a webhook-manager from the server.
 - `config.webhooks.manager = 'memory'`

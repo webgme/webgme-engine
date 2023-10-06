@@ -685,15 +685,13 @@ class StandAloneServer {
                     });
                 });
 
-                //device access to use webgme related services
-                if (__gmeConfig.authentication.azureActiveDirectory.issuer && 
-                    __gmeConfig.authentication.azureActiveDirectory.audience) {
+                //device access to use webgme related services - only available when access Scope is used
+                if (__gmeConfig.authentication.azureActiveDirectory.accessScope) {
 
                     const aadVerify = require('azure-ad-verify-token-commonjs');
                     const verify = aadVerify.verify;
                     const voptions = {
-                        //TODO is the first one really static??
-                        jwksUri: 'https://login.microsoftonline.com/common/discovery/keys', 
+                        jwksUri: __gmeConfig.authentication.azureActiveDirectory.jwksUri, 
                         issuer: __gmeConfig.authentication.azureActiveDirectory.issuer,
                         audience: __gmeConfig.authentication.azureActiveDirectory.audience
                     };

@@ -13,15 +13,11 @@ class WebGMEAADClient {
         this.__gmeConfig = gmeConfig;
         this.__gmeAuth = gmeAuth;
         this.__authScopes = ['openid', 'email', 'profile'];
-        this.__acccessScope = [];
         if (gmeConfig.authentication.azureActiveDirectory.accessScope) {
             this.__authScopes.push(gmeConfig.authentication.azureActiveDirectory.accessScope);
-            this.__acccessScope = [gmeConfig.authentication.azureActiveDirectory.accessScope];
-        } else {
-            this.__acccessScope = ['openid'];
         }
 
-        this.__redirectUri = gmeConfig.authentication.azureActiveDirectory.redirectUri || 'http://localhost:8888/aad';
+        this.__redirectUri = gmeConfig.authentication.azureActiveDirectory.redirectUri;
         this.__activeDirectoryConfig = {
             auth: {
                 clientId: gmeConfig.authentication.azureActiveDirectory.clientId,
@@ -73,7 +69,6 @@ class WebGMEAADClient {
     }
 
     cacheUser(req, res, callback) {
-        this.__logger.error('caching user');
         let uid = null;
         let claims = null;
         const tokenRequest = {
@@ -87,13 +82,11 @@ class WebGMEAADClient {
                 // console.log('initial claim: ', response);
                 claims = response.idTokenClaims;
                 uid = this.getUserIdFromEmail(claims.email);
-                this.__logger.error('caching user: ', uid);
+                this.__logger.info('caching AAD user: ', uid);
                 return this.__gmeAuth.listUsers();
                 
             })
             .then(users => {
-                //TODO should be an easier way to search for the user...
-                this.__logger.error('caching user: user list arrived');
                 let userFound = false;
                 let options = {};
                 users.forEach(userData => {
@@ -127,34 +120,31 @@ class WebGMEAADClient {
                 }
             })
             .then(() => {
-                //no matter if it was a new user or an existing one, let's create a token for it
-                this.__logger.error('caching user - user added');
                 return this.__gmeAuth.generateJWTokenForAuthenticatedUser(uid);
             })
             .then(token => {
-                // console.log('WEBGME-TOKEN:', token);
-                this.__logger.error('caching user- wtoken generated');
                 res.cookie(this.__gmeConfig.authentication.jwt.cookieId, token);
                 return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(claims.oid);
                 
             })
             .then(account => {
+                if (!this.__gmeConfig.authentication.azureActiveDirectory.accessScope) {
+                    return Q(null);
+                }
                 const tokenRequest = {
-                    scopes: this.__acccessScope,
+                    scopes: [this.__gmeConfig.authentication.azureActiveDirectory.accessScope],
                     account: account,
                     forceRefresh: true
                 };
-                this.__logger.error('caching user - we have account');
                 return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
             })
             .then(token => {
-                this.__logger.error('caching user - we have aad-token');
-                res.cookie(this.__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
-
+                if (token) {
+                    res.cookie(this.__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
+                }
                 callback(null);
             })
             .catch(error => {
-                // console.log(error);
                 this.__logger.error(error);
                 callback(error);
             });
@@ -162,65 +152,78 @@ class WebGMEAADClient {
 
     getAccessToken(uid, currentToken, callback) {
         const deferred = Q.defer();
+        let aadId = null;
         const genNewToken = () => {
-            const newDef = Q.defer();
-            
-            this.__gmeAuth.getUser(uid)
-                .then(userData => {
-                    this.__logger.info('getting AAD token - 001 - ', userData);
-                    if (Object.hasOwn(userData, 'aadId')) {
-                        this.__logger.info('getting AAD token - 002 - ');
-                        return this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(userData.aadId);
-                    } else {
-                        this.__logger.info('getting AAD token - 003 - ');
-                        throw new Error('Not AAD user, cannot retrieve accessToken');
-                    }
-                })
+            const newDef = Q.defer();            
+            this.__activeDirectoryClient.getTokenCache().getAccountByLocalId(aadId)
                 .then(account => {
-                    this.__logger.info('getting AAD token - 004 - ', account);
+                    // this.__logger.info('getting AAD token - 004 - ', account);
                     if (!account) {
                         const err = new Error('Cannot retrive token silently without account being cached!');
                         err.name = 'MissingAADAccountForTokenError';
                         throw err;
                     }
                     const tokenRequest = {
-                        scopes: this.__acccessScope,
+                        scopes: [this.__gmeConfig.authentication.azureActiveDirectory.accessScope],
                         account: account,
                         forceRefresh: true
                     };
                     return this.__activeDirectoryClient.acquireTokenSilent(tokenRequest);
                 })
-                .then(deferred.resolve)
+                .then(newDef.resolve)
                 .catch(error => {
                     this.__logger.error(error);
-                    deferred.reject(error);
+                    newDef.reject(error);
                 });
 
             return newDef.promise;
         };
+
         const vOptions = {
-            jwksUri: 'https://login.microsoftonline.com/common/discovery/keys'
+            jwksUri: this.__gmeConfig.authentication.azureActiveDirectory.jwksUri, 
+            issuer: this.__gmeConfig.authentication.azureActiveDirectory.issuer,
+            audience: this.__gmeConfig.authentication.azureActiveDirectory.audience
         };
 
-        if (currentToken) {
-            aadVerify(currentToken, vOptions)
-                .then(token => {
+        this.__gmeAuth.getUser(uid)
+            .then(userData => {
+                if (!Object.hasOwn(userData, 'aadId')) {
+                    // not AAD based user -> return null
+                    deferred.resolve(null);
+                }
+                
+                if (!this.__gmeConfig.authentication.azureActiveDirectory.accessScope) {
+                    // AAD only used for authenticating the user, so no need for access token
+                    deferred.resolve(null);
+                }
+
+                aadId = userData.aadId;
+                if (currentToken) {
+                    return aadVerify(currentToken, vOptions);
+                }
+
+                return Q(null);
+            })
+            .then(token => {
+                if (token) {
                     if (token.iss === this.__gmeConfig.authentication.azureActiveDirectory.issuer && 
-                            token.aud === this.__gmeConfig.authentication.azureActiveDirectory.audience &&
-                            token.exp - (Date.now() / 1000) > 0) {
+                        token.aud === this.__gmeConfig.authentication.azureActiveDirectory.audience &&
+                        token.exp - (Date.now() / 1000) > 0) {
                         return Q({accessToken: currentToken});
                     } else {
                         //the token cannot be used anymore
                         return genNewToken();
                     }
-                })
-                .then(deferred.resolve)
-                .catch(deferred.reject);
-        } else {
-            genNewToken()
-                .then(deferred.resolve)
-                .catch(deferred.reject);
-        }
+                } else {
+                    return genNewToken();
+                }
+            })
+            .then(deferred.resolve)
+            .catch(error => {
+                this.__logger.error(error);
+                deferred.reject(error);
+            });
+
         return deferred.promise.nodeify(callback);
     }
 }

@@ -172,7 +172,9 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
     /**
      * Executes a plugin.
      *
-     * @param {string} webgmeToken
+     * @param {object} tokens
+     * @param {string} tokens.webgme - the user's authentication token.
+     * @param {string} [tokens.aad] - azure related access token.
      * @param {string} [socketId] - Id of socket that send the request (used for notifications).
      * @param {string} pluginName
      * @param {object} context

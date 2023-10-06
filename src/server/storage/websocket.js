@@ -905,7 +905,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         data.webgmeToken = newToken;
                         //TODO this should probably come from authenticator and not the request!!!
                         if (gmeConfig.authentication.enable === true &&
-                            gmeConfig.authentication.azureActiveDirectory.enable === true) {
+                            gmeConfig.authentication.azureActiveDirectory.enable === true &&
+                            gmeConfig.authentication.azureActiveDirectory.accessScope) {
                             data.aadToken = cookies[gmeConfig.authentication.azureActiveDirectory.cookieId] || null;
                         }
                         workerManager.request(data, function (err, result) {

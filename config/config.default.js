@@ -61,14 +61,13 @@ var path = require('path'),
                 enable: false,
                 clientId: 'Example_Client_Id',
                 authority: 'Example_authority_URI',
+                jwksUri: 'https://login.microsoftonline.com/common/discovery/keys',
                 // the following two are optionals, but if not 
                 // given, the device authentication will not work
                 issuer: 'Example_token_issuer_for_verification',
-                audience: 'Example_audoence_for_token_validation',
+                audience: 'Example_audience_for_token_validation',
                 clientSecret: 'Example_client_Secret',
-                discoveryEndpoint: 'Example_discovery_key_endpoint',
                 cookieId: 'webgme_aad',
-                cookieKey: 'Do_your_job_and_make_a_decent_key',
                 redirectUri: 'need to set this temp, would be nice to deduct it',
                 // optional, but if used an access token is will be fetched 
                 // after the authentication happens so router endpoints might use it
