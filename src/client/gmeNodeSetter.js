@@ -74,8 +74,9 @@ define([], function () {
                 }
 
                 for (i = 0; i < paths.length; i += 1) {
-                    result[paths[i]] = copiedNodes[i];
-                    resultArray.push(storeNode(copiedNodes[i]));
+                    const newPath = storeNode(copiedNodes[i]);
+                    result[paths[i]] = { node: copiedNodes[i], path: newPath };
+                    resultArray.push(newPath);
                 }
             }
 
@@ -102,6 +103,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setAttribute', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'setAttribute(' + path + ',' + name + ',' + JSON.stringify(value) + ')');
             }
@@ -112,7 +114,7 @@ define([], function () {
          * @memberOf Client
          * @instance
          * @param {string} path - The path of the node in question.
-         * @param {string} name - The name of the attribute.
+         * @param {string} name - The name of the attributcallSequencee.
          * @param {string} msg - The message that should be attached to the commit that covers this update.
          */
         function delAttribute(path, name, msg) {
@@ -126,6 +128,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delAttribute', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delAttribute(' + path + ',' + name + ')');
             }
         }
@@ -150,6 +153,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setRegistry', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'setRegistry(' + path + ',' + name + ',' + JSON.stringify(value) + ')');
             }
@@ -174,6 +178,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delRegistry', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delRegistry(' + path + ',' + name + ')');
             }
         }
@@ -202,7 +207,7 @@ define([], function () {
          * @param {object} [desc.registry={}] - named registries to set for the new node
          * @param {string} [msg] - optional commit message, if not supplied a default one 
          * with the function name and input parameters will be used
-         * @returns {GMENode|undefined} - the newly created node if it could be copied
+         * @returns {string|undefined} - path to the newly created node if it could be copied
          * @instance
          */
         function copyNode(path, parentPath, desc, msg) {
@@ -221,6 +226,7 @@ define([], function () {
                 _setAttrAndRegistry(newNode, desc);
                 newPath = storeNode(newNode);
 
+                state.callSequence.push({ name: 'copyNode', args: [...arguments], return: newPath });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'copyNode(' + path + ', ' + parentPath + ', ' + JSON.stringify(desc) + ')');
                 return newPath;
@@ -252,13 +258,14 @@ define([], function () {
          * @param {string} parameters.parentId - the id/path of the parent where the new copies should be created
          * @param {string} [msg] - optional commit message, if not supplied a default one with the 
          * function name and input parameters will be used
+         * @returns {object|undefined} - map from originating nodes' paths to the paths of the copies
          * @instance
          */
         function copyMoreNodes(parameters, msg) {
             var pathsToCopy = [],
                 parentNode = _getNode(parameters.parentId),
                 nodePath,
-                newNodes;
+                pathsToNewNodesAndPaths;
 
             if (parentNode) {
                 for (nodePath in parameters) {
@@ -275,20 +282,27 @@ define([], function () {
                 } else if (pathsToCopy.length === 1) {
                     copyNode(pathsToCopy[0], parameters.parentId, parameters[pathsToCopy[0]], msg);
                 } else {
-                    newNodes = _copyMultipleNodes(pathsToCopy, parentNode);
+                    pathsToNewNodesAndPaths = _copyMultipleNodes(pathsToCopy, parentNode);
 
-                    if (newNodes instanceof Error) {
-                        printCoreError(newNodes);
+                    if (pathsToNewNodesAndPaths instanceof Error) {
+                        printCoreError(pathsToNewNodesAndPaths);
                         return;
                     }
 
-                    for (nodePath in newNodes) {
-                        if (newNodes.hasOwnProperty(nodePath) && parameters[nodePath]) {
-                            _setAttrAndRegistry(newNodes[nodePath], parameters[nodePath]);
+                    const result = {};
+
+                    for (nodePath in pathsToNewNodesAndPaths) {
+                        if (pathsToNewNodesAndPaths.hasOwnProperty(nodePath)) {
+                            result[nodePath] = pathsToNewNodesAndPaths[nodePath].path;
+                            if (parameters[nodePath]) {
+                                _setAttrAndRegistry(pathsToNewNodesAndPaths[nodePath].node, parameters[nodePath]);
+                            }
                         }
                     }
 
+                    state.callSequence.push({ name: 'copyMoreNodes', args: [...arguments], return: result });
                     saveRoot(msg);
+                    return result;
                 }
             } else {
                 state.logger.error('wrong parameters for copy operation - denied -');
@@ -320,6 +334,7 @@ define([], function () {
          * @param {string} parameters.parentId - the id/path of the parent where the new copies should be created
          * @param {string} [msg] - optional commit message, if not supplied a default one with the 
          * function name and input parameters will be used
+         * @returns {object} - map from previous paths to the new paths of the moved nodes.
          * @instance
          */
         function moveMoreNodes(parameters, msg) {
@@ -354,6 +369,7 @@ define([], function () {
                 }
             }
 
+            state.callSequence.push({ name: 'moveMoreNodes', args: [...arguments], return: returnParams });
             saveRoot(typeof msg === 'string' ? msg : 'moveMoreNodes(' + JSON.stringify(returnParams) + ')');
             return returnParams;
         }
@@ -384,6 +400,7 @@ define([], function () {
          * @param {string} parameters.parentId - the id/path of the parent where the new nodes should be created
          * @param {string} [msg] - optional commit message, if not supplied a default one with the 
          * function name and input parameters will be used
+         * @returns {object} - map from the paths of the bases to the new nodes
          * @instance
          */
         function createChildren(parameters, msg) {
@@ -422,7 +439,7 @@ define([], function () {
 
             //now the instantiation
             for (i = 0; i < nodes.length; i++) {
-                newChildren.push(state.core.createNode({parent: parent, base: nodes[i]}));
+                newChildren.push(state.core.createNode({ parent: parent, base: nodes[i] }));
             }
 
             //now for the storage and relation setting
@@ -440,6 +457,7 @@ define([], function () {
 
             }
 
+            state.callSequence.push({ name: 'createChildren', args: [...arguments], return: result });
             msg = typeof msg === 'string' ? msg : 'createChildren(' + JSON.stringify(result) + ')';
             saveRoot(msg);
             return result;
@@ -459,6 +477,7 @@ define([], function () {
 
             if (node) {
                 state.core.deleteNode(node);
+                state.callSequence.push({ name: 'deleteNode', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'deleteNode(' + path + ')');
             }
         }
@@ -486,6 +505,7 @@ define([], function () {
             }
 
             if (didDelete) {
+                state.callSequence.push({ name: 'deleteNodes', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'deleteNodes(' + paths + ')');
             }
         }
@@ -515,11 +535,12 @@ define([], function () {
          * @param {object} parameters - the parameters holding necessary information for the creation.
          * @param {string} parameters.parentId - the path/id of the container of the new node.
          * @param {string} parameters.baseId - the path/id of the prototype of the new node.
-         * @param {string} parameters.parentId - the id/path of the parent where the new nodes should be created
          * @param {string} [parameters.guid] - the unique identifier of the node we will create.
          * @param {string} [parameters.relid] - the relative id of the node we will create.
-         * @param {string} [msg] - optional commit message, if not supplied a default one with the 
+         * @param {string} [msg] - optional commit message, if not supplied a default one with the
          * function name and input parameters will be used
+         * @param {object} [desc] - optional attributes or registries to set (registry defaults to postion [100,100])
+         * @returns {string|undefined} - path of the new node if successfully created
          * @instance
          */
         function createNode(parameters, desc, msg) {
@@ -557,6 +578,8 @@ define([], function () {
 
                 storeNode(newNode);
                 newID = state.core.getPath(newNode);
+
+                state.callSequence.push({ name: 'createNode', args: [...arguments], return: newID });
                 saveRoot(typeof msg === 'string' ? msg :
                     'createNode(' + parameters.parentId + ',' + parameters.baseId + ',' + newID + ')');
             }
@@ -588,6 +611,7 @@ define([], function () {
                     state.core.setPointer(node, name, targetNode);
                 }
 
+                state.callSequence.push({ name: 'setPointer', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'setPointer(' + path + ',' + name + ',' + target + ')');
             }
         }
@@ -609,6 +633,8 @@ define([], function () {
 
             if (node) {
                 state.core.delPointer(node, name);
+
+                state.callSequence.push({ name: 'delPointer', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delPointer(' + path + ',' + name + ')');
             }
         }
@@ -633,6 +659,7 @@ define([], function () {
 
             if (node && memberNode) {
                 state.core.addMember(node, setId, memberNode);
+                state.callSequence.push({ name: 'addMember', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'addMember(' + path + ',' + memberPath + ',' + setId + ')');
             }
         }
@@ -655,6 +682,7 @@ define([], function () {
 
             if (node) {
                 state.core.delMember(node, setId, memberPath);
+                state.callSequence.push({ name: 'removeMember', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'removeMember(' + path + ',' + memberPath + ',' + setId + ')');
             }
         }
@@ -679,6 +707,7 @@ define([], function () {
 
             if (node) {
                 state.core.setMemberAttribute(node, setId, memberPath, name, value);
+                state.callSequence.push({ name: 'setMemberAttribute', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'setMemberAttribute(' + [path, memberPath, setId, name, value].join(',') + ')');
             }
@@ -703,6 +732,7 @@ define([], function () {
 
             if (node) {
                 state.core.delMemberAttribute(node, setId, memberPath, name);
+                state.callSequence.push({ name: 'delMemberAttribute', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'delMemberAttribute(' + [path, memberPath, setId, name].join(',') + ')');
             }
@@ -728,6 +758,7 @@ define([], function () {
 
             if (node) {
                 state.core.setMemberRegistry(node, setId, memberPath, name, value);
+                state.callSequence.push({ name: 'setMemberRegistry', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'setMemberRegistry(' + path + ',' + memberPath + ',' + setId + ',' + name + ',' +
                     JSON.stringify(value) + ')');
@@ -753,6 +784,7 @@ define([], function () {
 
             if (node) {
                 state.core.delMemberRegistry(node, setId, memberPath, name);
+                state.callSequence.push({ name: 'delMemberRegistry', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'delMemberRegistry(' + path + ',' + memberPath + ',' + setId + ',' + name + ')');
             }
@@ -777,6 +809,7 @@ define([], function () {
 
             if (node) {
                 state.core.setSetAttribute(node, setName, attrName, attrValue);
+                state.callSequence.push({ name: 'setSetAttribute', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'setSetAttribute(' + path + ',' + setName + ',' + attrName + ',' +
                     JSON.stringify(attrValue) + ')');
@@ -799,6 +832,7 @@ define([], function () {
 
             if (node) {
                 state.core.delSetAttribute(node, setName, attrName);
+                state.callSequence.push({ name: 'delSetAttribute', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'delSetAttribute(' + path + ',' + setName + ',' + attrName + ')');
             }
@@ -822,6 +856,7 @@ define([], function () {
 
             if (node) {
                 state.core.setSetRegistry(node, setName, regName, regValue);
+                state.callSequence.push({ name: 'setSetRegistry', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'setSetRegistry(' + [path, setName, regName, JSON.stringify(regValue)].join(',') + ')');
             }
@@ -843,6 +878,7 @@ define([], function () {
 
             if (node) {
                 state.core.delSetRegistry(node, setName, regName);
+                state.callSequence.push({ name: 'delSetRegistry', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'delSetRegistry(' + path + ',' + setName + ',' + regName + ')');
             }
@@ -863,6 +899,7 @@ define([], function () {
 
             if (node) {
                 state.core.createSet(node, setId);
+                state.callSequence.push({ name: 'createSet', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'createSet(' + path + ',' + setId + ')');
             }
         }
@@ -887,7 +924,7 @@ define([], function () {
                     printCoreError(error);
                     return;
                 }
-
+                state.callSequence.push({ name: 'delSet', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delSet(' + path + ',' + setId + ')');
             }
         }
@@ -915,6 +952,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setBase', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'setBase(' + path + ',' + basePath + ')');
             }
         }
@@ -927,6 +965,7 @@ define([], function () {
          * @param {string} parentPath - the path/id of the new container node.
          * @param {string} [msg] - optional commit message, if not supplied a default one with the 
          * function name and input parameters will be used
+         * @returns {string} - path of the node at its new location
          * @instance
          */
         function moveNode(path, parentPath, msg) {
@@ -936,6 +975,7 @@ define([], function () {
 
             if (node && parentNode) {
                 movedPath = storeNode(state.core.moveNode(node, parentNode));
+                state.callSequence.push({ name: 'moveNode', args: [...arguments], return: movedPath });
                 saveRoot(typeof msg === 'string' ? msg : 'moveNode(' + path + ',' + parentPath + ')');
             }
 
@@ -963,6 +1003,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delBase', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delBase(' + path + ')');
             }
         }
@@ -979,7 +1020,7 @@ define([], function () {
          */
         function getMeta(path) {
             var node = _getNode(path),
-                meta = {children: {}, attributes: {}, pointers: {}, aspects: {}};
+                meta = { children: {}, attributes: {}, pointers: {}, aspects: {} };
 
             if (!node) {
                 return null;
@@ -1107,6 +1148,7 @@ define([], function () {
                     }
                 }
 
+                state.callSequence.push({ name: 'setMeta', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'setMeta(' + path + ')');
             }
         }
@@ -1125,7 +1167,7 @@ define([], function () {
 
             if (node) {
                 state.core.clearMetaRules(node);
-
+                state.callSequence.push({ name: 'clearMetaRules', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'clearMetaRules(' + path + ')');
             }
         }
@@ -1151,6 +1193,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'addMixin', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'addMixin(' + path + ',' + mixinPath + ')');
             }
         }
@@ -1176,6 +1219,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delMixin', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delMixin(' + path + ',' + mixinPath + ')');
             }
         }
@@ -1215,6 +1259,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setChildMeta', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'setChildMeta(' + path + ',' + childPath + ',' +
                     (min || -1) + ',' + (max || -1) + ')');
             }
@@ -1280,6 +1325,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setChildrenMetaLimits', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'Meta.setChildrenMeta(' + path + ')');
             }
         }
@@ -1305,6 +1351,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delChildMeta', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delChildMeta(' + path + ', ' + typeId + ')');
             }
         }
@@ -1341,6 +1388,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setAttributeMeta', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'setAttributeMeta(' + path + ', ' + name + ')');
             }
         }
@@ -1366,6 +1414,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delAttributeMeta', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delAttributeMeta(' + path + ', ' + name + ')');
             }
         }
@@ -1397,6 +1446,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setPointerMetaTarget', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'setPointerMetaTarget(' +
                     [path, name, targetPath, min || -1, max || -1].join(',') + ')');
             }
@@ -1427,6 +1477,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'movePointerMetaTarget', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'movePointerMetaTarget(' + path + ', ' + targetPath + ',' +
                     oldName + ',' + newName);
             }
@@ -1454,6 +1505,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delPointerMetaTarget', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg :
                     'delPointerMetaTarget(' + path + ', ' + name + ', ' + targetPath + ')');
             }
@@ -1480,6 +1532,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delPointerMeta', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delPointerMeta(' + path + ', ' + name + ')');
             }
         }
@@ -1562,6 +1615,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setPointerMeta', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'setPointerMeta(' + path + ', ' + name + ')');
             }
         }
@@ -1589,6 +1643,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'setAspectMetaTarget', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ?
                     msg : 'setAspectMetaTarget(' + path + ', ' + name + ',' + targetPath + ')');
             }
@@ -1616,6 +1671,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delAspectMetaTarget', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delAspectMeta(' + path + ', ' + name + ')');
             }
         }
@@ -1656,6 +1712,7 @@ define([], function () {
                     }
                 }
 
+                state.callSequence.push({ name: 'setAspectMetaTargets', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg :
                     'setAspectMetaTargets(' + path + ', ' + name + ',' + JSON.stringify(targetPaths) + ')');
             }
@@ -1682,6 +1739,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'delAspectMeta', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'delAspectMeta(' + path + ', ' + name + ')');
             }
         }
@@ -1993,7 +2051,7 @@ define([], function () {
                 meta = state.core.getPointerMeta(node, name);
 
                 if (meta) {
-                    pointerMeta = {min: meta.min, max: meta.max, items: []};
+                    pointerMeta = { min: meta.min, max: meta.max, items: [] };
 
                     for (i in meta) {
                         if (i !== 'min' && i !== 'max') {
@@ -2097,7 +2155,7 @@ define([], function () {
                 meta = state.core.getAspectMeta(node, name);
 
                 if (meta) {
-                    return {items: meta};
+                    return { items: meta };
                 }
             }
 
@@ -2169,12 +2227,12 @@ define([], function () {
             //the returned object structure is : {'min':0,'max':0,'items':[{'id':path,'min':0,'max':0},...]}
             var node = _getNode(path),
                 meta, i,
-                childrenMeta = {items: []};
+                childrenMeta = { items: [] };
 
             if (node) {
                 meta = state.core.getChildrenMeta(node);
                 if (meta) {
-                    childrenMeta = {min: meta.min, max: meta.max, items: []};
+                    childrenMeta = { min: meta.min, max: meta.max, items: [] };
                     for (i in meta) {
                         if (i !== 'min' && i !== 'max') {
                             childrenMeta.items.push({
@@ -2287,7 +2345,7 @@ define([], function () {
          * @param {string} [msg] - optional commit message, if not supplied a default one with 
          * the function name and input
          * parameters will be used
-         * @returns {GMENode[]|undefined} - the newly created nodes if all could be copied
+         * @returns {paths[]|undefined} - the newly created nodes if all could be copied
          * @instance
          */
         function copyNodes(pathsToCopy, parentPath, msg) {
@@ -2307,6 +2365,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'copyNodes', args: [...arguments], return: copyResult });
                 saveRoot(msg);
                 return copyResult;
             } else {
@@ -2340,6 +2399,8 @@ define([], function () {
                     printCoreError(e);
                     return;
                 }
+
+                state.callSequence.push({ name: 'renamePointer', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'renamePointer(' + path + ',' +
                     oldName + ',' + newName);
             }
@@ -2371,6 +2432,8 @@ define([], function () {
                     printCoreError(e);
                     return;
                 }
+
+                state.callSequence.push({ name: 'renameAttribute', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'renameAttribute(' + path + ',' +
                     oldName + ',' + newName);
             }
@@ -2402,6 +2465,8 @@ define([], function () {
                     printCoreError(e);
                     return;
                 }
+
+                state.callSequence.push({ name: 'renameRegistry', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'renameRegistry(' + path + ',' +
                     oldName + ',' + newName);
             }
@@ -2433,6 +2498,8 @@ define([], function () {
                     printCoreError(e);
                     return;
                 }
+
+                state.callSequence.push({ name: 'renameSet', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'renameSet(' + path + ',' +
                     oldName + ',' + newName);
             }
@@ -2466,6 +2533,7 @@ define([], function () {
                     return;
                 }
 
+                state.callSequence.push({ name: 'moveAspectMetaTarget', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'moveAspectMetaTarget(' + path + ', ' + targetPath + ',' +
                     oldName + ',' + newName);
             }
@@ -2497,6 +2565,8 @@ define([], function () {
                     printCoreError(e);
                     return;
                 }
+
+                state.callSequence.push({ name: 'moveMember', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'moveMember(' + path + ', ' + memberPath + ',' +
                     oldSetName + ',' + newSetName);
             }
@@ -2527,6 +2597,8 @@ define([], function () {
                     printCoreError(e);
                     return;
                 }
+
+                state.callSequence.push({ name: 'renameAttributeMeta', args: [...arguments] });
                 saveRoot(typeof msg === 'string' ? msg : 'renameAttributeMeta(' + path + ', ' + oldName + ',' +
                     newName + ')');
             }

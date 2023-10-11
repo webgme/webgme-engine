@@ -23,23 +23,24 @@ define([
     './pluginmanager',
     './websocketRouterAccess',
     'superagent'
-], function (Logger,
-             Storage,
-             EventDispatcher,
-             Core,
-             CONSTANTS,
-             ASSERT,
-             TASYNC,
-             GUID,
-             metaRules,
-             getNode,
-             getNodeSetters,
-             getLibraryFunctions,
-             getServerRequests,
-             stateLogHelpers,
-             PluginManager,
-             WebsocketRouterAccess,
-             superagent) {
+], function (
+    Logger,
+    Storage,
+    EventDispatcher,
+    Core,
+    CONSTANTS,
+    ASSERT,
+    TASYNC,
+    GUID,
+    metaRules,
+    getNode,
+    getNodeSetters,
+    getLibraryFunctions,
+    getServerRequests,
+    stateLogHelpers,
+    PluginManager,
+    WebsocketRouterAccess,
+    superagent) {
 
     'use strict';
 
@@ -76,6 +77,10 @@ define([
                     callbacks: []
                 },
                 msg: '',
+                // Current call-sequence for opened transaction.
+                callSequence: [],
+                // Commit-hash to call-sequences awaiting confirmation that they've been persisted it the database.
+                pendingCallSequences: {},
                 gHash: 0,
                 loadError: null,
                 ongoingTerritoryUpdateCounter: 0,
@@ -271,7 +276,7 @@ define([
             //deleted items
             for (i in state.users[userId].PATHS) {
                 if (!newPaths[i]) {
-                    events.push({etype: 'unload', eid: i});
+                    events.push({ etype: 'unload', eid: i });
                     loadedOrUnloaded[i] = true;
                 }
             }
@@ -279,7 +284,7 @@ define([
             //added items
             for (i in newPaths) {
                 if (!state.users[userId].PATHS[i]) {
-                    events.push({etype: 'load', eid: i});
+                    events.push({ etype: 'load', eid: i });
                     loadedOrUnloaded[i] = true;
                 }
             }
@@ -288,7 +293,7 @@ define([
             for (i = 0; i < modifiedNodes.length; i++) {
                 // Check that there wasn't a load or unload event for the node
                 if (newPaths[modifiedNodes[i]] && !loadedOrUnloaded[modifiedNodes[i]]) {
-                    events.push({etype: 'update', eid: modifiedNodes[i]});
+                    events.push({ etype: 'update', eid: modifiedNodes[i] });
                 }
             }
 
@@ -297,12 +302,12 @@ define([
             //this is how the events should go
             if (events.length > 0) {
                 if (state.loadError > startErrorLevel) {
-                    events.unshift({etype: 'incomplete', eid: null});
+                    events.unshift({ etype: 'incomplete', eid: null });
                 } else {
-                    events.unshift({etype: 'complete', eid: null});
+                    events.unshift({ etype: 'complete', eid: null });
                 }
             } else {
-                events.unshift({etype: 'complete', eid: null});
+                events.unshift({ etype: 'complete', eid: null });
             }
 
             state.users[userId].FN(events); //eslint-disable-line new-cap
@@ -576,9 +581,9 @@ define([
 
             for (i = 0; i < userIds.length; i++) {
                 if (state.users[userIds[i]]) {
-                    events = [{eid: null, etype: 'complete'}];
+                    events = [{ eid: null, etype: 'complete' }];
                     for (j in state.users[userIds[i]].PATHS) {
-                        events.push({etype: 'unload', eid: j});
+                        events.push({ etype: 'unload', eid: j });
                     }
                     state.users[userIds[i]].PATTERNS = {};
                     state.users[userIds[i]].PATHS = {};
@@ -642,6 +647,16 @@ define([
                             logger.error('saveRoot failure', err);
                         } else {
                             logger.debug('saveRoot', result);
+                            if (result) {
+                                const callSequenceData = state.pendingCallSequences[result.hash];
+                                if (callSequenceData) {
+                                    delete state.pendingCallSequences[result.hash];
+                                    callSequenceData.commitStatus = result.status;
+                                    dispatchCoreCallSequence(callSequenceData);
+                                } else {
+                                    logger.error(`state.pendingCallSequences did not contain: ${result.hash}`);
+                                }
+                            }
                         }
 
                         callbacks.forEach(function (cb) {
@@ -664,8 +679,8 @@ define([
                         logger.warn('Lots of persisted objects', numberOfPersistedObjects);
                     }
 
-                    // Make the commit on the storage (will emit hashUpdated)
-                    storage.makeCommit(
+                    // Make the commit onto the storage (will trigger hashUpdateHandler).
+                    const commitObj = storage.makeCommit(
                         state.project.projectId,
                         state.branchName,
                         [state.commitHash],
@@ -676,6 +691,17 @@ define([
                     );
 
                     state.msg = '';
+                    // This will be dispatched in the wrappedCallback.
+                    state.pendingCallSequences[commitObj._id] = {
+                        projectId: state.project.projectId,
+                        branchName: state.branchName,
+                        prevRootHash: state.rootHash,
+                        prevCommitHash: state.commitHash,
+                        commitObject: commitObj,
+                        commitStatus: null, // To be determined in the callback.
+                        callSequence: [...state.callSequence]
+                    };
+                    state.callSequence = [];
                 } else {
                     logger.debug('is in transaction - will NOT persist.');
 
@@ -1208,6 +1234,8 @@ define([
                     }
 
                     state.branchName = null;
+                    state.callSequence = [];
+                    state.pendingCallSequences = {};
                     self.dispatchEvent(CONSTANTS.BRANCH_CLOSED, prevBranchName);
                     openBranch();
                 });
@@ -1275,6 +1303,8 @@ define([
                     }
 
                     state.branchName = null;
+                    state.callSequence = [];
+                    state.pendingCallSequences = {};
                     self.dispatchEvent(CONSTANTS.BRANCH_CLOSED, prevBranchName);
                     openCommit();
                 });
@@ -1593,7 +1623,7 @@ define([
 
         this.getProjectsAndBranches = function (asObject, callback) {
             //This is kept for the tests.
-            self.getProjects({rights: true, branches: true, asObject: asObject}, callback);
+            self.getProjects({ rights: true, branches: true, asObject: asObject }, callback);
         };
 
         this.getBranches = function (projectId, callback) {
@@ -1842,12 +1872,17 @@ define([
             }
         };
 
+        // core-setters
+        function dispatchCoreCallSequence(callSequence) {
+            self.dispatchEvent(CONSTANTS.CORE_CALL_SEQUENCE, callSequence);
+        }
+
         //territory functions
         this.addUI = function (ui, fn, guid) {
             ASSERT(fn);
             ASSERT(typeof fn === 'function');
             guid = guid || GUID();
-            state.users[guid] = {type: 'notused', UI: ui, PATTERNS: {}, PATHS: {}, SENDEVENTS: true, FN: fn};
+            state.users[guid] = { type: 'notused', UI: ui, PATTERNS: {}, PATHS: {}, SENDEVENTS: true, FN: fn };
             return guid;
         };
 
@@ -1936,17 +1971,19 @@ define([
         };
 
         // Constraints
-        this.setConstraint = function (path, name, constraintObj) {
+        this.setConstraint = function (path, name, constraintObj, msg) {
             if (state.core && state.nodes[path] && typeof state.nodes[path].node === 'object') {
                 state.core.setConstraint(state.nodes[path].node, name, constraintObj);
-                saveRoot('setConstraint(' + path + ',' + name + ')');
+                state.callSequence.push({ name: 'setConstraint', args: [...arguments] });
+                saveRoot(typeof msg === 'string' ? msg : 'setConstraint(' + path + ',' + name + ')');
             }
         };
 
-        this.delConstraint = function (path, name) {
+        this.delConstraint = function (path, name, msg) {
             if (state.core && state.nodes[path] && typeof state.nodes[path].node === 'object') {
                 state.core.delConstraint(state.nodes[path].node, name);
-                saveRoot('delConstraint(' + path + 'name' + ')');
+                state.callSequence.push({ name: 'delConstraint', args: [...arguments] });
+                saveRoot(typeof msg === 'string' ? msg : 'delConstraint(' + path + 'name' + ')');
             }
         };
 
@@ -2012,8 +2049,8 @@ define([
             logger.fork('websocketRouterAccess'),
             this,
             storage)).getWebsocketRouterAccess;
-        
-        
+
+
         window.addEventListener('error', function (evt) {
             var errorType;
             state.exception = {};
