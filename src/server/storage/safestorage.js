@@ -323,6 +323,7 @@ SafeStorage.prototype.createProject = function (data, callback) {
             })
             .then(function (dbProject) {
                 var project = new UserProject(dbProject, self, self.logger, self.gmeConfig);
+                project.setUser(data.username);
                 deferred.resolve(project);
             })
             .catch(function (err) {
@@ -505,6 +506,7 @@ SafeStorage.prototype.duplicateProject = function (data, callback) {
             })
             .then(function (dbProject) {
                 var project = new UserProject(dbProject, self, self.logger, self.gmeConfig);
+                project.setUser(data.username);
                 deferred.resolve(project);
             })
             .catch(function (err) {
@@ -1319,6 +1321,7 @@ SafeStorage.prototype.openProject = function (data, callback) {
     self._getProject(data)
         .then(function (dbProject) {
             userProject = new UserProject(dbProject, self, self.logger, self.gmeConfig);
+            userProject.setUser(data.username);
             deferred.resolve(userProject);
         })
         .catch(function (err) {
