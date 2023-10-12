@@ -1,4 +1,18 @@
 # Changelog
+
+## [v2.27.0](https://github.com/webgme/webgme-engine/tree/v2.27.0) (2023-10-12)
+
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.26.0...v2.27.0)
+
+**Fixed bugs:**
+
+- userId used to retrieve project from `safeStorage` ignored by `project.getTags` [\#318](https://github.com/webgme/webgme-engine/issues/318)
+- Fixes \#318 set username when retrieving project from storage [\#320](https://github.com/webgme/webgme-engine/pull/320) ([pmeijer](https://github.com/pmeijer))
+
+**Merged pull requests:**
+
+- Azure based user authentication [\#319](https://github.com/webgme/webgme-engine/pull/319) ([kecso](https://github.com/kecso))
+
 ## [v2.26.0](https://github.com/webgme/webgme-engine/tree/v2.26.0) (2023-09-01)
 
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.25.3...v2.26.0)
