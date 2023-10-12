@@ -73,7 +73,14 @@ process.on('message', function (parameters) {
     logger.debug('Incoming message:', {metadata: parameters});
 
     if (parameters.command === CONSTANTS.workerCommands.executePlugin) {
-        wr.executePlugin(parameters.webgmeToken, parameters.socketId, parameters.name, parameters.context,
+        wr.executePlugin(
+            {
+                webgme: parameters.webgmeToken,
+                aad: parameters.aadToken
+            }, 
+            parameters.socketId, 
+            parameters.name, 
+            parameters.context,
             function (err, result) {
                 safeSend({
                     pid: process.pid,
@@ -81,8 +88,7 @@ process.on('message', function (parameters) {
                     error: err ? err.message : null,
                     result: result
                 });
-            }
-        );
+            });
     } else if (parameters.command === CONSTANTS.workerCommands.seedProject) {
         parameters.type = parameters.type || 'db';
         wr.seedProject(parameters.webgmeToken, parameters.projectName, parameters.ownerId, parameters,

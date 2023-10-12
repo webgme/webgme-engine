@@ -35,7 +35,7 @@ define(['blob/BlobConfig'], function (BlobConfig) {
             this.contentType = metadata.contentType || BlobMetadata.CONTENT_TYPES.OBJECT;
             if (this.contentType === BlobMetadata.CONTENT_TYPES.COMPLEX) {
                 for (key in this.content) {
-                    if (this.content.hasOwnProperty(key)) {
+                    if (Object.hasOwn(this.content, key)) {
                         if (BlobConfig.hashRegex.test(this.content[key].content) === false) {
                             throw new Error('BlobMetadata is malformed: hash \'' + this.content[key].content +
                                 '\'is invalid');

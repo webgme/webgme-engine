@@ -173,7 +173,7 @@ main = function (argv, callback) {
                         var WorkerRequests = require('../server/worker/workerrequests'),
                             wr = new WorkerRequests(logger, gmeConfig, program.serverUrl);
                         context.project = project.projectId;
-                        wr.executePlugin(token, undefined, pluginName,
+                        wr.executePlugin({webgme: token}, undefined, pluginName,
                             {
                                 managerConfig: context,
                                 pluginConfig: pluginConfig,

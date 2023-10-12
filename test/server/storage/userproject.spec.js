@@ -70,7 +70,7 @@ describe('UserProject', function () {
     it('should getBranches', function (done) {
         project.getBranches()
             .then(function (branches_) {
-                expect(branches_.hasOwnProperty('master')).to.equal(true);
+                expect(Object.hasOwn(branches_, 'master')).to.equal(true);
             })
             .nodeify(done);
     });

@@ -203,7 +203,7 @@ describe('Core GUID handling', function () {
         }
 
         for (i = 0; i < nodes.length; i += 1) {
-            expect(guids.hasOwnProperty(core.getGuid(nodes[i]))).to.eql(false);
+            expect(Object.hasOwn(guids, core.getGuid(nodes[i]))).to.eql(false);
             guids[core.getGuid(nodes[i])] = true;
         }
     });
@@ -229,7 +229,7 @@ describe('Core GUID handling', function () {
         }
 
         for (i = 0; i < nodes.length; i += 1) {
-            expect(guids.hasOwnProperty(core.getGuid(nodes[i]))).to.eql(false);
+            expect(Object.hasOwn(guids, core.getGuid(nodes[i]))).to.eql(false);
             guids[core.getGuid(nodes[i])] = true;
         }
     });

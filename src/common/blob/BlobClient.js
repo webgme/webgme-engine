@@ -92,7 +92,7 @@ define([
             } else {
                 this.Agent = require('agentkeepalive');
             }
-            if (this.keepaliveAgentOptions.hasOwnProperty('ca') === false) {
+            if (Object.hasOwn(this.keepaliveAgentOptions, 'ca') === false) {
                 this.keepaliveAgentOptions.ca = require('https').globalAgent.options.ca;
             }
             this.keepaliveAgent = new this.Agent(this.keepaliveAgentOptions);
@@ -210,7 +210,7 @@ define([
                 data = '';
             }
         }
-        contentLength = data.hasOwnProperty('length') ? data.length : data.byteLength;
+        contentLength = Object.hasOwn(data, 'length') ? data.length : data.byteLength;
         req = superagent.post(this.getCreateURL(name));
 
         if (typeof window === 'undefined') {

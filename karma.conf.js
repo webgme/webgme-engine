@@ -69,7 +69,7 @@ var testFixture = require('./test/_globals.js'),
 
 
             function importProject(projectInfo) {
-                var branchName = projectInfo.hasOwnProperty('branches') ?
+                var branchName = Object.hasOwn(projectInfo, 'branches') ?
                     projectInfo.branches[0] : 'master';
                 //console.log((new Date()).toISOString(), ' importing ' + projectInfo.name);
                 return testFixture.importProject(storage, {
@@ -82,7 +82,7 @@ var testFixture = require('./test/_globals.js'),
                     .then(function (importResult) {
                         var i,
                             createBranches = [];
-                        if (projectInfo.hasOwnProperty('branches') && projectInfo.branches.length > 1) {
+                        if (Object.hasOwn(projectInfo, 'branches') && projectInfo.branches.length > 1) {
                             // First one is already added thus i = 1.
                             for (i = 1; i < projectInfo.branches.length; i += 1) {
                                 createBranches.push(storage.createBranch(

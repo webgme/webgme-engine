@@ -1067,7 +1067,7 @@ describe('PROJECT REST API', function () {
                                             // we have to create a new commit to change the branch hash
                                             safeStorage.makeCommit(commitData)
                                                 .then(function (result) {
-                                                    expect(result.hasOwnProperty('hash')).to.equal(true);
+                                                    expect(Object.hasOwn(result, 'hash')).to.equal(true);
 
                                                     agent.patch(server.getUrl() + '/api/projects/' +
                                                         projectName2APIPath(projectName) +
@@ -1274,7 +1274,7 @@ describe('PROJECT REST API', function () {
                                     '/tags')
                                     .end(function (err, res) {
                                         expect(res.status).equal(200, err);
-                                        expect(res.body.hasOwnProperty('toDel')).to.equal(false);
+                                        expect(Object.hasOwn(res.body, 'toDel')).to.equal(false);
 
                                         done();
                                     });

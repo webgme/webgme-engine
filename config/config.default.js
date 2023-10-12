@@ -57,6 +57,22 @@ var path = require('path'),
             resetTimeout: 1200000,
             resetUrl: '/profile/reset',
             useEmailForId: false,
+            azureActiveDirectory: {
+                enable: false,
+                clientId: 'Example_Client_Id',
+                authority: 'Example_authority_URI',
+                jwksUri: 'https://login.microsoftonline.com/common/discovery/keys',
+                // the following two are optionals, but if not 
+                // given, the device authentication will not work
+                issuer: 'Example_token_issuer_for_verification',
+                audience: 'Example_audience_for_token_validation',
+                clientSecret: 'Example_client_Secret',
+                cookieId: 'webgme_aad',
+                redirectUri: 'need to set this temp, would be nice to deduct it',
+                // optional, but if used an access token is will be fetched 
+                // after the authentication happens so router endpoints might use it
+                accessScope: null,
+            },
         },
 
         api: {
@@ -161,7 +177,8 @@ var path = require('path'),
             allowServerExecution: false,
             basePaths: [path.join(__dirname, '../src/plugin/coreplugins')],
             displayAll: false,
-            serverResultTimeout: 60000
+            serverResultTimeout: 60000,
+            suppressRegularNotifications: false
         },
 
         requirejsPaths: {},

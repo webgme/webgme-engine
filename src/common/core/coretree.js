@@ -121,7 +121,7 @@ define([
             ASSERT(UTIL.isTrueObject(children));
             ASSERT(typeof relid === 'string');
 
-            if (children.hasOwnProperty(relid)) {
+            if (Object.hasOwn(children, relid)) {
                 children[relid].age = 0;
                 return children[relid];
             }
@@ -343,7 +343,7 @@ define([
 
         function isValidNodeThrow(node) {
             __test('object', typeof node === 'object' && node !== null);
-            __test('object 2', node.hasOwnProperty('parent') && node.hasOwnProperty('relid'));
+            __test('object 2', Object.hasOwn(node, 'parent') && Object.hasOwn(node, 'relid'));
             __test('parent', typeof node.parent === 'object');
             __test('relid', typeof node.relid === 'string' || node.relid === null);
             __test('parent 2', (node.parent === null) === (node.relid === null));

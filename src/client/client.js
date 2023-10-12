@@ -167,7 +167,7 @@ define([
                 // Gather all meta-nodes that had an update.
                 metaNodes = state.core.getAllMetaNodes(newerNodes[ROOT_PATH].node);
                 for (updatePath in state.loading.changedNodes.update) {
-                    if (metaNodes.hasOwnProperty(updatePath)) {
+                    if (Object.hasOwn(metaNodes, updatePath)) {
                         updatedMetaPaths.push(updatePath);
                     }
                 }
@@ -176,7 +176,7 @@ define([
                     // There are meta-nodes with updates.
                     for (metaPath in metaNodes) {
                         // For all meta nodes..
-                        if (metaNodes.hasOwnProperty(metaPath)) {
+                        if (Object.hasOwn(metaNodes, metaPath)) {
                             for (i = 0; i < updatedMetaPaths.length; i += 1) {
                                 // check if it is a typeOf (includes mixins) any of the updated meta-nodes
                                 if (state.core.isTypeOf(metaNodes[metaPath], metaNodes[updatedMetaPaths[i]]) === true) {
@@ -201,7 +201,7 @@ define([
             }
 
             for (nodePath in state.nodes) {
-                if (state.nodes.hasOwnProperty(nodePath) && newerNodes.hasOwnProperty(nodePath) &&
+                if (Object.hasOwn(state.nodes, nodePath) && Object.hasOwn(newerNodes, nodePath) &&
                     wasNodeUpdated(state.loading.changedNodes, newerNodes[nodePath].node)) {
 
                     modifiedNodes.push(nodePath);
@@ -257,7 +257,7 @@ define([
                 events = [];
 
             for (i in state.users[userId].PATTERNS) {
-                if (state.users[userId].PATTERNS.hasOwnProperty(i)) {
+                if (Object.hasOwn(state.users[userId].PATTERNS, i)) {
                     if (state.nodes[i]) { //TODO we only check pattern if its root is there...
                         patternToPaths(i, state.users[userId].PATTERNS[i], newPaths);
                     }
@@ -409,7 +409,7 @@ define([
         function reLaunchUsers() {
             var i;
             for (i in state.users) {
-                if (state.users.hasOwnProperty(i)) {
+                if (Object.hasOwn(state.users, i)) {
                     if (state.users[i].UI && typeof state.users[i].UI === 'object' &&
                         typeof state.users[i].UI.reLaunch === 'function') {
                         state.users[i].UI.reLaunch();
@@ -472,7 +472,7 @@ define([
             // These are checked by the meta-editor..
 
             for (key in state.users) {
-                if (state.users.hasOwnProperty(key)) {
+                if (Object.hasOwn(state.users, key)) {
                     userEvents(key, modifiedPaths);
                 }
             }
@@ -732,7 +732,7 @@ define([
         nodeSetterFunctions = getNodeSetters(logger, state, saveRoot, storeNode, printCoreError);
 
         for (monkeyPatchKey in nodeSetterFunctions) {
-            if (nodeSetterFunctions.hasOwnProperty(monkeyPatchKey)) {
+            if (Object.hasOwn(nodeSetterFunctions, monkeyPatchKey)) {
                 self[monkeyPatchKey] = nodeSetterFunctions[monkeyPatchKey];
             }
         }
@@ -740,7 +740,7 @@ define([
         coreLibraryFunctions = getLibraryFunctions(logger, state, storage, saveRoot);
 
         for (monkeyPatchKey in coreLibraryFunctions) {
-            if (coreLibraryFunctions.hasOwnProperty(monkeyPatchKey)) {
+            if (Object.hasOwn(coreLibraryFunctions, monkeyPatchKey)) {
                 self[monkeyPatchKey] = coreLibraryFunctions[monkeyPatchKey];
             }
         }
@@ -748,7 +748,7 @@ define([
         serverRequests = getServerRequests(self, logger, state, storage);
 
         for (monkeyPatchKey in serverRequests) {
-            if (serverRequests.hasOwnProperty(monkeyPatchKey)) {
+            if (Object.hasOwn(serverRequests, monkeyPatchKey)) {
                 self[monkeyPatchKey] = serverRequests[monkeyPatchKey];
             }
         }
@@ -957,7 +957,7 @@ define([
                     logger.debug('projectOpened, branches: ', branches);
                     self.dispatchEvent(CONSTANTS.PROJECT_OPENED, projectId);
 
-                    if (branches.hasOwnProperty(branchToOpen) === false) {
+                    if (Object.hasOwn(branches, branchToOpen) === false) {
                         if (branchName) {
                             logger.error('Given branch does not exist "' + branchName + '"');
                             closeProject(projectId, function (err) {
@@ -1437,7 +1437,7 @@ define([
         };
 
         this.getCommitQueue = function () {
-            if (state.project && state.branchName && state.project.branches.hasOwnProperty(state.branchName)) {
+            if (state.project && state.branchName && Object.hasOwn(state.project.branches, state.branchName)) {
                 return state.project.branches[state.branchName].getCommitQueue();
             }
 

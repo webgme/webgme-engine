@@ -592,7 +592,7 @@ define(['q', 'common/core/constants'], function (Q, CONSTANTS) {
             }
 
             for (key in ownMetaJson.attributes) {
-                if (ownMetaJson.attributes[key].hasOwnProperty('regexp')) {
+                if (Object.hasOwn(ownMetaJson.attributes[key], 'regexp')) {
                     try {
                         new RegExp(ownMetaJson.attributes[key].regexp);
                     } catch (err) {
@@ -611,7 +611,7 @@ define(['q', 'common/core/constants'], function (Q, CONSTANTS) {
                 if (ownMetaJson.attributes[key].type === CONSTANTS.ATTRIBUTE_TYPES.INTEGER ||
                     ownMetaJson.attributes[key].type === CONSTANTS.ATTRIBUTE_TYPES.FLOAT) {
 
-                    if (ownMetaJson.attributes[key].hasOwnProperty('min') &&
+                    if (Object.hasOwn(ownMetaJson.attributes[key], 'min') &&
                         typeof ownMetaJson.attributes[key].min !== 'number') {
                         result.push({
                             severity: 'error',
@@ -624,7 +624,7 @@ define(['q', 'common/core/constants'], function (Q, CONSTANTS) {
                         });
                     }
 
-                    if (ownMetaJson.attributes[key].hasOwnProperty('max') &&
+                    if (Object.hasOwn(ownMetaJson.attributes[key], 'max') &&
                         typeof ownMetaJson.attributes[key].max !== 'number') {
                         result.push({
                             severity: 'error',

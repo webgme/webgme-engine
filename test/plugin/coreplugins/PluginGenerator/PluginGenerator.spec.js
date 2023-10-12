@@ -125,7 +125,7 @@ describe('PluginGenerator', function () {
         expect(Object.keys(pluginConfig).length).to.equal(pluginStructure.length);
 
         for (i = 0; i < pluginStructure.length; i += 1) {
-            expect(pluginConfig.hasOwnProperty(pluginStructure[i].name)).to.equal(true);
+            expect(Object.hasOwn(pluginConfig, pluginStructure[i].name)).to.equal(true);
             expect(pluginConfig[pluginStructure[i].name]).to.equal(pluginStructure[i].value);
         }
     });

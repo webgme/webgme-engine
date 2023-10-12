@@ -125,7 +125,7 @@ main = function (argv, callback) {
                         // get existing authorization information for old project
                         users.map(function (user) {
                             // identify possible owner of the project
-                            if (user.projects.hasOwnProperty(collection.name) &&
+                            if (Object.hasOwn(user.projects, collection.name) &&
                                 user.projects[collection.name].delete) {
 
                                 if (projectDetail.owner) {
@@ -171,7 +171,7 @@ main = function (argv, callback) {
                         authorizePromise;
 
                     users.map(function (user) {
-                        if (user.projects.hasOwnProperty(info.collectionName)) {
+                        if (Object.hasOwn(user.projects, info.collectionName)) {
                             logger.info('Authorizing ' + user._id + ' for ' + newProjectId);
 
                             authorizePromise = gmeAuth.authorizeByUserId(user._id, newProjectId, 'create',

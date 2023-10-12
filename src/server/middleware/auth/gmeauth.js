@@ -572,7 +572,7 @@ function GMEAuth(session, gmeConfig) {
                 oldUserData.email = userData.email || oldUserData.email;
 
 
-                if (userData.hasOwnProperty('data')) {
+                if (Object.hasOwn(userData, 'data')) {
                     if (UTIL.isTrueObject(userData.data)) {
                         oldUserData.data = userData.data;
                     } else {
@@ -580,7 +580,7 @@ function GMEAuth(session, gmeConfig) {
                     }
                 }
 
-                if (userData.hasOwnProperty('settings')) {
+                if (Object.hasOwn(userData, 'settings')) {
                     if (UTIL.isTrueObject(userData.settings)) {
                         oldUserData.settings = userData.settings;
                     } else {
@@ -588,11 +588,11 @@ function GMEAuth(session, gmeConfig) {
                     }
                 }
 
-                if (userData.hasOwnProperty('canCreate')) {
+                if (Object.hasOwn(userData, 'canCreate')) {
                     oldUserData.canCreate = userData.canCreate === 'true' || userData.canCreate === true;
                 }
 
-                if (userData.hasOwnProperty('siteAdmin')) {
+                if (Object.hasOwn(userData, 'siteAdmin')) {
                     oldUserData.siteAdmin = userData.siteAdmin === 'true' || userData.siteAdmin === true;
                 }
 
@@ -640,7 +640,7 @@ function GMEAuth(session, gmeConfig) {
 
         let isNewlyCreated = false;
         let currentValue = keys.reduce((value, key) => {
-            if (value.hasOwnProperty(key)) {
+            if (Object.hasOwn(value, key)) {
                 return value[key];
             } else {
                 isNewlyCreated = true;
@@ -787,7 +787,7 @@ function GMEAuth(session, gmeConfig) {
         const user = await collection.findOne(query);
         let result = user.data;
         fields.forEach(key => {
-            if (!result.hasOwnProperty(key)) {
+            if (!Object.hasOwn(result, key)) {
                 throw new Error(`User data field not found: ${jointKey}`);
             }
             result = result[key];
@@ -895,9 +895,10 @@ function GMEAuth(session, gmeConfig) {
                 siteAdmin: options.siteAdmin,
                 displayName: options.displayName,
                 disabled: false,
+                aadId: options.aadId
             };
 
-        if (options.hasOwnProperty('data')) {
+        if (Object.hasOwn(options, 'data')) {
             if (UTIL.isTrueObject(options.data)) {
                 data.data = options.data;
             } else {
@@ -906,7 +907,7 @@ function GMEAuth(session, gmeConfig) {
             }
         }
 
-        if (options.hasOwnProperty('settings')) {
+        if (Object.hasOwn(options, 'settings')) {
             if (UTIL.isTrueObject(options.settings)) {
                 data.settings = options.settings;
             } else {

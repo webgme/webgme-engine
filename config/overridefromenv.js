@@ -41,13 +41,13 @@ function overrideFromEnv(config) {
 
                 subConfig = config;
                 configPath.forEach(function (cfgName, idx) {
-                    wasCreated = wasCreated || (subConfig.hasOwnProperty(cfgName) === false);
+                    wasCreated = wasCreated || (Object.hasOwn(subConfig, cfgName) === false);
                     if (idx === configPath.length - 1) {
                         subConfig[cfgName] = value;
                         console.log('ENV ' + (wasCreated ? 'created' : 'updated') +
                             ' config.' + configPath.join('.') + '=' + value + ' <' + typeof value + '>');
                     } else {
-                        if (subConfig.hasOwnProperty(cfgName) === false) {
+                        if (Object.hasOwn(subConfig, cfgName) === false) {
                             subConfig[cfgName] = {};
                         } else if (typeof subConfig[cfgName] !== 'object' ||
                             subConfig[cfgName] === null ||

@@ -94,7 +94,7 @@ function createLogger(name, options) {
         logger = createLogger('gme:logger');
     }
 
-    if (loggers.hasOwnProperty(name)) {
+    if (Object.hasOwn(loggers, name)) {
         return loggers[name];
     }
 

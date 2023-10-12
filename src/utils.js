@@ -184,7 +184,7 @@ function getSVGMap(gmeConfig, logger, callback) {
                         relativeFilePath = path.relative(svgDir, fname),
                         p = joinPath(['assets', 'DecoratorSVG', dirName].concat(relativeFilePath.split(path.sep)));
 
-                    if (svgMap.hasOwnProperty(p)) {
+                    if (Object.hasOwn(svgMap, p)) {
                         logger.warn('Colliding SVG paths [', p, '] between [', svgMap[p], '] and [',
                             fname, ']. Will proceed and use the latter...');
                     }
@@ -369,7 +369,7 @@ function getSeedDictionary(config, callback) {
 
                             if (extension.toLowerCase() === '.webgmex') {
                                 seedName = path.basename(seedPath, extension);
-                                if (result.hasOwnProperty(seedName) === false) {
+                                if (Object.hasOwn(result, seedName) === false) {
                                     result[seedName] = seedDir + '/' + seedName + extension;
                                 }
                             }

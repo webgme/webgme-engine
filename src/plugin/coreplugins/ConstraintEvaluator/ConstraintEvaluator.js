@@ -102,7 +102,7 @@ define([
                 info = constraints[key](),
                 error;
 
-            if (self.META.hasOwnProperty(info.metaType) === true) {
+            if (Object.hasOwn(self.META, info.metaType) === true) {
                 if (self.isMetaTypeOf(node, self.META[info.metaType])) {
                     Q.nfcall(info.fn, self.core, node)
                         .then(function (result) {

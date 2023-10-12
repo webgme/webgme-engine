@@ -436,17 +436,17 @@ function importProject(storage, parameters, callback) {
     exports.expect(typeof parameters.gmeConfig).to.equal('object');
     exports.expect(typeof parameters.logger).to.equal('object');
 
-    if (parameters.hasOwnProperty('username')) {
+    if (Object.hasOwn(parameters, 'username')) {
         exports.expect(typeof parameters.username).to.equal('string');
         data.username = parameters.username;
     }
 
-    if (parameters.hasOwnProperty('ownerId')) {
+    if (Object.hasOwn(parameters, 'ownerId')) {
         exports.expect(typeof parameters.ownerId).to.equal('string');
         data.ownerId = parameters.ownerId;
     }
 
-    if (parameters.hasOwnProperty('kind')) {
+    if (Object.hasOwn(parameters, 'kind')) {
         exports.expect(typeof parameters.kind).to.equal('string');
         data.kind = parameters.kind;
     }

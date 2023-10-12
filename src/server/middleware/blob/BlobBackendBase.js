@@ -184,7 +184,7 @@ BlobBackendBase.prototype.getFile = function (metadataHash, subpath, writeStream
             // 3) pipe the zip package to the stream
 
             if (subpath) {
-                if (metadata.content.hasOwnProperty(subpath)) {
+                if (Object.hasOwn(metadata.content, subpath)) {
                     var contentObj = metadata.content[subpath];
 
                     if (contentObj.contentType === BlobMetadata.CONTENT_TYPES.OBJECT) {

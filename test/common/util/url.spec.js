@@ -15,10 +15,10 @@ describe('url', function () {
         var result,
             url = 'some/url+is#here&';
 
-        expect(URL.hasOwnProperty('urlToRefObject'), true);
+        expect(Object.hasOwn(URL, 'urlToRefObject'), true);
 
         result = URL.urlToRefObject(url);
-        expect(result.hasOwnProperty('$ref'), true);
+        expect(Object.hasOwn(result, '$ref'), true);
         expect(result.$ref).to.equal(url);
     });
 
@@ -26,15 +26,15 @@ describe('url', function () {
         var result,
             cookie = 'username=John Doe; expires=Thu, 18 Dec 2013 12:00:00 UTC; path=/';
 
-        expect(URL.hasOwnProperty('parseCookie'), true);
+        expect(Object.hasOwn(URL, 'parseCookie'), true);
 
         result = URL.parseCookie(cookie);
 
-        expect(result.hasOwnProperty('username'), true);
+        expect(Object.hasOwn(result, 'username'), true);
         expect(result.username).to.equal('John Doe');
-        expect(result.hasOwnProperty('expires'), true);
+        expect(Object.hasOwn(result, 'expires'), true);
         expect(result.expires).to.equal('Thu, 18 Dec 2013 12:00:00 UTC');
-        expect(result.hasOwnProperty('path'), true);
+        expect(Object.hasOwn(result, 'path'), true);
         expect(result.path).to.equal('/');
     });
 });

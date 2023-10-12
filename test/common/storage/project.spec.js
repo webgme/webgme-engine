@@ -135,7 +135,7 @@ describe('common storage project', function () {
                 access = result[2];
                 expect(project instanceof ProjectInterface).to.equal(true);
                 expect(project.projectId).to.equal(projectName2Id(projectName));
-                expect(branches.hasOwnProperty('master')).to.equal(true);
+                expect(Object.hasOwn(branches, 'master')).to.equal(true);
                 expect(access).to.deep.equal({read: true, write: true, delete: true});
             })
             .nodeify(done);
@@ -178,7 +178,7 @@ describe('common storage project', function () {
                 return project.getBranches();
             })
             .then(function (branches_) {
-                expect(branches_.hasOwnProperty('master')).to.equal(true);
+                expect(Object.hasOwn(branches_, 'master')).to.equal(true);
             })
             .nodeify(done);
     });

@@ -48,17 +48,17 @@ var main = function (argv) {
         gmeConfig.mongo.uri = program.mongoDatabaseUri;
     }
 
-    if (program.hasOwnProperty('projectName') === false) {
+    if (Object.hasOwn(program, 'projectName') === false) {
         logger.error('project name is a mandatory parameter!');
         syntaxFailure = true;
     }
 
-    if (program.hasOwnProperty('mine') === false) {
+    if (Object.hasOwn(program, 'mine') === false) {
         logger.error('my branch/commit parameter is mandatory!');
         syntaxFailure = true;
     }
 
-    if (program.hasOwnProperty('theirs') === false) {
+    if (Object.hasOwn(program, 'theirs') === false) {
         logger.error('their branch/commit parameter is mandatory!');
         syntaxFailure = true;
     }

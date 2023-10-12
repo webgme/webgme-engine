@@ -78,8 +78,8 @@ define([
 
         //add
         for (i in target) {
-            if (excludeList.indexOf(i) === -1 && target.hasOwnProperty(i)) {
-                if (!source.hasOwnProperty(i)) {
+            if (excludeList.indexOf(i) === -1 && Object.hasOwn(target, i)) {
+                if (!Object.hasOwn(source, i)) {
                     patchItem = {
                         op: 'add',
                         path: basePath + _strEncode(i),
@@ -116,8 +116,8 @@ define([
         //replace
         if (!noUpdate) {
             for (i in target) {
-                if (excludeList.indexOf(i) === -1 && target.hasOwnProperty(i)) {
-                    if (source.hasOwnProperty(i) && CANON.stringify(source[i]) !== CANON.stringify(target[i])) {
+                if (excludeList.indexOf(i) === -1 && Object.hasOwn(target, i)) {
+                    if (Object.hasOwn(source, i) && CANON.stringify(source[i]) !== CANON.stringify(target[i])) {
                         patchItem = {
                             op: 'replace',
                             path: basePath + _strEncode(i),
@@ -149,8 +149,8 @@ define([
 
         //remove
         for (i in source) {
-            if (excludeList.indexOf(i) === -1 && source.hasOwnProperty(i)) {
-                if (!target.hasOwnProperty(i)) {
+            if (excludeList.indexOf(i) === -1 && Object.hasOwn(source, i)) {
+                if (!Object.hasOwn(target, i)) {
                     patchItem = {
                         op: 'remove',
                         path: basePath + _strEncode(i)
@@ -241,7 +241,7 @@ define([
             patch = patch
                 .concat(diff(sourceJson.items || {}, targetJson.items || {}, '/items/', [], true, '', true, false));
             for (key in sourceJson.items) {
-                if (targetJson.items.hasOwnProperty(key)) {
+                if (Object.hasOwn(targetJson.items, key)) {
                     patch = patch.concat(diff(
                         sourceJson.items[key],
                         targetJson.items[key],
@@ -603,11 +603,11 @@ define([
         for (source in preShardRelations) {
             foundSource = false;
             for (i = 0; i < shards.length; i += 1) {
-                if (shards[i].items.hasOwnProperty(source)) {
+                if (Object.hasOwn(shards[i].items, source)) {
                     foundSource = true;
                     // check the removal and updates
                     for (name in preShardRelations[source]) {
-                        if (shards[i].items[source].hasOwnProperty(name)) {
+                        if (Object.hasOwn(shards[i].items[source], name)) {
                             if (shards[i].items[source][name] !== preShardRelations[source][name]) {
                                 // update
                                 absGmePath = gmePath + source;
@@ -647,7 +647,7 @@ define([
 
                     // check additions
                     for (name in shards[i].items[source]) {
-                        if (preShardRelations[source].hasOwnProperty(name) === false) {
+                        if (Object.hasOwn(preShardRelations[source], name) === false) {
                             absGmePath = gmePath + source;
                             if (_inLoadOrUnload(res, absGmePath) === false) {
                                 res.update[absGmePath] = true;
@@ -688,7 +688,7 @@ define([
         // Finally check for completely new sources
         for (i = 0; i < shards.length; i += 1) {
             for (source in shards[i].items) {
-                if (preShardRelations.hasOwnProperty(source) === false) {
+                if (Object.hasOwn(preShardRelations, source) === false) {
                     // All relations from this source was removed
                     absGmePath = gmePath + source;
                     if (_inLoadOrUnload(res, absGmePath) === false) {

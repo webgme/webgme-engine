@@ -1080,8 +1080,8 @@ describe('SafeStorage', function () {
                         expect(eventData.commitObject.root).to.equal(newRootHash);
                         expect(eventData.coreObjects instanceof Array).to.equal(true);
                         expect(eventData.coreObjects.length).to.equal(2);
-                        expect(eventData.coreObjects[0].hasOwnProperty('patch')).to.equal(true);
-                        expect(eventData.coreObjects[1].hasOwnProperty('patch')).to.equal(true);
+                        expect(Object.hasOwn(eventData.coreObjects[0], 'patch')).to.equal(true);
+                        expect(Object.hasOwn(eventData.coreObjects[1], 'patch')).to.equal(true);
                         expect(eventData.changedNodes !== null && typeof eventData.changedNodes === 'object')
                             .to.equal(true);
                         safeStorage.clearAllEvents();
@@ -1175,15 +1175,15 @@ describe('SafeStorage', function () {
                 expect(eventData.commitObject.root).to.equal(newRootHash);
                 expect(eventData.coreObjects instanceof Array).to.equal(true);
                 expect(eventData.coreObjects.length).to.equal(3);
-                if (eventData.coreObjects[0].hasOwnProperty('patch')) {
-                    expect(eventData.coreObjects[1].hasOwnProperty('patch')).to.equal(false);
-                    expect(eventData.coreObjects[2].hasOwnProperty('patch')).to.equal(false);
-                } else if (eventData.coreObjects[1].hasOwnProperty('patch')) {
-                    expect(eventData.coreObjects[0].hasOwnProperty('patch')).to.equal(false);
-                    expect(eventData.coreObjects[2].hasOwnProperty('patch')).to.equal(false);
-                } else if (eventData.coreObjects[2].hasOwnProperty('patch')) {
-                    expect(eventData.coreObjects[0].hasOwnProperty('patch')).to.equal(false);
-                    expect(eventData.coreObjects[1].hasOwnProperty('patch')).to.equal(false);
+                if (Object.hasOwn(eventData.coreObjects[0], 'patch')) {
+                    expect(Object.hasOwn(eventData.coreObjects[1], 'patch')).to.equal(false);
+                    expect(Object.hasOwn(eventData.coreObjects[2], 'patch')).to.equal(false);
+                } else if (Object.hasOwn(eventData.coreObjects[1], 'patch')) {
+                    expect(Object.hasOwn(eventData.coreObjects[0], 'patch')).to.equal(false);
+                    expect(Object.hasOwn(eventData.coreObjects[2], 'patch')).to.equal(false);
+                } else if (Object.hasOwn(eventData.coreObjects[2], 'patch')) {
+                    expect(Object.hasOwn(eventData.coreObjects[0], 'patch')).to.equal(false);
+                    expect(Object.hasOwn(eventData.coreObjects[1], 'patch')).to.equal(false);
                 } else {
                     done(new Error('no patch provided for root!'));
                     return;
@@ -1275,8 +1275,8 @@ describe('SafeStorage', function () {
                 expect(eventData.commitObject.root).to.equal(newRootHash);
                 expect(eventData.coreObjects instanceof Array).to.equal(true);
                 expect(eventData.coreObjects.length).to.equal(2);
-                expect(eventData.coreObjects[0].hasOwnProperty('patch')).to.equal(true);
-                expect(eventData.coreObjects[1].hasOwnProperty('patch')).to.equal(true);
+                expect(Object.hasOwn(eventData.coreObjects[0], 'patch')).to.equal(true);
+                expect(Object.hasOwn(eventData.coreObjects[1], 'patch')).to.equal(true);
                 safeStorage.clearAllEvents();
                 done();
             }
@@ -1319,10 +1319,10 @@ describe('SafeStorage', function () {
                     expect(eventData.coreObjects instanceof Array).to.equal(true);
                     expect(eventData.coreObjects.length).to.equal(2);
 
-                    if (eventData.coreObjects[0].hasOwnProperty('patch')) {
-                        expect(eventData.coreObjects[1].hasOwnProperty('patch')).to.equal(false);
-                    } else if (eventData.coreObjects[1].hasOwnProperty('patch')) {
-                        expect(eventData.coreObjects[0].hasOwnProperty('patch')).to.equal(false);
+                    if (Object.hasOwn(eventData.coreObjects[0], 'patch')) {
+                        expect(Object.hasOwn(eventData.coreObjects[1], 'patch')).to.equal(false);
+                    } else if (Object.hasOwn(eventData.coreObjects[1], 'patch')) {
+                        expect(Object.hasOwn(eventData.coreObjects[0], 'patch')).to.equal(false);
                     } else {
                         done(new Error('no patch provided for root!'));
                         return;
@@ -1375,10 +1375,10 @@ describe('SafeStorage', function () {
                         expect(eventData.coreObjects instanceof Array).to.equal(true);
                         expect(eventData.coreObjects.length).to.equal(2);
 
-                        if (eventData.coreObjects[0].hasOwnProperty('patch')) {
-                            expect(eventData.coreObjects[1].hasOwnProperty('patch')).to.equal(false);
-                        } else if (eventData.coreObjects[1].hasOwnProperty('patch')) {
-                            expect(eventData.coreObjects[0].hasOwnProperty('patch')).to.equal(false);
+                        if (Object.hasOwn(eventData.coreObjects[0], 'patch')) {
+                            expect(Object.hasOwn(eventData.coreObjects[1], 'patch')).to.equal(false);
+                        } else if (Object.hasOwn(eventData.coreObjects[1], 'patch')) {
+                            expect(Object.hasOwn(eventData.coreObjects[0], 'patch')).to.equal(false);
                         } else {
                             done(new Error('no patch provided for root!'));
                             return;

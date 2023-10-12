@@ -18,6 +18,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const multipart = require('connect-multiparty');
+const cors = require('cors');
 const Http = require('http');
 const ejs = require('ejs');
 
@@ -38,12 +39,14 @@ const Mailer = require('./middleware/mailer/mailer');
 const getClientConfig = require('../../config/getclientconfig');
 const GmeAuth = require('./middleware/auth/gmeauth');
 const Logger = require('./logger');
+const AADClient = require('./middleware/auth/WebgmeAADClient');
 
 const AddOnEventPropagator = require('../addon/addoneventpropagator');
 const webgmeUtils = require('../utils');
 const servers = [];
 const CONSTANTS = requireJS('common/Constants');
 const isAbsUrlPath = new RegExp('^(?:[a-z]+:)?//', 'i');
+// const jwt = require('jsonwebtoken');
 
 let mainLogger;
 const shutdown = () => {
@@ -167,6 +170,7 @@ class StandAloneServer {
         this.__middlewareOptions.webSocket = this.__webSocket;
 
         this.__logger.debug('Initializing basic core route functions');
+        this.__app.use(cors());
         this.__app.use(compression());
         this.__app.use(cookieParser());
         this.__app.use(bodyParser.json(gmeConfig.server.bodyParser.json));
@@ -197,6 +201,8 @@ class StandAloneServer {
         }
 
         this.__middlewareOptions.server = this;
+
+        this.__aadClient = new AADClient(gmeConfig, this.__gmeAuth, this.__logger);
     }
 
     getUrl() {
@@ -401,19 +407,33 @@ class StandAloneServer {
                         }
                     });
             } else if (req.cookies[__gmeConfig.authentication.jwt.cookieId]) {
+                //TODO this is a forceful method of trying to renew aad token needs to be harmonized better
+                let webgmeTokenResult = null;
                 __logger.debug('jwtoken provided in cookie');
                 token = req.cookies[__gmeConfig.authentication.jwt.cookieId];
+                const aToken = req.cookies[__gmeConfig.authentication.azureActiveDirectory.cookieId];
                 __gmeAuth.verifyJWToken(token)
                     .then(result => {
-                        if (result.renew === true) {
+                        webgmeTokenResult = result;
+                        if (__gmeConfig.authentication.azureActiveDirectory.enable) {
+                            return this.__aadClient.getAccessToken(result.content.userId, aToken);   
+                        } else {
+                            return Q(null);
+                        }
+                    })
+                    .then(token => {
+                        if (token) {
+                            res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
+                        }
+                        if (webgmeTokenResult.renew === true) {
                             __gmeAuth.regenerateJWToken(token)
                                 .then(newToken => {
                                     req.userData = {
                                         token: newToken,
                                         newToken: true,
-                                        userId: result.content.userId
+                                        userId: webgmeTokenResult.content.userId
                                     };
-                                    __logger.debug('generated new token for user', result.content.userId);
+                                    __logger.debug('generated new token for user', webgmeTokenResult.content.userId);
                                     res.cookie(__gmeConfig.authentication.jwt.cookieId, newToken);
                                     // Status code for new token??
                                     next();
@@ -422,14 +442,15 @@ class StandAloneServer {
                         } else {
                             req.userData = {
                                 token: token,
-                                userId: result.content.userId
+                                userId: webgmeTokenResult.content.userId
                             };
                             next();
                         }
                     })
                     .catch(err => {
                         res.clearCookie(__gmeConfig.authentication.jwt.cookieId);
-                        if (err.name === 'TokenExpiredError') {
+                        res.clearCookie(__gmeConfig.authentication.azureActiveDirectory.cookieId);
+                        if (err.name === 'TokenExpiredError' || err.name === 'MissingAADAccountForTokenError') {
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
                                 res.status(401);
                                 next(err);
@@ -486,11 +507,11 @@ class StandAloneServer {
                 if (restComponent) {
                     __logger.debug('Mounting external REST component [' + src + '] at /' + mount);
     
-                    if (restComponent.hasOwnProperty('initialize') && restComponent.hasOwnProperty('router')) {
+                    if (Object.hasOwn(restComponent, 'initialize') && Object.hasOwn(restComponent, 'router')) {
                         restComponent.initialize(this.__middlewareOptions);
                         __app.use('/' + mount, restComponent.router);
     
-                        if (restComponent.hasOwnProperty('start') && restComponent.hasOwnProperty('stop')) {
+                        if (Object.hasOwn(restComponent, 'start') && Object.hasOwn(restComponent, 'stop')) {
                             __routeComponents.push(restComponent);
                         } else {
                             __logger.warn('Deprecated restRouter, [' + src + '] does not have start/stop methods.');
@@ -642,6 +663,71 @@ class StandAloneServer {
                 }
             });
 
+            //AzureActiveDirectory direct login
+            if (this.__gmeConfig.authentication.enable &&
+                this.__gmeConfig.authentication.azureActiveDirectory.enable) {
+                    
+                __app.get('/aad', (req, res) => {
+                    this.__aadClient.login(req, res);
+                });
+
+                //AAD login response
+                __app.post('/aad', (req, res) => {
+                    const redirectUrl = req.cookies['webgme-redirect'] || '/';
+                    
+                    this.__aadClient.cacheUser(req, res, (err) => {
+                        res.clearCookie('webgme-redirect');
+                        if (err) {
+                            res.sendStatus(401);
+                        } else {
+                            res.redirect(redirectUrl);
+                        }
+                    });
+                });
+
+                //device access to use webgme related services - only available when access Scope is used
+                if (__gmeConfig.authentication.azureActiveDirectory.accessScope) {
+
+                    const aadVerify = require('azure-ad-verify-token-commonjs');
+                    const verify = aadVerify.verify;
+                    const voptions = {
+                        jwksUri: __gmeConfig.authentication.azureActiveDirectory.jwksUri, 
+                        issuer: __gmeConfig.authentication.azureActiveDirectory.issuer,
+                        audience: __gmeConfig.authentication.azureActiveDirectory.audience
+                    };
+
+                    __app.get('/aad/device', (req, res) => {
+                        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+                            const token = req.headers.authorization.split(' ')[1];
+                            verify(token, voptions)
+                                .then(token => {
+                                    if (token.oid) {
+                                        return this.__gmeAuth.getUser(
+                                            {$exists: true},
+                                            {aadId: {$eq: token.oid}}
+                                        );
+                                    } else {
+                                        throw new Error('unknown user device trying to get access!!!', token);
+                                    }
+                                })
+                                .then(webgmeUser => {
+                                    return this.__gmeAuth.generateJWTokenForAuthenticatedUser(webgmeUser._id);
+                                })
+                                .then(webgmeToken => {
+                                    res.cookie(this.__gmeConfig.authentication.jwt.cookieId, webgmeToken);
+                                    res.sendStatus(200);
+                                })
+                                .catch(err => {
+                                    __logger.error(err);
+                                    res.sendStatus(403);
+                                });
+                        } else {
+                            res.sendStatus(403);
+                        }
+                    });
+                }
+            }
+
             __app.get('/bin/getconfig.js', ensureAuthenticated, (req, res) => {
                 res.status(200);
                 res.setHeader('Content-type', 'application/javascript');
@@ -710,7 +796,7 @@ class StandAloneServer {
             __app.get(/^\/assets\/DecoratorSVG\/.*/, ensureAuthenticated, (req, res, next) => {
                 webgmeUtils.getSVGMap(__gmeConfig, __logger)
                     .then(svgMap => {
-                        if (svgMap.hasOwnProperty(req.path)) {
+                        if (Object.hasOwn(svgMap, req.path)) {
                             res.sendFile(svgMap[req.path]);
                         } else {
                             __logger.warn('Requested DecoratorSVG not found', req.path);
@@ -829,7 +915,7 @@ class StandAloneServer {
                 __logger.debug('socket connected (added to list) ' + socketId);
     
                 socket.on('close', () => {
-                    if (this.__sockets.hasOwnProperty(socketId)) {
+                    if (Object.hasOwn(this.__sockets, socketId)) {
                         __logger.debug('socket closed (removed from list) ' + socketId);
                         delete this.__sockets[socketId];
                     }
@@ -958,7 +1044,7 @@ class StandAloneServer {
             let numDestroyedSockets = 0;
             // destroy all open sockets i.e. keep-alive and socket-io connections, etc.
             for (let key in this.__sockets) {
-                if (this.__sockets.hasOwnProperty(key)) {
+                if (Object.hasOwn(this.__sockets, key)) {
                     this.__sockets[key].destroy();
                     delete this.__sockets[key];
                     __logger.debug('destroyed open socket ' + key);

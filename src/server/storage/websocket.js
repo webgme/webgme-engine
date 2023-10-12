@@ -117,7 +117,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 join: true
             };
 
-        if (socket.rooms.hasOwnProperty(roomName) === true) {
+        if (Object.hasOwn(socket.rooms, roomName) === true) {
             // Socket is already in given room - no need to account for it.
             logger.debug('socket already in room', socket.id, roomName);
             deferred.resolve();
@@ -160,7 +160,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 socketId: socket.id
             };
 
-        if (socket.rooms.hasOwnProperty(roomName) === false) {
+        if (Object.hasOwn(socket.rooms, roomName) === false) {
             // Socket was never in or had already left given room - no need to account for it.
             logger.debug('socket already left room', socket.id, roomName);
             deferred.resolve();
@@ -289,7 +289,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 });
                         } else if (roomDividerCnt === 4) {
                             logger.debug('Disconnected socket was in document room', roomIds[i]);
-                            if (documents.hasOwnProperty(roomIds[i])) {
+                            if (Object.hasOwn(documents, roomIds[i])) {
                                 document = documents[roomIds[i]];
                                 socket.broadcast.to(roomIds[i]).emit(CONSTANTS.DOCUMENT_SELECTION, {
                                     docId: roomIds[i],
@@ -499,7 +499,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         var roomName;
                         if (data.branchName) {
                             roomName = data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName;
-                            if (socket.rooms.hasOwnProperty(roomName)) {
+                            if (Object.hasOwn(socket.rooms, roomName)) {
                                 logger.debug('Committer is in the branch-room', userId, roomName);
                                 data.socket = socket;
                             }
@@ -610,7 +610,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 var status;
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (socket.rooms.hasOwnProperty(data.projectId)) {
+                        if (Object.hasOwn(socket.rooms, data.projectId)) {
                             data.socket = socket;
                         }
 
@@ -672,7 +672,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('deleteProject', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (socket.rooms.hasOwnProperty(CONSTANTS.DATABASE_ROOM)) {
+                        if (Object.hasOwn(socket.rooms, CONSTANTS.DATABASE_ROOM)) {
                             data.socket = socket;
                         }
 
@@ -691,7 +691,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('createProject', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (socket.rooms.hasOwnProperty(CONSTANTS.DATABASE_ROOM)) {
+                        if (Object.hasOwn(socket.rooms, CONSTANTS.DATABASE_ROOM)) {
                             data.socket = socket;
                         }
 
@@ -710,7 +710,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('transferProject', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (socket.rooms.hasOwnProperty(CONSTANTS.DATABASE_ROOM)) {
+                        if (Object.hasOwn(socket.rooms, CONSTANTS.DATABASE_ROOM)) {
                             data.socket = socket;
                         }
 
@@ -729,7 +729,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('duplicateProject', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (socket.rooms.hasOwnProperty(CONSTANTS.DATABASE_ROOM)) {
+                        if (Object.hasOwn(socket.rooms, CONSTANTS.DATABASE_ROOM)) {
                             data.socket = socket;
                         }
 
@@ -883,6 +883,15 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             // Worker commands
             socket.on('simpleRequest', function (data, callback) {
+                //TODO: parser needs to be moved to common place
+                const parseCookie = str => str
+                    .split(';')
+                    .map(v => v.split('='))
+                    .reduce((acc, v) => {
+                        acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+                        return acc;
+                    }, {});
+                const cookies = parseCookie(this.handshake.headers.cookie);
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
                         data.userId = userId;
@@ -894,6 +903,12 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     })
                     .then(function (newToken) {
                         data.webgmeToken = newToken;
+                        //TODO this should probably come from authenticator and not the request!!!
+                        if (gmeConfig.authentication.enable === true &&
+                            gmeConfig.authentication.azureActiveDirectory.enable === true &&
+                            gmeConfig.authentication.azureActiveDirectory.accessScope) {
+                            data.aadToken = cookies[gmeConfig.authentication.azureActiveDirectory.cookieId] || null;
+                        }
                         workerManager.request(data, function (err, result) {
                             if (err) {
                                 callback(err.message, result);
@@ -974,7 +989,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 throw new Error('No read access for ' + data.projectId);
                             }
 
-                            if (documents.hasOwnProperty(docId) === false) {
+                            if (Object.hasOwn(documents, docId) === false) {
                                 logger.debug('First user joining document, will create it..');
                                 documents[docId] = {
                                     otServer: new DocumentServer(logger, data.attrValue, docId, gmeConfig),
@@ -986,7 +1001,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 clearTimeout(documents[docId].timeoutId);
                             }
 
-                            if (documents[docId].users.hasOwnProperty(socket.id) === false) {
+                            if (Object.hasOwn(documents[docId].users, socket.id) === false) {
                                 documents[docId].users[socket.id] = {
                                     socketId: socket.id,
                                     sessionId: data.sessionId,
@@ -1019,9 +1034,9 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             // To prohibit disconnected users to overwrite changes while they were
                             // disconnected - at reconnect they are rejected (the UI should clearly notify
                             // that edits made while disconnected could be lost).
-                            if (documents.hasOwnProperty(docId) === false) {
+                            if (Object.hasOwn(documents, docId) === false) {
                                 throw new Error('Document room was closed ' + docId);
-                            } else if (documents[docId].disconnectedUsers.hasOwnProperty(data.sessionId) === false) {
+                            } else if (Object.hasOwn(documents[docId].disconnectedUsers, data.sessionId) === false) {
                                 throw new Error('Document room was closed ' + docId + ' and then reopened.');
                             } else if (documents[docId].disconnectedUsers[data.sessionId].indexOf(
                                 data.watcherId) === -1) {
@@ -1039,7 +1054,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 delete documents[docId].disconnectedUsers[data.sessionId];
                             }
 
-                            if (documents[docId].users.hasOwnProperty(socket.id) === false) {
+                            if (Object.hasOwn(documents[docId].users, socket.id) === false) {
                                 documents[docId].users[socket.id] = {
                                     socketId: socket.id,
                                     userId: socket.userId,
@@ -1062,8 +1077,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 clients: documents[docId].users
                             });
                         } else {
-                            if (documents.hasOwnProperty(docId) &&
-                                documents[docId].users.hasOwnProperty(socket.id) &&
+                            if (Object.hasOwn(documents, docId) &&
+                                Object.hasOwn(documents[docId].users, socket.id) &&
                                 documents[docId].users[socket.id].watchers.indexOf(data.watcherId) > -1) {
 
                                 eventData = {
@@ -1114,8 +1129,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         throw new Error('data.watcherId not provided!');
                     }
 
-                    if (documents.hasOwnProperty(data.docId) === false ||
-                        documents[data.docId].users.hasOwnProperty(socket.id) === false) {
+                    if (Object.hasOwn(documents, data.docId) === false ||
+                        Object.hasOwn(documents[data.docId].users, socket.id) === false) {
                         throw new Error('Client not watching document - cannot send operation!');
                     }
 
@@ -1162,8 +1177,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         throw new Error('data.watcherId not provided!');
                     }
 
-                    if (documents.hasOwnProperty(data.docId) === false ||
-                        documents[data.docId].users.hasOwnProperty(socket.id) === false) {
+                    if (Object.hasOwn(documents, data.docId) === false ||
+                        Object.hasOwn(documents[data.docId].users, socket.id) === false) {
                         throw new Error('Client not watching document - cannot send selection!');
                     }
 

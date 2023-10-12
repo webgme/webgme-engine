@@ -141,7 +141,7 @@ define ([], function () {
 
     if (!Object.keys) Object.keys = function (o) {
         var a = []
-        for (var i in o) if (o.hasOwnProperty(i)) a.push(i)
+        for (var i in o) if (Object.hasOwn(o, i)) a.push(i)
         return a
     }
 
@@ -745,7 +745,7 @@ define ([], function () {
         if (!parser.strict) parser.attribName = parser.attribName[parser.looseCase]()
 
         if (parser.attribList.indexOf(parser.attribName) !== -1 ||
-            parser.tag.attributes.hasOwnProperty(parser.attribName)) {
+            Object.hasOwn(parser.tag.attributes, parser.attribName)) {
             return parser.attribName = parser.attribValue = ""
         }
 

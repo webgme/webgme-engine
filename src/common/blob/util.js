@@ -50,7 +50,7 @@ define(['q', './BlobMetadata'], function (Q, BlobMetadata) {
                     softLinkNames = Object.keys(orgMetadata.content);
                     for (i = 0; i < softLinkNames.length; i += 1) {
                         innerContentHash = orgMetadata.content[softLinkNames[i]].content;
-                        if (mainMetadata.content.hasOwnProperty(innerContentHash + '.metadata') === false) {
+                        if (Object.hasOwn(mainMetadata.content, innerContentHash + '.metadata') === false) {
                             throw new Error('Complex object softLink does not have attached .metadata!');
                         }
                     }
