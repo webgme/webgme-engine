@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.27.1](https://github.com/webgme/webgme-engine/tree/v2.27.1) (2023-11-04)
+
+[Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.27.0...v2.27.1)
+
+**Fixed bugs:**
+
+- Fix server side plugin execution [\#324](https://github.com/webgme/webgme-engine/pull/324) ([pmeijer](https://github.com/pmeijer))
+
 ## [v2.27.0](https://github.com/webgme/webgme-engine/tree/v2.27.0) (2023-10-12)
 
 [Full Changelog](https://github.com/webgme/webgme-engine/compare/v2.26.0...v2.27.0)
