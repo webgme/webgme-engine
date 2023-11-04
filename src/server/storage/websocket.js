@@ -11,7 +11,8 @@ var io = require('socket.io'),
     redis = require('socket.io-redis'),
     Q = require('q'),
     UTIL = require('../../utils'),
-    DocumentServer = require('./documentserver'), URL = requireJS('common/util/url'),
+    DocumentServer = require('./documentserver'),
+    URL = requireJS('common/util/url'),
     CONSTANTS = requireJS('common/storage/constants'),
     PACKAGE_JSON;
 
@@ -33,16 +34,15 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
     logger.debug('ctor');
 
-    function getTokenFromHandshake(socket) {
-        var token,
-            handshakeData = socket.handshake;
+    function parseCookiesFromHandshake(socket) {
+        let cookies = {};
 
-        if (handshakeData && handshakeData.headers.cookie) {
+        if (socket.handshake && socket.handshake.headers && socket.handshake.headers.cookie) {
             // We try to dig it from the cookie.
-            token = URL.parseCookie(handshakeData.headers.cookie)[gmeConfig.authentication.jwt.cookieId];
+            cookies = URL.parseCookie(socket.handshake.headers.cookie);
         }
 
-        return token;
+        return cookies;
     }
 
     function getUserIdFromToken(socket, token, callback) {
@@ -249,7 +249,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         logger.debug('listening');
 
         webSocket.use(function (socket, next) {
-            getUserIdFromToken(socket, getTokenFromHandshake(socket))
+            getUserIdFromToken(socket, parseCookiesFromHandshake(socket)[gmeConfig.authentication.jwt.cookieId])
                 .then(function (userId) {
                     logger.debug('User connected and authenticated', userId);
                     socket.userId = userId;
@@ -883,15 +883,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             // Worker commands
             socket.on('simpleRequest', function (data, callback) {
-                //TODO: parser needs to be moved to common place
-                const parseCookie = str => str
-                    .split(';')
-                    .map(v => v.split('='))
-                    .reduce((acc, v) => {
-                        acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
-                        return acc;
-                    }, {});
-                const cookies = parseCookie(this.handshake.headers.cookie);
+                const cookies = parseCookiesFromHandshake(this);
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
                         data.userId = userId;

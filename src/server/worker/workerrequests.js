@@ -191,8 +191,8 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {function} callback
      */
     function executePlugin(tokens, socketId, pluginName, context, callback) {
-        const webgmeToken = tokens && typeof tokens === Object ? tokens.webgme : tokens;
-        const aadToken = tokens && typeof tokens === Object ? tokens.aad : null;
+        const webgmeToken = tokens && typeof tokens === 'object' ? tokens.webgme : tokens;
+        const aadToken = tokens && typeof tokens === 'object' ? tokens.aad : null;
         var storage,
             errResult,
             pluginContext,
