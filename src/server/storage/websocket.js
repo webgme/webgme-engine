@@ -41,7 +41,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             } else {
                 logger.error(err.stack, '\n', (new Error('Caught by')).stack);
             }
-            callback(err.message);
+
+            callback && callback(err.message);
         };
     }
 
@@ -1081,12 +1082,6 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 var transformedSelection,
                     eventData;
 
-                function done(err) {
-                    if (callback) {
-                        callback(err ? err.message : undefined);
-                    }
-                }
-
                 try {
                     if (typeof data.watcherId !== 'string') {
                         throw new Error('data.watcherId not provided!');
@@ -1114,9 +1109,9 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
                     }
 
-                    done();
+                    callback && callback();
                 } catch (err) {
-                    getErrorHandler(done)(err);
+                    getErrorHandler(callback)(err);
                 }
             });
 
