@@ -34,6 +34,17 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
     logger.debug('ctor');
 
+    function getErrorHandler(callback) {
+        return function (err) {
+            if (err.message.includes('Not authorized to')) {
+                logger.debug(err.stack, '\n', (new Error('Caught by')).stack);
+            } else {
+                logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+            }
+            callback(err.message);
+        };
+    }
+
     function parseCookiesFromHandshake(socket) {
         let cookies = {};
 
@@ -331,10 +342,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         info.userId = userId;
                         callback(null, info);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             // Watchers
@@ -369,10 +377,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             callback();
                         }
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('watchBranch', function (data, callback) {
@@ -401,10 +406,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function () {
                         callback(null);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             // Model editing
@@ -432,10 +434,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function () {
                         callback(null, branches, access);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('closeProject', function (data, callback) {
@@ -450,10 +449,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function () {
                         callback();
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('openBranch', function (data, callback) {
@@ -475,10 +471,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function () {
                         callback(null, latestCommitData);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('closeBranch', function (data, callback) {
@@ -562,18 +555,12 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                         callback(null, commitStatus);
                                     });
                                 })
-                                .catch(function (err) {
-                                    logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                                    callback(err.message);
-                                });
+                                .catch(getErrorHandler(callback));
                         } else {
                             callback(null, commitStatus);
                         }
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('loadObjects', function (data, callback) {
@@ -585,10 +572,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (loadedObjects) {
                         callback(null, loadedObjects); //Single load-fails are reported in this object.
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('loadPaths', function (data, callback) {
@@ -600,10 +584,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (hashDictionary) {
                         callback(null, hashDictionary);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('setBranchHash', function (data, callback) {
@@ -632,10 +613,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function () {
                         callback(null, status);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('getBranchHash', function (data, callback) {
@@ -647,10 +625,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (result) {
                         callback(null, result);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             // Project operations and getters
@@ -663,10 +638,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (projects) {
                         callback(null, projects);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('deleteProject', function (data, callback) {
@@ -682,10 +654,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (didExist) {
                         callback(null, didExist);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('createProject', function (data, callback) {
@@ -701,10 +670,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (project) {
                         callback(null, project.projectId);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('transferProject', function (data, callback) {
@@ -720,10 +686,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (newProjectId) {
                         callback(null, newProjectId);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('duplicateProject', function (data, callback) {
@@ -739,10 +702,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (newProject) {
                         callback(null, newProject.projectId);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             // Tags, commits and branches
@@ -755,10 +715,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (branches) {
                         callback(null, branches);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('createTag', function (data, callback) {
@@ -770,10 +727,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function () {
                         callback(null);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('deleteTag', function (data, callback) {
@@ -785,10 +739,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function () {
                         callback(null);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('getTags', function (data, callback) {
@@ -800,10 +751,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (tags) {
                         callback(null, tags);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('getCommits', function (data, callback) {
@@ -815,10 +763,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (commits) {
                         callback(null, commits);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('getHistory', function (data, callback) {
@@ -830,10 +775,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (commits) {
                         callback(null, commits);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('getLatestCommitData', function (data, callback) {
@@ -845,10 +787,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (commitData) {
                         callback(null, commitData);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('getCommonAncestorCommit', function (data, callback) {
@@ -860,10 +799,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (commonCommitHash) {
                         callback(null, commonCommitHash);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('squashCommits', function (data, callback) {
@@ -875,10 +811,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (commitResult) {
                         callback(null, commitResult);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             // Worker commands
@@ -909,10 +842,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             }
                         });
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on('simpleQuery', function (workerId, data, callback) {
@@ -951,10 +881,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function () {
                         callback(null);
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             // OT handling
@@ -1106,10 +1033,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             }
                         }
                     })
-                    .catch(function (err) {
-                        logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                        callback(err.message);
-                    });
+                    .catch(getErrorHandler(callback));
             });
 
             socket.on(CONSTANTS.DOCUMENT_OPERATION, function (data, callback) {
@@ -1127,7 +1051,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     }
 
                     if (documents[data.docId].users[socket.id].access.write !== true) {
-                        throw new Error('Does not have write access to document');
+                        throw new Error('Not Authorized to open document. Does not have write access to document');
                     }
 
                     data.userId = documents[data.docId].users[socket.id].userId;
@@ -1149,8 +1073,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
                     }
                 } catch (err) {
-                    logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                    callback(err.message);
+                    getErrorHandler(callback)(err);
                 }
             });
 
@@ -1193,8 +1116,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
                     done();
                 } catch (err) {
-                    logger.error(err.stack, '\n', (new Error('Caught by')).stack);
-                    done(err);
+                    getErrorHandler(done)(err);
                 }
             });
 
