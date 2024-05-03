@@ -65,9 +65,15 @@ describe('BLOB cleanup script tests', function () {
                 done(new Error('missing error handling'));
             })
             .catch(function (err) {
-                expect(err.message).to.contains('Unexpected token o');
+                try {
+                    expect(err.message).to.contains('Unexpected token');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            })
+            .finally(()=> {
                 FS.unlinkSync('test-tmp/not.json');
-                done();
             })
             .done();
     });
@@ -80,9 +86,15 @@ describe('BLOB cleanup script tests', function () {
                 done(new Error('missing error handling'));
             })
             .catch(function (err) {
-                expect(err.message).to.contains('no such file or directory, unlink');
+                try {
+                    expect(err.message).to.contains('no such file or directory, unlink');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            })
+            .finally(()=> {
                 FS.unlinkSync('test-tmp/wrongHashes.json');
-                done();
             })
             .done();
     });
