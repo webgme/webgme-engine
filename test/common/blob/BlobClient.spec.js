@@ -1,4 +1,3 @@
-/*globals ArrayBuffer, Uint8Array*/
 /*eslint-env node, mocha*/
 /*eslint no-bitwise: 0, max-len: 0*/
 /**
@@ -398,7 +397,6 @@ describe('BlobClient', function () {
 
         if (typeof global !== 'undefined' && typeof window !== 'undefined') { // i.e. if running under node-webkit
             // need this in package.json: "node-remote": "localhost"
-            /*globals File*/
             it('should create zip from node-webkit File', function (done) {
                 var f = new File('./npm_install.cmd', 'npm_install.cmd');
                 //expect(Object.getOwnPropertyNames(f).join(' ')).to.equal(0);
@@ -753,7 +751,6 @@ describe('BlobClient', function () {
 
         if (typeof global !== 'undefined' && typeof window !== 'undefined') { // i.e. if running under node-webkit
             // need this in package.json: "node-remote": "localhost"
-            /*globals File*/
             it('should create zip from node-webkit File', function (done) {
                 var f = new File('./npm_install.cmd', 'npm_install.cmd');
                 //expect(Object.getOwnPropertyNames(f).join(' ')).to.equal(0);

@@ -1,4 +1,3 @@
-/*globals require*/
 /*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
