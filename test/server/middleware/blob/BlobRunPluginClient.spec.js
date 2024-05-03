@@ -1,4 +1,3 @@
-/*globals Uint8Array, ArrayBuffer*/
 /*eslint-env node, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann

@@ -1,4 +1,4 @@
-/*globals requirejs, expect, Buffer, File, Uint8Array, ArrayBuffer*/
+/*globals requirejs, expect, Buffer*/
 /*eslint-env browser, mocha*/
 /*eslint no-bitwise: 0*/
 

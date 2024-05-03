@@ -1,4 +1,3 @@
-/*globals*/
 /*eslint-env node, mocha*/
 /**
  * @author pmeijer / https://github.com/pmeijer

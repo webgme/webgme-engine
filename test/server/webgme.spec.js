@@ -1,4 +1,4 @@
-/*globals require, requireJS*/
+/*globals requireJS*/
 /*eslint-env node, mocha*/
 
 /**
