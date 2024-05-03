@@ -15,7 +15,6 @@
 var Q = require('q'),
     REGEXP = requireJS('common/regexp'),
     Storage = require('./storage'),
-    filterArray = require('./storagehelpers').filterArray,
     UserProject = require('./userproject');
 
 function check(cond, deferred, msg) {
@@ -58,6 +57,7 @@ SafeStorage.prototype.constructor = SafeStorage;
  * @param {boolean} [data.info] - include the info field from the _projects collection.
  * @param {boolean} [data.rights] - include users' authorization information for each project.
  * @param {boolean} [data.branches] - include a dictionary with all branches and their hash.
+ * @param {boolean} [data.tags] - include a dictionary with all tags and their hash.
  * @param {boolean} [data.hooks] - include the dictionary with all hooks.
  * @param {string} [data.projectId] - if given will return only single matching project.
  * @param {string} [data.username=gmeConfig.authentication.guestAccount]
@@ -120,35 +120,35 @@ SafeStorage.prototype.getProjects = function (data, callback) {
 
                 return Q.all(allProjects.map(getAuthorizedProjects));
             })
-            .then(function (projects) {
-                function getBranches(project) {
-                    var branchesDeferred = Q.defer();
-                    Storage.prototype.getBranches.call(self, {projectId: project._id})
-                        .then(function (branches) {
-                            project.branches = branches;
-                            branchesDeferred.resolve(project);
-                        })
-                        .catch(function (err) {
-                            if (err.message.indexOf('Project does not exist') > -1) {
-                                self.logger.error('Inconsistency: project exists in user "' + data.username +
-                                    '" and in _projects, but not as a collection on its own: ', project._id);
-                                branchesDeferred.resolve();
-                            } else {
-                                branchesDeferred.reject(err);
-                            }
-                        });
+            .then(async function (projects) {
+                const result = [];
+                for (const project of projects) {
+                    try {
+                        if (!project) {
+                            continue;
+                        }
 
-                    return branchesDeferred.promise;
+                        if (data.branches === true) {
+                            project.branches = await Storage.prototype.getBranches.call(self, {projectId: project._id});
+                        }
+
+                        if (data.tags === true) {
+                            project.tags = await Storage.prototype.getTags.call(self, {projectId: project._id});
+                        }
+
+                        result.push(project);
+                    } catch (err) {
+                        if (err.message.indexOf('Project does not exist') > -1) {
+                            self.logger.error('Inconsistency: project exists in user "' + data.username +
+                                '" and in _projects, but not as a collection on its own: ', project._id);
+                            // Proceed with other projects..
+                        } else {
+                            deferred.reject(err);
+                        }
+                    }
                 }
 
-                if (data.branches === true) {
-                    return Q.all(filterArray(projects).map(getBranches));
-                } else {
-                    deferred.resolve(filterArray(projects));
-                }
-            })
-            .then(function (projectsAndBranches) {
-                deferred.resolve(filterArray(projectsAndBranches));
+                deferred.resolve(result);
             })
             .catch(function (err) {
                 deferred.reject(err);
@@ -1168,6 +1168,10 @@ SafeStorage.prototype.createTag = function (data, callback) {
         },
         rejected = false;
 
+    if (!Object.hasOwn(data, 'commitHash') && Object.hasOwn(data, 'hash')) {
+        data.commitHash = data.hash;
+    }
+
     rejected = check(data !== null && typeof data === 'object', deferred, 'data is not an object.') ||
 
         check(typeof data.projectId === 'string', deferred, 'data.projectId is not a string.') ||
@@ -1176,9 +1180,9 @@ SafeStorage.prototype.createTag = function (data, callback) {
         check(typeof data.tagName === 'string', deferred, 'data.tagName is not a string.') ||
         check(REGEXP.TAG.test(data.tagName), deferred, 'data.tagName failed regexp: ' + data.tagName) ||
 
-        check(typeof data.commitHash === 'string', deferred, 'data.hash is not a string.') ||
+        check(typeof data.commitHash === 'string', deferred, 'data.commitHash is not a string.') ||
         check(data.commitHash === '' || REGEXP.HASH.test(data.commitHash), deferred,
-            'data.hash is not a valid hash: ' + data.commitHash);
+            'data.commitHash is not a valid hash: ' + data.commitHash);
 
     if (Object.hasOwn(data, 'username')) {
         rejected = rejected || check(typeof data.username === 'string', deferred, 'data.username is not a string.');

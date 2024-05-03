@@ -45,6 +45,7 @@ var testFixture = require('./test/_globals.js'),
         {
             name: 'ServerWorkerRequests',
             path: './seeds/EmptyProject.webgmex',
+            tags: ['v1'],
             branches: ['b1', 'b2', 'updateProjectFromFile']
         }
     ];
@@ -80,12 +81,13 @@ var testFixture = require('./test/_globals.js'),
                     logger: logger
                 })
                     .then(function (importResult) {
-                        var i,
-                            createBranches = [];
+                        let i;
+                        const createBranchesAndTags = [];
+
                         if (Object.hasOwn(projectInfo, 'branches') && projectInfo.branches.length > 1) {
                             // First one is already added thus i = 1.
                             for (i = 1; i < projectInfo.branches.length; i += 1) {
-                                createBranches.push(storage.createBranch(
+                                createBranchesAndTags.push(storage.createBranch(
                                     {
                                         projectId: testFixture.projectName2Id(projectInfo.name),
                                         branchName: projectInfo.branches[i],
@@ -94,7 +96,18 @@ var testFixture = require('./test/_globals.js'),
                                 );
                             }
                         }
-                        return Q.allDone(createBranches);
+
+                        (projectInfo.tags || []).forEach((tag) => {
+                            createBranchesAndTags.push(storage.createTag(
+                                {
+                                    projectId: testFixture.projectName2Id(projectInfo.name),
+                                    tagName: tag,
+                                    hash: importResult.commitHash
+                                })
+                            );
+                        });
+
+                        return Q.allDone(createBranchesAndTags);
                     })
                     .then(function () {
                         var nextProject = PROJECTS_TO_IMPORT.shift();

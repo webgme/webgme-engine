@@ -1,4 +1,4 @@
-/*globals requirejs, expect, console, before*/
+/*globals requirejs, expect */
 /*eslint-env browser, mocha*/
 /**
  * @author lattmann / https://github.com/lattmann
@@ -615,6 +615,27 @@ describe('GME client', function () {
                 expect(allProjects instanceof Array).to.equal(true);
                 expect(allProjects[0]).to.include.keys('name', 'rights', '_id');
                 done();
+            });
+        });
+
+        it('getProjects asObject=true, branches=true, tags=true, rights=true, info=true', function (done) {
+            client.getProjects({
+                asObject: true,
+                rights: true,
+                branches: true,
+                info: true,
+                tags: true
+            }, function (err, res) {
+                try {
+                    expect(err).to.equal(null);
+                    //console.log(JSON.stringify(allProjects, null, 2));
+                    expect(res['guest+ServerWorkerRequests'])
+                        .to.include.keys('name', 'rights', '_id', 'owner', 'info', 'branches', 'tags');
+                    expect(res['guest+ServerWorkerRequests'].tags.v1[0]).to.equal('#');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
             });
         });
 
