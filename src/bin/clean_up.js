@@ -94,19 +94,23 @@ function cleanUp(options) {
 
                     daysAgo = Math.round((now - vDate) / 1000 / 3600 / 24);
                     if (daysAgo >= params.daysAgo) {
-                        storage.getCommits({
-                            projectId: project._id,
-                            username: params.username,
-                            before: now.getTime(),
-                            number: params.commits + 1
-                        })
-                            .then(function (commits) {
-                                if (commits.length <= params.commits) {
-                                    result.remove = true;
-                                }
-                                deferred.resolve(result);
+                        if (params.commits > 0) {
+                            storage.getCommits({
+                                projectId: project._id,
+                                username: params.username,
+                                before: now.getTime(),
+                                number: params.commits + 1
                             })
-                            .catch(deferred.reject);
+                                .then(function (commits) {
+                                    if (commits.length <= params.commits) {
+                                        result.remove = true;
+                                    }
+                                    deferred.resolve(result);
+                                })
+                                .catch(deferred.reject);
+                        } else {
+                            result.remove = true;
+                        }
                     } else {
                         deferred.resolve(result);
                     }
@@ -197,7 +201,7 @@ if (require.main === module) {
         .option('-d, --del [boolean]', 'If true will do the deletion [false].', false)
         .option('-l, --list [boolean]', 'If true will list all the projects this user has access to [false].', false)
         .option('-t, --daysAgo [number]', 'Minimum age (last viewed) of a project to delete [10].', 10)
-        .option('-c, --commits [number]', 'Maximum number of commits of a project to delete [1].', 1)
+        .option('-c, --commits [number]', 'Maximum number of commits (-1 to skip) of a project to delete [1].', 1)
         .option('-b, --branches [number]', 'Maximum number of branches of a project to delete [1].', 1)
         .option('-r, --regex [string]', 'Project names must match the regexp [.*].', '.*')
         .option('-u, --username [string]', 'The user account being used. [guest account]')
@@ -210,6 +214,7 @@ if (require.main === module) {
             console.log('    $ node clean_up.js');
             console.log('    $ node clean_up.js --list');
             console.log('    $ node clean_up.js --username demo --commits 5 --regex ^demo_ --del');
+            console.log('    $ node clean_up.js --username demo --commits -1 --branches 20 --daysAgo 7 --del');
             console.log('    $ node clean_up.js --regex ^startsWith');
             console.log('    $ node clean_up.js --daysAgo 3 --regex contains --branches 2');
         })
