@@ -1,4 +1,4 @@
-/*globals define, require, document*/
+/*globals define, require*/
 /*eslint-env browser*/
 /**
  * @author pmeijer / https://github.com/pmeijer

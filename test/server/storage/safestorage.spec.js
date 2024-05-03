@@ -37,7 +37,7 @@ describe('SafeStorage', function () {
             .nodeify(done);
     });
 
-    describe.only('Projects', function () {
+    describe('Projects', function () {
         var safeStorage,
             importResult,
             commitHash;

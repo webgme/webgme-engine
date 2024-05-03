@@ -1,4 +1,4 @@
-/*globals define, Uint8Array, ArrayBuffer, WebGMEGlobal*/
+/*globals define, WebGMEGlobal*/
 /*eslint-env node, browser*/
 /**
  * Client module for accessing the blob.
