@@ -37,7 +37,7 @@ describe('SafeStorage', function () {
             .nodeify(done);
     });
 
-    describe('Projects', function () {
+    describe.only('Projects', function () {
         var safeStorage,
             importResult,
             commitHash;
@@ -57,7 +57,10 @@ describe('SafeStorage', function () {
                     expect(result.projectId).to.equal(projectId);
                     commitHash = result.commitHash;
                     importResult = result;
-                    return result.project.createBranch('setFail', commitHash);
+                    return Q.all([
+                        result.project.createBranch('setFail', commitHash),
+                        result.project.createTag('v1', commitHash)
+                    ]);
                 })
                 .nodeify(done);
         });
@@ -150,6 +153,41 @@ describe('SafeStorage', function () {
                     expect(projects[0].branches).to.include.keys('master');
                     delete projects[0].info;
                     delete projects[0].branches;
+                    expect(projects[0]).to.deep.equal({
+                        _id: 'guest+newProject',
+                        //fullName: 'guest/newProject',
+                        name: 'newProject',
+                        owner: 'guest',
+                        rights: {
+                            delete: true,
+                            read: true,
+                            write: true
+                        }
+                    });
+                })
+                .nodeify(done);
+        });
+
+        it('should getProjects (rights=true, info=true, branches=true, tags=true)', function (done) {
+            var data = {
+                rights: true,
+                info: true,
+                branches: true,
+                tags: true
+            };
+
+            safeStorage.getProjects(data)
+                .then(function (projects) {
+                    expect(projects).to.have.property('length');
+                    expect(projects.length).to.equal(1);
+                    expect(typeof projects[0].info).to.equal('object');
+                    expect(typeof projects[0].branches).to.equal('object');
+                    expect(typeof projects[0].tags).to.equal('object');
+                    expect(projects[0].branches).to.include.keys('master');
+                    expect(projects[0].tags.v1).to.equal(projects[0].branches.master);
+                    delete projects[0].info;
+                    delete projects[0].branches;
+                    delete projects[0].tags;
                     expect(projects[0]).to.deep.equal({
                         _id: 'guest+newProject',
                         //fullName: 'guest/newProject',

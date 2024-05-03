@@ -618,6 +618,27 @@ describe('GME client', function () {
             });
         });
 
+        it('getProjects asObject=true, branches=true, tags=true, rights=true, info=true', function (done) {
+            client.getProjects({
+                asObject: true,
+                rights: true,
+                branches: true,
+                info: true,
+                tags: true
+            }, function (err, res) {
+                try {
+                    expect(err).to.equal(null);
+                    //console.log(JSON.stringify(allProjects, null, 2));
+                    expect(res['guest+ServerWorkerRequests'])
+                        .to.include.keys('name', 'rights', '_id', 'owner', 'info', 'branches', 'tags');
+                    expect(res['guest+ServerWorkerRequests'].tags.v1[0]).to.equal('#');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            });
+        });
+
         it('getProjectsAndBranches-true should return an object with branches and rights', function (done) {
             client.getProjectsAndBranches(true, function (err, projects) {
                 var key;
