@@ -1,4 +1,4 @@
-/*globals define, Uint8Array*/
+/*globals define*/
 /*eslint-env node, browser*/
 
 /**

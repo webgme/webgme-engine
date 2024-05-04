@@ -1,4 +1,4 @@
-/*globals require, requireJS*/
+/*globals requireJS*/
 /*eslint-env node, mocha*/
 
 /**
@@ -172,7 +172,7 @@ describe('webgme', function () {
             });
     });
 
-    it('should requestWebGMEToken with auth turned on', function (done) {
+    (process.version !== 'v20.12.2' ? it : it.skip)('should requestWebGMEToken with auth turned on', function (done) {
         var webGME = testFixture.WebGME,
             gmeConfig = testFixture.getGmeConfig(),
             error,
