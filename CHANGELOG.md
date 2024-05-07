@@ -1,3 +1,5 @@
+### NOTE! Since v2.28.0 release notes are generated as part of the github releases...
+
 # Changelog
 
 ## [v2.27.1](https://github.com/webgme/webgme-engine/tree/v2.27.1) (2023-11-04)
