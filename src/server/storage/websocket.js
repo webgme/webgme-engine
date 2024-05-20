@@ -36,8 +36,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
     function getErrorHandler(callback) {
         return function (err) {
-            if (err.message.includes('Not authorized to')) {
-                logger.debug(err.stack, '\n', (new Error('Caught by')).stack);
+            if (err.message.includes('Not authorized to') || err.message.includes('Project does not exist')) {
+                logger.warn(err.message);
             } else {
                 logger.error(err.stack, '\n', (new Error('Caught by')).stack);
             }
