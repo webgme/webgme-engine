@@ -9,7 +9,7 @@
 'use strict';
 
 var fs = require('fs'),
-    mime = require('mime'),
+    mime = require('fix-esm').require('mime'),
     archiver = require('archiver'),
     Q = require('q'),
 
