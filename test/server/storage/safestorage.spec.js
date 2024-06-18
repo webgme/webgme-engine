@@ -265,7 +265,7 @@ describe('SafeStorage', function () {
 
         it('should getBranchHash', function (done) {
             var data = {
-                projectId: projectId,
+                projectId,
                 branchName: 'master'
             };
 
@@ -278,11 +278,12 @@ describe('SafeStorage', function () {
         });
 
         it('should setBranchHash', function (done) {
-            var data = {
-                projectId: projectId,
+            const data = {
+                projectId,
                 branchName: 'master'
-            },
-                newHash;
+            };
+
+            let newHash;
 
             safeStorage.getBranchHash(data)
                 .then(function (hash) {
@@ -328,11 +329,11 @@ describe('SafeStorage', function () {
         );
 
         it('should createBranch', function (done) {
-            var data = {
-                projectId: projectId,
+            const data = {
+                projectId,
                 branchName: 'master'
-            },
-                newHash;
+            };
+            let newHash;
 
             safeStorage.getBranchHash(data)
                 .then(function (hash) {
@@ -356,11 +357,11 @@ describe('SafeStorage', function () {
         });
 
         it('should deleteBranch', function (done) {
-            var data = {
-                projectId: projectId,
+            const data = {
+                projectId,
                 branchName: 'master'
-            },
-                newHash;
+            };
+            let newHash;
 
             safeStorage.getBranchHash(data)
                 .then(function (hash) {
@@ -392,7 +393,7 @@ describe('SafeStorage', function () {
         });
 
         it('should succeed after deleteBranch when it did not exist', function (done) {
-            var data = {
+            const data = {
                 projectId: projectId,
                 branchName: 'doesNotExist'
             };
@@ -410,12 +411,13 @@ describe('SafeStorage', function () {
         });
 
         it('should loadObjects', function (done) {
-            var data = {
-                projectId: projectId,
+            const data = {
+                projectId,
                 branchName: 'master'
-            },
-                commitId,
-                rootId;
+            };
+
+            let commitId;
+            let rootId;
 
             safeStorage.getLatestCommitData(data)
                 .then(function (commitData) {
@@ -1506,12 +1508,13 @@ describe('SafeStorage', function () {
         });
 
         it('should patch when the commit contains a patch root', function (done) {
-            var parameters = {
+            const parameters = {
                 projectName: 'patchOff',
                 branchName: 'patchOffBranch',
                 gmeConfig: testFixture.getGmeConfig()
-            },
-                patchRoot,
+            };
+
+            var patchRoot,
                 patching,
                 newRoot,
                 coreObjects = {};
@@ -1563,12 +1566,13 @@ describe('SafeStorage', function () {
         });
 
         it('should broadcast patch root when function is enabled', function (done) {
-            var parameters = {
+            const parameters = {
                 projectName: 'patchOn',
                 branchName: 'patchOnBranch',
                 gmeConfig: testFixture.getGmeConfig()
-            },
-                patchRoot,
+            };
+
+            var patchRoot,
                 patching,
                 newRoot,
                 coreObjects = {};
@@ -1620,12 +1624,13 @@ describe('SafeStorage', function () {
         });
 
         it('should broadcast patch root when function is enabled and only root is sent', function (done) {
-            var parameters = {
+            const parameters = {
                 projectName: 'patchOnOnlyRoot',
                 branchName: 'patchOnBranch',
                 gmeConfig: testFixture.getGmeConfig()
-            },
-                patchRoot,
+            };
+
+            var patchRoot,
                 patching,
                 newRoot,
                 coreObjects = {};
@@ -1677,16 +1682,18 @@ describe('SafeStorage', function () {
         });
 
         it('should fail to handle faulty patch root object', function (done) {
-            var parameters = {
+            const parameters = {
                 projectName: 'patchOnFaultyPatch',
                 branchName: 'patchOnBranch',
                 gmeConfig: testFixture.getGmeConfig()
-            },
-                eventHandler = function (/*_storage, eventData*/) {
-                    parameters.storage.clearAllEvents();
-                    done(new Error('missing fault handling'));
-                },
-                patchRoot,
+            };
+
+            const eventHandler = function (/*_storage, eventData*/) {
+                parameters.storage.clearAllEvents();
+                done(new Error('missing fault handling'));
+            };
+
+            var patchRoot,
                 patching,
                 newRoot,
                 coreObjects = {};
@@ -1732,16 +1739,18 @@ describe('SafeStorage', function () {
         });
 
         it('should fail to handle patch root object with faulty base', function (done) {
-            var parameters = {
+            const parameters = {
                 projectName: 'patchOnFaultyBase',
                 branchName: 'patchOnBranch',
                 gmeConfig: testFixture.getGmeConfig()
-            },
-                eventHandler = function (/*_storage, eventData*/) {
-                    parameters.storage.clearAllEvents();
-                    done(new Error('missing fault handling'));
-                },
-                patchRoot,
+            };
+
+            const eventHandler = function (/*_storage, eventData*/) {
+                parameters.storage.clearAllEvents();
+                done(new Error('missing fault handling'));
+            };
+
+            var patchRoot,
                 patching,
                 newRoot,
                 coreObjects = {};
@@ -1899,7 +1908,8 @@ describe('SafeStorage', function () {
                 })
                 .catch(function (err) {
                     try {
-                        expect(err.message).to.contain('Invalid argument, data.projectName failed regexp: contains+plus');
+                        expect(err.message)
+                            .to.contain('Invalid argument, data.projectName failed regexp: contains+plus');
                     } catch (err) {
                         done(err);
                         return;
@@ -3052,8 +3062,8 @@ describe('SafeStorage', function () {
         });
 
         it('should filter out excludes', function (done) {
-            var data = {
-                projectId: projectId,
+            const data = {
+                projectId,
                 pathsInfo: [
                     {
                         parentHash: rootHash,
@@ -3069,8 +3079,9 @@ describe('SafeStorage', function () {
                     }
                 ],
                 excludes: []
-            },
-                loadedHashes;
+            };
+
+            let loadedHashes;
 
             storage.loadPaths(data)
                 .then(function (objects) {
@@ -3350,12 +3361,13 @@ describe('SafeStorage', function () {
         });
 
         it('should squash commits 0->1', function (done) {
-            var data = {
+            const data = {
                 projectId: projectId,
                 fromCommit: commitHashes[0],
                 toCommitOrBranch: commitHashes[1]
-            },
-                commitHash;
+            };
+
+            let commitHash;
 
             safeStorage.squashCommits(data)
                 .then(function (result) {
@@ -3377,12 +3389,13 @@ describe('SafeStorage', function () {
         });
 
         it('should squash commits 1->4', function (done) {
-            var data = {
-                projectId: projectId,
+            const data = {
+                projectId,
                 fromCommit: commitHashes[1],
                 toCommitOrBranch: commitHashes[4]
-            },
-                commitHash;
+            };
+
+            let commitHash;
 
             safeStorage.squashCommits(data)
                 .then(function (result) {
@@ -3404,12 +3417,13 @@ describe('SafeStorage', function () {
         });
 
         it('should squash commits 0->4', function (done) {
-            var data = {
-                projectId: projectId,
-                fromCommit: commitHashes[0],
+            const data = {
+                projectId,
+                fromCommit: commitHashes[1],
                 toCommitOrBranch: commitHashes[4]
-            },
-                commitHash;
+            };
+
+            let commitHash;
 
             safeStorage.squashCommits(data)
                 .then(function (result) {
@@ -3431,12 +3445,13 @@ describe('SafeStorage', function () {
         });
 
         it('should squash commits 0->4 and update master', function (done) {
-            var data = {
+            const data = {
                 projectId: projectId,
                 fromCommit: commitHashes[0],
                 toCommitOrBranch: 'master'
-            },
-                commitHash;
+            };
+
+            let commitHash;
 
             safeStorage.squashCommits(data)
                 .then(function (result) {
@@ -3458,5 +3473,4 @@ describe('SafeStorage', function () {
                 .nodeify(done);
         });
     });
-})
-    ;
+});
