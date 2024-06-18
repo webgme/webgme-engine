@@ -486,7 +486,7 @@ function GMEAuth(session, gmeConfig) {
     /**
      *
      * @param {string} userId
-     * @param {object] [query]
+     * @param {object} [query]
      * @param {function} [callback]
      * @returns {*}
      */
@@ -860,6 +860,8 @@ function GMEAuth(session, gmeConfig) {
                 var i;
                 for (i = 0; i < userDataArray.length; i += 1) {
                     delete userDataArray[i].passwordHash;
+                    delete userDataArray[i].resetHash;
+                    delete userDataArray[i].lastReset;
                     userDataArray[i].data = userDataArray[i].data || {};
                     userDataArray[i].settings = userDataArray[i].settings || {};
                 }
@@ -1011,9 +1013,9 @@ function GMEAuth(session, gmeConfig) {
             admins: [],
             info: info || {}
         })
-            .then(function (res) {
+            .then(function () {
                 self.dispatchEvent(CONSTANTS.ORGANIZATION_CREATED, { orgId: orgId });
-                return res;
+                return getOrganization(orgId);
             })
             .catch(function (err) {
                 if (err.code === 11000) {
@@ -1044,7 +1046,7 @@ function GMEAuth(session, gmeConfig) {
     /**
      *
      * @param {string} orgId
-     * @param {object] info
+     * @param {object} info
      * @param {function} [callback]
      * @returns {*}
      */
@@ -1071,7 +1073,7 @@ function GMEAuth(session, gmeConfig) {
     /**
      *
      * @param {string} orgId
-     * @param {object] [query]
+     * @param {object} [query]
      * @param {function} [callback]
      * @returns {*}
      */
@@ -1191,7 +1193,7 @@ function GMEAuth(session, gmeConfig) {
 
     /**
      *
-     * @param userId
+     * @param {string} userId
      * @param {string} orgId
      * @param {function} [callback]
      * @returns {*}
