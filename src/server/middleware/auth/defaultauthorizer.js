@@ -29,29 +29,36 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
         var ops = ['read', 'write', 'delete'];
         return self.collection.findOne({
             _id: userId,
-            disabled: {$ne: true}
+            disabled: { $ne: true }
         }, _getProjection('siteAdmin', 'orgs', 'projects.' + projectId))
             .then(function (userData) {
                 if (!userData) {
                     return Q.reject(new Error('no such user [' + userId + ']'));
                 }
-                userData.orgs = userData.orgs || [];
 
                 if (userData.siteAdmin) {
                     return [{}, [true, true, true]];
-                } else {
-                    return [userData.projects[projectId] || {},
-                        Q.all(ops.map(function (op) {
-                            var query;
-                            if ((userData.projects[projectId] || {})[op]) {
-                                return 1;
-                            }
-                            query = {_id: {$in: userData.orgs}, disabled: {$ne: true}};
-                            query['projects.' + projectId + '.' + op] = true;
-                            return self.collection.findOne(query, {_id: 1});
-                        }))];
                 }
+
+                userData.orgs = userData.orgs || [];
+                return [userData.projects[projectId] || {},
+                    Q.all(ops.map(function (op) {
+                        // Check if the user is in any org that has project access. 
+                        var query;
+                        if ((userData.projects[projectId] || {})[op]) {
+                            return 1; // user has the right
+                        }
+
+                        if (userData.orgs.length === 0) {
+                            return 0; // no orgs to check
+                        }
+
+                        query = { _id: { $in: userData.orgs }, disabled: { $ne: true } };
+                        query['projects.' + projectId + '.' + op] = true;
+                        return self.collection.findOne(query, { _id: 1 });
+                    }))];
             }).spread(function (user, rwd) {
+                // merge them together
                 var ret = {};
                 ops.forEach(function (op, i) {
                     ret[op] = (user[op] || rwd[i]) ? true : false;
@@ -62,7 +69,7 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
     }
 
     function removeProjectRightsForAll(projectId, callback) {
-        var update = {$unset: {}};
+        var update = { $unset: {} };
         update.$unset['projects.' + projectId] = '';
         return self.collection.updateMany({}, update)
             .nodeify(callback);
@@ -77,8 +84,8 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
     function getUser(userId, callback) {
         return self.collection.findOne({
             _id: userId,
-            type: {$ne: GME_AUTH_CONSTANTS.ORGANIZATION},
-            disabled: {$ne: true}
+            type: { $ne: GME_AUTH_CONSTANTS.ORGANIZATION },
+            disabled: { $ne: true }
         })
             .then(function (userData) {
                 if (!userData) {
@@ -95,8 +102,8 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
     }
 
     function getAdminsInOrganization(orgId, callback) {
-        return self.collection.findOne({_id: orgId, type: GME_AUTH_CONSTANTS.ORGANIZATION, disabled: {$ne: true}},
-            {admins: 1})
+        return self.collection.findOne({ _id: orgId, type: GME_AUTH_CONSTANTS.ORGANIZATION, disabled: { $ne: true } },
+            { admins: 1 })
             .then(function (org) {
                 if (!org) {
                     return Q.reject(new Error('no such organization [' + orgId + ']'));
@@ -119,17 +126,17 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
         var update;
 
         if (type === 'set') {
-            update = {$set: {}};
+            update = { $set: {} };
             update.$set['projects.' + projectId] = rights;
         } else if (type === 'delete') {
-            update = {$unset: {}};
+            update = { $unset: {} };
             update.$unset['projects.' + projectId] = '';
         } else {
             return Q.reject(new Error('unknown type ' + type))
                 .nodeify(callback);
         }
 
-        return self.collection.updateOne({_id: userOrOrgId, disabled: {$ne: true}}, update)
+        return self.collection.updateOne({ _id: userOrOrgId, disabled: { $ne: true } }, update)
             .then(function (result) {
                 if (result.matchedCount !== 1) {
                     return Q.reject(new Error('no such user or org [' + userOrOrgId + ']'));
@@ -145,31 +152,29 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
         } else if (params.entityType === AuthorizerBase.ENTITY_TYPES.USER) {
             return getUser(userId)
                 .then(function (user) {
-                    var rights = {
-                        read: true,
-                        write: false,
-                        delete: false
-                    };
+                    const readOnly = { read: true, write: false, delete: false };
+                    const readWrite = { read: true, write: true, delete: false };
 
                     if (user.siteAdmin) {
-                        rights.write = true;
-                        rights.delete = true;
-                        return rights;
-                    } else if (!user.canCreate) {
-                        return rights;
-                    } else if (userId === entityId) {
-                        rights.write = true;
-                        return rights;
-                    } else {
-                        return getAdminsInOrganization(entityId)
-                            .then(function (admins) {
-                                if (admins.indexOf(userId) > -1) {
-                                    rights.write = true;
-                                }
-
-                                return rights;
-                            });
+                        return { read: true, write: true, delete: true };
                     }
+
+                    if (userId === entityId) {
+                        return readWrite;
+                    }
+
+                    if (!user.canCreate) {
+                        return readOnly;
+                    }
+
+                    return getAdminsInOrganization(entityId)
+                        .then(function (admins) {
+                            if (admins.indexOf(userId) > -1) {
+                                return readWrite;
+                            }
+
+                            return readOnly;
+                        });
                 })
                 .nodeify(callback);
         }
