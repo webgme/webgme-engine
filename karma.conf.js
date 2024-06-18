@@ -1,3 +1,8 @@
+// TODO: Karma is no longer maintained and does not support new versions of mocha.
+// TODO: Therefore these tests have been disabled as new security patches need to be apply.
+// TODO: When time consider migrating the test-karma tests to some other framework for browser testing.
+// TODO: This file here is the main context setter-upper and this needs to be migrated as well.
+
 /*eslint-env node*/
 /*eslint no-console: 0*/
 
