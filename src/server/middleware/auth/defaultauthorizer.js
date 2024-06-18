@@ -152,11 +152,11 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
         } else if (params.entityType === AuthorizerBase.ENTITY_TYPES.USER) {
             return getUser(userId)
                 .then(function (user) {
-                    const readOnly = { read: true, right: false, delete: false };
-                    const readWrite = { read: true, right: true, delete: false };
+                    const readOnly = { read: true, write: false, delete: false };
+                    const readWrite = { read: true, write: true, delete: false };
 
                     if (user.siteAdmin) {
-                        return { read: true, right: true, delete: true };
+                        return { read: true, write: true, delete: true };
                     }
 
                     if (userId === entityId) {
