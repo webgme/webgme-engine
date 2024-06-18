@@ -3419,7 +3419,7 @@ describe('SafeStorage', function () {
         it('should squash commits 0->4', function (done) {
             const data = {
                 projectId,
-                fromCommit: commitHashes[1],
+                fromCommit: commitHashes[0],
                 toCommitOrBranch: commitHashes[4]
             };
 
