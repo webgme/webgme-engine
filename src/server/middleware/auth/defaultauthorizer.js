@@ -159,12 +159,12 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
                         return { read: true, write: true, delete: true };
                     }
 
-                    if (userId === entityId) {
-                        return readWrite;
-                    }
-
                     if (!user.canCreate) {
                         return readOnly;
+                    }
+
+                    if (userId === entityId) {
+                        return readWrite;
                     }
 
                     return getAdminsInOrganization(entityId)

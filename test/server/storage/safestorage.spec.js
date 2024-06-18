@@ -279,9 +279,9 @@ describe('SafeStorage', function () {
 
         it('should setBranchHash', function (done) {
             var data = {
-                    projectId: projectId,
-                    branchName: 'master'
-                },
+                projectId: projectId,
+                branchName: 'master'
+            },
                 newHash;
 
             safeStorage.getBranchHash(data)
@@ -297,7 +297,7 @@ describe('SafeStorage', function () {
                     return safeStorage.setBranchHash(data);
                 })
                 .then(function (result) {
-                    expect(result).to.deep.equal({status: 'SYNCED', hash: newHash});
+                    expect(result).to.deep.equal({ status: 'SYNCED', hash: newHash });
                 })
                 .nodeify(done);
         });
@@ -329,9 +329,9 @@ describe('SafeStorage', function () {
 
         it('should createBranch', function (done) {
             var data = {
-                    projectId: projectId,
-                    branchName: 'master'
-                },
+                projectId: projectId,
+                branchName: 'master'
+            },
                 newHash;
 
             safeStorage.getBranchHash(data)
@@ -346,7 +346,7 @@ describe('SafeStorage', function () {
                     return safeStorage.createBranch(data);
                 })
                 .then(function (result) {
-                    expect(result).to.deep.equal({status: 'SYNCED', hash: newHash});
+                    expect(result).to.deep.equal({ status: 'SYNCED', hash: newHash });
                     return safeStorage.getBranches(data);
                 })
                 .then(function (result) {
@@ -357,9 +357,9 @@ describe('SafeStorage', function () {
 
         it('should deleteBranch', function (done) {
             var data = {
-                    projectId: projectId,
-                    branchName: 'master'
-                },
+                projectId: projectId,
+                branchName: 'master'
+            },
                 newHash;
 
             safeStorage.getBranchHash(data)
@@ -374,7 +374,7 @@ describe('SafeStorage', function () {
                     return safeStorage.createBranch(data);
                 })
                 .then(function (result) {
-                    expect(result).to.deep.equal({status: 'SYNCED', hash: newHash});
+                    expect(result).to.deep.equal({ status: 'SYNCED', hash: newHash });
                     return safeStorage.getBranches(data);
                 })
                 .then(function (result) {
@@ -382,7 +382,7 @@ describe('SafeStorage', function () {
                     return safeStorage.deleteBranch(data);
                 })
                 .then(function (result) {
-                    expect(result).to.deep.equal({status: 'SYNCED', hash: ''});
+                    expect(result).to.deep.equal({ status: 'SYNCED', hash: '' });
                     return safeStorage.getBranches(data);
                 })
                 .then(function (result) {
@@ -411,9 +411,9 @@ describe('SafeStorage', function () {
 
         it('should loadObjects', function (done) {
             var data = {
-                    projectId: projectId,
-                    branchName: 'master'
-                },
+                projectId: projectId,
+                branchName: 'master'
+            },
                 commitId,
                 rootId;
 
@@ -938,7 +938,7 @@ describe('SafeStorage', function () {
 
             safeStorage.createTag(data)
                 .then(function () {
-                    return safeStorage.getTags({projectId: projectId});
+                    return safeStorage.getTags({ projectId: projectId });
                 })
                 .then(function (result) {
                     expect(result.taggen).to.equal(commitHash);
@@ -955,7 +955,7 @@ describe('SafeStorage', function () {
 
             safeStorage.createTag(data)
                 .then(function () {
-                    return safeStorage.getTags({projectId: projectId});
+                    return safeStorage.getTags({ projectId: projectId });
                 })
                 .then(function (result) {
                     expect(result.taggen2).to.equal(commitHash);
@@ -1507,10 +1507,10 @@ describe('SafeStorage', function () {
 
         it('should patch when the commit contains a patch root', function (done) {
             var parameters = {
-                    projectName: 'patchOff',
-                    branchName: 'patchOffBranch',
-                    gmeConfig: testFixture.getGmeConfig()
-                },
+                projectName: 'patchOff',
+                branchName: 'patchOffBranch',
+                gmeConfig: testFixture.getGmeConfig()
+            },
                 patchRoot,
                 patching,
                 newRoot,
@@ -1534,7 +1534,7 @@ describe('SafeStorage', function () {
                     patchRoot = {
                         type: 'patch',
                         base: parameters.result.rootHash,
-                        patch: [{op: 'add', path: '/atr/new', value: 'value'}]
+                        patch: [{ op: 'add', path: '/atr/new', value: 'value' }]
                     };
                     patching = jsonPatcher.apply(parameters.result.rootNode.data, patchRoot.patch);
                     expect(patching.status).to.equal('success');
@@ -1564,10 +1564,10 @@ describe('SafeStorage', function () {
 
         it('should broadcast patch root when function is enabled', function (done) {
             var parameters = {
-                    projectName: 'patchOn',
-                    branchName: 'patchOnBranch',
-                    gmeConfig: testFixture.getGmeConfig()
-                },
+                projectName: 'patchOn',
+                branchName: 'patchOnBranch',
+                gmeConfig: testFixture.getGmeConfig()
+            },
                 patchRoot,
                 patching,
                 newRoot,
@@ -1590,7 +1590,7 @@ describe('SafeStorage', function () {
                     patchRoot = {
                         type: 'patch',
                         base: parameters.result.rootHash,
-                        patch: [{op: 'add', path: '/atr/new', value: 'value'}]
+                        patch: [{ op: 'add', path: '/atr/new', value: 'value' }]
                     };
                     patching = jsonPatcher.apply(parameters.result.rootNode.data, patchRoot.patch);
                     expect(patching.status).to.equal('success');
@@ -1621,10 +1621,10 @@ describe('SafeStorage', function () {
 
         it('should broadcast patch root when function is enabled and only root is sent', function (done) {
             var parameters = {
-                    projectName: 'patchOnOnlyRoot',
-                    branchName: 'patchOnBranch',
-                    gmeConfig: testFixture.getGmeConfig()
-                },
+                projectName: 'patchOnOnlyRoot',
+                branchName: 'patchOnBranch',
+                gmeConfig: testFixture.getGmeConfig()
+            },
                 patchRoot,
                 patching,
                 newRoot,
@@ -1647,7 +1647,7 @@ describe('SafeStorage', function () {
                     patchRoot = {
                         type: 'patch',
                         base: parameters.result.rootHash,
-                        patch: [{op: 'add', path: '/atr/new', value: 'value'}]
+                        patch: [{ op: 'add', path: '/atr/new', value: 'value' }]
                     };
                     patching = jsonPatcher.apply(parameters.result.rootNode.data, patchRoot.patch);
                     expect(patching.status).to.equal('success');
@@ -1678,10 +1678,10 @@ describe('SafeStorage', function () {
 
         it('should fail to handle faulty patch root object', function (done) {
             var parameters = {
-                    projectName: 'patchOnFaultyPatch',
-                    branchName: 'patchOnBranch',
-                    gmeConfig: testFixture.getGmeConfig()
-                },
+                projectName: 'patchOnFaultyPatch',
+                branchName: 'patchOnBranch',
+                gmeConfig: testFixture.getGmeConfig()
+            },
                 eventHandler = function (/*_storage, eventData*/) {
                     parameters.storage.clearAllEvents();
                     done(new Error('missing fault handling'));
@@ -1697,7 +1697,7 @@ describe('SafeStorage', function () {
                     patchRoot = {
                         type: 'patch',
                         base: parameters.result.rootHash,
-                        patch: [{op: 'add', path: '/atr/new', value: 'value'}]
+                        patch: [{ op: 'add', path: '/atr/new', value: 'value' }]
                     };
                     patching = jsonPatcher.apply(parameters.result.rootNode.data, patchRoot.patch);
                     expect(patching.status).to.equal('success');
@@ -1733,10 +1733,10 @@ describe('SafeStorage', function () {
 
         it('should fail to handle patch root object with faulty base', function (done) {
             var parameters = {
-                    projectName: 'patchOnFaultyBase',
-                    branchName: 'patchOnBranch',
-                    gmeConfig: testFixture.getGmeConfig()
-                },
+                projectName: 'patchOnFaultyBase',
+                branchName: 'patchOnBranch',
+                gmeConfig: testFixture.getGmeConfig()
+            },
                 eventHandler = function (/*_storage, eventData*/) {
                     parameters.storage.clearAllEvents();
                     done(new Error('missing fault handling'));
@@ -1751,7 +1751,7 @@ describe('SafeStorage', function () {
                     patchRoot = {
                         type: 'patch',
                         base: parameters.result.rootHash,
-                        patch: [{op: 'add', path: '/atr/new', value: 'value'}]
+                        patch: [{ op: 'add', path: '/atr/new', value: 'value' }]
                     };
                     patching = jsonPatcher.apply(parameters.result.rootNode.data, patchRoot.patch);
                     expect(patching.status).to.equal('success');
@@ -1898,7 +1898,12 @@ describe('SafeStorage', function () {
                     throw new Error('Should have failed!');
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('Invalid argument, data.projectName failed regexp: contains+plus');
+                    try {
+                        expect(err.message).to.contain('Invalid argument, data.projectName failed regexp: contains+plus');
+                    } catch (err) {
+                        done(err);
+                        return;
+                    }
                     done();
                 })
                 .done();
@@ -1918,7 +1923,12 @@ describe('SafeStorage', function () {
                     throw new Error('Should have failed!');
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('Invalid argument, data.projectName failed regexp: ');
+                    try {
+                        expect(err.message).to.contain('Invalid argument, data.projectName failed regexp: ');
+                    } catch (err) {
+                        done(err);
+                        return;
+                    }
                     done();
                 })
                 .done();
@@ -1940,7 +1950,12 @@ describe('SafeStorage', function () {
                     throw new Error('Should have failed!');
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('Invalid argument, data.kind is not a string');
+                    try {
+                        expect(err.message).to.contain('Invalid argument, data.kind is not a string');
+                    } catch (err) {
+                        done(err);
+                        return;
+                    }
                     done();
                 })
                 .done();
@@ -1960,7 +1975,12 @@ describe('SafeStorage', function () {
                     throw new Error('Should have failed!');
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('Not authorized to create new project');
+                    try {
+                        expect(err.message).to.contain('Not authorized to create new project');
+                    } catch (err) {
+                        done(err);
+                        return;
+                    }
                     done();
                 })
                 .done();
@@ -1978,7 +1998,12 @@ describe('SafeStorage', function () {
                     throw new Error('Should have failed!');
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('Not authorized to create new project');
+                    try {
+                        expect(err.message).to.contain('Not authorized to create new project');
+                    } catch (err) {
+                        done(err);
+                        return;
+                    }
                     done();
                 })
                 .done();
@@ -2000,7 +2025,12 @@ describe('SafeStorage', function () {
                 })
                 .then(function (projects) {
                     var pData = getProjectData(projects, projectId);
-                    expect(pData.rights).to.deep.equal({read: true, write: true, delete: true});
+                    try {
+                        expect(pData.rights).to.deep.equal({ read: true, write: true, delete: true });
+                    } catch (err) {
+                        done(err);
+                        return;
+                    }
                 })
                 .nodeify(done);
         });
@@ -2238,7 +2268,7 @@ describe('SafeStorage', function () {
                 })
                 .then(function (projects) {
                     var pData = getProjectData(projects, projectId);
-                    expect(pData.rights).to.deep.equal({read: true, write: true, delete: true});
+                    expect(pData.rights).to.deep.equal({ read: true, write: true, delete: true });
                 })
                 .nodeify(done);
         });
@@ -2286,7 +2316,7 @@ describe('SafeStorage', function () {
                 })
                 .then(function (newProjectId_) {
                     expect(newProjectId_).to.equal(newProjectId);
-                    return safeStorage.openProject({projectId: newProjectId, username: username});
+                    return safeStorage.openProject({ projectId: newProjectId, username: username });
                 })
                 .then(function (project) {
                     expect(project.projectId).to.equal(newProjectId);
@@ -2444,7 +2474,7 @@ describe('SafeStorage', function () {
 
         it('should fail to make a duplicate of a project if ownerId not string', function (done) {
             var data = {
-                ownerId: {a: 10},
+                ownerId: { a: 10 },
                 projectName: 'dup',
                 projectId: pId
             };
@@ -3023,23 +3053,23 @@ describe('SafeStorage', function () {
 
         it('should filter out excludes', function (done) {
             var data = {
-                    projectId: projectId,
-                    pathsInfo: [
-                        {
-                            parentHash: rootHash,
-                            path: '/1946012150/584624888'
-                        },
-                        {
-                            parentHash: rootHash,
-                            path: '/1946012150/584624888/1603996771'
-                        },
-                        {
-                            parentHash: rootHash,
-                            path: '/1946012150/584624888/1603996771/1704227179'
-                        }
-                    ],
-                    excludes: []
-                },
+                projectId: projectId,
+                pathsInfo: [
+                    {
+                        parentHash: rootHash,
+                        path: '/1946012150/584624888'
+                    },
+                    {
+                        parentHash: rootHash,
+                        path: '/1946012150/584624888/1603996771'
+                    },
+                    {
+                        parentHash: rootHash,
+                        path: '/1946012150/584624888/1603996771/1704227179'
+                    }
+                ],
+                excludes: []
+            },
                 loadedHashes;
 
             storage.loadPaths(data)
@@ -3321,10 +3351,10 @@ describe('SafeStorage', function () {
 
         it('should squash commits 0->1', function (done) {
             var data = {
-                    projectId: projectId,
-                    fromCommit: commitHashes[0],
-                    toCommitOrBranch: commitHashes[1]
-                },
+                projectId: projectId,
+                fromCommit: commitHashes[0],
+                toCommitOrBranch: commitHashes[1]
+            },
                 commitHash;
 
             safeStorage.squashCommits(data)
@@ -3348,10 +3378,10 @@ describe('SafeStorage', function () {
 
         it('should squash commits 1->4', function (done) {
             var data = {
-                    projectId: projectId,
-                    fromCommit: commitHashes[1],
-                    toCommitOrBranch: commitHashes[4]
-                },
+                projectId: projectId,
+                fromCommit: commitHashes[1],
+                toCommitOrBranch: commitHashes[4]
+            },
                 commitHash;
 
             safeStorage.squashCommits(data)
@@ -3375,10 +3405,10 @@ describe('SafeStorage', function () {
 
         it('should squash commits 0->4', function (done) {
             var data = {
-                    projectId: projectId,
-                    fromCommit: commitHashes[0],
-                    toCommitOrBranch: commitHashes[4]
-                },
+                projectId: projectId,
+                fromCommit: commitHashes[0],
+                toCommitOrBranch: commitHashes[4]
+            },
                 commitHash;
 
             safeStorage.squashCommits(data)
@@ -3402,10 +3432,10 @@ describe('SafeStorage', function () {
 
         it('should squash commits 0->4 and update master', function (done) {
             var data = {
-                    projectId: projectId,
-                    fromCommit: commitHashes[0],
-                    toCommitOrBranch: 'master'
-                },
+                projectId: projectId,
+                fromCommit: commitHashes[0],
+                toCommitOrBranch: 'master'
+            },
                 commitHash;
 
             safeStorage.squashCommits(data)
@@ -3429,4 +3459,4 @@ describe('SafeStorage', function () {
         });
     });
 })
-;
+    ;
