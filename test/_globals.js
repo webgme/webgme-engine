@@ -367,8 +367,8 @@ function clearDBAndGetGMEAuth(gmeConfigParameter, projectNameOrNames, callback) 
             };
 
             return Q.allDone([
-                gmeAuth.addUser(guestAccount, guestAccount + '@example.com', guestAccount, true, {overwrite: true}),
-                gmeAuth.addUser('admin', 'admin@example.com', 'admin', true, {overwrite: true, siteAdmin: true})
+                gmeAuth.addUser(guestAccount, guestAccount + '@example.com', guestAccount, true, { overwrite: true }),
+                gmeAuth.addUser('admin', 'admin@example.com', 'admin', true, { overwrite: true, siteAdmin: true })
             ]);
         })
         .then(function () {
@@ -429,29 +429,33 @@ function importProject(storage, parameters, callback) {
         branchName,
         data = {};
 
-    // Parameters check.
-    exports.expect(typeof storage).to.equal('object');
-    exports.expect(typeof parameters).to.equal('object');
-    exports.expect(typeof parameters.projectName).to.equal('string');
-    exports.expect(typeof parameters.gmeConfig).to.equal('object');
-    exports.expect(typeof parameters.logger).to.equal('object');
+    try {
+        // Parameters check.
+        exports.expect(typeof storage).to.equal('object');
+        exports.expect(typeof parameters).to.equal('object');
+        exports.expect(typeof parameters.projectName).to.equal('string');
+        exports.expect(typeof parameters.gmeConfig).to.equal('object');
+        exports.expect(typeof parameters.logger).to.equal('object');
 
-    if (Object.hasOwn(parameters, 'username')) {
-        exports.expect(typeof parameters.username).to.equal('string');
-        data.username = parameters.username;
+        if (Object.hasOwn(parameters, 'username')) {
+            exports.expect(typeof parameters.username).to.equal('string');
+            data.username = parameters.username;
+        }
+
+        if (Object.hasOwn(parameters, 'ownerId')) {
+            exports.expect(typeof parameters.ownerId).to.equal('string');
+            data.ownerId = parameters.ownerId;
+        }
+
+        if (Object.hasOwn(parameters, 'kind')) {
+            exports.expect(typeof parameters.kind).to.equal('string');
+            data.kind = parameters.kind;
+        }
+    } catch (err) {
+        extractDeferred.reject(err);
     }
 
-    if (Object.hasOwn(parameters, 'ownerId')) {
-        exports.expect(typeof parameters.ownerId).to.equal('string');
-        data.ownerId = parameters.ownerId;
-    }
-
-    if (Object.hasOwn(parameters, 'kind')) {
-        exports.expect(typeof parameters.kind).to.equal('string');
-        data.kind = parameters.kind;
-    }
-
-    if (typeof parameters.projectSeed === 'string' && parameters.projectSeed.toLowerCase().indexOf('.webgmex')) {
+    if (typeof parameters.projectSeed === 'string' && parameters.projectSeed.toLowerCase().indexOf('.webgmex') > -1) {
         BC = require('../src/server/middleware/blob/BlobClientWithFSBackend');
         blobClient = new BC(parameters.gmeConfig, parameters.logger);
         cliImport = require('../src/bin/import');
@@ -476,10 +480,7 @@ function importProject(storage, parameters, callback) {
             return storage.createProject(data);
         })
         .then(function (project) {
-            var core = new exports.Core(project, {
-                    globConf: parameters.gmeConfig,
-                    logger: parameters.logger
-                }),
+            var core = new exports.Core(project, { globConf: parameters.gmeConfig, logger: parameters.logger }),
                 result = {
                     status: null,
                     branchName: branchName,
@@ -519,9 +520,7 @@ function importProject(storage, parameters, callback) {
                 })
                 .catch(deferred.reject);
         })
-        .catch(function (err) {
-            deferred.reject(err);
-        });
+        .catch(deferred.reject);
 
     return deferred.promise.nodeify(callback);
 }
@@ -622,7 +621,7 @@ function openSocketIo(server, agent, userName, password, token) {
         deferred = Q.defer(),
         loginPromise,
         socket,
-        socketReq = {url: serverBaseUrl},
+        socketReq = { url: serverBaseUrl },
         webgmeToken;
 
     if (server.getGmeConfig().authentication.enable === true) {
@@ -662,7 +661,7 @@ function openSocketIo(server, agent, userName, password, token) {
             });
 
             socket.on('connect', function () {
-                deferred.resolve({socket: socket, webgmeToken: webgmeToken});
+                deferred.resolve({ socket: socket, webgmeToken: webgmeToken });
             });
         })
         .catch(function (err) {
