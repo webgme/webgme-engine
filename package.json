@@ -44,7 +44,7 @@
   },
   "homepage": "https://github.com/webgme/webgme-engine#README.md",
   "dependencies": {
-    "@azure/msal-node": "^1.8.0",
+    "@azure/msal-node": "^2.9.2",
     "adm-zip": "0.5.10",
     "agentkeepalive": "4.5.0",
     "archiver": "^6.0.1",
