@@ -323,13 +323,14 @@ define(['common/Constants', 'common/regexp'], function (CONSTANTS, REGEXP) {
         }
 
         //package save
-        function exportProjectToFile(projectId, branchName, commitHash, withAssets, callback) {
+        function _exportProjectOrLibToFile(projectId, branchName, commitHash, withAssets, libraryName, callback) {
             var parameters = {
                 command: CONSTANTS.SERVER_WORKER_REQUESTS.EXPORT_PROJECT_TO_FILE,
-                projectId: projectId,
-                branchName: branchName,
-                commitHash: commitHash,
-                withAssets: withAssets
+                projectId,
+                branchName,
+                commitHash,
+                withAssets,
+                libraryName,
             };
 
             logger.debug('exportProjectToFile, parameters', parameters);
@@ -345,6 +346,10 @@ define(['common/Constants', 'common/regexp'], function (CONSTANTS, REGEXP) {
             } else {
                 callback(new Error('invalid parameters!'));
             }
+        }
+
+        function exportProjectToFile(projectId, branchName, commitHash, withAssets, callback) {
+            _exportProjectOrLibToFile(projectId, branchName, commitHash, withAssets, undefined, callback);
         }
 
         function exportSelectionToFile(projectId, commitHash, selectedIds, withAssets, callback) {
@@ -407,6 +412,7 @@ define(['common/Constants', 'common/regexp'], function (CONSTANTS, REGEXP) {
                 autoMerge: autoMerge,
                 resolve: resolve,
                 exportProjectToFile: exportProjectToFile,
+                exportLibraryToFile: _exportProjectOrLibToFile,
                 exportSelectionToFile: exportSelectionToFile,
                 importSelectionFromFile: importSelectionFromFile
             },

@@ -69,6 +69,7 @@ describe('Simple worker', function () {
         constraintProjectImportResult,
         constraintProjectImportResult2,
         renameProjectImportResult,
+        libProjectImportResult,
 
         oldSend = process.send,
         oldOn = process.on,
@@ -207,12 +208,20 @@ describe('Simple worker', function () {
                         branchName: 'master',
                         logger: logger,
                         gmeConfig: gmeConfig
+                    }),
+                    testFixture.importProject(storage, {
+                        projectSeed: './test/plugin/PluginManagerBase/Lib.A.B.webgmex',
+                        projectName: 'LibraryProject',
+                        branchName: 'master',
+                        logger: logger,
+                        gmeConfig: gmeConfig
                     })
                 ]);
             })
             .then(function (result) {
                 constraintProjectImportResult = result[0];
                 constraintProjectImportResult2 = result[1];
+                libProjectImportResult = result[2];
 
                 return testFixture.importProject(storage, {
                     projectSeed: './test/common/core/users/rename/propagate.webgmex',
@@ -1727,6 +1736,34 @@ describe('Simple worker', function () {
                     command: CONSTANTS.workerCommands.exportProjectToFile,
                     projectId: baseProjectContext.id,
                     commitHash: baseProjectContext.commitHash
+                });
+            })
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.result);
+                expect(msg.error).equal(null);
+
+                expect(msg.result).not.equal(null);
+                expect(typeof msg.result).to.equal('object');
+                expect(msg.result.downloadUrl).to.include('/rest/blob/download/');
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
+    it.only('exportProjectToFile should export library when name provided', function (done) {
+        var worker = getSimpleWorker();
+
+        worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.initialized);
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.exportProjectToFile,
+                    projectId: libProjectImportResult.project.projectId,
+                    commitHash: baseProjectContext.commitHash,
+                    libraryName: 'A'
                 });
             })
             .then(function (msg) {

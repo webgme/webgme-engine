@@ -36,6 +36,7 @@ define([
      * @param {boolean} [parameters.withAssets=false] - Bundle the encountered assets linked from attributes.
      * @param {string} [parameters.kind] - If not given will use the one defined in project (if any).
      * @param {string} [parameters.outName] - Name of the output blob (.webgmex will be appended).
+     * @param {string} [parameters.libraryName] - If provided - will export library as webgmex file.
      * @param {function} [callback]
      * @param {Error|null} callback.err - If there was an error
      * @param {object} callback.result - Data about the exported project
@@ -45,16 +46,47 @@ define([
      * @returns {Promise}
      */
     exports.exportProjectToFile = function exportProjectToFile(project, blobClient, parameters, callback) {
-        var fileName;
+        let fileName;
+        let libInfo;
 
-        return storageUtils.getProjectJson(project, {
-            branchName: parameters.branchName,
-            commitHash: parameters.commitHash,
-            rootHash: parameters.rootHash,
-            tagName: parameters.tagName,
-            kind: parameters.kind
-        })
+        return storageUtils.getRootHash(project, parameters)
+            .then(function (rootHash) {
+                if (!parameters.libraryName) {
+                    return {
+                        branchName: parameters.branchName,
+                        commitHash: parameters.commitHash,
+                        rootHash: parameters.rootHash,
+                        tagName: parameters.tagName,
+                        kind: parameters.kind
+                    };
+                }
+
+                const core = new Core(project, { globConf: project.gmeConfig, logger: project.logger });
+
+                return core.loadRoot(rootHash)
+                    .then(function (rootNode) {
+                        const libNode = core.getLibraryRoot(rootNode, parameters.libraryName);
+                        libInfo = core.getLibraryInfo(rootNode, parameters.libraryName);
+                        return { rootHash: core.getHash(libNode) };
+                    });
+            })
+            .then(function (exportContext) {
+                return storageUtils.getProjectJson(project, {
+                    branchName: exportContext.branchName,
+                    commitHash: exportContext.commitHash,
+                    rootHash: exportContext.rootHash,
+                    tagName: exportContext.tagName,
+                    kind: exportContext.kind
+                });
+            })
             .then(function (rawJson) {
+                if (parameters.libraryName) {
+                    // We need to adjust this when the exportee was a library.
+                    delete rawJson.kind; // This is lost at this point.
+                    rawJson.projectId = libInfo.projectId;
+                    rawJson.commitHash = libInfo.commitHash;
+                }
+
                 fileName = typeof parameters.outName === 'string' ?
                     parameters.outName :
                     rawJson.projectId + '_' + (rawJson.commitHash || '').substr(1, 6);
@@ -132,19 +164,19 @@ define([
                 closureInfo = core.getClosureInformation(nodes);
 
                 return Q.all(nodes.map(function (node) {
-                    return storageUtils.getProjectJson(project, {rootHash: core.getHash(node)});
+                    return storageUtils.getProjectJson(project, { rootHash: core.getHash(node) });
                 }));
             })
             .then(function (rawJsons) {
-                var output = {
-                        projectId: project.projectId,
-                        commitHash: parameters.commitHash,
-                        selectionInfo: closureInfo,
-                        kind: rawJsons[0].kind,
-                        objects: [],
-                        hashes: {objects: [], assets: []}
-                    },
-                    i;
+                const output = {
+                    projectId: project.projectId,
+                    commitHash: parameters.commitHash,
+                    selectionInfo: closureInfo,
+                    kind: rawJsons[0].kind,
+                    objects: [],
+                    hashes: { objects: [], assets: [] }
+                };
+                let i;
 
                 fileName = typeof parameters.outName === 'string' ?
                     parameters.outName :
