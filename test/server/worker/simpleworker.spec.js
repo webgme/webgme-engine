@@ -195,20 +195,20 @@ describe('Simple worker', function () {
                 expect(result.status).to.equal(project.CONSTANTS.SYNCED);
 
                 return Q.allDone([
-                    // testFixture.importProject(storage, {
-                    //     projectSeed: './test/common/core/users/meta/metaRules.webgmex',
-                    //     projectName: constraintProjectName,
-                    //     branchName: 'master',
-                    //     logger: logger,
-                    //     gmeConfig: gmeConfig
-                    // }),
-                    // testFixture.importProject(storage, {
-                    //     projectSeed: './test/server/worker/simpleworker/MetaInconsistencies.webgmex',
-                    //     projectName: 'MetaInconsistencies_SW',
-                    //     branchName: 'master',
-                    //     logger: logger,
-                    //     gmeConfig: gmeConfig
-                    // }),
+                    testFixture.importProject(storage, {
+                        projectSeed: './test/common/core/users/meta/metaRules.webgmex',
+                        projectName: constraintProjectName,
+                        branchName: 'master',
+                        logger: logger,
+                        gmeConfig: gmeConfig
+                    }),
+                    testFixture.importProject(storage, {
+                        projectSeed: './test/server/worker/simpleworker/MetaInconsistencies.webgmex',
+                        projectName: 'MetaInconsistencies_SW',
+                        branchName: 'master',
+                        logger: logger,
+                        gmeConfig: gmeConfig
+                    }),
                     testFixture.importProject(storage, {
                         projectSeed: './test/plugin/PluginManagerBase/Lib.A.B.webgmex',
                         projectName: 'LibraryProject',
@@ -219,9 +219,9 @@ describe('Simple worker', function () {
                 ]);
             })
             .then(function (result) {
-                // constraintProjectImportResult = result[0];
-                // constraintProjectImportResult2 = result[1];
-                libProjectImportResult = result[0];
+                constraintProjectImportResult = result[0];
+                constraintProjectImportResult2 = result[1];
+                libProjectImportResult = result[2];
 
                 return testFixture.importProject(storage, {
                     projectSeed: './test/common/core/users/rename/propagate.webgmex',
