@@ -195,20 +195,20 @@ describe('Simple worker', function () {
                 expect(result.status).to.equal(project.CONSTANTS.SYNCED);
 
                 return Q.allDone([
-                    testFixture.importProject(storage, {
-                        projectSeed: './test/common/core/users/meta/metaRules.webgmex',
-                        projectName: constraintProjectName,
-                        branchName: 'master',
-                        logger: logger,
-                        gmeConfig: gmeConfig
-                    }),
-                    testFixture.importProject(storage, {
-                        projectSeed: './test/server/worker/simpleworker/MetaInconsistencies.webgmex',
-                        projectName: 'MetaInconsistencies_SW',
-                        branchName: 'master',
-                        logger: logger,
-                        gmeConfig: gmeConfig
-                    }),
+                    // testFixture.importProject(storage, {
+                    //     projectSeed: './test/common/core/users/meta/metaRules.webgmex',
+                    //     projectName: constraintProjectName,
+                    //     branchName: 'master',
+                    //     logger: logger,
+                    //     gmeConfig: gmeConfig
+                    // }),
+                    // testFixture.importProject(storage, {
+                    //     projectSeed: './test/server/worker/simpleworker/MetaInconsistencies.webgmex',
+                    //     projectName: 'MetaInconsistencies_SW',
+                    //     branchName: 'master',
+                    //     logger: logger,
+                    //     gmeConfig: gmeConfig
+                    // }),
                     testFixture.importProject(storage, {
                         projectSeed: './test/plugin/PluginManagerBase/Lib.A.B.webgmex',
                         projectName: 'LibraryProject',
@@ -219,9 +219,9 @@ describe('Simple worker', function () {
                 ]);
             })
             .then(function (result) {
-                constraintProjectImportResult = result[0];
-                constraintProjectImportResult2 = result[1];
-                libProjectImportResult = result[2];
+                // constraintProjectImportResult = result[0];
+                // constraintProjectImportResult2 = result[1];
+                libProjectImportResult = result[0];
 
                 return testFixture.importProject(storage, {
                     projectSeed: './test/common/core/users/rename/propagate.webgmex',
@@ -1751,7 +1751,7 @@ describe('Simple worker', function () {
             .nodeify(done);
     });
 
-    it.only('exportProjectToFile should export library when name provided', function (done) {
+    it('exportProjectToFile should export library when name provided', function (done) {
         var worker = getSimpleWorker();
 
         worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
@@ -1762,7 +1762,7 @@ describe('Simple worker', function () {
                 return worker.send({
                     command: CONSTANTS.workerCommands.exportProjectToFile,
                     projectId: libProjectImportResult.project.projectId,
-                    commitHash: baseProjectContext.commitHash,
+                    commitHash: libProjectImportResult.commitHash,
                     libraryName: 'A'
                 });
             })
@@ -1774,6 +1774,36 @@ describe('Simple worker', function () {
                 expect(msg.result).not.equal(null);
                 expect(typeof msg.result).to.equal('object');
                 expect(msg.result.downloadUrl).to.include('/rest/blob/download/');
+                expect(msg.result.fileName).to.include('guest+A_');
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
+    it('exportProjectToFile should export nested library when name provided', function (done) {
+        var worker = getSimpleWorker();
+
+        worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.initialized);
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.exportProjectToFile,
+                    projectId: libProjectImportResult.project.projectId,
+                    commitHash: libProjectImportResult.commitHash,
+                    libraryName: 'A.B'
+                });
+            })
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.result);
+                expect(msg.error).equal(null);
+
+                expect(msg.result).not.equal(null);
+                expect(typeof msg.result).to.equal('object');
+                expect(msg.result.downloadUrl).to.include('/rest/blob/download/');
+                expect(msg.result.fileName).to.include('guest+B_');
             })
             .finally(restoreProcessFunctions)
             .nodeify(done);
