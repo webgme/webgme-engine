@@ -407,7 +407,8 @@ function GMEAuth(session, gmeConfig) {
                 logger.debug('Verified token!');
                 // Check if token is about to expire...
                 if (gmeConfig.authentication.jwt.renewBeforeExpires > 0 &&
-                    content.exp - (Date.now() / 1000) < gmeConfig.authentication.jwt.renewBeforeExpires) {
+                    content.exp - (Date.now() / 1000) < gmeConfig.authentication.jwt.renewBeforeExpires &&
+                    !result.content.suppressRenewal) {
                     logger.debug('Token is about to expire');
                     result.renew = true;
                 }
@@ -432,6 +433,10 @@ function GMEAuth(session, gmeConfig) {
                     { _id: userId, type: { $ne: CONSTANTS.ORGANIZATION }, disabled: { $ne: true } });
             })
             .then(completeUserData => {
+                if (!completeUserData && result.content.requireUserExistence) {
+                    throw new Error('No such user [' + userId + '] and requireUserExists in jwt payload.');
+                }
+
                 if (!completeUserData && (userId || result.content.email)) {
                     // We create a new user - an inferred one that is if we got email or userid
                     if (!userId && gmeConfig.authentication.useEmailForId) {
