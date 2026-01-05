@@ -90,80 +90,6 @@ function GMEAuth(session, gmeConfig) {
         PUBLIC_KEY = fs.readFileSync(gmeConfig.authentication.jwt.publicKey, 'utf8');
     }
 
-    /**
-     * 'users' collection has these fields:
-     * _id: username
-     * email:
-     * passwordHash: bcrypt hash of password
-     * canCreate: authorized to create new projects
-     * tokenId: token associated with account
-     * tokenCreation: time of token creation (they may be configured to expire)
-     * projects: map from project name to object {read:, write:, delete: }
-     * orgs: array of orgIds
-     */
-    /**
-     * '_organizations' collection has these fields:
-     * _id: username
-     * projects: map from project name to object {read:, write:, delete: }
-     */
-    function addMongoOpsToPromize(collection_) {
-        // TODO: Drop this at some point - js has much better async support these days
-        collection_.findOne = function () {
-            var args = arguments;
-            return collection_.then(function (c) {
-                return Q.npost(c, 'findOne', args);
-            });
-        };
-        collection_.find = function (/*query, projection*/) {
-            var args = arguments;
-            return collection_.then(function (c) {
-                return Q.npost(c, 'find', args);
-            });
-        };
-        collection_.updateOne = function (/*query, update, options*/) {
-            var args = arguments;
-            return collection_.then(function (c) {
-                return Q.npost(c, 'updateOne', args);
-            });
-        };
-        collection_.replaceOne = function (/*query, update, options*/) {
-            var args = arguments;
-            return collection_.then(function (c) {
-                return Q.npost(c, 'replaceOne', args);
-            });
-        };
-        collection_.updateMany = function (/*query, update, options*/) {
-            var args = arguments;
-            return collection_.then(function (c) {
-                return Q.npost(c, 'updateMany', args);
-            });
-        };
-        collection_.insertOne = function (/*data, options*/) {
-            var args = arguments;
-            return collection_.then(function (c) {
-                return Q.npost(c, 'insertOne', args);
-            });
-        };
-        collection_.insertMany = function (/*data, options*/) {
-            var args = arguments;
-            return collection_.then(function (c) {
-                return Q.npost(c, 'insertMany', args);
-            });
-        };
-        collection_.deleteOne = function (/*query, options*/) {
-            var args = arguments;
-            return collection_.then(function (c) {
-                return Q.npost(c, 'deleteOne', args);
-            });
-        };
-        collection_.deleteMany = function (/*query, options*/) {
-            var args = arguments;
-            return collection_.then(function (c) {
-                return Q.npost(c, 'deleteMany', args);
-            });
-        };
-    }
-
     function _prepareGuestAccount(callback) {
         var guestAcc = gmeConfig.authentication.guestAccount,
             canCreate = gmeConfig.authentication.guestCanCreate;
@@ -193,9 +119,11 @@ function GMEAuth(session, gmeConfig) {
             .then(function (guestAccount) {
                 logger.debug('Guest account "' + guestAccount._id + '" canCreate:', guestAccount.canCreate === true);
                 logger.debug('Guest account full-data: ', { metadata: guestAccount });
-                return Q.resolve(guestAccount);
+                return Q.resolve(guestAccount).nodeify(callback);
             })
-            .nodeify(callback);
+            .catch(function (err) {
+                return Q.reject(err).nodeify(callback);
+            });
     }
 
     function _prepareAdminAccount(callback) {
@@ -270,55 +198,24 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    function connect(callback) {
-        var collectionDeferred = Q.defer(),
-            projectCollectionDeferred = Q.defer();
+    async function connect(callback) {
 
-        projectCollection = projectCollectionDeferred.promise;
-        collection = collectionDeferred.promise;
-
-        addMongoOpsToPromize(collection);
-        addMongoOpsToPromize(projectCollection);
-
-        logger.info('connecting to:', gmeConfig.mongo.uri);
-        logger.debug('mongdb options', gmeConfig.mongo.uri, JSON.stringify(gmeConfig.mongo.options));
-        return Q.ninvoke(Mongodb.MongoClient, 'connect', gmeConfig.mongo.uri, gmeConfig.mongo.options)
-            .then(function (client_) {
-                client = client_;
-                db = client.db(dbName);
-                return Q.ninvoke(db, 'collection', _collectionName);
-            })
-            .then(function (collection_) {
-                collectionDeferred.resolve(collection_);
-                return Q.ninvoke(db, 'collection', _projectCollectionName);
-            })
-            .then(function (projectCollection_) {
-                projectCollectionDeferred.resolve(projectCollection_);
-                return _prepareGuestAccount();
-            })
-            .then(function () {
-                return _prepareAdminAccount();
-            })
-            .then(function () {
-                return _preparePublicOrganizations();
-            })
-            .then(function () {
-                return Q.all([
-                    authorizer.start({ collection: collection }),
-                    metadataStorage.start({ projectCollection: projectCollection }),
-                    tokenGenerator.start({})
-                ]);
-            })
-            .then(function () {
-                return db;
-            })
-            .catch(function (err) {
-                logger.error(err);
-                collectionDeferred.reject(err);
-                projectCollectionDeferred.reject(err);
-                throw err;
-            })
-            .nodeify(callback);
+        try {
+            client = await Mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options);
+            db = client.db(dbName);
+            collection = db.collection(_collectionName);
+            projectCollection = db.collection(_projectCollectionName);
+            await _prepareGuestAccount();
+            await _prepareAdminAccount();
+            await _preparePublicOrganizations();
+            await authorizer.start({ collection });
+            await metadataStorage.start({ projectCollection });
+            await tokenGenerator.start({});
+            return Q.resolve(db).nodeify(callback);
+        } catch (err) {
+            logger.error('Failed to connect.', {metadata: err});
+            return Q.reject(err).nodeify(callback);
+        }
     }
 
     /**
@@ -513,9 +410,11 @@ function GMEAuth(session, gmeConfig) {
                 userData.data = userData.data || {};
                 userData.settings = userData.settings || {};
 
-                return userData;
+                return Q.resolve(userData).nodeify(callback);
             })
-            .nodeify(callback);
+            .catch(function (err) {
+                return Q.reject(err).nodeify(callback);
+            });
     }
 
     /**
@@ -1077,7 +976,7 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    function getOrganization(orgId, query, callback) {
+    async function getOrganization(orgId, query, callback) {
         var query_ = { _id: orgId, type: CONSTANTS.ORGANIZATION, disabled: { $ne: true } };
 
         if (typeof query === 'function') {
@@ -1087,32 +986,23 @@ function GMEAuth(session, gmeConfig) {
 
         _resolveQuery(query_, query);
 
-        return collection.findOne(query_)
-            .then(function (org) {
-                if (!org) {
-                    return Q.reject(new Error('no such organization [' + orgId + ']'));
-                }
-                return [
-                    org,
-                    collection.find(
-                        {
-                            orgs: orgId,
-                            type: { $ne: CONSTANTS.ORGANIZATION },
-                            disabled: { $ne: true }
-                        },
-                        { _id: 1 })
-                ];
-            })
-            .spread(function (org, users) {
-                return [org, Q.ninvoke(users, 'toArray')];
-            })
-            .spread(function (org, users) {
-                org.users = users.map(function (user) {
-                    return user._id;
-                });
-                return org;
-            })
-            .nodeify(callback);
+        const org = await collection.findOne(query_);
+
+        if (!org) {
+            return Q.reject(new Error('no such organization [' + orgId + ']')).nodeify(callback);
+        }
+
+        const users = await collection.find(
+            {
+                orgs: orgId,
+                type: { $ne: CONSTANTS.ORGANIZATION },
+                disabled: { $ne: true }
+            },
+            { _id: 1 }).toArray();
+
+
+        org.users = users.map((user) => user._id);
+        return Q.resolve(org).nodeify(callback);
     }
 
     /**
@@ -1304,7 +1194,7 @@ function GMEAuth(session, gmeConfig) {
 
         logger.warn('authorizeByUserId/authorizeByUserOrOrgId are deprecated use authorizer.setAccessRights instead!');
 
-        return authorizer.setAccessRights(userId, projectId, rights, projectAuthParams).nodeify(callback);
+        return authorizer.setAccessRights(userId, projectId, rights, projectAuthParams, callback);
     }
 
     function generateRandomString(length) {

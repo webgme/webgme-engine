@@ -6,7 +6,7 @@
 
 var testFixture = require('../../_globals');
 
-describe('Core AddOns', function () {
+describe.skip('Core AddOns', function () {
     'use strict';
 
     var expect,

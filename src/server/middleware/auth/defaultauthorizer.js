@@ -25,54 +25,62 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
         return ret;
     }
 
-    function getProjectAuthorizationByUserOrOrgId(userId, projectId, callback) {
+    async function getProjectAuthorizationByUserOrOrgId(userId, projectId, callback) {
         var ops = ['read', 'write', 'delete'];
-        return self.collection.findOne({
+        const userData = await self.collection.findOne({
             _id: userId,
             disabled: { $ne: true }
-        }, _getProjection('siteAdmin', 'orgs', 'projects.' + projectId))
-            .then(function (userData) {
-                if (!userData) {
-                    return Q.reject(new Error('no such user [' + userId + ']'));
-                }
+        }, _getProjection('siteAdmin', 'orgs', 'projects.' + projectId));
 
-                if (userData.siteAdmin) {
-                    return [{}, [true, true, true]];
-                }
+        if (!userData) {
+            return Q.reject(new Error('no such user [' + userId + ']')).nodeify(callback);
+        }
 
-                userData.orgs = userData.orgs || [];
-                return [userData.projects[projectId] || {},
-                    Q.all(ops.map(function (op) {
-                        // Check if the user is in any org that has project access. 
-                        var query;
-                        if ((userData.projects[projectId] || {})[op]) {
-                            return 1; // user has the right
-                        }
+        if (userData.siteAdmin) {
+            return Q.resolve({read: true, write: true, delete: true}).nodeify(callback);
+        }
 
-                        if (userData.orgs.length === 0) {
-                            return 0; // no orgs to check
-                        }
+        userData.orgs = userData.orgs || [];
 
-                        query = { _id: { $in: userData.orgs }, disabled: { $ne: true } };
-                        query['projects.' + projectId + '.' + op] = true;
-                        return self.collection.findOne(query, { _id: 1 });
-                    }))];
-            }).spread(function (user, rwd) {
-                // merge them together
-                var ret = {};
-                ops.forEach(function (op, i) {
-                    ret[op] = (user[op] || rwd[i]) ? true : false;
-                });
-                return ret;
-            })
-            .nodeify(callback);
+        const user = userData.projects[projectId] || {};
+
+        const rwd = await Q.all(ops.map(async function (op) {
+            // Check if the user is in any org that has project access. 
+            var query;
+            if ((userData.projects[projectId] || {})[op]) {
+                return 1; // user has the right
+            }
+
+            if (userData.orgs.length === 0) {
+                return 0; // no orgs to check
+            }
+
+            query = { _id: { $in: userData.orgs }, disabled: { $ne: true } };
+            query['projects.' + projectId + '.' + op] = true;
+            const r = await self.collection.findOne(query, { _id: 1 });
+
+            return Q.resolve(r);
+        }));
+
+
+        var ret = {};
+        ops.forEach((op, i) => {
+            ret[op] = (user[op] || rwd[i]) ? true : false;
+        });
+
+        return Q.resolve(ret).nodeify(callback);
     }
 
     function removeProjectRightsForAll(projectId, callback) {
         var update = { $unset: {} };
         update.$unset['projects.' + projectId] = '';
         return self.collection.updateMany({}, update)
-            .nodeify(callback);
+            .then(function (result) {
+                return Q.resolve(result).nodeify(callback);
+            })
+            .catch(function (err) {
+                return Q.reject(err).nodeify(callback);
+            });
     }
 
     /**
@@ -89,16 +97,18 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
         })
             .then(function (userData) {
                 if (!userData) {
-                    return Q.reject(new Error('no such user [' + userId + ']'));
+                    return Q.reject(new Error('no such user [' + userId + ']')).nodeify(callback);
                 }
 
                 delete userData.passwordHash;
                 userData.data = userData.data || {};
                 userData.settings = userData.settings || {};
 
-                return userData;
+                return Q.resolve(userData).nodeify(callback);
             })
-            .nodeify(callback);
+            .catch(function (err) {
+                return Q.reject(err).nodeify(callback);
+            });
     }
 
     function getAdminsInOrganization(orgId, callback) {
@@ -106,11 +116,13 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
             { admins: 1 })
             .then(function (org) {
                 if (!org) {
-                    return Q.reject(new Error('no such organization [' + orgId + ']'));
+                    return Q.reject(new Error('no such organization [' + orgId + ']')).nodeify(callback);
                 }
-                return org.admins;
+                return Q.resolve(org.admins).nodeify(callback);
             })
-            .nodeify(callback);
+            .catch(function (err) {
+                return Q.reject(err).nodeify(callback);
+            });
     }
 
     /**
@@ -139,16 +151,18 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
         return self.collection.updateOne({ _id: userOrOrgId, disabled: { $ne: true } }, update)
             .then(function (result) {
                 if (result.matchedCount !== 1) {
-                    return Q.reject(new Error('no such user or org [' + userOrOrgId + ']'));
+                    throw new Error('no such user or org [' + userOrOrgId + ']');
                 }
+                return Q.resolve().nodeify(callback);
             })
-            .nodeify(callback);
+            .catch(function (err) {
+                return Q.reject(err).nodeify(callback);
+            });
     }
 
     this.getAccessRights = function (userId, entityId, params, callback) {
         if (params.entityType === AuthorizerBase.ENTITY_TYPES.PROJECT) {
-            return getProjectAuthorizationByUserOrOrgId(userId, entityId)
-                .nodeify(callback);
+            return getProjectAuthorizationByUserOrOrgId(userId, entityId, callback);
         } else if (params.entityType === AuthorizerBase.ENTITY_TYPES.USER) {
             return getUser(userId)
                 .then(function (user) {
@@ -181,21 +195,18 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
     };
 
     this.setAccessRights = function (userId, entityId, rights, params, callback) {
-        var revoke = rights.read === false && rights.write === false && rights.delete === false,
-            promise;
+        var revoke = rights.read === false && rights.write === false && rights.delete === false;
         if (params.entityType === AuthorizerBase.ENTITY_TYPES.PROJECT) {
             if (userId === true) {
-                promise = removeProjectRightsForAll(entityId);
+                return removeProjectRightsForAll(entityId, callback);
             } else if (revoke) {
-                promise = authorizeByUserOrOrgId(userId, entityId, 'delete');
+                return authorizeByUserOrOrgId(userId, entityId, 'delete', callback);
             } else {
-                promise = authorizeByUserOrOrgId(userId, entityId, 'set', rights);
+                return authorizeByUserOrOrgId(userId, entityId, 'set', rights, callback);
             }
         } else {
             throw new Error('Only ENTITY_TYPES.PROJECT allowed when setting access rights!');
         }
-
-        return promise.nodeify(callback);
     };
 
     this.start = function (params, callback) {

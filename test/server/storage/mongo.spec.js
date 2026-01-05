@@ -75,7 +75,9 @@ describe('Mongo storage', function () {
                 })
                 .catch(function (err) {
                     expect(err instanceof Error).to.equal(true);
-                    expect(err.message).to.contain('Database is not open.');
+                    if (!err.message.includes('Database is not open.')) {
+                        throw err;
+                    }
                     done();
                 })
                 .done();
@@ -137,7 +139,9 @@ describe('Mongo storage', function () {
                 })
                 .catch(function (err) {
                     expect(err instanceof Error).to.equal(true);
-                    expect(err.message).to.contain('Database is not open.');
+                    if (!err.message.includes('Database is not open.')) {
+                        throw err;
+                    }
                     done();
                 })
                 .done();

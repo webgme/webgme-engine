@@ -359,7 +359,7 @@ function Mongo(mainLogger, gmeConfig) {
         };
     }
 
-    function openDatabase(callback) {
+    async function openDatabase(callback) {
         connectionCnt += 1;
         logger.debug('openDatabase, connection counter:', connectionCnt);
 
@@ -369,20 +369,18 @@ function Mongo(mainLogger, gmeConfig) {
                 logger.debug('mongdb options', gmeConfig.mongo.uri, JSON.stringify(gmeConfig.mongo.options));
                 connectDeferred = Q.defer();
                 // connect to mongo
-                mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options, function (err, client) {
-                    if (!err && client) {
-                        self.client = client;
-                        self.db = client.db(self.dbName);
-                        disconnectDeferred = null;
-                        logger.debug('Connected.');
-                        connectDeferred.resolve();
-                    } else {
-                        self.client = null;
-                        connectionCnt -= 1;
-                        logger.error('Failed to connect.', {metadata: err});
-                        connectDeferred.reject(err);
-                    }
-                });
+                try {
+                    self.client = await mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options);
+                    self.db = self.client.db(self.dbName);
+                    disconnectDeferred = null;
+                    logger.debug('Connected.');
+                    connectDeferred.resolve();
+                } catch (err) {
+                    self.client = null;
+                    connectionCnt -= 1;
+                    logger.error('Failed to connect.', {metadata: err});
+                    connectDeferred.reject(err);
+                }
             } else {
                 logger.debug('Count is 1 but mongo is not null');
             }

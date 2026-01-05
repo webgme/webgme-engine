@@ -167,8 +167,7 @@ var path = require('path'),
                 writeConcern: {
                     w: 1
                 },
-                autoReconnect: true,
-                keepAlive: 1
+                keepAlive: true
             }
         },
 
