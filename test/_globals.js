@@ -14,6 +14,29 @@ global.WebGMEGlobal = {};
 process.env.NODE_ENV = (process.env.NODE_ENV && process.env.NODE_ENV.indexOf('test') === 0) ?
     process.env.NODE_ENV : 'test';
 
+// Enhanced error logging for test crashes
+if (!process.listeners('uncaughtException').length) {
+    process.on('uncaughtException', function (err) {
+        console.error('\n[test/_globals.js] UNCAUGHT EXCEPTION:');
+        console.error(err);
+        if (err.stack) {
+            console.error(err.stack);
+        }
+        process.exit(1);
+    });
+}
+
+if (!process.listeners('unhandledRejection').length) {
+    process.on('unhandledRejection', function (reason) {
+        console.error('\n[test/_globals.js] UNHANDLED PROMISE REJECTION:');
+        console.error('Reason:', reason);
+        if (reason && reason.stack) {
+            console.error(reason.stack);
+        }
+        process.exit(1);
+    });
+}
+
 // If test processes aren't stopping use this to find open handles etc.
 //
 // $ npm install wtfnode
