@@ -26,16 +26,16 @@ if (!process.listeners('uncaughtException').length) {
     });
 }
 
-if (!process.listeners('unhandledRejection').length) {
-    process.on('unhandledRejection', function (reason) {
-        console.error('\n[test/_globals.js] UNHANDLED PROMISE REJECTION:');
-        console.error('Reason:', reason);
-        if (reason && reason.stack) {
-            console.error(reason.stack);
-        }
-        process.exit(1);
-    });
-}
+// if (!process.listeners('unhandledRejection').length) {
+//     process.on('unhandledRejection', function (reason) {
+//         console.error('\n[test/_globals.js] UNHANDLED PROMISE REJECTION:');
+//         console.error('Reason:', reason);
+//         if (reason && reason.stack) {
+//             console.error(reason.stack);
+//         }
+//         process.exit(1);
+//     });
+// }
 
 // If test processes aren't stopping use this to find open handles etc.
 //

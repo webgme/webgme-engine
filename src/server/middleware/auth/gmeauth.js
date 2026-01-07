@@ -90,6 +90,81 @@ function GMEAuth(session, gmeConfig) {
         PUBLIC_KEY = fs.readFileSync(gmeConfig.authentication.jwt.publicKey, 'utf8');
     }
 
+    /**
+     * 'users' collection has these fields:
+     * _id: username
+     * email:
+     * passwordHash: bcrypt hash of password
+     * canCreate: authorized to create new projects
+     * tokenId: token associated with account
+     * tokenCreation: time of token creation (they may be configured to expire)
+     * projects: map from project name to object {read:, write:, delete: }
+     * orgs: array of orgIds
+     */
+    /**
+     * '_organizations' collection has these fields:
+     * _id: username
+     * projects: map from project name to object {read:, write:, delete: }
+     */
+    function addMongoOpsToPromize(collectionPromise) {
+        // TODO: Drop this at some point - js has much better async support these days
+        // However the codebase relies on Q features like nodeify all over...
+        collectionPromise.findOne = function () {
+            var args = arguments;
+            return collectionPromise.then(function (c) {
+                return Q(c.findOne(...args));
+            });
+        };
+        collectionPromise.find = function (/*query, projection*/) {
+            var args = arguments;
+            return collectionPromise.then(function (c) {
+                return Q(c.find(...args));
+            });
+        };
+        collectionPromise.updateOne = function (/*query, update, options*/) {
+            var args = arguments;
+            return collectionPromise.then(function (c) {
+                return Q(c.updateOne(...args));
+            });
+        };
+        collectionPromise.replaceOne = function (/*query, update, options*/) {
+            var args = arguments;
+            return collectionPromise.then(function (c) {
+                return Q(c.replaceOne(...args));
+            });
+        };
+        collectionPromise.updateMany = function (/*query, update, options*/) {
+            var args = arguments;
+            return collectionPromise.then(function (c) {
+                return Q(c.updateMany(...args));
+            });
+        };
+        collectionPromise.insertOne = function (/*data, options*/) {
+            var args = arguments;
+            return collectionPromise.then(function (c) {
+                return Q(c.insertOne(...args));
+            });
+        };
+        collectionPromise.insertMany = function (/*data, options*/) {
+            var args = arguments;
+            return collectionPromise.then(function (c) {
+                return Q(c.insertMany(...args));
+            });
+        };
+        collectionPromise.deleteOne = function (/*query, options*/) {
+            var args = arguments;
+            return collectionPromise.then(function (c) {
+                return Q(c.deleteOne(...args));
+            });
+        };
+        collectionPromise.deleteMany = function (/*query, options*/) {
+            var args = arguments;
+            return collectionPromise.then(function (c) {
+                return Q(c.deleteMany(...args));
+            });
+        };
+    }
+
     function _prepareGuestAccount(callback) {
         var guestAcc = gmeConfig.authentication.guestAccount,
             canCreate = gmeConfig.authentication.guestCanCreate;
@@ -203,8 +278,16 @@ function GMEAuth(session, gmeConfig) {
         try {
             client = await Mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options);
             db = client.db(dbName);
-            collection = db.collection(_collectionName);
-            projectCollection = db.collection(_projectCollectionName);
+            const collectionDeferred = Q.defer();
+            const projectCollectionDeferred = Q.defer();
+
+            collection = collectionDeferred.promise;
+            projectCollection = projectCollectionDeferred.promise;
+            addMongoOpsToPromize(collection);
+            addMongoOpsToPromize(projectCollection);
+            collectionDeferred.resolve(db.collection(_collectionName));
+            projectCollectionDeferred.resolve(db.collection(_projectCollectionName));
+
             await _prepareGuestAccount();
             await _prepareAdminAccount();
             await _preparePublicOrganizations();

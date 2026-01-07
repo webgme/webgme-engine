@@ -129,7 +129,7 @@ function Mongo(mainLogger, gmeConfig) {
                 }
             });
 
-            return Q.ninvoke(mongoFind, 'toArray')
+            return Q(mongoFind.toArray())
                 .then(function (docs) {
                     var branches = {};
                     for (var i = 0; i < docs.length; ++i) {
@@ -143,7 +143,7 @@ function Mongo(mainLogger, gmeConfig) {
         this.getBranchHash = function (branch, callback) {
             branch = '*' + branch;
 
-            return Q.ninvoke(collection, 'findOne', {_id: branch})
+            return Q(collection.findOne({_id: branch}))
                 .then(function (branchObj) {
                     // FIXME: This behaviour of return empty string rather than an error is the same as before.
                     // FIXME: Consider returning with an error in style with 'Branch does not exist'.
@@ -359,7 +359,7 @@ function Mongo(mainLogger, gmeConfig) {
         };
     }
 
-    async function openDatabase(callback) {
+    function openDatabase(callback) {
         connectionCnt += 1;
         logger.debug('openDatabase, connection counter:', connectionCnt);
 
@@ -369,18 +369,20 @@ function Mongo(mainLogger, gmeConfig) {
                 logger.debug('mongdb options', gmeConfig.mongo.uri, JSON.stringify(gmeConfig.mongo.options));
                 connectDeferred = Q.defer();
                 // connect to mongo
-                try {
-                    self.client = await mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options);
-                    self.db = self.client.db(self.dbName);
-                    disconnectDeferred = null;
-                    logger.debug('Connected.');
-                    connectDeferred.resolve();
-                } catch (err) {
-                    self.client = null;
-                    connectionCnt -= 1;
-                    logger.error('Failed to connect.', {metadata: err});
-                    connectDeferred.reject(err);
-                }
+                mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options)
+                    .then(function (client) {
+                        self.client = client;
+                        self.db = client.db(self.dbName);
+                        disconnectDeferred = null;
+                        logger.debug('Connected.');
+                        connectDeferred.resolve();
+                    })
+                    .catch(function (err) {
+                        self.client = null;
+                        connectionCnt -= 1;
+                        logger.error('Failed to connect.', {metadata: err});
+                        connectDeferred.reject(err);
+                    });
             } else {
                 logger.debug('Count is 1 but mongo is not null');
             }
@@ -452,19 +454,16 @@ function Mongo(mainLogger, gmeConfig) {
         logger.debug('openProject', projectId);
 
         if (self.db) {
-            Q.ninvoke(self.db, 'collection', projectId, {strict: true})
-                .then(function (collection) {
-                    deferred.resolve(new MongoProject(projectId, collection));
-                })
-                .catch(function (err) {
-                    if (err.message.indexOf('does not exist') > -1) {
-                        deferred.reject(new Error('Project does not exist ' + projectId));
-                    } else {
-                        deferred.reject(err);
-                    }
-                })
-                .done();
-
+            try {
+                const collection = self.db.collection(projectId, {strict: true});
+                deferred.resolve(new MongoProject(projectId, collection));
+            } catch (err) {
+                if (err.message.indexOf('does not exist') > -1) {
+                    deferred.reject(new Error('Project does not exist ' + projectId));
+                } else {
+                    deferred.reject(err);
+                }
+            }
         } else {
             deferred.reject(new Error('Database is not open.'));
         }
