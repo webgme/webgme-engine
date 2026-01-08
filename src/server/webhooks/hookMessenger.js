@@ -29,46 +29,43 @@ function hookMessenger(options) {
 
     function getProjectMetaData(projectId, callback) {
         if (db === null) {
+            // Questionable to not throw error here, but it's not a big deal.
             logger.error('No mongoDB connection at', options.uri);
             callback({});
             return;
         }
 
-        db.collection(projectMetadataCollectionId, function (err, collection) {
-            if (err || !collection) {
-                logger.error('cannot get metadata: ', err ||
-                    new Error('unknown collection: ' + projectMetadataCollectionId));
-                callback({});
-                return;
-            }
+        const collection = db.collection(projectMetadataCollectionId);
 
-            collection.findOne({_id: projectId}, function (err, projectMetaData) {
-                if (err || !projectMetaData) {
-                    logger.error('cannot retrieve project\'s metadata: ', err ||
+
+        collection.findOne({_id: projectId})
+            .then(function (projectMetaData) {
+                if (!projectMetaData) {
+                    logger.error('cannot retrieve project\'s metadata: ',
                         new Error('unknown projectId: ' + projectId));
-                    callback({});
-                    return;
                 }
-
-                callback(projectMetaData);
+                callback(projectMetaData || {});
+            })
+            .catch(function (err) {
+                // Questionable to not throw error here, but it's not a big deal.
+                logger.error('cannot retrieve project\'s metadata: ', err);
+                callback({});
             });
-        });
     }
 
     function start(callback) {
         var deferred = Q.defer();
         if (db) {
             deferred.resolve();
+        } else {
+            mongodb.MongoClient.connect(options.uri, {})
+                .then(function (client_) {
+                    client = client_;
+                    db = client.db(dbName);
+                    deferred.resolve();
+                })
+                .catch(deferred.reject);
         }
-        mongodb.MongoClient.connect(options.uri, {}, function (err, client_) {
-            if (!err && client_) {
-                client = client_;
-                db = client.db(dbName);
-                deferred.resolve();
-            } else {
-                deferred.reject(err || new Error('cannot connect to mongoDB'));
-            }
-        });
 
         return deferred.promise.nodeify(callback);
     }

@@ -40,38 +40,32 @@ describe('redisWebhookManager', function () {
             atComplete();
         });
 
-        testFixture.mongodb.MongoClient.connect(mongoUri, {}, function (err, client_) {
-            if (err || !client_) {
-                throw err || new Error('cannot open mongoDB connection');
-            }
-            client = client_;
-            db = client.db(dbName);
-            db.dropCollection(collectionName, function (/*err, result*/) {
-                db.collection(collectionName, function (err, collection) {
-                    collection.insertMany([
-                        {
-                            _id: 'project',
-                            hooks: { hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` } }
-                        },
-                        {
-                            _id: 'double',
-                            hooks: {
-                                hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` },
-                                hookTwo: { events: 'all', url: `http://localhost:${port}` }
-                            }
+        testFixture.mongodb.MongoClient.connect(mongoUri, {})
+            .then(function (client_) {
+                client = client_;
+                db = client.db(dbName);
+
+                return db.dropCollection(collectionName)
+                    .catch(()=>{}); // ignore error if collection does not exist
+            })
+            .then(function () {
+                const collection = db.collection(collectionName);
+                return collection.insertMany([
+                    {
+                        _id: 'project',
+                        hooks: { hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` } }
+                    },
+                    {
+                        _id: 'double',
+                        hooks: {
+                            hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` },
+                            hookTwo: { events: 'all', url: `http://localhost:${port}` }
                         }
-                    ], {}, function (err/*, result*/) {
-                        if (err) {
-                            throw err;
-                        }
-
-                        atComplete();
-                    });
-                });
-
-            });
-
-        });
+                    }
+                ]);
+            })
+            .then(atComplete)
+            .catch(done);
     });
 
     beforeEach(function () {
