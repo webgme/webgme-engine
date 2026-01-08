@@ -113,8 +113,9 @@ describe('BLOB cleanup script tests', function () {
             })
             .then(function () {
                 expect(logOut).to.contains(metaHash);
+                done();
             })
-            .nodeify(done);
+            .catch(done);
     });
 
     it('should remove unused hash', function (done) {

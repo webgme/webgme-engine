@@ -318,11 +318,13 @@ function Mongo(mainLogger, gmeConfig) {
         this.traverse = function (visitFn, callback) {
             var deferred = Q.defer(),
                 cursor = collection.find(),
-                finished = false,
                 ongoingVisits = 0,
                 error = null,
+                finished = false,
                 next = function (err) {
-                    error = error || err;
+                    if (err) {
+                        error = error || err;
+                    }
                     ongoingVisits -= 1;
                     if (finished && ongoingVisits === 0) {
                         if (error) {
@@ -333,20 +335,18 @@ function Mongo(mainLogger, gmeConfig) {
                     }
                 };
 
-            cursor.batchSize(1000).each(function (err, object) {
-                error = error || err;
-                if (err === null) {
-                    if (object === null) {
-                        finished = true;
-                    } else {
-                        ongoingVisits += 1;
-                        visitFn(object, next);
-                    }
-                } else {
-                    finished = true;
+            cursor.batchSize(1000).forEach(function (object) {
+                if (error) {
+                    return;
                 }
-
-                if (finished && ongoingVisits === 0) {
+                ongoingVisits += 1;
+                visitFn(object, next);
+            }, function (err) {
+                if (err) {
+                    error = error || err;
+                }
+                finished = true;
+                if (ongoingVisits === 0) {
                     if (error) {
                         deferred.reject(error);
                     } else {

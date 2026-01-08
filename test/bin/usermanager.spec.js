@@ -119,34 +119,17 @@ describe('User manager command line interface (CLI)', function () {
                 .then(function (client_) {
                     client = client_;
                     db = client.db(dbName);
+                    const _usersCollection = db.collection('_users');
+                    const _clientCreateProjectsCollection = db.collection('ClientCreateProject');
+                    const _projectCollection = db.collection('project');
+                    const _unauthorizedProjectCollection = db.collection('unauthorized_project');
                     return Q.allDone([
-                        Q.ninvoke(db, 'collection', '_users')
-                            .then(function (collection_) {
-                                var collection = collection_;
-                                return Q.ninvoke(collection, 'remove');
-                            }),
-                        //Q.ninvoke(db, 'collection', '_organizations')
-                        //    .then(function (orgs_) {
-                        //        return Q.ninvoke(orgs_, 'remove');
-                        //    }),
-                        Q.ninvoke(db, 'collection', 'ClientCreateProject')
-                            .then(function (createdProject) {
-                                return Q.ninvoke(createdProject, 'remove');
-                            }),
-                        Q.ninvoke(db, 'collection', 'project')
-                            .then(function (project) {
-                                return Q.ninvoke(project, 'remove')
-                                    .then(function () {
-                                        return Q.ninvoke(project, 'insert', {_id: '*info', dummy: true});
-                                    });
-                            }),
-                        Q.ninvoke(db, 'collection', 'unauthorized_project')
-                            .then(function (project) {
-                                return Q.ninvoke(project, 'remove')
-                                    .then(function () {
-                                        return Q.ninvoke(project, 'insert', {_id: '*info', dummy: true});
-                                    });
-                            })
+                        Q(_usersCollection.remove()),
+                        Q(_clientCreateProjectsCollection.remove()),
+                        Q(_projectCollection.remove())
+                            .then(() => _projectCollection.insert({_id: '*info', dummy: true})),
+                        Q(_unauthorizedProjectCollection.remove())
+                            .then(() => _unauthorizedProjectCollection.insert({_id: '*info', dummy: true})),
                     ]);
                 });
 
