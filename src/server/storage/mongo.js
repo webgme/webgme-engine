@@ -58,16 +58,15 @@ function Mongo(mainLogger, gmeConfig) {
                 deferred.reject(new Error('loadObject - invalid hash :' + hash));
             } else {
                 logger.debug('loadObject ' + hash);
-                collection.findOne({_id: hash}, function (err, obj) {
-                    if (err) {
-                        logger.error(err);
-                        deferred.reject(err);
-                    } else if (obj) {
+                collection.findOne({_id: hash}).then(function (obj) {
+                    if (obj) {
                         deferred.resolve(obj);
                     } else {
-                        logger.error('object does not exist ' + hash);
                         deferred.reject(new Error('object does not exist ' + hash));
                     }
+                }).catch(function (err) {
+                    logger.error(err);
+                    deferred.reject(err);
                 });
             }
 
@@ -85,38 +84,37 @@ function Mongo(mainLogger, gmeConfig) {
                 rejected = true;
             }
             if (rejected === false) {
-                collection.insertOne(object, function (err) {
-                    // manually check duplicate keys
-                    if (err && err.code === 11000) {
-                        collection.findOne({
-                            _id: object._id
-                        }, function (err2, data) {
-                            var errMsg;
-                            if (err2) {
-                                deferred.reject(err2);
-                            } else {
-                                if (CANON.stringify(object) === CANON.stringify(data)) {
-                                    logger.debug('tried to insert existing hash - the two objects were equal',
-                                        object._id);
-                                    deferred.resolve();
-                                } else {
-                                    errMsg = 'tried to insert existing hash - the two objects were NOT equal ';
-                                    logger.error(errMsg, {
-                                        metadata: {
-                                            newObject: object,
-                                            oldObject: data
-                                        }
-                                    });
-                                    deferred.reject(new Error(errMsg + object._id));
-                                }
-                            }
-                        });
-                    } else if (err) {
-                        deferred.reject(err);
-                    } else {
+                collection.insertOne(object)
+                    .then(function () {
                         deferred.resolve();
-                    }
-                });
+                    })
+                    .catch(function (err) {
+                        // manually check duplicate keys
+                        if (err && err.code === 11000) {
+                            collection.findOne({_id: object._id})
+                                .then(function (data) {
+                                    if (CANON.stringify(object) === CANON.stringify(data)) {
+                                        logger.debug('tried to insert existing hash - the two objects were equal',
+                                            object._id);
+                                        deferred.resolve();
+                                    } else {
+                                        var errMsg = 'tried to insert existing hash - the two objects were NOT equal ';
+                                        logger.error(errMsg, {
+                                            metadata: {
+                                                newObject: object,
+                                                oldObject: data
+                                            }
+                                        });
+                                        deferred.reject(new Error(errMsg + object._id));
+                                    }
+                                })
+                                .catch(function (err2) {
+                                    deferred.reject(err2);
+                                });
+                        } else {
+                            deferred.reject(err);
+                        }
+                    });
             }
 
             return deferred.promise.nodeify(callback);
@@ -156,56 +154,55 @@ function Mongo(mainLogger, gmeConfig) {
             branch = '*' + branch;
 
             if (oldhash === newhash) {
-                collection.findOne({
-                    _id: branch
-                }, function (err, obj) {
-                    if (!err && oldhash !== ((obj && obj.hash) || '')) {
-                        err = new Error('branch hash mismatch');
-                    }
-                    if (err) {
+                collection.findOne({_id: branch})
+                    .then(function (obj) {
+                        if (oldhash !== ((obj && obj.hash) || '')) {
+                            deferred.reject(new Error('branch hash mismatch'));
+                        } else {
+                            deferred.resolve();
+                        }
+                    })
+                    .catch(function (err) {
                         deferred.reject(err);
-                    } else {
-                        deferred.resolve();
-                    }
-                });
+                    });
             } else if (newhash === '') {
                 collection.deleteOne({
                     _id: branch,
                     hash: oldhash
-                }, function (err, result) {
-                    if (!err && result.deletedCount !== 1) {
-                        collection.findOne({_id: branch}, function (err, obj) {
-                            if (!err && obj) {
-                                err = new Error('branch hash mismatch');
-                            }
-                            if (err) {
-                                deferred.reject(err);
-                            } else {
-                                deferred.resolve();
-                            }
-                        });
-                    } else if (err) {
+                })
+                    .then(function (result) {
+                        if (result.deletedCount !== 1) {
+                            return collection.findOne({_id: branch})
+                                .then(function (obj) {
+                                    if (obj) {
+                                        throw new Error('branch hash mismatch');
+                                    } else {
+                                        deferred.resolve();
+                                    }
+                                });
+                        } else {
+                            deferred.resolve();
+                        }
+                    })
+                    .catch(function (err) {
                         deferred.reject(err);
-                    } else {
-                        deferred.resolve();
-                    }
-                });
+                    });
             } else if (oldhash === '') {
                 collection.insertOne({
                     _id: branch,
                     hash: newhash
-                }, function (err) {
-                    if (err) {
+                })
+                    .then(function () {
+                        deferred.resolve();
+                    })
+                    .catch(function (err) {
                         if (err.code === 11000) {
                             // insertDocument :: caused by :: 11000 E11000 duplicate key error...
                             deferred.reject(new Error('branch hash mismatch'));
                         } else {
                             deferred.reject(err);
                         }
-                    } else {
-                        deferred.resolve();
-                    }
-                });
+                    });
             } else {
                 collection.updateOne({
                     _id: branch,
@@ -214,16 +211,17 @@ function Mongo(mainLogger, gmeConfig) {
                     $set: {
                         hash: newhash
                     }
-                }, function (err, result) {
-                    if (!err && result.modifiedCount !== 1) {
-                        err = new Error('branch hash mismatch');
-                    }
-                    if (err) {
+                })
+                    .then(function (result) {
+                        if (result.modifiedCount !== 1) {
+                            deferred.reject(new Error('branch hash mismatch'));
+                        } else {
+                            deferred.resolve();
+                        }
+                    })
+                    .catch(function (err) {
                         deferred.reject(err);
-                    } else {
-                        deferred.resolve();
-                    }
-                });
+                    });
             }
 
             return deferred.promise.nodeify(callback);

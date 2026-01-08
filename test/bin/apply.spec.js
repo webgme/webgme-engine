@@ -7,9 +7,8 @@
 
 var testFixture = require('../_globals');
 
-describe('apply CLI tests', function () {
+describe.only('apply CLI tests', function () {
     'use strict';
-
 
     var gmeConfig = testFixture.getGmeConfig(),
         logger = testFixture.logger.fork('apply.spec'),

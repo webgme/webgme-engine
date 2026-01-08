@@ -496,52 +496,51 @@ function importProject(storage, parameters, callback) {
     branchName = parameters.branchName || 'master';
     // Parameters check end.
     data.projectName = parameters.projectName;
-
+    let result = {};
     extractDeferred.promise
         .then(function (projectJson_) {
             projectJson = projectJson_;
             return storage.createProject(data);
         })
         .then(function (project) {
-            var core = new exports.Core(project, { globConf: parameters.gmeConfig, logger: parameters.logger }),
-                result = {
-                    status: null,
-                    branchName: branchName,
-                    commitHash: null,
-                    project: project,
-                    projectId: project.projectId,
-                    core: core,
-                    jsonProject: projectJson,
-                    rootNode: null,
-                    FCO: null,
-                    rootHash: null,
-                    blobClient: blobClient
-                };
+            var core = new exports.Core(project, { globConf: parameters.gmeConfig, logger: parameters.logger });
+            result = {
+                status: null,
+                branchName: branchName,
+                commitHash: null,
+                project: project,
+                projectId: project.projectId,
+                core: core,
+                jsonProject: projectJson,
+                rootNode: null,
+                FCO: null,
+                rootHash: null,
+                blobClient: blobClient
+            };
 
             project.setUser(data.username);
 
             storageUtils = requireJS('common/storage/util');
-            storageUtils.insertProjectJson(project, projectJson, {
+            return storageUtils.insertProjectJson(project, projectJson, {
                 commitMessage: 'project imported'
-            })
-                .then(function (commitResult) {
-                    result.commitHash = commitResult.hash;
-                    result.rootHash = projectJson.rootHash;
-                    return project.createBranch(branchName, commitResult.hash);
-                })
-                .then(function (result_) {
-                    result.status = result_.status;
-                    if (parameters.doNotLoad === true) {
-                        return null;
-                    }
-                    return core.loadRoot(result.rootHash);
-                })
-                .then(function (rootNode) {
-                    result.rootNode = rootNode;
-                    result.FCO = result.core.getFCO(rootNode);
-                    deferred.resolve(result);
-                })
-                .catch(deferred.reject);
+            });
+        })
+        .then(function (commitResult) {
+            result.commitHash = commitResult.hash;
+            result.rootHash = projectJson.rootHash;
+            return result.project.createBranch(branchName, commitResult.hash);
+        })
+        .then(function (result_) {
+            result.status = result_.status;
+            if (parameters.doNotLoad === true) {
+                return null;
+            }
+            return result.core.loadRoot(result.rootHash);
+        })
+        .then(function (rootNode) {
+            result.rootNode = rootNode;
+            result.FCO = result.core.getFCO(rootNode);
+            deferred.resolve(result);
         })
         .catch(deferred.reject);
 

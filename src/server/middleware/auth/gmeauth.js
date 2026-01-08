@@ -1127,20 +1127,20 @@ function GMEAuth(session, gmeConfig) {
 
         return collection.find(query_)
             .then(function (orgs) {
-                return Q.ninvoke(orgs, 'toArray');
+                return Q(orgs.toArray());
             })
             .then(function (organizationArray) {
                 //TODO: See if there is a smarter query here (this sends one for each org).
                 return Q.all(organizationArray.map(function (org) {
-                    return collection.find(
+                    return Q(collection.find(
                         {
                             orgs: org._id,
                             type: { $ne: CONSTANTS.ORGANIZATION },
                             disabled: { $ne: true }
                         },
-                        { _id: 1 })
+                        { _id: 1 }))
                         .then(function (users) {
-                            return users.toArray();
+                            return Q(users.toArray());
                         })
                         .then(function (users) {
                             org.users = users.map(function (user) {

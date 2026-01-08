@@ -79,6 +79,7 @@ main = function (argv) {
             console.log('    $ node usermanager.js useradd brubble brubble@example.com Password.123');
             console.log('    $ node usermanager.js useradd --canCreate brubble brubble@example.com Password.123');
             console.log();
+            mainDeferred.resolve();
         });
 
     program
@@ -126,6 +127,7 @@ main = function (argv) {
             console.log('    $ node usermanager.js userlist');
             console.log('    $ node usermanager.js userlist user23');
             console.log();
+            mainDeferred.resolve();
         });
 
     program
@@ -149,6 +151,7 @@ main = function (argv) {
             console.log();
             console.log('    $ node usermanager.js passwd brubble NewPass.123');
             console.log();
+            mainDeferred.resolve();
         });
 
     program
@@ -174,6 +177,7 @@ main = function (argv) {
             console.log('    $ node usermanager.js userdel brubble');
             console.log('    $ node usermanager.js userdel brubble -f');
             console.log();
+            mainDeferred.resolve();
         });
 
     program
@@ -197,6 +201,7 @@ main = function (argv) {
             console.log();
             console.log('    $ node usermanager.js verify misterX');
             console.log();
+            mainDeferred.resolve();
         });
 
     program
@@ -221,6 +226,7 @@ main = function (argv) {
             console.log();
             console.log('    $ node usermanager.js organizationadd neworg');
             console.log();
+            mainDeferred.resolve();
         });
 
     program
@@ -245,6 +251,7 @@ main = function (argv) {
             console.log();
             console.log('    $ node usermanager.js organizationdel sample_organization');
             console.log();
+            mainDeferred.resolve();
         });
 
     var authUserOrGroup = function (id, projectname, options) {
@@ -298,6 +305,7 @@ main = function (argv) {
             console.log('    $ node usermanager.js usermod_auth --deauthorize user23 project42');
             console.log('    $ node usermanager.js usermod_auth -d user23 project42');
             console.log();
+            mainDeferred.resolve();
         });
 
     program
@@ -314,6 +322,7 @@ main = function (argv) {
         })
         .on('--help', function () {
             console.log('    Organizations are authorized like users are authorized. See also: usermod_auth');
+            mainDeferred.resolve();
         });
 
     program
@@ -344,6 +353,7 @@ main = function (argv) {
             console.log('    $ node usermanager.js usermod_organization_add user23 organization123');
             console.log('    $ node usermanager.js usermod_organization_add --makeAdmin user23 organization123');
             console.log();
+            mainDeferred.resolve();
         });
 
     program
@@ -370,6 +380,7 @@ main = function (argv) {
             console.log();
             console.log('    $ node usermanager.js usermod_organization_del user23 organization123');
             console.log();
+            mainDeferred.resolve();
         });
 
     program
@@ -404,6 +415,7 @@ main = function (argv) {
             console.log('    $ node usermanager.js organizationlist');
             console.log('    $ node usermanager.js organizationlist organ23');
             console.log();
+            mainDeferred.resolve();
         });
 
     program.parse(args);

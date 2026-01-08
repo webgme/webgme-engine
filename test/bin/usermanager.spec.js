@@ -68,7 +68,6 @@ describe('User manager command line interface (CLI)', function () {
             oldConsoleLog = console.log,
             oldConsoleError = console.error,
             oldProcessStdoutWrite = process.stdout.write,
-            dbConn,
             db,
             client,
 
@@ -115,7 +114,7 @@ describe('User manager command line interface (CLI)', function () {
         before(function (done) {
             auth = new GMEAuth(null, gmeConfig);
 
-            dbConn = Q.ninvoke(mongodb.MongoClient, 'connect', mongoUri, gmeConfig.mongo.options)
+            Q(mongodb.MongoClient.connect(mongoUri, gmeConfig.mongo.options))
                 .then(function (client_) {
                     client = client_;
                     db = client.db(dbName);
@@ -124,16 +123,14 @@ describe('User manager command line interface (CLI)', function () {
                     const _projectCollection = db.collection('project');
                     const _unauthorizedProjectCollection = db.collection('unauthorized_project');
                     return Q.allDone([
-                        Q(_usersCollection.remove()),
-                        Q(_clientCreateProjectsCollection.remove()),
-                        Q(_projectCollection.remove())
-                            .then(() => _projectCollection.insert({_id: '*info', dummy: true})),
-                        Q(_unauthorizedProjectCollection.remove())
-                            .then(() => _unauthorizedProjectCollection.insert({_id: '*info', dummy: true})),
+                        Q(_usersCollection.deleteMany()),
+                        Q(_clientCreateProjectsCollection.deleteMany()),
+                        Q(_projectCollection.deleteMany())
+                            .then(() => _projectCollection.insertOne({_id: '*info', dummy: true})),
+                        Q(_unauthorizedProjectCollection.deleteMany())
+                            .then(() => _unauthorizedProjectCollection.insertOne({_id: '*info', dummy: true})),
                     ]);
-                });
-
-            dbConn
+                })
                 .then(function () {
                     return auth.connect();
                 })
@@ -143,11 +140,12 @@ describe('User manager command line interface (CLI)', function () {
         after(function (done) {
             // just to be safe
             restoreLogAndExit();
-            client.close(true, function (err) {
-                auth.unload(function (err1) {
-                    done(err || err1 || null);
-                });
-            });
+            Q(client.close(true))
+                .then(() => {
+                    auth.unload();
+                })
+                .then(done)
+                .catch(done);
         });
 
         it('should have a main', function () {
