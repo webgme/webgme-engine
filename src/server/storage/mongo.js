@@ -456,13 +456,21 @@ function Mongo(mainLogger, gmeConfig) {
         if (self.db) {
             try {
                 const collection = self.db.collection(projectId, {strict: true});
-                deferred.resolve(new MongoProject(projectId, collection));
+                // Check if collection is empty
+                collection.findOne({})
+                    .then(function (doc) {
+                        const isEmpty = doc === null;
+                        if (isEmpty) {
+                            deferred.reject(new Error('Project does not exist ' + projectId));
+                        } else {
+                            deferred.resolve(new MongoProject(projectId, collection));
+                        }
+                    })
+                    .catch(function (err) {
+                        deferred.reject(err);
+                    });
             } catch (err) {
-                if (err.message.indexOf('does not exist') > -1) {
-                    deferred.reject(new Error('Project does not exist ' + projectId));
-                } else {
-                    deferred.reject(err);
-                }
+                deferred.reject(err);
             }
         } else {
             deferred.reject(new Error('Database is not open.'));
@@ -472,20 +480,15 @@ function Mongo(mainLogger, gmeConfig) {
     }
 
     function createProject(projectId, callback) {
-        var collection,
-            deferred = Q.defer();
+        const deferred = Q.defer();
 
         logger.debug('createProject', projectId);
 
         if (self.db) {
-            Q.ninvoke(self.db, 'collection', projectId)
-                .then(function (result) {
-                    collection = result;
-                    return Q.ninvoke(collection, 'insertMany', [
-                        {_id: CONSTANTS.EMPTY_PROJECT_DATA},
-                        {_id: self.CONSTANTS.TAGS}
-                    ]);
-                })
+            const collection = self.db.collection(projectId);
+            collection.insertMany([
+                {_id: CONSTANTS.EMPTY_PROJECT_DATA},
+                {_id: self.CONSTANTS.TAGS}])
                 .then(function () {
                     deferred.resolve(new MongoProject(projectId, collection));
                 })
@@ -495,8 +498,7 @@ function Mongo(mainLogger, gmeConfig) {
                     } else {
                         deferred.reject(err);
                     }
-                })
-                .done();
+                });
 
         } else {
             deferred.reject(new Error('Database is not open.'));

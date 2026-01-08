@@ -25,50 +25,48 @@ function DefaultAuthorizer(mainLogger, gmeConfig) {
         return ret;
     }
 
-    async function getProjectAuthorizationByUserOrOrgId(userId, projectId, callback) {
+    function getProjectAuthorizationByUserOrOrgId(userId, projectId, callback) {
         var ops = ['read', 'write', 'delete'];
-        const userData = await self.collection.findOne({
+        return self.collection.findOne({
             _id: userId,
             disabled: { $ne: true }
-        }, _getProjection('siteAdmin', 'orgs', 'projects.' + projectId));
+        }, _getProjection('siteAdmin', 'orgs', 'projects.' + projectId))
+            .then(function (userData) {
+                if (!userData) {
+                    return Q.reject(new Error('no such user [' + userId + ']'));
+                }
 
-        if (!userData) {
-            return Q.reject(new Error('no such user [' + userId + ']')).nodeify(callback);
-        }
+                if (userData.siteAdmin) {
+                    return Q.resolve({read: true, write: true, delete: true});
+                }
 
-        if (userData.siteAdmin) {
-            return Q.resolve({read: true, write: true, delete: true}).nodeify(callback);
-        }
+                userData.orgs = userData.orgs || [];
 
-        userData.orgs = userData.orgs || [];
+                var user = userData.projects[projectId] || {};
 
-        const user = userData.projects[projectId] || {};
+                return Q.all(ops.map(function (op) {
+                    // Check if the user is in any org that has project access. 
+                    var query;
+                    if ((userData.projects[projectId] || {})[op]) {
+                        return 1; // user has the right
+                    }
 
-        const rwd = await Q.all(ops.map(async function (op) {
-            // Check if the user is in any org that has project access. 
-            var query;
-            if ((userData.projects[projectId] || {})[op]) {
-                return 1; // user has the right
-            }
+                    if (userData.orgs.length === 0) {
+                        return 0; // no orgs to check
+                    }
 
-            if (userData.orgs.length === 0) {
-                return 0; // no orgs to check
-            }
-
-            query = { _id: { $in: userData.orgs }, disabled: { $ne: true } };
-            query['projects.' + projectId + '.' + op] = true;
-            const r = await self.collection.findOne(query, { _id: 1 });
-
-            return Q.resolve(r);
-        }));
-
-
-        var ret = {};
-        ops.forEach((op, i) => {
-            ret[op] = (user[op] || rwd[i]) ? true : false;
-        });
-
-        return Q.resolve(ret).nodeify(callback);
+                    query = { _id: { $in: userData.orgs }, disabled: { $ne: true } };
+                    query['projects.' + projectId + '.' + op] = true;
+                    return self.collection.findOne(query, { _id: 1 });
+                })).then(function (rwd) {
+                    var ret = {};
+                    ops.forEach(function (op, i) {
+                        ret[op] = (user[op] || rwd[i]) ? true : false;
+                    });
+                    return Q.resolve(ret);
+                });
+            })
+            .nodeify(callback);
     }
 
     function removeProjectRightsForAll(projectId, callback) {

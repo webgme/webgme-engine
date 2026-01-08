@@ -273,32 +273,46 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    async function connect(callback) {
+    function connect(callback) {
+        return Q(Mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options))
+            .then(function (connectedClient) {
+                client = connectedClient;
+                db = client.db(dbName);
+                const collectionDeferred = Q.defer();
+                const projectCollectionDeferred = Q.defer();
 
-        try {
-            client = await Mongodb.MongoClient.connect(gmeConfig.mongo.uri, gmeConfig.mongo.options);
-            db = client.db(dbName);
-            const collectionDeferred = Q.defer();
-            const projectCollectionDeferred = Q.defer();
+                collection = collectionDeferred.promise;
+                projectCollection = projectCollectionDeferred.promise;
+                addMongoOpsToPromize(collection);
+                addMongoOpsToPromize(projectCollection);
+                collectionDeferred.resolve(db.collection(_collectionName));
+                projectCollectionDeferred.resolve(db.collection(_projectCollectionName));
 
-            collection = collectionDeferred.promise;
-            projectCollection = projectCollectionDeferred.promise;
-            addMongoOpsToPromize(collection);
-            addMongoOpsToPromize(projectCollection);
-            collectionDeferred.resolve(db.collection(_collectionName));
-            projectCollectionDeferred.resolve(db.collection(_projectCollectionName));
-
-            await _prepareGuestAccount();
-            await _prepareAdminAccount();
-            await _preparePublicOrganizations();
-            await authorizer.start({ collection });
-            await metadataStorage.start({ projectCollection });
-            await tokenGenerator.start({});
-            return Q.resolve(db).nodeify(callback);
-        } catch (err) {
-            logger.error('Failed to connect.', {metadata: err});
-            return Q.reject(err).nodeify(callback);
-        }
+                return _prepareGuestAccount();
+            })
+            .then(function () {
+                return _prepareAdminAccount();
+            })
+            .then(function () {
+                return _preparePublicOrganizations();
+            })
+            .then(function () {
+                return authorizer.start({ collection });
+            })
+            .then(function () {
+                return metadataStorage.start({ projectCollection });
+            })
+            .then(function () {
+                return tokenGenerator.start({});
+            })
+            .then(function () {
+                return Q.resolve(db);
+            })
+            .catch(function (err) {
+                logger.error('Failed to connect.', {metadata: err});
+                return Q.reject(err);
+            })
+            .nodeify(callback);
     }
 
     /**
@@ -600,7 +614,7 @@ function GMEAuth(session, gmeConfig) {
             .nodeify(callback);
     }
 
-    async function _updateUserObjectField(userId, keys, newValue, options = {}) {
+    function _updateUserObjectField(userId, keys, newValue, options = {}) {
         const isNestedField = keys.length > 1;
         const { overwrite, encrypt } = options;
         const jointKey = keys.join('.');
@@ -610,49 +624,52 @@ function GMEAuth(session, gmeConfig) {
             throw new Error(`object required for user ${jointKey}. Found [${newValue}]`);
         }
 
-        const userData = await collection.findOne({
+        return collection.findOne({
             _id: userId,
             type: { $ne: CONSTANTS.ORGANIZATION },
             disabled: { $ne: true }
-        });
+        })
+            .then(function (userData) {
+                if (!userData) {
+                    throw new Error('no such user [' + userId + ']');
+                }
 
-        if (!userData) {
-            throw new Error('no such user [' + userId + ']');
-        }
+                let isNewlyCreated = false;
+                let currentValue = keys.reduce((value, key) => {
+                    if (Object.hasOwn(value, key)) {
+                        return value[key];
+                    } else {
+                        isNewlyCreated = true;
+                        return {};
+                    }
+                }, userData);
 
-        let isNewlyCreated = false;
-        let currentValue = keys.reduce((value, key) => {
-            if (Object.hasOwn(value, key)) {
-                return value[key];
-            } else {
-                isNewlyCreated = true;
-                return {};
-            }
-        }, userData);
+                if (encrypt) {
+                    newValue = _encrypt(newValue);
+                }
 
-        if (encrypt) {
-            newValue = _encrypt(newValue);
-        }
+                const areBothObjects = UTIL.isTrueObject(newValue) &&
+                    UTIL.isTrueObject(currentValue);
+                const isUpdatingObject = !overwrite && areBothObjects;
 
-        const areBothObjects = UTIL.isTrueObject(newValue) &&
-            UTIL.isTrueObject(currentValue);
-        const isUpdatingObject = !overwrite && areBothObjects;
+                if (isUpdatingObject) {
+                    UTIL.updateFieldsRec(currentValue, newValue);
+                } else if (overwrite || isNewlyCreated) {
+                    currentValue = newValue;
+                }
 
-        if (isUpdatingObject) {
-            UTIL.updateFieldsRec(currentValue, newValue);
-        } else if (overwrite || isNewlyCreated) {
-            currentValue = newValue;
-        }
+                const update = {};
+                update.$set = {};
+                update.$set[jointKey] = currentValue;
 
-        const update = {};
-        update.$set = {};
-        update.$set[jointKey] = currentValue;
-
-        await collection.updateOne({ _id: userId }, update, { upsert: true });
-        return getUser(userId);
+                return collection.updateOne({ _id: userId }, update, { upsert: true });
+            })
+            .then(function () {
+                return getUser(userId);
+            });
     }
 
-    async function _deleteUserObjectField(userId, keys) {
+    function _deleteUserObjectField(userId, keys) {
         const jointKey = keys.join('.');
         const update = {};
 
@@ -665,7 +682,7 @@ function GMEAuth(session, gmeConfig) {
             update.$set[jointKey] = {};
         }
 
-        await collection.updateOne({ _id: userId }, update, { upsert: true });
+        return collection.updateOne({ _id: userId }, update, { upsert: true });
     }
 
     const { algorithm } = gmeConfig.authentication.encryption;
@@ -739,16 +756,18 @@ function GMEAuth(session, gmeConfig) {
         return deferred.promise.nodeify(callback);
     }
 
-    async function setUserDataField(userId, fields, data, options = {}) {
+    function setUserDataField(userId, fields, data, options = {}) {
         if (typeof fields === 'string') {
             fields = [fields];
         }
-        fields = ['data'].concat(fields);
-        const userData = await _updateUserObjectField(userId, fields, data, options);
-        return userData.data;
+
+        return _updateUserObjectField(userId, ['data'].concat(fields), data, options)
+            .then((userData) => {
+                return userData.data;
+            });
     }
 
-    async function deleteUserDataField(userId, fields) {
+    function deleteUserDataField(userId, fields) {
         if (typeof fields === 'string') {
             fields = [fields];
         }
@@ -756,7 +775,7 @@ function GMEAuth(session, gmeConfig) {
         return _deleteUserObjectField(userId, fields);
     }
 
-    async function getUserDataField(userId, fields = []) {
+    function getUserDataField(userId, fields = []) {
         if (typeof fields === 'string') {
             fields = [fields];
         }
@@ -766,16 +785,17 @@ function GMEAuth(session, gmeConfig) {
             disabled: { $ne: true }
         };
         const jointKey = fields.join('.');
-        const user = await collection.findOne(query);
-        let result = user.data;
-        fields.forEach(key => {
-            if (!Object.hasOwn(result, key)) {
-                throw new Error(`User data field not found: ${jointKey}`);
-            }
-            result = result[key];
-        });
-
-        return _decrypt(result);
+        return collection.findOne(query)
+            .then((user) => {
+                let result = user.data;
+                fields.forEach(key => {
+                    if (!Object.hasOwn(result, key)) {
+                        throw new Error(`User data field not found: ${jointKey}`);
+                    }
+                    result = result[key];
+                });
+                return _decrypt(result);
+            });
     }
 
     /**
@@ -1059,7 +1079,7 @@ function GMEAuth(session, gmeConfig) {
      * @param {function} [callback]
      * @returns {*}
      */
-    async function getOrganization(orgId, query, callback) {
+    function getOrganization(orgId, query, callback) {
         var query_ = { _id: orgId, type: CONSTANTS.ORGANIZATION, disabled: { $ne: true } };
 
         if (typeof query === 'function') {
@@ -1069,23 +1089,29 @@ function GMEAuth(session, gmeConfig) {
 
         _resolveQuery(query_, query);
 
-        const org = await collection.findOne(query_);
-
-        if (!org) {
-            return Q.reject(new Error('no such organization [' + orgId + ']')).nodeify(callback);
-        }
-
-        const users = await collection.find(
-            {
-                orgs: orgId,
-                type: { $ne: CONSTANTS.ORGANIZATION },
-                disabled: { $ne: true }
-            },
-            { _id: 1 }).toArray();
-
-
-        org.users = users.map((user) => user._id);
-        return Q.resolve(org).nodeify(callback);
+        let org;
+        return collection.findOne(query_)
+            .then((org_) => {
+                if (!org_) {
+                    return Q.reject(new Error('no such organization [' + orgId + ']')).nodeify(callback);
+                }
+                org = org_;
+                return collection.find(
+                    {
+                        orgs: orgId,
+                        type: { $ne: CONSTANTS.ORGANIZATION },
+                        disabled: { $ne: true }
+                    },
+                    { _id: 1 });
+            })
+            .then(function (users) {
+                return users.toArray();
+            })
+            .then(function (users) {
+                org.users = users.map((user) => user._id);
+                return org;
+            })
+            .nodeify(callback);
     }
 
     /**
@@ -1114,7 +1140,7 @@ function GMEAuth(session, gmeConfig) {
                         },
                         { _id: 1 })
                         .then(function (users) {
-                            return Q.ninvoke(users, 'toArray');
+                            return users.toArray();
                         })
                         .then(function (users) {
                             org.users = users.map(function (user) {
