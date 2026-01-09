@@ -323,7 +323,7 @@ function GMEAuth(session, gmeConfig) {
     function unload(callback) {
         return Q.all([collection, projectCollection, authorizer.stop(), metadataStorage.stop(), tokenGenerator.stop()])
             .finally(function () {
-                return Q.ninvoke(client, 'close');
+                return Q(client.close());
             })
             .nodeify(callback);
     }

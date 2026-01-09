@@ -408,7 +408,7 @@ function Mongo(mainLogger, gmeConfig) {
         if (connectionCnt === 0) {
             if (self.client) {
                 logger.debug('Closing connection to mongo...');
-                self.client.close(function () {
+                self.client.close().then(function () {
                     self.client = null;
                     logger.debug('Closed.');
                     disconnectDeferred.resolve();

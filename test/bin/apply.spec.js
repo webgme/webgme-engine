@@ -7,7 +7,7 @@
 
 var testFixture = require('../_globals');
 
-describe.only('apply CLI tests', function () {
+describe('apply CLI tests', function () {
     'use strict';
 
     var gmeConfig = testFixture.getGmeConfig(),
@@ -17,7 +17,6 @@ describe.only('apply CLI tests', function () {
         __should = testFixture.should, //eslint-disable-line
         gmeAuth,
         applyCLI = require('../../src/bin/apply'),
-        Q = testFixture.Q,
         filename = require('path').normalize('src/bin/apply.js'),
         projectName = 'applyCliTest',
         projectId = testFixture.projectName2Id(projectName, gmeConfig.authentication.guestAccount);
@@ -43,11 +42,12 @@ describe.only('apply CLI tests', function () {
     });
 
     after(function (done) {
-        Q.allDone([
-            gmeAuth.unload(),
-            storage.closeDatabase()
-        ])
-            .nodeify(done);
+        gmeAuth.unload()
+            .then(() => {
+                return storage.closeDatabase();
+            })
+            .then(done)
+            .catch(done);
     });
 
     it('should have a main', function () {
@@ -120,5 +120,4 @@ describe.only('apply CLI tests', function () {
             })
             .done();
     });
-})
-;
+});
