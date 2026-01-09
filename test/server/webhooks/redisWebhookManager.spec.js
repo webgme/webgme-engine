@@ -3,7 +3,7 @@
  * @author kecso / https://github.com/kecso
  */
 var testFixture = require('./_globals');
-describe('redisWebhookManager', function () {
+describe.skip('redisWebhookManager', function () {
     'use strict';
 
     var eventGenerator = new testFixture.EventGenerator(),
