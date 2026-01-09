@@ -856,7 +856,7 @@ function GMEAuth(session, gmeConfig) {
 
         return collection.find(query_, projection)
             .then(function (users) {
-                return Q.ninvoke(users, 'toArray');
+                return Q(users.toArray());
             })
             .then(function (userDataArray) {
                 var i;

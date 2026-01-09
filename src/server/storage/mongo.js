@@ -237,7 +237,7 @@ function Mongo(mainLogger, gmeConfig) {
                 time: -1
             });
 
-            return Q.ninvoke(mongoFind, 'toArray')
+            return Q(mongoFind.toArray())
                 .then(function (docs) {
                     return Q(docs);
                 })
@@ -259,17 +259,17 @@ function Mongo(mainLogger, gmeConfig) {
 
             update.$set[name] = commitHash;
 
-            collection.updateOne(query, update, {upsert: true}, function (err/*, num*/) {
-                if (err) {
+            collection.updateOne(query, update, {upsert: true})
+                .then(function () {
+                    deferred.resolve();
+                })
+                .catch(function (err) {
                     if (err.code === 11000) {
                         deferred.reject(new Error('Tag already exists [' + name + ']'));
                     } else {
                         deferred.reject(err);
                     }
-                } else {
-                    deferred.resolve();
-                }
-            });
+                });
 
             return deferred.promise.nodeify(callback);
         };
@@ -285,13 +285,12 @@ function Mongo(mainLogger, gmeConfig) {
 
             update.$unset[name] = '';
 
-            collection.updateOne(query, update, function (err/*, num*/) {
-                if (err) {
-                    deferred.reject(err);
-                } else {
+            collection.updateOne(query, update)
+                .then(function () {
                     deferred.resolve();
-                }
-            });
+                }).catch(function (err) {
+                    deferred.reject(err);
+                });
 
             return deferred.promise.nodeify(callback);
         };
@@ -299,61 +298,52 @@ function Mongo(mainLogger, gmeConfig) {
         this.getTags = function (callback) {
             var deferred = Q.defer();
 
-            collection.findOne({_id: self.CONSTANTS.TAGS}, {}, function (err, result) {
-                if (err) {
+            collection.findOne({_id: self.CONSTANTS.TAGS}, {})
+                .then(function (result) {
+                    if (result) {
+                        delete result._id;
+                        deferred.resolve(result);
+                    } else {
+                        deferred.resolve({});
+                    }
+                }).catch(function (err) {
                     deferred.reject(err);
-                } else if (result) {
-                    delete result._id;
-                    deferred.resolve(result);
-                } else {
-                    deferred.resolve({});
-                }
-            });
+                });
 
             return deferred.promise.nodeify(callback);
         };
 
-        this.traverse = function (visitFn, callback) {
-            var deferred = Q.defer(),
-                cursor = collection.find(),
-                ongoingVisits = 0,
-                error = null,
-                finished = false,
-                next = function (err) {
-                    if (err) {
-                        error = error || err;
-                    }
-                    ongoingVisits -= 1;
-                    if (finished && ongoingVisits === 0) {
-                        if (error) {
-                            deferred.reject(error);
-                        } else {
-                            deferred.resolve();
-                        }
-                    }
-                };
-
-            cursor.batchSize(1000).forEach(function (object) {
-                if (error) {
-                    return;
-                }
-                ongoingVisits += 1;
-                visitFn(object, next);
-            }, function (err) {
-                if (err) {
-                    error = error || err;
-                }
-                finished = true;
-                if (ongoingVisits === 0) {
-                    if (error) {
-                        deferred.reject(error);
-                    } else {
-                        deferred.resolve();
-                    }
-                }
+        async function traverseAsync(visitFn) {
+            const cursor = collection.find();
+            cursor.batchSize(1000);
+            let ongoingVisits = 0;
+            let resolvePromise;
+            const completionPromise = new Promise(function (resolve) {
+                resolvePromise = resolve;
             });
 
-            return deferred.promise.nodeify(callback);
+            function next() {
+                ongoingVisits -= 1;
+                if (ongoingVisits === 0) {
+                    resolvePromise();
+                }
+            }
+
+            for await (const object of cursor) {
+                ongoingVisits += 1;
+                visitFn(object, next);
+            }
+
+            // If loop finished and no pending operations, resolve immediately
+            if (ongoingVisits === 0) {
+                resolvePromise();
+            }
+
+            return completionPromise;
+        }
+
+        this.traverse = function (visitFn, callback) {
+            return Q(traverseAsync(visitFn)).nodeify(callback);
         };
     }
 
@@ -427,7 +417,7 @@ function Mongo(mainLogger, gmeConfig) {
         var deferred = Q.defer();
 
         if (self.db) {
-            Q.ninvoke(self.db, 'dropCollection', projectId)
+            Q(self.db.dropCollection(projectId))
                 .then(function () {
                     deferred.resolve(true);
                 })
@@ -509,7 +499,7 @@ function Mongo(mainLogger, gmeConfig) {
         var deferred = Q.defer();
 
         if (self.db) {
-            Q.ninvoke(self.db, 'renameCollection', projectId, newProjectId)
+            Q(self.db.renameCollection(projectId, newProjectId))
                 .then(function () {
                     deferred.resolve();
                 })
@@ -546,7 +536,7 @@ function Mongo(mainLogger, gmeConfig) {
             .then(function (newProject_) {
                 newProject = newProject_;
                 const pipelineStages = [{ $out: `${newProjectId}` }];
-                return project._collection.aggregate(pipelineStages, {}).toArray();
+                return Q(project._collection.aggregate(pipelineStages, {}).toArray());
             })
             .then(function () {
                 return newProject;

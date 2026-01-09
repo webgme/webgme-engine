@@ -8,6 +8,14 @@
  */
 'use strict';
 
+// // If test processes aren't stopping use this to find open handles etc
+// // $ npm install wtfnode
+// const wtf = require('wtfnode');
+// setInterval(() => {
+//     console.log(wtf.dump());
+// }, 5000);
+
+
 global.TESTING = true;
 global.WebGMEGlobal = {};
 
@@ -36,16 +44,6 @@ if (!process.listeners('uncaughtException').length) {
 //         process.exit(1);
 //     });
 // }
-
-// If test processes aren't stopping use this to find open handles etc.
-//
-// $ npm install wtfnode
-//
-// const wtf = require('wtfnode');
-//
-// setInterval(() => {
-//     console.log(wtf.dump());
-// }, 5000);
 
 //adding a local storage class to the global Namespace
 var WebGME = require('../index'),

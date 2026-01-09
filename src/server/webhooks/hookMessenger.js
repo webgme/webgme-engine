@@ -71,16 +71,7 @@ function hookMessenger(options) {
     }
 
     function stop(callback) {
-        var deferred = Q.defer();
-        client.close(function (err) {
-            if (err) {
-                deferred.reject(err);
-            } else {
-                deferred.resolve();
-            }
-        });
-
-        return deferred.promise.nodeify(callback);
+        return Q(client.close()).nodeify(callback);
     }
 
     function send(eventType, eventData) {
