@@ -153,7 +153,7 @@ describe('webgme', function () {
             });
     });
 
-    (process.version !== 'v20.12.2' ? it : it.skip)('should requestWebGMEToken with auth turned on', function (done) {
+    (process.version.startsWith('v20') ? it.skip : it)('should requestWebGMEToken with auth turned on', (done) => {
         var webGME = testFixture.WebGME,
             gmeConfig = testFixture.getGmeConfig(),
             error,
