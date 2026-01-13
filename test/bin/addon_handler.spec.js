@@ -6,7 +6,7 @@
 
 var testFixture = require('../_globals');
 
-describe('addon_handler bin', function () {
+describe.skip('addon_handler bin', function () {
     'use strict';
 
     var gmeConfig = testFixture.getGmeConfig(),

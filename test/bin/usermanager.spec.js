@@ -68,7 +68,6 @@ describe('User manager command line interface (CLI)', function () {
             oldConsoleLog = console.log,
             oldConsoleError = console.error,
             oldProcessStdoutWrite = process.stdout.write,
-            dbConn,
             db,
             client,
 
@@ -115,42 +114,23 @@ describe('User manager command line interface (CLI)', function () {
         before(function (done) {
             auth = new GMEAuth(null, gmeConfig);
 
-            dbConn = Q.ninvoke(mongodb.MongoClient, 'connect', mongoUri, gmeConfig.mongo.options)
+            Q(mongodb.MongoClient.connect(mongoUri, gmeConfig.mongo.options))
                 .then(function (client_) {
                     client = client_;
                     db = client.db(dbName);
+                    const _usersCollection = db.collection('_users');
+                    const _clientCreateProjectsCollection = db.collection('ClientCreateProject');
+                    const _projectCollection = db.collection('project');
+                    const _unauthorizedProjectCollection = db.collection('unauthorized_project');
                     return Q.allDone([
-                        Q.ninvoke(db, 'collection', '_users')
-                            .then(function (collection_) {
-                                var collection = collection_;
-                                return Q.ninvoke(collection, 'remove');
-                            }),
-                        //Q.ninvoke(db, 'collection', '_organizations')
-                        //    .then(function (orgs_) {
-                        //        return Q.ninvoke(orgs_, 'remove');
-                        //    }),
-                        Q.ninvoke(db, 'collection', 'ClientCreateProject')
-                            .then(function (createdProject) {
-                                return Q.ninvoke(createdProject, 'remove');
-                            }),
-                        Q.ninvoke(db, 'collection', 'project')
-                            .then(function (project) {
-                                return Q.ninvoke(project, 'remove')
-                                    .then(function () {
-                                        return Q.ninvoke(project, 'insert', {_id: '*info', dummy: true});
-                                    });
-                            }),
-                        Q.ninvoke(db, 'collection', 'unauthorized_project')
-                            .then(function (project) {
-                                return Q.ninvoke(project, 'remove')
-                                    .then(function () {
-                                        return Q.ninvoke(project, 'insert', {_id: '*info', dummy: true});
-                                    });
-                            })
+                        Q(_usersCollection.deleteMany()),
+                        Q(_clientCreateProjectsCollection.deleteMany()),
+                        Q(_projectCollection.deleteMany())
+                            .then(() => _projectCollection.insertOne({_id: '*info', dummy: true})),
+                        Q(_unauthorizedProjectCollection.deleteMany())
+                            .then(() => _unauthorizedProjectCollection.insertOne({_id: '*info', dummy: true})),
                     ]);
-                });
-
-            dbConn
+                })
                 .then(function () {
                     return auth.connect();
                 })
@@ -160,11 +140,12 @@ describe('User manager command line interface (CLI)', function () {
         after(function (done) {
             // just to be safe
             restoreLogAndExit();
-            client.close(true, function (err) {
-                auth.unload(function (err1) {
-                    done(err || err1 || null);
-                });
-            });
+            Q(client.close(true))
+                .then(() => {
+                    auth.unload();
+                })
+                .then(done)
+                .catch(done);
         });
 
         it('should have a main', function () {

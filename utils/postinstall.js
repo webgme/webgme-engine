@@ -50,12 +50,14 @@ function resolveJSDocConfigPath() {
     var jsdocConfJson = require('../jsdoc_conf.json'),
         jsdocConfPath;
 
+    const defaultTemplatePath = path.join(process.cwd(), '../ink-docstrap/template');
+    jsdocConfJson.opts.template = jsdocConfJson.opts.template || defaultTemplatePath;
     try {
         fs.statSync(jsdocConfJson.opts.template);
         console.log('jsdoc template from default config exists');
     } catch (err) {
         if (err.code === 'ENOENT') {
-            jsdocConfJson.opts.template = path.join(process.cwd(), '../ink-docstrap/template');
+            jsdocConfJson.opts.template = defaultTemplatePath;
             console.log('jsdoc template from default config did NOT exist! Testing alternative location',
                 jsdocConfJson.opts.template);
 

@@ -23,44 +23,41 @@ describe('Webhook Message sender', function () {
 
     before(function (done) {
         //setup hook informations into a collection
-        testFixture.mongodb.MongoClient.connect(mongoUri, {}, function (err, client_) {
-            if (err || !client_) {
-                throw err || new Error('cannot open mongoDB connection');
-            }
-            client = client_;
-            db = client.db(dbName);
+        testFixture.mongodb.MongoClient.connect(mongoUri, {})
+            .then(function (client_) {
+                client = client_;
+                db = client.db(dbName);
 
-            db.dropCollection(collectionName, function () {
-                db.collection(collectionName, function (err, collection) {
-                    collection.insertMany([
-                        {
-                            _id: 'project',
-                            hooks: { hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` } }
-                        },
-                        {
-                            _id: 'double',
-                            hooks: {
-                                hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` },
-                                hookTwo: { events: 'all', url: `http://localhost:${port}` }
-                            }
+                return db.dropCollection(collectionName)
+                    .catch(()=>{}); // ignore error if collection does not exist
+            })
+            .then(function () {
+                const collection = db.collection(collectionName);
+                return collection.insertMany([
+                    {
+                        _id: 'project',
+                        hooks: { hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` } }
+                    },
+                    {
+                        _id: 'double',
+                        hooks: {
+                            hookOne: { events: ['needsMatch'], url: `http://localhost:${port}` },
+                            hookTwo: { events: 'all', url: `http://localhost:${port}` }
                         }
-                    ], {}, function (err/*, result*/) {
-                        if (err) {
-                            throw err;
-                        }
-
-                        messageSender.start(done);
-                    });
-                });
-
-            });
-
-        });
+                    }
+                ]);
+            })
+            .then(function () {
+                return messageSender.start();
+            })
+            .then(done)
+            .catch(done);
     });
+
     after(function (done) {
         messageSender.stop()
             .then(function () {
-                Q.nfcall(client.close());
+                Q(client.close());
             })
             .nodeify(done);
     });
@@ -70,6 +67,7 @@ describe('Webhook Message sender', function () {
         acceptor.use(testFixture.bodyParser.json());
         server = acceptor.listen(port);
     });
+
     afterEach(function () {
         server.close();
     });

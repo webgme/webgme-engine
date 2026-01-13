@@ -63,7 +63,7 @@ function TokenServer(options) {
 TokenServer.prototype.start = async function (params) {
     this.logger.debug('Starting token server');
     const mongo = params.mongoClient;
-    const tokenList = await mongo.collection(TOKEN_COLLECTION);
+    const tokenList = mongo.collection(TOKEN_COLLECTION);
     this.tokens.init(tokenList);
 };
 
@@ -96,7 +96,7 @@ AccessTokens.prototype.create = async function (userId, name) {
         issuedAt: new Date(),
     };
     try {
-        await this.tokenList.save(token);
+        await this.tokenList.insertOne(token);
         delete token._id;
         return token;
     } catch (err) {

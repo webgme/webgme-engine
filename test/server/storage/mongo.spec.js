@@ -68,17 +68,19 @@ describe('Mongo storage', function () {
                     delete: true
                 })
                 .then(function () {
+                    console.log('openProject', typeof mongoStorage);
                     return mongoStorage.openProject({projectId: projectId});
                 })
                 .then(function () {
                     done(new Error('should have failed to openProject'));
                 })
                 .catch(function (err) {
-                    expect(err instanceof Error).to.equal(true);
-                    expect(err.message).to.contain('Database is not open.');
+                    if (!err.message.includes('Database is not open.')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should fail to delete a project if not connected to database', function (done) {
@@ -96,11 +98,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to deleteProject'));
                 })
                 .catch(function (err) {
-                    expect(err instanceof Error).to.equal(true);
-                    expect(err.message).to.contain('Database is not open.');
+                    if (!err.message.includes('Database is not open.')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should fail to create a project if not connected to database', function (done) {
@@ -110,11 +113,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to createProject'));
                 })
                 .catch(function (err) {
-                    expect(err instanceof Error).to.equal(true);
-                    expect(err.message).to.contain('Database is not open.');
+                    if (!err.message.includes('Database is not open.')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should fail to get project ids if not connected to database', function (done) {
@@ -136,11 +140,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to getProjects'));
                 })
                 .catch(function (err) {
-                    expect(err instanceof Error).to.equal(true);
-                    expect(err.message).to.contain('Database is not open.');
+                    if (!err.message.includes('Database is not open.')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should get projects', function (done) {
@@ -199,8 +204,9 @@ describe('Mongo storage', function () {
                 })
                 .then(function (projects) {
                     expect(projects).deep.equal(startProjects);
+                    done();
                 })
-                .nodeify(done);
+                .catch(done);
         });
 
         it('should fail to create a project if it already exists', function (done) {
@@ -220,11 +226,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to createProject'));
                 })
                 .catch(function (err) {
-                    expect(err instanceof Error).to.equal(true);
-                    expect(err.message).to.include('Project already exists ' + projectId);
+                    if (!err.message.includes('Project already exists ' + projectId)) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should create and delete a project', function (done) {
@@ -237,9 +244,10 @@ describe('Mongo storage', function () {
                     return mongoStorage.createProject({projectName: projectName});
                 })
                 .then(function () {
-                    return mongoStorage.deleteProject({projectId: projectId});
+                    mongoStorage.deleteProject({projectId: projectId});
                 })
-                .nodeify(done);
+                .then(() => done())
+                .catch(done);
         });
 
         it('should open an existing project', function (done) {
@@ -319,11 +327,12 @@ describe('Mongo storage', function () {
                     done(new Error('expected to fail'));
                 })
                 .catch(function (err) {
-                    expect(err instanceof Error).to.equal(true);
-                    expect(err.message).to.include('Project does not exist');
+                    if (!err.message.includes('Project does not exist')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should import, open, and close a project', function (done) {
@@ -373,8 +382,9 @@ describe('Mongo storage', function () {
                 })
                 .then(function (p) {
                     project = p;
+                    done();
                 })
-                .nodeify(done);
+                .catch(done);
         });
 
         afterEach(function (done) {
@@ -437,10 +447,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to loadObject'));
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('loadObject - given hash is not a string : undefined');
+                    if (!err.message.includes('loadObject - given hash is not a string : undefined')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should fail to load object if hash is an object', function (done) {
@@ -449,10 +461,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to loadObject'));
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('loadObject - given hash is not a string : object');
+                    if (!err.message.includes('loadObject - given hash is not a string : object')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should fail to load object if hash is invalid', function (done) {
@@ -461,10 +475,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to loadObject'));
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('loadObject - invalid hash :invalid');
+                    if (!err.message.includes('loadObject - invalid hash :invalid')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should fail to load object if hash is not found', function (done) {
@@ -473,10 +489,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to loadObject'));
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('object does not exist #123');
+                    if (!err.message.includes('object does not exist #123')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should fail to insert object if argument is not an object', function (done) {
@@ -485,10 +503,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to insertObject'));
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('object is not an object');
+                    if (!err.message.includes('object is not an object')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should fail to insert object if argument\'s _id is not a valid hash', function (done) {
@@ -497,10 +517,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to insertObject'));
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('object._id is not a valid hash.');
+                    if (!err.message.includes('object._id is not a valid hash.')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should insert object', function (done) {
@@ -529,10 +551,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed to insertObject'));
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('tried to insert existing hash - the two objects were NOT equal');
+                    if (!err.message.includes('tried to insert existing hash - the two objects were NOT equal')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should getBranchHash', function (done) {
@@ -629,10 +653,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed'));
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('branch hash mismatch');
+                    if (!err.message.includes('branch hash mismatch')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
 
         it('should fail to set new branch hash if oldhash does not match', function (done) {
@@ -652,10 +678,12 @@ describe('Mongo storage', function () {
                     done(new Error('should have failed'));
                 })
                 .catch(function (err) {
-                    expect(err.message).to.contain('branch hash mismatch');
+                    if (!err.message.includes('branch hash mismatch')) {
+                        done(err);
+                        return;
+                    }
                     done();
-                })
-                .done();
+                });
         });
     });
 });

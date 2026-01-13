@@ -38,7 +38,7 @@ function MetadataStorage(mainLogger /*, gmeConfig*/) {
     function getProjects(callback) {
         return self.projectCollection.find({})
             .then(function (projects) {
-                return Q.ninvoke(projects, 'toArray');
+                return Q(projects.toArray());
             })
             .then(function (projects) {
                 var i;

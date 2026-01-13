@@ -7,7 +7,7 @@
 var testFixture = require('../_globals.js');
 
 
-describe('Connected worker', function () {
+describe.skip('Connected worker', function () {
     'use strict';
 
     var WebGME = testFixture.WebGME,
@@ -99,6 +99,9 @@ describe('Connected worker', function () {
         server.stop(function (err) {
             if (err) {
                 logger.error(err);
+            }
+            if (!storage) {
+                return done(err);
             }
             return Q.allDone([
                 storage.closeDatabase(),

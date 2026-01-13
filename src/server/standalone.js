@@ -1055,19 +1055,35 @@ class StandAloneServer {
 
             Q.ninvoke(__httpServer, 'close')
                 .then(() => {
-                    const promises = [];
-                    
+                    const deferred = Q.defer();
+                    let routersLeft = __routeComponents.length;
+
+                    function stopped(err) {
+                        if (err) {
+                            __logger.error('Error at server stop', err);
+                        }
+
+                        routersLeft -= 1;
+                        if (routersLeft === 0) {
+                            deferred.resolve();
+                        }
+                    }
+
                     __webSocket.stop();
     
                     if (__executorServer) {
                         __executorServer.stop();
                     }
-    
-                    __routeComponents.forEach(component => {
-                        promises.push(Q.ninvoke(component, 'stop'));
-                    });
-    
-                    return Q.all(promises);
+
+                    for (const component of __routeComponents) {
+                        component.stop(stopped);
+                    }
+
+                    if (__routeComponents.length === 0) {
+                        deferred.resolve();
+                    }
+
+                    return deferred.promise;
                 })
                 .then(() => {
                     return Q.all([

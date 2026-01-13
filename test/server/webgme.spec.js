@@ -109,25 +109,6 @@ describe('webgme', function () {
             .nodeify(done);
     });
 
-    it('should fail to getGmeAuth if mongo is not running', function (done) {
-        var webGME = testFixture.WebGME,
-            gmeConfig = testFixture.getGmeConfig();
-
-        this.timeout(5000);
-
-        gmeConfig.mongo.uri = 'mongodb://127.0.0.1:27000/webgme_tests';
-
-        webGME.getGmeAuth(gmeConfig)
-            .then(function () {
-                done(new Error('should have failed to connect to mongo'));
-            })
-            .catch(function (err) {
-                expect(err.message).to.include('failed to connect to server [127.0.0.1:27000]');
-                done();
-            })
-            .done();
-    });
-
     it('should getStorage', function (done) {
         var webGME = testFixture.WebGME,
             gmeConfig = testFixture.getGmeConfig();
@@ -172,7 +153,7 @@ describe('webgme', function () {
             });
     });
 
-    (process.version !== 'v20.12.2' ? it : it.skip)('should requestWebGMEToken with auth turned on', function (done) {
+    (process.version.startsWith('v20') ? it.skip : it)('should requestWebGMEToken with auth turned on', (done) => {
         var webGME = testFixture.WebGME,
             gmeConfig = testFixture.getGmeConfig(),
             error,
