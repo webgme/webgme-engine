@@ -201,7 +201,7 @@ if (require.main === module) {
         .option('-d, --del [boolean]', 'If true will do the deletion [false].', false)
         .option('-l, --list [boolean]', 'If true will list all the projects this user has access to [false].', false)
         .option('-t, --daysAgo [number]', 'Minimum age (last viewed) of a project to delete [10].', 10)
-        .option('-c, --commits [number]', 'Maximum number of commits (-1 to skip) of a project to delete [1].', 1)
+        .option('-c, --commits [number]', 'Maximum number of commits (-1 to skip) of a project to delete [-1].', -1)
         .option('-b, --branches [number]', 'Maximum number of branches of a project to delete [1].', 1)
         .option('-r, --regex [string]', 'Project names must match the regexp [.*].', '.*')
         .option('-u, --username [string]', 'The user account being used. [guest account]')
