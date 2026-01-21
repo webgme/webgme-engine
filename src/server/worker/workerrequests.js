@@ -797,6 +797,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} [parameters.tagName] - The tree at the given tag.
      * @param {boolean} [parameters.withAssets=false] - Bundle the encountered assets linked from attributes.
      * @param {string} [parameters.kind] - If not given will use the one defined in project (if any).
+     * @param {string} [parameters.libraryName] - If provided - will export library as webgmex file.
      * @param {function} callback
      */
     function exportProjectToFile(webgmeToken, parameters, callback) {
