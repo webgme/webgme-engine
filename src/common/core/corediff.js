@@ -1230,7 +1230,7 @@ define([
             if (target === null) {
                 targetNode = null;
             } else {
-                targetNode = self.loadByPath(self.getRoot(node), target);
+                targetNode = self.loadByPath(self.getParent(node), target);
             }
             return TASYNC.call(function (t) {
                 //TODO watch if handling of base changes!!!
