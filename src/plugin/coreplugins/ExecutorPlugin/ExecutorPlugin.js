@@ -126,7 +126,7 @@ define([
                         .then(function (jInfo) {
                             var key,
                                 startOutput;
-                            self.logger.debug(JSON.stringify(jInfo, null, 4));
+                            console.log(JSON.stringify(jInfo, null, 4));
 
                             if (jInfo.status === 'CREATED' || jInfo.status === 'RUNNING') {
                                 // The job is still running..

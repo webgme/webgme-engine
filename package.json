@@ -10,7 +10,7 @@
     "start": "node ./src/bin/start_server.js",
     "prepublishOnly": "node ./utils/prepublish.js",
     "postinstall": "node ./utils/postinstall.js",
-    "test": "node ./node_modules/mocha/bin/mocha --exit --recursive test/common",
+    "test": "node ./node_modules/mocha/bin/mocha --exit --recursive test",
     "test_ci": "node ./node_modules/mocha/bin/mocha  --exit -R dot --timeout 10000 --recursive test",
     "test_cover": "nyc --reporter=html --reporter=text node ./node_modules/mocha/bin/mocha --exit --recursive test",
     "docs": "./node_modules/.bin/jsdoc -c jsdoc_conf.json",
