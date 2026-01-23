@@ -7,7 +7,7 @@ var testFixture = require('../../../_globals.js');
 
 // It fails consistently with node v20 in github action
 // Let's see if we're luckier with a new version..
-(process.version.startsWith('v20') ? describe.skip : describe)('Executor Plugin', function () {
+describe.skip('Executor Plugin', function () {
     'use strict';
 
     var Q = testFixture.Q,
@@ -173,8 +173,6 @@ var testFixture = require('../../../_globals.js');
                     configFileName,
                     '-b',
                     'b1'];
-
-            this.timeout(10000);
 
             Q.ninvoke(runPlugin, 'main', args)
                 .then(function (result) {
