@@ -267,7 +267,10 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     socket.userId = userId;
                     next();
                 })
-                .catch(next);
+                .catch((err) => {
+                    logger.error('Error getting user id from token', err);
+                    next(err);
+                });
         });
 
         webSocket.on('connection', function (socket) {

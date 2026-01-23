@@ -28,7 +28,7 @@ describe('watchers documents', function () {
 
     before(function (done) {
         gmeConfig.authentication.enable = true;
-        gmeConfig.socketIO.clientOptions.transports = ['websocket'];
+        // gmeConfig.socketIO.clientOptions.transports = ['websocket'];
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
             .then(function (gmeAuth_) {
