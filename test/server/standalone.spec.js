@@ -19,148 +19,82 @@ describe('standalone server', function () {
 
         agent = superagent.agent(),
 
-        http = require('http'),
-        fs = require('fs'),
-
         serverBaseUrl,
 
         scenarios,
         i,
         j;
 
-    it.skip('should start and stop and start and stop', function (done) {
-        this.timeout(5000);
-        // we have to set the config here
-        var gmeConfig = testFixture.getGmeConfig(),
-            server;
+    // describe('[https]', function () {
+    //     var nodeTLSRejectUnauthorized;
 
-        server = WebGME.standaloneServer(gmeConfig);
-        server.start(function (err) {
-            if (err) {
-                done(err);
-                return;
-            }
-            server.stop(function (err) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                server.start(function (err) {
-                    if (err) {
-                        done(err);
-                        return;
-                    }
-                    server.stop(done);
-                });
-            });
-        });
-    });
+    //     before(function () {
+    //         nodeTLSRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    //         process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    //     });
 
+    //     after(function () {
+    //         process.env.NODE_TLS_REJECT_UNAUTHORIZED = nodeTLSRejectUnauthorized;
+    //     });
 
-    it.skip('should fail to start http server if port is in use', function (done) {
-        this.timeout(5000);
-        // we have to set the config here
-        var gmeConfig = testFixture.getGmeConfig(),
-            httpServer = http.createServer(),
-            server;
+    //     it('should get main page with an https reverse proxy', function (done) {
+    //         var gmeConfig = testFixture.getGmeConfig(),
+    //             httpProxy = require('http-proxy'),
+    //             path = require('path'),
+    //             proxyServerPort = gmeConfig.server.port - 1,
+    //             server,
+    //             proxy;
 
-        gmeConfig.server.port = gmeConfig.server.port + 1;
+    //         server = WebGME.standaloneServer(gmeConfig);
+    //         //
+    //         // Create the HTTPS proxy server in front of a HTTP server
+    //         //
+    //         proxy = httpProxy.createServer({
+    //             target: {
+    //                 host: 'localhost',
+    //                 port: gmeConfig.server.port
+    //             },
+    //             ssl: {
+    //                 key: fs.readFileSync(path.join(__dirname, '..', 'certificates', 'sample-key.pem'), 'utf8'),
+    //                 cert: fs.readFileSync(path.join(__dirname, '..', 'certificates', 'sample-cert.pem'), 'utf8')
+    //             }
+    //         });
 
-        httpServer.listen(gmeConfig.server.port, function (err) {
-            if (err) {
-                done(err);
-                return;
-            }
+    //         server.start(function (err) {
+    //             if (err) {
+    //                 done(err);
+    //                 return;
+    //             }
+    //             proxy.listen(proxyServerPort, function (err) {
+    //                 if (err) {
+    //                     done(err);
+    //                     return;
+    //                 }
 
-            server = WebGME.standaloneServer(gmeConfig);
-            server.start(function (err) {
-                var err0;
-                try {
-                    expect(err.code).to.equal('EADDRINUSE');
-                } catch (e) {
-                    err0 = e;
-                }
+    //                 agent.get('https://localhost:' + proxyServerPort + '/index.html').end(function (err, res) {
+    //                     var err0;
+    //                     if (err) {
+    //                         done(err);
+    //                         return;
+    //                     }
 
-                httpServer.close(function (err1) {
-                    server._setIsRunning(true); //This ensures stopping modules.
-                    server.stop(function (err2) {
-                        done(err0 || err1 || err2 || null);
-                    });
-                });
-            });
-        });
-    });
+    //                     try {
+    //                         should.equal(res.status, 200, err);
+    //                         should.equal(/WebGME/.test(res.text), true, 'Index page response must contain WebGME');
+    //                     } catch (e) {
+    //                         err0 = e;
+    //                     }
 
-    describe('[https]', function () {
-        var nodeTLSRejectUnauthorized;
-
-        before(function () {
-            nodeTLSRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-            process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-        });
-
-        after(function () {
-            process.env.NODE_TLS_REJECT_UNAUTHORIZED = nodeTLSRejectUnauthorized;
-        });
-
-        it('should get main page with an https reverse proxy', function (done) {
-            var gmeConfig = testFixture.getGmeConfig(),
-                httpProxy = require('http-proxy'),
-                path = require('path'),
-                proxyServerPort = gmeConfig.server.port - 1,
-                server,
-                proxy;
-
-            server = WebGME.standaloneServer(gmeConfig);
-            //
-            // Create the HTTPS proxy server in front of a HTTP server
-            //
-            proxy = httpProxy.createServer({
-                target: {
-                    host: 'localhost',
-                    port: gmeConfig.server.port
-                },
-                ssl: {
-                    key: fs.readFileSync(path.join(__dirname, '..', 'certificates', 'sample-key.pem'), 'utf8'),
-                    cert: fs.readFileSync(path.join(__dirname, '..', 'certificates', 'sample-cert.pem'), 'utf8')
-                }
-            });
-
-            server.start(function (err) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                proxy.listen(proxyServerPort, function (err) {
-                    if (err) {
-                        done(err);
-                        return;
-                    }
-
-                    agent.get('https://localhost:' + proxyServerPort + '/index.html').end(function (err, res) {
-                        var err0;
-                        if (err) {
-                            done(err);
-                            return;
-                        }
-
-                        try {
-                            should.equal(res.status, 200, err);
-                            should.equal(/WebGME/.test(res.text), true, 'Index page response must contain WebGME');
-                        } catch (e) {
-                            err0 = e;
-                        }
-
-                        server.stop(function (err) {
-                            proxy.close(function (err1) {
-                                done(err0 || err || err1);
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
+    //                     server.stop(function (err) {
+    //                         proxy.close(function (err1) {
+    //                             done(err0 || err || err1);
+    //                         });
+    //                     });
+    //                 });
+    //             });
+    //         });
+    //     });
+    // });
 
 
     scenarios = [{

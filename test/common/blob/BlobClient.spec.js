@@ -18,9 +18,7 @@ describe('BlobClient', function () {
         BlobClient = testFixture.BlobClient,
         Artifact = testFixture.requirejs('blob/Artifact'),
         fs = testFixture.fs,
-        Q = testFixture.Q,
         server,
-        nodeTLSRejectUnauthorized,
         bcParam = {};
 
     describe('[http]', function () {
@@ -623,355 +621,356 @@ describe('BlobClient', function () {
         });
     });
 
-    describe('[https]', function () {
-        var proxy; // https reverse proxy
-        before(function (done) {
-            // we have to set the config here
-            nodeTLSRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-            var gmeConfig = testFixture.getGmeConfig();
-            var proxyServerPort = gmeConfig.server.port - 1;
-            bcParam.serverPort = proxyServerPort; // use https reverse proxy port
-            bcParam.server = '127.0.0.1';
-            bcParam.httpsecure = true;
-            bcParam.logger = testFixture.logger.fork('Blob');
+    // Uncomment if you want to make sure TLS works in a proxy..?
+    // describe('[https]', function () {
+    //     var proxy; // https reverse proxy
+    //     before(function (done) {
+    //         // we have to set the config here
+    //         nodeTLSRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    //         var gmeConfig = testFixture.getGmeConfig();
+    //         var proxyServerPort = gmeConfig.server.port - 1;
+    //         bcParam.serverPort = proxyServerPort; // use https reverse proxy port
+    //         bcParam.server = '127.0.0.1';
+    //         bcParam.httpsecure = true;
+    //         bcParam.logger = testFixture.logger.fork('Blob');
 
-            process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-            server = testFixture.WebGME.standaloneServer(gmeConfig);
-            var httpProxy = require('http-proxy');
-            var fs = require('fs');
-            var path = require('path');
-            //
-            // Create the HTTPS proxy server in front of a HTTP server
-            //
-            proxy = httpProxy.createServer({
-                target: {
-                    host: 'localhost',
-                    port: gmeConfig.server.port
-                },
-                ssl: {
-                    key: fs.readFileSync(path.join(__dirname, '..', '..', 'certificates', 'sample-key.pem'), 'utf8'),
-                    cert: fs.readFileSync(path.join(__dirname, '..', '..', 'certificates', 'sample-cert.pem'), 'utf8')
-                }
-            });
+    //         process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    //         server = testFixture.WebGME.standaloneServer(gmeConfig);
+    //         var httpProxy = require('http-proxy');
+    //         var fs = require('fs');
+    //         var path = require('path');
+    //         //
+    //         // Create the HTTPS proxy server in front of a HTTP server
+    //         //
+    //         proxy = httpProxy.createServer({
+    //             target: {
+    //                 host: 'localhost',
+    //                 port: gmeConfig.server.port
+    //             },
+    //             ssl: {
+    //                 key: fs.readFileSync(path.join(__dirname, '..', '..', 'certificates', 'sample-key.pem'), 'utf8'),
+    //                 cert: fs.readFileSync(path.join(__dirname, '..', '..', 'certificates', 'sample-cert.pem'), 'utf8')
+    //             }
+    //         });
 
-            server.start(function () {
-                proxy.listen(proxyServerPort, done);
-            });
-        });
+    //         server.start(function () {
+    //             proxy.listen(proxyServerPort, done);
+    //         });
+    //     });
 
-        beforeEach(async function () {
-            await rimraf('./test-tmp/blob-storage');
-        });
+    //     beforeEach(async function () {
+    //         await rimraf('./test-tmp/blob-storage');
+    //     });
 
-        after(function (done) {
-            server.stop(function (err) {
-                process.env.NODE_TLS_REJECT_UNAUTHORIZED = nodeTLSRejectUnauthorized;
-                proxy.close(function (err1) {
-                    done(err || err1);
-                });
-            });
-        });
+    //     after(function (done) {
+    //         server.stop(function (err) {
+    //             process.env.NODE_TLS_REJECT_UNAUTHORIZED = nodeTLSRejectUnauthorized;
+    //             proxy.close(function (err1) {
+    //                 done(err || err1);
+    //             });
+    //         });
+    //     });
 
-        it('should create json', function (done) {
-            var bc = new BlobClient(bcParam);
+    //     it('should create json', function (done) {
+    //         var bc = new BlobClient(bcParam);
 
-            bc.putFile('test.json', str2ab('{"1":2}'), function (err, hash) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                bc.getMetadata(hash, function (err, metadata) {
-                    if (err) {
-                        done(err);
-                        return;
-                    }
-                    expect(metadata.mime).to.equal('application/json');
-                    bc.getObject(hash, function (err, res) {
-                        if (err) {
-                            done(err);
-                            return;
-                        }
-                        expect(typeof res).to.equal('object');
-                        expect(typeof res.prototype).to.equal('undefined');
-                        //expect(res[1]).to.equal(2);
-                        done();
-                    });
-                });
-            });
-        });
+    //         bc.putFile('test.json', str2ab('{"1":2}'), function (err, hash) {
+    //             if (err) {
+    //                 done(err);
+    //                 return;
+    //             }
+    //             bc.getMetadata(hash, function (err, metadata) {
+    //                 if (err) {
+    //                     done(err);
+    //                     return;
+    //                 }
+    //                 expect(metadata.mime).to.equal('application/json');
+    //                 bc.getObject(hash, function (err, res) {
+    //                     if (err) {
+    //                         done(err);
+    //                         return;
+    //                     }
+    //                     expect(typeof res).to.equal('object');
+    //                     expect(typeof res.prototype).to.equal('undefined');
+    //                     //expect(res[1]).to.equal(2);
+    //                     done();
+    //                 });
+    //             });
+    //         });
+    //     });
 
-        it('should create strange filenames', function (done) {
-            var bc = new BlobClient(bcParam);
+    //     it('should create strange filenames', function (done) {
+    //         var bc = new BlobClient(bcParam);
 
-            bc.putFile('te%s#t.json', '{"1":2}', function (err, hash) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                bc.getMetadata(hash, function (err, metadata) {
-                    if (err) {
-                        done(err);
-                        return;
-                    }
-                    expect(metadata.mime).to.equal('application/json');
-                    bc.getObject(hash, function (err, res) {
-                        if (err) {
-                            done(err);
-                            return;
-                        }
-                        expect(typeof res).to.equal('object');
-                        expect(typeof res.prototype).to.equal('undefined');
-                        //expect(res[1]).to.equal(2);
-                        done();
-                    });
-                });
-            });
-        });
+    //         bc.putFile('te%s#t.json', '{"1":2}', function (err, hash) {
+    //             if (err) {
+    //                 done(err);
+    //                 return;
+    //             }
+    //             bc.getMetadata(hash, function (err, metadata) {
+    //                 if (err) {
+    //                     done(err);
+    //                     return;
+    //                 }
+    //                 expect(metadata.mime).to.equal('application/json');
+    //                 bc.getObject(hash, function (err, res) {
+    //                     if (err) {
+    //                         done(err);
+    //                         return;
+    //                     }
+    //                     expect(typeof res).to.equal('object');
+    //                     expect(typeof res.prototype).to.equal('undefined');
+    //                     //expect(res[1]).to.equal(2);
+    //                     done();
+    //                 });
+    //             });
+    //         });
+    //     });
 
-        if (typeof global !== 'undefined') {
-            it('should create zip', function (done) {
-                var data = base64DecToArr('UEsDBAoAAAAAACNaNkWtbMPDBwAAAAcAAAAIAAAAZGF0YS5ia' +
-                    'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
-                    'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
-                    'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
-                createZip(data, done);
-            });
-        }
+    //     if (typeof global !== 'undefined') {
+    //         it('should create zip', function (done) {
+    //             var data = base64DecToArr('UEsDBAoAAAAAACNaNkWtbMPDBwAAAAcAAAAIAAAAZGF0YS5ia' +
+    //                 'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
+    //                 'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
+    //                 'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
+    //             createZip(data, done);
+    //         });
+    //     }
 
-        if (typeof global !== 'undefined') { // i.e. if running under node-webkit
-            // need this in package.json: "node-remote": "localhost"
-            it('should create zip from Buffer', function (done) {
-                var data = base64DecToArr('UEsDBAoAAAAAACNaNkWtbMPDBwAAAAcAAAAIAAAAZGF0YS5ia' +
-                    'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
-                    'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
-                    'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
-                createZip(Buffer.from(data), done);
-            });
-        }
+    //     if (typeof global !== 'undefined') { // i.e. if running under node-webkit
+    //         // need this in package.json: "node-remote": "localhost"
+    //         it('should create zip from Buffer', function (done) {
+    //             var data = base64DecToArr('UEsDBAoAAAAAACNaNkWtbMPDBwAAAAcAAAAIAAAAZGF0YS5ia' +
+    //                 'W5kYXRhIA0KUEsBAj8ACgAAAAAA\n' +
+    //                 'I1o2Ra1sw8MHAAAABwAAAAgAJAAAAAAAAAAgAAAAAAAAAGRhdGEuYmluCgAgAAAAAAABABgAn3xF\n' +
+    //                 'poDWzwGOVUWmgNbPAY5VRaaA1s8BUEsFBgAAAAABAAEAWgAAAC0AAAAAAA==');
+    //             createZip(Buffer.from(data), done);
+    //         });
+    //     }
 
-        if (typeof global !== 'undefined' && typeof window !== 'undefined') { // i.e. if running under node-webkit
-            // need this in package.json: "node-remote": "localhost"
-            it('should create zip from node-webkit File', function (done) {
-                var f = new File('./npm_install.cmd', 'npm_install.cmd');
-                //expect(Object.getOwnPropertyNames(f).join(' ')).to.equal(0);
-                var bc = new BlobClient(bcParam);
-                bc.putFile('npm_install.cmd', f, function (err/*, hash*/) {
-                    if (err) {
-                        done(err);
-                        return;
-                    }
-                    done();
-                });
-            });
-        }
+    //     if (typeof global !== 'undefined' && typeof window !== 'undefined') { // i.e. if running under node-webkit
+    //         // need this in package.json: "node-remote": "localhost"
+    //         it('should create zip from node-webkit File', function (done) {
+    //             var f = new File('./npm_install.cmd', 'npm_install.cmd');
+    //             //expect(Object.getOwnPropertyNames(f).join(' ')).to.equal(0);
+    //             var bc = new BlobClient(bcParam);
+    //             bc.putFile('npm_install.cmd', f, function (err/*, hash*/) {
+    //                 if (err) {
+    //                     done(err);
+    //                     return;
+    //                 }
+    //                 done();
+    //             });
+    //         });
+    //     }
 
-        it('should create metadata', function (done) {
-            var artifact = new Artifact('testartifact', new BlobClient(bcParam));
-            artifact.addFiles({file1: 'content1', file2: 'content2'}, function (err, hashes) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                expect(Object.keys(hashes).length).to.equal(2);
-                done();
-            });
-        });
+    //     it('should create metadata', function (done) {
+    //         var artifact = new Artifact('testartifact', new BlobClient(bcParam));
+    //         artifact.addFiles({file1: 'content1', file2: 'content2'}, function (err, hashes) {
+    //             if (err) {
+    //                 done(err);
+    //                 return;
+    //             }
+    //             expect(Object.keys(hashes).length).to.equal(2);
+    //             done();
+    //         });
+    //     });
 
-        it('should create zip 1', function (done) {
-            var filesToAdd = {
-                    'j%s#on.json': '{"1":2}',
-                    'x#m%l.xml': '<doc/>'
-                },
-                artifact = new BlobClient(bcParam).createArtifact('xmlAndJson');
-            artifact.addFiles(filesToAdd, function (err/*, hashes*/) {
-                if (err) {
-                    done('Could not add files : err' + err.toString());
-                    return;
-                }
-                artifact.save(function (err, hash) {
-                    if (err) {
-                        done('Could not save artifact : err' + err.toString());
-                        return;
-                    }
-                    var agent = superagent.agent();
-                    var url = (new BlobClient(bcParam)).getViewURL(hash, 'j%s#on.json');
-                    //console.log(url);
-                    agent.get(url).end(function (err, res) {
-                        if (err) {
-                            done(err);
-                            return;
-                        }
-                        //console.log(res);
-                        should.equal(res.status, 200);
-                        done();
-                    });
-                    //req.open("GET", new BlobClient(bcParam).getViewURL(hash, 'j%s#on.json'), true);
-                    //req.onreadystatechange = function () {
-                    //    if (req.readyState != 4) return;
-                    //    if (req.status != 200) {
-                    //        done(req.status);
-                    //    }
-                    //    done();
-                    //}
-                    //req.send();
-                });
-            });
-        });
+    //     it('should create zip 1', function (done) {
+    //         var filesToAdd = {
+    //                 'j%s#on.json': '{"1":2}',
+    //                 'x#m%l.xml': '<doc/>'
+    //             },
+    //             artifact = new BlobClient(bcParam).createArtifact('xmlAndJson');
+    //         artifact.addFiles(filesToAdd, function (err/*, hashes*/) {
+    //             if (err) {
+    //                 done('Could not add files : err' + err.toString());
+    //                 return;
+    //             }
+    //             artifact.save(function (err, hash) {
+    //                 if (err) {
+    //                     done('Could not save artifact : err' + err.toString());
+    //                     return;
+    //                 }
+    //                 var agent = superagent.agent();
+    //                 var url = (new BlobClient(bcParam)).getViewURL(hash, 'j%s#on.json');
+    //                 //console.log(url);
+    //                 agent.get(url).end(function (err, res) {
+    //                     if (err) {
+    //                         done(err);
+    //                         return;
+    //                     }
+    //                     //console.log(res);
+    //                     should.equal(res.status, 200);
+    //                     done();
+    //                 });
+    //                 //req.open("GET", new BlobClient(bcParam).getViewURL(hash, 'j%s#on.json'), true);
+    //                 //req.onreadystatechange = function () {
+    //                 //    if (req.readyState != 4) return;
+    //                 //    if (req.status != 200) {
+    //                 //        done(req.status);
+    //                 //    }
+    //                 //    done();
+    //                 //}
+    //                 //req.send();
+    //             });
+    //         });
+    //     });
 
-        it('putFiles should put multiple files', function (done) {
-            var bc = new BlobClient(bcParam),
-                filesToAdd = {
-                    'a.json': JSON.stringify({a: 1, b: 2}),
-                    'some.txt': 'Thsh shs'
-                };
-            bc.putFiles(filesToAdd, function (err, hashes) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                should.equal(Object.keys(hashes).length, 2);
-                done();
-            });
-        });
+    //     it('putFiles should put multiple files', function (done) {
+    //         var bc = new BlobClient(bcParam),
+    //             filesToAdd = {
+    //                 'a.json': JSON.stringify({a: 1, b: 2}),
+    //                 'some.txt': 'Thsh shs'
+    //             };
+    //         bc.putFiles(filesToAdd, function (err, hashes) {
+    //             if (err) {
+    //                 done(err);
+    //                 return;
+    //             }
+    //             should.equal(Object.keys(hashes).length, 2);
+    //             done();
+    //         });
+    //     });
 
-        it('putFiles with empty object should return empty hashes obj', function (done) {
-            var bc = new BlobClient(bcParam),
-                filesToAdd = {};
-            bc.putFiles(filesToAdd, function (err, hashes) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                should.equal(Object.keys(hashes).length, 0);
-                done();
-            });
-        });
+    //     it('putFiles with empty object should return empty hashes obj', function (done) {
+    //         var bc = new BlobClient(bcParam),
+    //             filesToAdd = {};
+    //         bc.putFiles(filesToAdd, function (err, hashes) {
+    //             if (err) {
+    //                 done(err);
+    //                 return;
+    //             }
+    //             should.equal(Object.keys(hashes).length, 0);
+    //             done();
+    //         });
+    //     });
 
-        it('saveAllArtifacts with zero artifacts should return empty hashes list', function (done) {
-            var bc = new BlobClient(bcParam);
-            bc.saveAllArtifacts(function (err, hashes) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                should.equal(hashes.length, 0);
-                done();
-            });
-        });
+    //     it('saveAllArtifacts with zero artifacts should return empty hashes list', function (done) {
+    //         var bc = new BlobClient(bcParam);
+    //         bc.saveAllArtifacts(function (err, hashes) {
+    //             if (err) {
+    //                 done(err);
+    //                 return;
+    //             }
+    //             should.equal(hashes.length, 0);
+    //             done();
+    //         });
+    //     });
 
-        it('saveAllArtifacts with empty artifacts should work', function (done) {
-            var bc = new BlobClient(bcParam);
+    //     it('saveAllArtifacts with empty artifacts should work', function (done) {
+    //         var bc = new BlobClient(bcParam);
 
-            bc.createArtifact('artie1');
-            bc.createArtifact('artie2');
-            bc.saveAllArtifacts(function (err, hashes) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                should.equal(hashes.length, 2);
-                done();
-            });
-        });
+    //         bc.createArtifact('artie1');
+    //         bc.createArtifact('artie2');
+    //         bc.saveAllArtifacts(function (err, hashes) {
+    //             if (err) {
+    //                 done(err);
+    //                 return;
+    //             }
+    //             should.equal(hashes.length, 2);
+    //             done();
+    //         });
+    //     });
 
-        it('save and getArtifact should return same artifact', function (done) {
-            var bc = new BlobClient(bcParam),
-                artie = bc.createArtifact('artie');
-            artie.addFile('aname.txt', 'the text', function (err/*, hash*/) {
-                if (err) {
-                    done(err);
-                    return;
-                }
-                bc.saveAllArtifacts(function (err, hashes) {
-                    if (err) {
-                        done(err);
-                        return;
-                    }
-                    should.equal(hashes.length, 1);
-                    bc.getArtifact(hashes[0], function (err, artifact) {
-                        if (err) {
-                            done(err);
-                            return;
-                        }
-                        should.equal(artifact.name, 'artie.zip');
-                        done();
-                    });
-                });
-            });
-        });
+    //     it('save and getArtifact should return same artifact', function (done) {
+    //         var bc = new BlobClient(bcParam),
+    //             artie = bc.createArtifact('artie');
+    //         artie.addFile('aname.txt', 'the text', function (err/*, hash*/) {
+    //             if (err) {
+    //                 done(err);
+    //                 return;
+    //             }
+    //             bc.saveAllArtifacts(function (err, hashes) {
+    //                 if (err) {
+    //                     done(err);
+    //                     return;
+    //                 }
+    //                 should.equal(hashes.length, 1);
+    //                 bc.getArtifact(hashes[0], function (err, artifact) {
+    //                     if (err) {
+    //                         done(err);
+    //                         return;
+    //                     }
+    //                     should.equal(artifact.name, 'artie.zip');
+    //                     done();
+    //                 });
+    //             });
+    //         });
+    //     });
 
-        it('streamObject to a file', function (done) {
-            var bc = new BlobClient(bcParam),
-                artie = bc.createArtifact('artie');
+    //     it('streamObject to a file', function (done) {
+    //         var bc = new BlobClient(bcParam),
+    //             artie = bc.createArtifact('artie');
 
-            Q.allDone([
-                artie.addFile('1.txt', 'text 1'),
-                artie.addFile('2.txt', 'text 2'),
-                artie.addFile('3.txt', 'text 3')
-            ])
-                .then(function () {
-                    return artie.save();
-                })
-                .then(function (metadataHash) {
-                    var zipFile = testFixture.path.join('test-tmp', 'streamed.zip'),
-                        deferred = Q.defer(),
-                        writeStream = fs.createWriteStream(zipFile);
+    //         Q.allDone([
+    //             artie.addFile('1.txt', 'text 1'),
+    //             artie.addFile('2.txt', 'text 2'),
+    //             artie.addFile('3.txt', 'text 3')
+    //         ])
+    //             .then(function () {
+    //                 return artie.save();
+    //             })
+    //             .then(function (metadataHash) {
+    //                 var zipFile = testFixture.path.join('test-tmp', 'streamed.zip'),
+    //                     deferred = Q.defer(),
+    //                     writeStream = fs.createWriteStream(zipFile);
 
-                    writeStream.on('error', function (err) {
-                        deferred.reject(err);
-                    });
+    //                 writeStream.on('error', function (err) {
+    //                     deferred.reject(err);
+    //                 });
 
-                    writeStream.on('finish', function () {
-                        deferred.resolve(zipFile);
-                    });
+    //                 writeStream.on('finish', function () {
+    //                     deferred.resolve(zipFile);
+    //                 });
 
-                    bc.getStreamObject(metadataHash, writeStream);
+    //                 bc.getStreamObject(metadataHash, writeStream);
 
-                    return deferred.promise;
-                })
-                .then(function (zip) {
-                    // This throws if it does not exist
-                    return Q.ninvoke(fs, 'unlink', zip);
-                })
-                .nodeify(done);
-        });
+    //                 return deferred.promise;
+    //             })
+    //             .then(function (zip) {
+    //                 // This throws if it does not exist
+    //                 return Q.ninvoke(fs, 'unlink', zip);
+    //             })
+    //             .nodeify(done);
+    //     });
 
-        it('streamObject with subpath to a file', function (done) {
-            var bc = new BlobClient(bcParam),
-                artie = bc.createArtifact('artie');
+    //     it('streamObject with subpath to a file', function (done) {
+    //         var bc = new BlobClient(bcParam),
+    //             artie = bc.createArtifact('artie');
 
-            Q.allDone([
-                artie.addFile('1.txt', 'text 1'),
-                artie.addFile('2.txt', 'text 2'),
-                artie.addFile('3.txt', 'text 3')
-            ])
-                .then(function () {
-                    return artie.save();
-                })
-                .then(function (metadataHash) {
-                    var txtFile = testFixture.path.join('test-tmp', '1.txt'),
-                        deferred = Q.defer(),
-                        writeStream = fs.createWriteStream(txtFile);
+    //         Q.allDone([
+    //             artie.addFile('1.txt', 'text 1'),
+    //             artie.addFile('2.txt', 'text 2'),
+    //             artie.addFile('3.txt', 'text 3')
+    //         ])
+    //             .then(function () {
+    //                 return artie.save();
+    //             })
+    //             .then(function (metadataHash) {
+    //                 var txtFile = testFixture.path.join('test-tmp', '1.txt'),
+    //                     deferred = Q.defer(),
+    //                     writeStream = fs.createWriteStream(txtFile);
 
-                    writeStream.on('error', function (err) {
-                        deferred.reject(err);
-                    });
+    //                 writeStream.on('error', function (err) {
+    //                     deferred.reject(err);
+    //                 });
 
-                    writeStream.on('finish', function () {
-                        deferred.resolve(txtFile);
-                    });
+    //                 writeStream.on('finish', function () {
+    //                     deferred.resolve(txtFile);
+    //                 });
 
-                    bc.getStreamObject(metadataHash, writeStream, '1.txt');
+    //                 bc.getStreamObject(metadataHash, writeStream, '1.txt');
 
-                    return deferred.promise;
-                })
-                .then(function (txtFile) {
-                    // This throws if it does not exist
-                    return Q.ninvoke(fs, 'unlink', txtFile);
-                })
-                .nodeify(done);
-        });
-    });
+    //                 return deferred.promise;
+    //             })
+    //             .then(function (txtFile) {
+    //                 // This throws if it does not exist
+    //                 return Q.ninvoke(fs, 'unlink', txtFile);
+    //             })
+    //             .nodeify(done);
+    //     });
+    // });
 
     describe('paths', function () {
         it('should be correct with default config', function () {

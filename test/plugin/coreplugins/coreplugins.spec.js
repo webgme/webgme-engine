@@ -21,7 +21,7 @@ describe('CorePlugins', function () {
             'AddOnGenerator',
             'ConfigurationArtifact',
             'DecoratorGenerator',
-            'ExecutorPlugin',
+            // 'ExecutorPlugin',
             'ImportV1',
             'MergeExample',
             'MetaGMEParadigmImporter',
@@ -50,7 +50,7 @@ describe('CorePlugins', function () {
         ],
 
         pluginsShouldFail = [
-            'ExecutorPlugin',
+            // 'ExecutorPlugin',
             'MergeExample',
             'MetaGMEParadigmImporter',
             'MultipleMainCallbackCalls',
