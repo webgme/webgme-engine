@@ -26,6 +26,7 @@ describe('plugin_hook', function () {
         server;
 
     before(function (done) {
+        this.timeout(10000);
         gmeConfig.webhooks.enable = true;
         server = WebGME.standaloneServer(gmeConfig);
         server.start(function (err) {
@@ -71,8 +72,8 @@ describe('plugin_hook', function () {
             }
 
             Q.allDone([
-                gmeAuth.unload(),
-                safeStorage.closeDatabase()
+                gmeAuth ? gmeAuth.unload() : Promise.resolve(),
+                safeStorage ? safeStorage.closeDatabase() : Promise.resolve()
             ])
                 .nodeify(done);
         });
