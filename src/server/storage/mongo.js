@@ -16,6 +16,21 @@ var mongodb = require('mongodb'),
     CANON = requireJS('common/util/canon'),
     REGEXP = requireJS('common/regexp');
 
+function projectExists(db, projectId) {
+    var deferred = Q.defer();
+    const collection = db.collection(projectId, { strict: true });
+    // Check if collection is empty
+    collection.findOne({})
+        .then(function (doc) {
+            deferred.resolve(doc !== null);
+        })
+        .catch(function (err) {
+            deferred.reject(err);
+        });
+
+    return deferred.promise;
+}
+
 function Mongo(mainLogger, gmeConfig) {
     var self = this,
         connectionCnt = 0,
@@ -58,7 +73,7 @@ function Mongo(mainLogger, gmeConfig) {
                 deferred.reject(new Error('loadObject - invalid hash :' + hash));
             } else {
                 logger.debug('loadObject ' + hash);
-                collection.findOne({_id: hash}).then(function (obj) {
+                collection.findOne({ _id: hash }).then(function (obj) {
                     if (obj) {
                         deferred.resolve(obj);
                     } else {
@@ -91,7 +106,7 @@ function Mongo(mainLogger, gmeConfig) {
                     .catch(function (err) {
                         // manually check duplicate keys
                         if (err && err.code === 11000) {
-                            collection.findOne({_id: object._id})
+                            collection.findOne({ _id: object._id })
                                 .then(function (data) {
                                     if (CANON.stringify(object) === CANON.stringify(data)) {
                                         logger.debug('tried to insert existing hash - the two objects were equal',
@@ -141,7 +156,7 @@ function Mongo(mainLogger, gmeConfig) {
         this.getBranchHash = function (branch, callback) {
             branch = '*' + branch;
 
-            return Q(collection.findOne({_id: branch}))
+            return Q(collection.findOne({ _id: branch }))
                 .then(function (branchObj) {
                     // FIXME: This behaviour of return empty string rather than an error is the same as before.
                     // FIXME: Consider returning with an error in style with 'Branch does not exist'.
@@ -154,7 +169,7 @@ function Mongo(mainLogger, gmeConfig) {
             branch = '*' + branch;
 
             if (oldhash === newhash) {
-                collection.findOne({_id: branch})
+                collection.findOne({ _id: branch })
                     .then(function (obj) {
                         if (oldhash !== ((obj && obj.hash) || '')) {
                             deferred.reject(new Error('branch hash mismatch'));
@@ -172,7 +187,7 @@ function Mongo(mainLogger, gmeConfig) {
                 })
                     .then(function (result) {
                         if (result.deletedCount !== 1) {
-                            return collection.findOne({_id: branch})
+                            return collection.findOne({ _id: branch })
                                 .then(function (obj) {
                                     if (obj) {
                                         throw new Error('branch hash mismatch');
@@ -259,7 +274,7 @@ function Mongo(mainLogger, gmeConfig) {
 
             update.$set[name] = commitHash;
 
-            collection.updateOne(query, update, {upsert: true})
+            collection.updateOne(query, update, { upsert: true })
                 .then(function () {
                     deferred.resolve();
                 })
@@ -298,7 +313,7 @@ function Mongo(mainLogger, gmeConfig) {
         this.getTags = function (callback) {
             var deferred = Q.defer();
 
-            collection.findOne({_id: self.CONSTANTS.TAGS}, {})
+            collection.findOne({ _id: self.CONSTANTS.TAGS }, {})
                 .then(function (result) {
                     if (result) {
                         delete result._id;
@@ -368,7 +383,7 @@ function Mongo(mainLogger, gmeConfig) {
                     .catch(function (err) {
                         self.client = null;
                         connectionCnt -= 1;
-                        logger.error('Failed to connect.', {metadata: err});
+                        logger.error('Failed to connect.', { metadata: err });
                         connectDeferred.reject(err);
                     });
             } else {
@@ -417,9 +432,14 @@ function Mongo(mainLogger, gmeConfig) {
         var deferred = Q.defer();
 
         if (self.db) {
-            Q(self.db.dropCollection(projectId))
+            let didExist = false;
+            projectExists(self.db, projectId)
+                .then(function (_didExist) {
+                    didExist = _didExist;
+                    return Q(self.db.dropCollection(projectId));
+                })
                 .then(function () {
-                    deferred.resolve(true);
+                    deferred.resolve(didExist);
                 })
                 .catch(function (err) {
                     if (err.ok === 0) { // http://docs.mongodb.org/manual/reference/method/db.collection.drop/
@@ -443,15 +463,12 @@ function Mongo(mainLogger, gmeConfig) {
 
         if (self.db) {
             try {
-                const collection = self.db.collection(projectId, {strict: true});
-                // Check if collection is empty
-                collection.findOne({})
-                    .then(function (doc) {
-                        const isEmpty = doc === null;
-                        if (isEmpty) {
-                            deferred.reject(new Error('Project does not exist ' + projectId));
+                projectExists(self.db, projectId)
+                    .then(function (didExist) {
+                        if (didExist) {
+                            deferred.resolve(new MongoProject(projectId, self.db.collection(projectId)));
                         } else {
-                            deferred.resolve(new MongoProject(projectId, collection));
+                            deferred.reject(new Error('Project does not exist ' + projectId));
                         }
                     })
                     .catch(function (err) {
@@ -475,8 +492,8 @@ function Mongo(mainLogger, gmeConfig) {
         if (self.db) {
             const collection = self.db.collection(projectId);
             collection.insertMany([
-                {_id: CONSTANTS.EMPTY_PROJECT_DATA},
-                {_id: self.CONSTANTS.TAGS}])
+                { _id: CONSTANTS.EMPTY_PROJECT_DATA },
+                { _id: self.CONSTANTS.TAGS }])
                 .then(function () {
                     deferred.resolve(new MongoProject(projectId, collection));
                 })

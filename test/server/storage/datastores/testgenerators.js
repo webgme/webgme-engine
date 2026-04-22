@@ -5,6 +5,14 @@
 
 'use strict';
 
+var MAX_PROJECT_NAME_LENGTH = 20,
+    projectSuffix = (Date.now().toString(36).slice(-4) + Math.random().toString(36).slice(2, 5)).slice(0, 7);
+
+function getProjectName(baseName) {
+    var maxBaseLength = MAX_PROJECT_NAME_LENGTH - projectSuffix.length - 1;
+    return baseName.slice(0, maxBaseLength) + '_' + projectSuffix;
+}
+
 /**
  * @param AdapterClass
  * @param logger
@@ -280,28 +288,32 @@ function genOpenCloseDatabase(AdapterClass, logger, gmeConfig, Q, expect) {
  */
 function genCreateOpenDeleteRenameProject(databaseAdapter, Q, expect) {
     it('should createProject if it does not exist', function (done) {
-        databaseAdapter.createProject('project1')
+        databaseAdapter.createProject(getProjectName('project1'))
             .nodeify(done);
     });
 
     it('should fail to createProject if it exists', function (done) {
-        databaseAdapter.createProject('project2')
+        var projectId = getProjectName('project2');
+
+        databaseAdapter.createProject(projectId)
             .then(function () {
-                return databaseAdapter.createProject('project2');
+                return databaseAdapter.createProject(projectId);
             })
             .then(function () {
                 throw new Error('should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.contain('Project already exists project2');
+                expect(err.message).to.contain('Project already exists ' + projectId);
             })
             .nodeify(done);
     });
 
     it('should openProject if it exists', function (done) {
-        databaseAdapter.createProject('project3')
+        var projectId = getProjectName('project3');
+
+        databaseAdapter.createProject(projectId)
             .then(function () {
-                return databaseAdapter.openProject('project3');
+                return databaseAdapter.openProject(projectId);
             })
             .then(function (project) {
                 expect(project).to.have.property('closeProject');
@@ -310,9 +322,11 @@ function genCreateOpenDeleteRenameProject(databaseAdapter, Q, expect) {
     });
 
     it('should open and close Project if it exists', function (done) {
-        databaseAdapter.createProject('project31')
+        var projectId = getProjectName('project31');
+
+        databaseAdapter.createProject(projectId)
             .then(function () {
-                return databaseAdapter.openProject('project31');
+                return databaseAdapter.openProject(projectId);
             })
             .then(function (project) {
                 expect(project).to.have.property('closeProject');
@@ -322,18 +336,20 @@ function genCreateOpenDeleteRenameProject(databaseAdapter, Q, expect) {
     });
 
     it('should fail to openProject if it does not exist', function (done) {
-        databaseAdapter.openProject('project4')
+        var projectId = getProjectName('project4');
+
+        databaseAdapter.openProject(projectId)
             .then(function () {
                 throw new Error('should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.contain('Project does not exist project4');
+                expect(err.message).to.contain('Project does not exist ' + projectId);
             })
             .nodeify(done);
     });
 
     it('should deleteProject and return false if it does not exist', function (done) {
-        databaseAdapter.deleteProject('project5')
+        databaseAdapter.deleteProject(getProjectName('project5'))
             .then(function (result) {
                 expect(result).to.equal(false);
             })
@@ -341,109 +357,129 @@ function genCreateOpenDeleteRenameProject(databaseAdapter, Q, expect) {
     });
 
     it('should deleteProject and return true if it exists', function (done) {
-        databaseAdapter.createProject('project6')
+        var projectId = getProjectName('project6');
+
+        databaseAdapter.createProject(projectId)
             .then(function () {
-                return databaseAdapter.deleteProject('project6');
+                return databaseAdapter.deleteProject(projectId);
             })
             .then(function (result) {
                 expect(result).to.equal(true);
-                return databaseAdapter.openProject('project6');
+                return databaseAdapter.openProject(projectId);
             })
             .then(function () {
                 throw new Error('should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.contain('Project does not exist project6');
+                expect(err.message).to.contain('Project does not exist ' + projectId);
             })
             .nodeify(done);
     });
 
     it('should renameProject if it exists and old does not', function (done) {
-        databaseAdapter.createProject('project7')
+        var projectId = getProjectName('project7'),
+            newProjectId = getProjectName('newProject7');
+
+        databaseAdapter.createProject(projectId)
             .then(function () {
-                return databaseAdapter.renameProject('project7', 'newProject7');
+                return databaseAdapter.renameProject(projectId, newProjectId);
             })
             .then(function () {
-                return databaseAdapter.openProject('newProject7');
+                return databaseAdapter.openProject(newProjectId);
             })
             .then(function () {
-                return databaseAdapter.openProject('project7');
+                return databaseAdapter.openProject(projectId);
             })
             .then(function () {
                 throw new Error('should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.contain('Project does not exist project7');
+                expect(err.message).to.contain('Project does not exist ' + projectId);
             })
             .nodeify(done);
     });
 
     it('should fail to renameProject if new project already exists', function (done) {
+        var projectId = getProjectName('project8'),
+            newProjectId = getProjectName('newProject8');
+
         Q.allDone([
-            databaseAdapter.createProject('project8'),
-            databaseAdapter.createProject('newProject8')
+            databaseAdapter.createProject(projectId),
+            databaseAdapter.createProject(newProjectId)
         ])
             .then(function () {
-                return databaseAdapter.renameProject('project8', 'newProject8');
+                return databaseAdapter.renameProject(projectId, newProjectId);
             })
             .then(function () {
                 throw new Error('should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.contain('Project already exists newProject8');
+                expect(err.message).to.contain('Project already exists ' + newProjectId);
             })
             .nodeify(done);
     });
 
     it('should fail to renameProject if it does not exist', function (done) {
-        databaseAdapter.renameProject('project9', 'newProject9')
+        var projectId = getProjectName('project9'),
+            newProjectId = getProjectName('newProject9');
+
+        databaseAdapter.renameProject(projectId, newProjectId)
             .then(function () {
                 throw new Error('should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.contain('Project does not exist project9');
+                expect(err.message).to.contain('Project does not exist ' + projectId);
             })
             .nodeify(done);
     });
 
     it('should duplicateProject if it exists and old does not', function (done) {
-        databaseAdapter.createProject('project10')
+        var projectId = getProjectName('project10'),
+            newProjectId = getProjectName('newProject10');
+
+        databaseAdapter.createProject(projectId)
             .then(function () {
-                return databaseAdapter.duplicateProject('project10', 'newProject10');
+                return databaseAdapter.duplicateProject(projectId, newProjectId);
             })
             .then(function () {
-                return databaseAdapter.openProject('newProject10');
+                return databaseAdapter.openProject(newProjectId);
             })
             .then(function () {
-                return databaseAdapter.openProject('project10');
+                return databaseAdapter.openProject(projectId);
             })
             .nodeify(done);
     });
 
     it('should fail to duplicateProject if new project already exists', function (done) {
+        var projectId = getProjectName('project11'),
+            newProjectId = getProjectName('newProject11');
+
         Q.allDone([
-            databaseAdapter.createProject('project11'),
-            databaseAdapter.createProject('newProject11')
+            databaseAdapter.createProject(projectId),
+            databaseAdapter.createProject(newProjectId)
         ])
             .then(function () {
-                return databaseAdapter.duplicateProject('project11', 'newProject11');
+                return databaseAdapter.duplicateProject(projectId, newProjectId);
             })
             .then(function () {
                 throw new Error('should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.contain('Project already exists newProject11');
+                expect(err.message).to.contain('Project already exists ' + newProjectId);
             })
             .nodeify(done);
     });
 
     it('should fail to duplicateProject if it does not exist', function (done) {
-        databaseAdapter.duplicateProject('project12', 'newProject12')
+        var projectId = getProjectName('project12'),
+            newProjectId = getProjectName('newProject12');
+
+        databaseAdapter.duplicateProject(projectId, newProjectId)
             .then(function () {
                 throw new Error('should have failed!');
             })
             .catch(function (err) {
-                expect(err.message).to.contain('Project does not exist project12');
+                expect(err.message).to.contain('Project does not exist ' + projectId);
             })
             .nodeify(done);
     });
@@ -457,7 +493,7 @@ function genCreateOpenDeleteRenameProject(databaseAdapter, Q, expect) {
 function genDatabaseClosedErrors(databaseAdapter, Q, expect) {
 
     it('should fail to createProject', function (done) {
-        databaseAdapter.createProject('project')
+        databaseAdapter.createProject(getProjectName('project'))
             .then(function () {
                 throw new Error('should have failed!');
             })
@@ -468,7 +504,7 @@ function genDatabaseClosedErrors(databaseAdapter, Q, expect) {
     });
 
     it('should fail to openProject', function (done) {
-        databaseAdapter.openProject('project')
+        databaseAdapter.openProject(getProjectName('project'))
             .then(function () {
                 throw new Error('should have failed!');
             })
@@ -479,7 +515,7 @@ function genDatabaseClosedErrors(databaseAdapter, Q, expect) {
     });
 
     it('should fail to deleteProject', function (done) {
-        databaseAdapter.deleteProject('project')
+        databaseAdapter.deleteProject(getProjectName('project'))
             .then(function () {
                 throw new Error('should have failed!');
             })
@@ -490,7 +526,7 @@ function genDatabaseClosedErrors(databaseAdapter, Q, expect) {
     });
 
     it('should fail to renameProject', function (done) {
-        databaseAdapter.renameProject('project')
+        databaseAdapter.renameProject(getProjectName('project'))
             .then(function () {
                 throw new Error('should have failed!');
             })
@@ -501,7 +537,7 @@ function genDatabaseClosedErrors(databaseAdapter, Q, expect) {
     });
 
     it('should fail to duplicateProject', function (done) {
-        databaseAdapter.duplicateProject('project')
+        databaseAdapter.duplicateProject(getProjectName('project'))
             .then(function () {
                 throw new Error('should have failed!');
             })
@@ -520,7 +556,7 @@ function genDatabaseClosedErrors(databaseAdapter, Q, expect) {
 function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
 
     it('should insert an object', function (done) {
-        databaseAdapter.createProject('project1')
+        databaseAdapter.createProject(getProjectName('project1'))
             .then(function (project) {
                 return project.insertObject({a: 1, b: 2, _id: '#ab12'});
             })
@@ -529,7 +565,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
 
     it('should insert same object twice [one-by-one]', function (done) {
         var project;
-        databaseAdapter.createProject('project2')
+        databaseAdapter.createProject(getProjectName('project2'))
             .then(function (project_) {
                 project = project_;
                 return project.insertObject({a: 1, b: 2, _id: '#ab12'});
@@ -541,7 +577,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
     });
 
     it('should insert same object twice', function (done) {
-        databaseAdapter.createProject('project3')
+        databaseAdapter.createProject(getProjectName('project3'))
             .then(function (project) {
                 return Q.allDone([
                     project.insertObject({a: 1, b: 2, _id: '#ab12'}),
@@ -553,7 +589,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
 
     it('should fail to insert same hash with different object', function (done) {
         var project;
-        databaseAdapter.createProject('project4')
+        databaseAdapter.createProject(getProjectName('project4'))
             .then(function (project_) {
                 project = project_;
                 return project.insertObject({a: 1, b: 2, _id: '#ab12'});
@@ -577,8 +613,8 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
 
     it('should insert same hash with different object in two projects', function (done) {
         Q.allDone([
-            databaseAdapter.createProject('project5'),
-            databaseAdapter.createProject('project6')
+            databaseAdapter.createProject(getProjectName('project5')),
+            databaseAdapter.createProject(getProjectName('project6'))
         ])
             .then(function (projects) {
                 return Q.allDone([
@@ -590,7 +626,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
     });
 
     it('should fail to insert invalid hashed object', function (done) {
-        databaseAdapter.createProject('project7')
+        databaseAdapter.createProject(getProjectName('project7'))
             .then(function (project) {
                 return project.insertObject({a: 1, b: 2, _id: 'ab12'});
             })
@@ -604,7 +640,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
     });
 
     it('should fail to insert non object', function (done) {
-        databaseAdapter.createProject('project8')
+        databaseAdapter.createProject(getProjectName('project8'))
             .then(function (project) {
                 return project.insertObject('This is not an object');
             })
@@ -619,7 +655,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
 
     it('should insert and load object', function (done) {
         var project;
-        databaseAdapter.createProject('project9')
+        databaseAdapter.createProject(getProjectName('project9'))
             .then(function (project_) {
                 project = project_;
                 return project.insertObject({a: 1, b: 2, _id: '#ab12'});
@@ -634,7 +670,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
     });
 
     it('should fail to load non-existing object', function (done) {
-        databaseAdapter.createProject('project10')
+        databaseAdapter.createProject(getProjectName('project10'))
             .then(function (project) {
                 return project.loadObject('#ab12');
             })
@@ -648,7 +684,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
     });
 
     it('should fail to load non string hash', function (done) {
-        databaseAdapter.createProject('project11')
+        databaseAdapter.createProject(getProjectName('project11'))
             .then(function (project) {
                 return project.loadObject(42);
             })
@@ -662,7 +698,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
     });
 
     it('should fail to load invalid hash', function (done) {
-        databaseAdapter.createProject('project12')
+        databaseAdapter.createProject(getProjectName('project12'))
             .then(function (project) {
                 return project.loadObject('123');
             })
@@ -678,7 +714,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
     it('should insert one commit and return it using getCommits', function (done) {
         var project,
             commitObj = {_id: '#commitHash', time: 1, type: 'commit'};
-        databaseAdapter.createProject('project13')
+        databaseAdapter.createProject(getProjectName('project13'))
             .then(function (project_) {
                 project = project_;
                 return project.insertObject(commitObj);
@@ -698,7 +734,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
             commitObj2 = {_id: '#commitHash2', time: 2, type: 'commit'},
             commitObj3 = {_id: '#commitHash3', time: 3, type: 'commit'};
 
-        databaseAdapter.createProject('project14')
+        databaseAdapter.createProject(getProjectName('project14'))
             .then(function (project_) {
                 project = project_;
                 return Q.allDone([
@@ -722,7 +758,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
             commitObj2 = {_id: '#commitHash2', time: 2, type: 'commit'},
             commitObj3 = {_id: '#commitHash3', time: 3, type: 'commit'};
 
-        databaseAdapter.createProject('project15')
+        databaseAdapter.createProject(getProjectName('project15'))
             .then(function (project_) {
                 project = project_;
                 return Q.allDone([
@@ -746,7 +782,7 @@ function genInsertLoadAndCommits(databaseAdapter, Q, expect) {
             commitObj2 = {_id: '#commitHash2', time: 2},
             commitObj3 = {_id: '#commitHash3', time: 3};
 
-        databaseAdapter.createProject('project16')
+        databaseAdapter.createProject(getProjectName('project16'))
             .then(function (project_) {
                 project = project_;
                 return Q.allDone([
@@ -774,7 +810,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should create branch with setBranchHash when oldHash is empty and getBranchHash and getHash', function (done) {
         var project;
-        databaseAdapter.createProject('project0')
+        databaseAdapter.createProject(getProjectName('project0'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#newHash');
@@ -789,7 +825,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
     });
 
     it('getBranches should get empty object when no branches inserted', function (done) {
-        databaseAdapter.createProject('project1')
+        databaseAdapter.createProject(getProjectName('project1'))
             .then(function (project) {
                 return project.getBranches();
             })
@@ -801,7 +837,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should create branch with setBranchHash when oldHash is empty', function (done) {
         var project;
-        databaseAdapter.createProject('project2')
+        databaseAdapter.createProject(getProjectName('project2'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#newHash');
@@ -817,7 +853,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should create and return two branches setBranchHash', function (done) {
         var project;
-        databaseAdapter.createProject('project3')
+        databaseAdapter.createProject(getProjectName('project3'))
             .then(function (project_) {
                 project = project_;
                 return Q.allDone([
@@ -836,7 +872,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should return branch hash mismatch when creating branch while it exists', function (done) {
         var project;
-        databaseAdapter.createProject('project4')
+        databaseAdapter.createProject(getProjectName('project4'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#startHash');
@@ -860,7 +896,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should getBranchHash for existing branch', function (done) {
         var project;
-        databaseAdapter.createProject('project5')
+        databaseAdapter.createProject(getProjectName('project5'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#newHash');
@@ -876,7 +912,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should getBranchHash for non-existing branch and return empty string', function (done) {
         var project;
-        databaseAdapter.createProject('project6')
+        databaseAdapter.createProject(getProjectName('project6'))
             .then(function (project_) {
                 project = project_;
                 return project.getBranchHash('master');
@@ -889,7 +925,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should create and delete a branch', function (done) {
         var project;
-        databaseAdapter.createProject('project7')
+        databaseAdapter.createProject(getProjectName('project7'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#newHash');
@@ -908,7 +944,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should return branch hash mismatch when deleting branch with wrong oldhash', function (done) {
         var project;
-        databaseAdapter.createProject('project8')
+        databaseAdapter.createProject(getProjectName('project8'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#newHash');
@@ -927,7 +963,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should resolve when passing same hash and it matches old', function (done) {
         var project;
-        databaseAdapter.createProject('project9')
+        databaseAdapter.createProject(getProjectName('project9'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#newHash');
@@ -940,7 +976,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should return branch hash mismatch when passing same hash and it does not match', function (done) {
         var project;
-        databaseAdapter.createProject('project10')
+        databaseAdapter.createProject(getProjectName('project10'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#newHash');
@@ -959,7 +995,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should update the hash if oldhash matches', function (done) {
         var project;
-        databaseAdapter.createProject('project11')
+        databaseAdapter.createProject(getProjectName('project11'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#startHash');
@@ -978,7 +1014,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should return branch hash mismatch when passing a hash and it does not match', function (done) {
         var project;
-        databaseAdapter.createProject('project12')
+        databaseAdapter.createProject(getProjectName('project12'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#newHash');
@@ -1006,7 +1042,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
             commitObj2 = {_id: '#commitHash2', time: 2, type: 'commit'},
             commitObj3 = {_id: '#commitHash3', time: 3, type: 'commit'};
 
-        databaseAdapter.createProject('project13')
+        databaseAdapter.createProject(getProjectName('project13'))
             .then(function (project_) {
                 project = project_;
                 return Q.allDone([
@@ -1023,10 +1059,10 @@ function genBranchOperations(databaseAdapter, Q, expect) {
                 return project.closeProject();
             })
             .then(function () {
-                return databaseAdapter.renameProject('project13', 'newProject13');
+                return databaseAdapter.renameProject(getProjectName('project13'), getProjectName('newProject13'));
             })
             .then(function () {
-                return databaseAdapter.openProject('newProject13');
+                return databaseAdapter.openProject(getProjectName('newProject13'));
             })
             .then(function (newProject) {
                 return Q.allDone([
@@ -1044,7 +1080,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
     });
 
     it('should succeed in deleting branch that did not exist', function (done) {
-        databaseAdapter.createProject('project14')
+        databaseAdapter.createProject(getProjectName('project14'))
             .then(function (project) {
                 return project.setBranchHash('doesNotExist', '', '');
             })
@@ -1052,7 +1088,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
     });
 
     it('should succeed in deleting branch that did not exist provided a hash', function (done) {
-        databaseAdapter.createProject('project15')
+        databaseAdapter.createProject(getProjectName('project15'))
             .then(function (project) {
                 return project.setBranchHash('doesNotExist', '#someHash', '');
             })
@@ -1061,7 +1097,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should fail to delete when hash mismatch', function (done) {
         var project;
-        databaseAdapter.createProject('project16')
+        databaseAdapter.createProject(getProjectName('project16'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#startHash');
@@ -1089,7 +1125,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should fail to update when hash mismatch', function (done) {
         var project;
-        databaseAdapter.createProject('project17')
+        databaseAdapter.createProject(getProjectName('project17'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '', '#startHash');
@@ -1113,7 +1149,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
 
     it('should fail to update if it does not exist', function (done) {
         var project;
-        databaseAdapter.createProject('project18')
+        databaseAdapter.createProject(getProjectName('project18'))
             .then(function (project_) {
                 project = project_;
                 return project.setBranchHash('master', '#someOtherHash', '#shouldNotBeSet');
@@ -1138,7 +1174,7 @@ function genBranchOperations(databaseAdapter, Q, expect) {
             commitObj2 = {_id: '#commitHash2', time: 2, type: 'commit'},
             commitObj3 = {_id: '#commitHash3', time: 3, type: 'commit'};
 
-        databaseAdapter.createProject('project19')
+        databaseAdapter.createProject(getProjectName('project19'))
             .then(function (project_) {
                 project = project_;
                 return Q.allDone([
@@ -1155,12 +1191,12 @@ function genBranchOperations(databaseAdapter, Q, expect) {
                 return project.closeProject();
             })
             .then(function () {
-                return databaseAdapter.duplicateProject('project19', 'newProject19');
+                return databaseAdapter.duplicateProject(getProjectName('project19'), getProjectName('newProject19'));
             })
             .then(function () {
                 return Q.allDone([
-                    databaseAdapter.openProject('newProject19'),
-                    databaseAdapter.openProject('project19')
+                    databaseAdapter.openProject(getProjectName('newProject19')),
+                    databaseAdapter.openProject(getProjectName('project19'))
                 ]);
             })
             .then(function (result) {
@@ -1194,7 +1230,7 @@ function genTagOperations(databaseAdapter, Q, expect) {
 
     it('should create a tag if it does not exist', function (done) {
         var project;
-        databaseAdapter.createProject('project1')
+        databaseAdapter.createProject(getProjectName('project1'))
             .then(function (project_) {
                 project = project_;
                 return project.createTag('tag1', '#someHash');
@@ -1212,7 +1248,7 @@ function genTagOperations(databaseAdapter, Q, expect) {
 
     it('should create and delete', function (done) {
         var project;
-        databaseAdapter.createProject('project2')
+        databaseAdapter.createProject(getProjectName('project2'))
             .then(function (project_) {
                 project = project_;
                 return project.createTag('tag1', '#someHash');
@@ -1238,7 +1274,7 @@ function genTagOperations(databaseAdapter, Q, expect) {
 
     it('should fail to create a tag if it already exists', function (done) {
         var project;
-        databaseAdapter.createProject('project3')
+        databaseAdapter.createProject(getProjectName('project3'))
             .then(function (project_) {
                 project = project_;
                 return project.createTag('tag1', '#someHash');
@@ -1263,7 +1299,7 @@ function genTagOperations(databaseAdapter, Q, expect) {
 
     it('should delete if not exist', function (done) {
         var project;
-        databaseAdapter.createProject('project4')
+        databaseAdapter.createProject(getProjectName('project4'))
             .then(function (project_) {
                 project = project_;
                 return project.createTag('tag1', '#someHash');
@@ -1284,7 +1320,7 @@ function genTagOperations(databaseAdapter, Q, expect) {
 
     it('should delete if not exist and no tags created', function (done) {
         var project;
-        databaseAdapter.createProject('project5')
+        databaseAdapter.createProject(getProjectName('project5'))
             .then(function (project_) {
                 project = project_;
 
@@ -1301,7 +1337,7 @@ function genTagOperations(databaseAdapter, Q, expect) {
 
     it('should getTags if no created', function (done) {
         var project;
-        databaseAdapter.createProject('project6')
+        databaseAdapter.createProject(getProjectName('project6'))
             .then(function (project_) {
                 project = project_;
                 return project.getTags();
