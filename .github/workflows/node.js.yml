@@ -13,28 +13,28 @@ jobs:
       fail-fast: false
       matrix:
         node: [20]
-        mongodb-version: [4.4]
+        mongodb-version: [8]
         python-version: [3.8]
         redis-version: [6]
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
       - name: Use Node.js {{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - name: Start MongoDB ${{ matrix.mongodb-version }}
-        uses: supercharge/mongodb-github-action@1.10.0
+        uses: supercharge/mongodb-github-action@1.12.1
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
       - name: Start Redis ${{ matrix.redis-version }}
-        uses: supercharge/redis-github-action@1.8.0
+        uses: supercharge/redis-github-action@1.8.1
         with:
           redis-version: ${{ matrix.redis-version }}
       - name: Chrome

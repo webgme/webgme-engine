@@ -21,7 +21,7 @@ describe('CorePlugins', function () {
             'AddOnGenerator',
             'ConfigurationArtifact',
             'DecoratorGenerator',
-            'ExecutorPlugin',
+            // 'ExecutorPlugin',
             'ImportV1',
             'MergeExample',
             'MetaGMEParadigmImporter',
@@ -50,7 +50,7 @@ describe('CorePlugins', function () {
         ],
 
         pluginsShouldFail = [
-            'ExecutorPlugin',
+            // 'ExecutorPlugin',
             'MergeExample',
             'MetaGMEParadigmImporter',
             'MultipleMainCallbackCalls',
@@ -136,7 +136,8 @@ describe('CorePlugins', function () {
             expect(err).to.equal(null, err && err.message);
             // As pluginNames contains unique names, we can check that each is
             // in the response and the response is the proper length
-            expect(res.body.length).to.equal(pluginNames.length + 2); // Accounting for Abort/Wait plugins
+            // Accounting for Abort/Wait/Executor plugins
+            expect(res.body.length).to.equal(pluginNames.length + 3);
             done();
         });
     });
