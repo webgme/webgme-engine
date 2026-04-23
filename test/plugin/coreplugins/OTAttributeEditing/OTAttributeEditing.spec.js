@@ -24,7 +24,9 @@ describe('OTAttributeEditing Plugin', function () {
         safeStorage;
 
     before(function (done) {
-        gmeConfig.socketIO.clientOptions.transports = ['websocket'];
+        // This fails with newer versions of node (22+),
+        // just let socket-io pick the transport.
+        // gmeConfig.socketIO.clientOptions.transports = ['websocket'];
         wr = new WorkerRequests(logger, gmeConfig);
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
