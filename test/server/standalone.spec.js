@@ -14,10 +14,7 @@ describe('standalone server', function () {
 
         should = testFixture.should,
         expect = testFixture.expect,
-        superagent = testFixture.superagent,
         Q = testFixture.Q,
-
-        agent = superagent.agent(),
 
         serverBaseUrl,
 
@@ -25,77 +22,25 @@ describe('standalone server', function () {
         i,
         j;
 
-    // describe('[https]', function () {
-    //     var nodeTLSRejectUnauthorized;
+    function buildUrl(path, query) {
+        var url = new URL(path || '/', serverBaseUrl);
 
-    //     before(function () {
-    //         nodeTLSRejectUnauthorized = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-    //         process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    //     });
+        if (query) {
+            Object.keys(query).forEach(function (key) {
+                url.searchParams.set(key, query[key]);
+            });
+        }
 
-    //     after(function () {
-    //         process.env.NODE_TLS_REJECT_UNAUTHORIZED = nodeTLSRejectUnauthorized;
-    //     });
+        return url.toString();
+    }
 
-    //     it('should get main page with an https reverse proxy', function (done) {
-    //         var gmeConfig = testFixture.getGmeConfig(),
-    //             httpProxy = require('http-proxy'),
-    //             path = require('path'),
-    //             proxyServerPort = gmeConfig.server.port - 1,
-    //             server,
-    //             proxy;
-
-    //         server = WebGME.standaloneServer(gmeConfig);
-    //         //
-    //         // Create the HTTPS proxy server in front of a HTTP server
-    //         //
-    //         proxy = httpProxy.createServer({
-    //             target: {
-    //                 host: 'localhost',
-    //                 port: gmeConfig.server.port
-    //             },
-    //             ssl: {
-    //                 key: fs.readFileSync(path.join(__dirname, '..', 'certificates', 'sample-key.pem'), 'utf8'),
-    //                 cert: fs.readFileSync(path.join(__dirname, '..', 'certificates', 'sample-cert.pem'), 'utf8')
-    //             }
-    //         });
-
-    //         server.start(function (err) {
-    //             if (err) {
-    //                 done(err);
-    //                 return;
-    //             }
-    //             proxy.listen(proxyServerPort, function (err) {
-    //                 if (err) {
-    //                     done(err);
-    //                     return;
-    //                 }
-
-    //                 agent.get('https://localhost:' + proxyServerPort + '/index.html').end(function (err, res) {
-    //                     var err0;
-    //                     if (err) {
-    //                         done(err);
-    //                         return;
-    //                     }
-
-    //                     try {
-    //                         should.equal(res.status, 200, err);
-    //                         should.equal(/WebGME/.test(res.text), true, 'Index page response must contain WebGME');
-    //                     } catch (e) {
-    //                         err0 = e;
-    //                     }
-
-    //                     server.stop(function (err) {
-    //                         proxy.close(function (err1) {
-    //                             done(err0 || err || err1);
-    //                         });
-    //                     });
-    //                 });
-    //             });
-    //         });
-    //     });
-    // });
-
+    async function fetchGet(path, options) {
+        options = options || {};
+        return fetch(buildUrl(path, options.query), {
+            method: 'GET',
+            redirect: options.redirect || 'follow'
+        });
+    }
 
     scenarios = [{
         type: 'http',
@@ -236,10 +181,6 @@ describe('standalone server', function () {
                     .nodeify(done);
             });
 
-            beforeEach(function () {
-                agent = superagent.agent();
-            });
-
             after(function (done) {
                 setTimeout(() => {
                     server.stop(done);
@@ -249,45 +190,30 @@ describe('standalone server', function () {
             function addTest(requestTest) {
                 var url = requestTest.url || '/',
                     redirectText = requestTest.redirectUrl ? ' redirects to ' + requestTest.redirectUrl : ' ';
-                it('returns ' + requestTest.code + ' for ' + url + redirectText, function (done) {
+                it('returns ' + requestTest.code + ' for ' + url + redirectText, async function () {
                     // TODO: add POST/DELETE etc support
-                    agent.get(serverBaseUrl + url).end(function (err, res) {
-                        if (err && err.message.indexOf('connect ECONNREFUSED') > -1) {
-                            //console.log('Is server running?', server.isRunning());
-                            done(err);
-                            return;
-                        }
+                    var res,
+                        location;
 
-                        try {
-                            should.equal(res.status, requestTest.code, err);
-
-                            if (requestTest.redirectUrl) {
-                                // redirectedagent
-                                should.equal(res.status, 200);
-                                if (res.headers.location) {
-                                    should.equal(res.headers.location, requestTest.redirectUrl);
-                                }
-                                should.not.equal(res.headers.location, url);
-                                logger.debug(res.headers.location, url, requestTest.redirectUrl);
-                                should.equal(res.redirects.length, 1);
-                            } else {
-                                // was not redirected
-                                //should.equal(res.res.url, url); // FIXME: should server response set the url?
-                                if (res.headers.location) {
-                                    should.equal(res.headers.location, url);
-                                }
-                                if (res.res.url) {
-                                    should.equal(res.res.url, url);
-                                }
-
-                                should.equal(res.redirects.length, 0);
-                            }
-
-                            done();
-                        } catch (e) {
-                            done(e);
-                        }
+                    res = await fetchGet(url, {
+                        redirect: 'manual'
                     });
+
+                    if (requestTest.redirectUrl) {
+                        // redirected response (do not follow redirects)
+                        should.equal(res.status, 302);
+                        location = res.headers.get('location');
+                        should.equal(location && location.indexOf(requestTest.redirectUrl) > -1, true);
+                        should.not.equal(location, url);
+                        logger.debug(location, url, requestTest.redirectUrl);
+                    } else {
+                        // was not redirected
+                        should.equal(res.status, requestTest.code);
+                        location = res.headers.get('location');
+                        if (location) {
+                            should.equal(location, url);
+                        }
+                    }
                 });
             }
 
@@ -323,60 +249,55 @@ describe('standalone server', function () {
             server.stop(done);
         });
 
-        it('should return 404 /decorators/DefaultDecorator/DefaultDecorator.js', function (done) {
-            agent.get(serverBaseUrl + '/decorators/DefaultDecorator/DefaultDecorator.js').end(function (err, res) {
-                should.equal(res.status, 404, err);
-                done();
-            });
+        it('should return 404 /decorators/DefaultDecorator/DefaultDecorator.js', async function () {
+            var res = await fetchGet('/decorators/DefaultDecorator/DefaultDecorator.js');
+            should.equal(res.status, 404);
         });
 
-        it('should list svgs at /assets/decoratorSVGList.json', function (done) {
-            agent.get(serverBaseUrl + '/assets/decoratorSVGList.json').end(function (err, res) {
-                expect(res.status).to.equal(200);
-                expect(res.body).to.include.members([
-                    'default.svg',
-                    'extra-svgs/level1.svg',
-                    'extra-svgs/nested/level2.svg',
-                    'extra-svgs/nested/nested/level3.svg'
-                ]);
+        it('should list svgs at /assets/decoratorSVGList.json', async function () {
+            var res = await fetchGet('/assets/decoratorSVGList.json'),
+                body = await res.json();
 
-                expect(Object.keys(res.body).length).to.equal(4);
-                done();
-            });
+            expect(res.status).to.equal(200);
+            expect(body).to.include.members([
+                'default.svg',
+                'extra-svgs/level1.svg',
+                'extra-svgs/nested/level2.svg',
+                'extra-svgs/nested/nested/level3.svg'
+            ]);
+
+            expect(Object.keys(body).length).to.equal(4);
         });
 
-        it('should return svg file if exists /assets/DecoratorSVG/Attribute.svg', function (done) {
-            agent.get(serverBaseUrl + '/assets/DecoratorSVG/default.svg').end(function (err, res) {
-                expect(res.status).to.equal(200);
-                expect(res.body.toString('utf8')).to.contain('</svg>');
-                done();
-            });
+        it('should return svg file if exists /assets/DecoratorSVG/Attribute.svg', async function () {
+            var res = await fetchGet('/assets/DecoratorSVG/default.svg'),
+                body = await res.text();
+
+            expect(res.status).to.equal(200);
+            expect(body).to.contain('</svg>');
         });
 
-        it('should return svg file if exists /assets/DecoratorSVG/extra-svgs/level1.svg', function (done) {
-            agent.get(serverBaseUrl + '/assets/DecoratorSVG/extra-svgs/level1.svg').end(function (err, res) {
-                expect(res.status).to.equal(200);
-                expect(res.body.toString('utf8')).to.contain('</svg>');
-                done();
-            });
+        it('should return svg file if exists /assets/DecoratorSVG/extra-svgs/level1.svg', async function () {
+            var res = await fetchGet('/assets/DecoratorSVG/extra-svgs/level1.svg'),
+                body = await res.text();
+
+            expect(res.status).to.equal(200);
+            expect(body).to.contain('</svg>');
         });
 
         it('should return svg file if exists /assets/DecoratorSVG/extra-svgs/nested/nested/level3.svg',
-            function (done) {
-                agent.get(serverBaseUrl + '/assets/DecoratorSVG/extra-svgs/nested/nested/level3.svg')
-                    .end(function (err, res) {
-                        expect(res.status).to.equal(200);
-                        expect(res.body.toString('utf8')).to.contain('</svg>');
-                        done();
-                    });
+            async function () {
+                var res = await fetchGet('/assets/DecoratorSVG/extra-svgs/nested/nested/level3.svg'),
+                    body = await res.text();
+
+                expect(res.status).to.equal(200);
+                expect(body).to.contain('</svg>');
             }
         );
 
-        it('should return 404 if svg file does not exist /assets/DecoratorSVG/NoSuchSvg.svg', function (done) {
-            agent.get(serverBaseUrl + '/assets/DecoratorSVG/NoSuchSvg.sv').end(function (err, res) {
-                expect(res.status).to.equal(404);
-                done();
-            });
+        it('should return 404 if svg file does not exist /assets/DecoratorSVG/NoSuchSvg.svg', async function () {
+            var res = await fetchGet('/assets/DecoratorSVG/NoSuchSvg.sv');
+            expect(res.status).to.equal(404);
         });
     });
 
@@ -401,22 +322,22 @@ describe('standalone server', function () {
         });
 
         it('should return default svg file if exists and relative path given /assets/DecoratorSVG/default.svg',
-            function (done) {
-                agent.get(serverBaseUrl + '/assets/DecoratorSVG/extra-svgs/level1.svg').end(function (err, res) {
-                    expect(res.status).to.equal(200);
-                    expect(res.body.toString('utf8')).to.contain('</svg>');
-                    done();
-                });
+            async function () {
+                var res = await fetchGet('/assets/DecoratorSVG/extra-svgs/level1.svg'),
+                    body = await res.text();
+
+                expect(res.status).to.equal(200);
+                expect(body).to.contain('</svg>');
             }
         );
 
         it('should return svg file if exists and relative path given /assets/DecoratorSVG/extra-svgs/level1.svg',
-            function (done) {
-                agent.get(serverBaseUrl + '/assets/DecoratorSVG/extra-svgs/level1.svg').end(function (err, res) {
-                    expect(res.status).to.equal(200);
-                    expect(res.body.toString('utf8')).to.contain('</svg>');
-                    done();
-                });
+            async function () {
+                var res = await fetchGet('/assets/DecoratorSVG/extra-svgs/level1.svg'),
+                    body = await res.text();
+
+                expect(res.status).to.equal(200);
+                expect(body).to.contain('</svg>');
             }
         );
     });
@@ -440,36 +361,22 @@ describe('standalone server', function () {
                 server.stop(done);
             });
 
-            it('should redirect to given logOutUrl when no referrer set', function (done) {
-                agent.get(serverBaseUrl + '/logout').end(function (err, res) {
-                    try {
-                        expect(err).to.equal(null);
-                        expect(res.status).to.equal(200);
-                        expect(res.redirects.length).to.equal(1);
-                        expect(res.redirects[0]).to.equal(serverBaseUrl + '/profile/login');
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
-                });
+            it('should redirect to given logOutUrl when no referrer set', async function () {
+                var res = await fetchGet('/logout', {redirect: 'manual'});
+                expect(res.status).to.equal(302);
+                expect(res.headers.get('location')).to.equal('/profile/login');
             });
 
-            it('should redirect to logOutUrl even when redirectUrl set', function (done) {
-                agent.get(serverBaseUrl + '/logout')
-                    .query({
+            it('should redirect to logOutUrl even when redirectUrl set', async function () {
+                var res = await fetchGet('/logout', {
+                    redirect: 'manual',
+                    query: {
                         redirectUrl: '/gmeConfig.json'
-                    })
-                    .end(function (err, res) {
-                        try {
-                            expect(err).to.equal(null);
-                            expect(res.status).to.equal(200);
-                            expect(res.redirects.length).to.equal(1);
-                            expect(res.redirects[0]).to.equal(serverBaseUrl + '/profile/login');
-                            done();
-                        } catch (e) {
-                            done(e);
-                        }
-                    });
+                    }
+                });
+
+                expect(res.status).to.equal(302);
+                expect(res.headers.get('location')).to.equal('/profile/login');
             });
         });
 
@@ -492,36 +399,22 @@ describe('standalone server', function () {
                 server.stop(done);
             });
 
-            it('should redirect to given logInUrl when no referrer set', function (done) {
-                agent.get(serverBaseUrl + '/logout').end(function (err, res) {
-                    try {
-                        expect(err).to.equal(null);
-                        expect(res.status).to.equal(200);
-                        expect(res.redirects.length).to.equal(1);
-                        expect(res.redirects[0]).to.equal(serverBaseUrl + '/profile/login');
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
-                });
+            it('should redirect to given logInUrl when no referrer set', async function () {
+                var res = await fetchGet('/logout', {redirect: 'manual'});
+                expect(res.status).to.equal(302);
+                expect(res.headers.get('location')).to.equal('/profile/login');
             });
 
-            it('should redirect to redirectUrl when query set', function (done) {
-                agent.get(serverBaseUrl + '/logout')
-                    .query({
+            it('should redirect to redirectUrl when query set', async function () {
+                var res = await fetchGet('/logout', {
+                    redirect: 'manual',
+                    query: {
                         redirectUrl: '/gmeConfig.json'
-                    })
-                    .end(function (err, res) {
-                        try {
-                            expect(err).to.equal(null);
-                            expect(res.status).to.equal(200);
-                            expect(res.redirects.length).to.equal(1);
-                            expect(res.redirects[0]).to.equal(serverBaseUrl + '/gmeConfig.json');
-                            done();
-                        } catch (e) {
-                            done(e);
-                        }
-                    });
+                    }
+                });
+
+                expect(res.status).to.equal(302);
+                expect(res.headers.get('location')).to.equal('/gmeConfig.json');
             });
         });
 
@@ -544,34 +437,22 @@ describe('standalone server', function () {
                 server.stop(done);
             });
 
-            it('should redirect to given logOutUrl when no referrer set', function (done) {
-                agent.get(serverBaseUrl + '/logout').end(function (err, res) {
-                    try {
-                        expect(err).to.equal(null);
-                        expect(res.status).to.equal(200);
-                        expect(res.redirects[0]).to.equal(logOutUrl);
-                        done();
-                    } catch (e) {
-                        done(e);
-                    }
-                });
+            it('should redirect to given logOutUrl when no referrer set', async function () {
+                var res = await fetchGet('/logout', {redirect: 'manual'});
+                expect(res.status).to.equal(302);
+                expect(res.headers.get('location')).to.equal(logOutUrl);
             });
 
-            it('should redirect to logOutUrl even when redirectUrl set', function (done) {
-                agent.get(serverBaseUrl + '/logout')
-                    .query({
+            it('should redirect to logOutUrl even when redirectUrl set', async function () {
+                var res = await fetchGet('/logout', {
+                    redirect: 'manual',
+                    query: {
                         redirectUrl: '/gmeConfig.json'
-                    })
-                    .end(function (err, res) {
-                        try {
-                            expect(err).to.equal(null);
-                            expect(res.status).to.equal(200);
-                            expect(res.redirects[0]).to.equal(logOutUrl);
-                            done();
-                        } catch (e) {
-                            done(e);
-                        }
-                    });
+                    }
+                });
+
+                expect(res.status).to.equal(302);
+                expect(res.headers.get('location')).to.equal(logOutUrl);
             });
         });
     });
