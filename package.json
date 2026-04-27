@@ -82,7 +82,7 @@
     "socket.io": "^2.5.0",
     "socket.io-client": "^2.5.0",
     "socket.io-redis": "^5.4.0",
-    "superagent": "^3.8.3",
+    "superagent": "^10.3.0",
     "underscore": "^1.13.6",
     "webgme-ot": "0.0.16",
     "webgme-rust": "0.1.0",
