@@ -28,7 +28,7 @@ describe('watchers documents', function () {
 
     before(function (done) {
         gmeConfig.authentication.enable = true;
-        gmeConfig.socketIO.clientOptions.transports = ['websocket'];
+        // gmeConfig.socketIO.clientOptions.transports = ['websocket'];
 
         testFixture.clearDBAndGetGMEAuth(gmeConfig)
             .then(function (gmeAuth_) {
@@ -67,14 +67,15 @@ describe('watchers documents', function () {
                 userTokens.user2 = res[1];
                 userTokens.userNoAccess = res[2];
                 userTokens.userRead = res[3];
-
-                server = WebGME.standaloneServer(gmeConfig);
                 return Q.allDone([
-                    Q.ninvoke(server, 'start'),
                     // Close connections since we don't need these anymore..
                     gmeAuth.unload(),
                     safeStorage.closeDatabase()
                 ]);
+            })
+            .then(function () {
+                server = WebGME.standaloneServer(gmeConfig);
+                return Q.ninvoke(server, 'start');
             })
             .nodeify(done);
     });

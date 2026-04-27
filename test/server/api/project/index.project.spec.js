@@ -1189,20 +1189,26 @@ describe('PROJECT REST API', function () {
             it('should getTags for project /projects/:ownerId/:projectId/tags', function (done) {
                 agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/tags')
                     .end(function (err, res) {
-                        expect(res.status).equal(200, err);
-                        expect(res.body).to.have.property('tag');
-
-                        done();
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(res.body).to.have.property('tag');
+                            done();
+                        } catch (e) {
+                            return done(e);
+                        }
                     });
             });
 
             it('should return commit for project /projects/:ownerId/:projectId/tags/:tagId', function (done) {
                 agent.get(server.getUrl() + '/api/projects/' + projectName2APIPath(projectName) + '/tags/tag')
                     .end(function (err, res) {
-                        expect(res.status).equal(200, err);
-                        expect(res.body.type).to.equal('commit');
-
-                        done();
+                        try {
+                            expect(res.status).equal(200, err);
+                            expect(res.body.type).to.equal('commit');
+                            done();
+                        } catch (e) {
+                            return done(e);
+                        }
                     });
             });
 
