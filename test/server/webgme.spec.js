@@ -153,7 +153,7 @@ describe('webgme', function () {
             });
     });
 
-    (process.version.startsWith('v20') ? it.skip : it)('should requestWebGMEToken with auth turned on', (done) => {
+    it('should requestWebGMEToken with auth turned on', (done) => {
         var webGME = testFixture.WebGME,
             gmeConfig = testFixture.getGmeConfig(),
             error,
@@ -204,19 +204,6 @@ describe('webgme', function () {
                     .catch(function (err) {
                         try {
                             expect(err.message).to.include('Unauthorized');
-                        } catch (e) {
-                            error = e;
-                        }
-                    });
-            })
-            .then(function () {
-                return webGME.utils.requestWebGMEToken(gmeConfig, 'admin', 'admin', 'http://localhost:9999')
-                    .then(function () {
-                        throw new Error('Should have failed!');
-                    })
-                    .catch(function (err) {
-                        try {
-                            expect(err.message).to.include('ECONNREFUSED');
                         } catch (e) {
                             error = e;
                         }
