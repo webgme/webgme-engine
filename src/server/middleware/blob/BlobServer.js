@@ -7,7 +7,8 @@
 
 'use strict';
 
-var mime = require('mime'),
+var mimeModule = require('mime'),
+    mime = mimeModule.getType ? mimeModule : mimeModule.default,
     BlobMetadata = requireJS('blob/BlobMetadata'),
     ASSERT = requireJS('common/util/assert'),
     express = require('express'),
