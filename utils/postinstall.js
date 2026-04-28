@@ -20,7 +20,11 @@ var path = require('path'),
     COMMON_LIBS = require(path.join(LIB_ROOT_DIR, 'COMMON_LIBS.json'));
 
 function browserifyModule(info) {
-    var b = browserify({
+    var requireTarget = info.requirePath || info.name,
+        requireOptions = {
+            expose: info.name
+        },
+        b = browserify({
             standalone: info.name
         }),
         result = {
@@ -29,7 +33,7 @@ function browserifyModule(info) {
         };
 
     console.log('Browserifying ' + info.name + ' into ' + LIB_ROOT_DIR + '');
-    b.require(info.name);
+    b.require(requireTarget, requireOptions);
 
     return ensureDir(result.outDir)
         .then(function () {
