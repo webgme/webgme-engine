@@ -9,7 +9,8 @@
 'use strict';
 
 var fs = require('fs'),
-    mime = require('mime'),
+    mimeModule = require('mime'),
+    mime = mimeModule.getType ? mimeModule : mimeModule.default,
     archiver = require('archiver'),
     Q = require('q'),
 

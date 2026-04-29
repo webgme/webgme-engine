@@ -4,7 +4,7 @@
   "description": "WebGME server and Client API without a GUI",
   "main": "index.js",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=20"
   },
   "scripts": {
     "start": "node ./src/bin/start_server.js",
@@ -47,32 +47,32 @@
     "@azure/msal-node": "^2.9.2",
     "adm-zip": "^0.5.10",
     "agentkeepalive": "^4.5.0",
-    "archiver": "^6.0.1",
+    "archiver": "^7",
     "aws-sdk": "^2.1443.0",
     "azure-ad-verify-token-commonjs": "^2.0.2",
-    "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.2",
+    "bcryptjs": "^3",
+    "body-parser": "^2",
     "browserify": "^17.0.0",
     "buffer-equal-constant-time": "^1.0.1",
     "chance": "^1.1.11",
     "commander": "^2.15.1",
     "compression": "^1.7.4",
     "connect-multiparty": "^2.2.0",
-    "content-disposition": "^0.5.4",
+    "content-disposition": "^1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "debug": "^4.3.4",
-    "ejs": "^3.1.9",
+    "ejs": "^5",
     "express": "^4.18.2",
     "import-fresh": "^3.3.0",
     "jsdoc": "^4.0.2",
     "jsonwebtoken": "^9.0.2",
     "method-override": "^3.0.0",
-    "mime": "^3.0.0",
+    "mime": "^4",
     "mongo-uri": "^0.1.2",
-    "mongodb": "^6.21.0",
+    "mongodb": "^7",
     "ncp": "^2.0.0",
-    "nodemailer": "^6.4.6",
+    "nodemailer": "^8",
     "pug": "^3.0.0",
     "q": "^1.5.1",
     "raml2html": "^7.8.0",
@@ -89,13 +89,13 @@
     "winston": "^2.4.7"
   },
   "devDependencies": {
-    "chai": "^4.3.8",
+    "chai": "^6",
     "eslint": "^8.47.0",
     "esprima": "^4.0.0",
-    "mocha": "^10.4.0",
+    "mocha": "^11",
     "msgpack-js": "^0.3.0",
     "nyc": "^15.1.0",
     "pkginfo": "^0.4.1",
-    "rimraf": "^5.0.7"
+    "rimraf": "^6"
   }
 }
