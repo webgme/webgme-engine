@@ -48,6 +48,8 @@ main = function (argv) {
         program = new Command(),
         syntaxFailure = false;
 
+    program.storeOptionsAsProperties();
+
     gmeConfig = require(path.join(process.cwd(), 'config'));
     logger = webgme.Logger.create('gme:bin:export', gmeConfig.bin.log, false);
     blobClient = new FSBlobClient(gmeConfig, logger.fork('BlobClient'));

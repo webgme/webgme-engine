@@ -110,8 +110,11 @@ main = function (argv) {
             }
         };
 
+    program.storeOptionsAsProperties();
+
     program
         .version('1.7.2')
+        .argument('<project-package-file>', 'Path to exported webgmex package')
         .usage('<project-package-file> [options]')
         .option('-m, --mongo-database-uri [url]',
             'URI of the MongoDB [by default we use the one from the configuration file]')
@@ -122,7 +125,15 @@ main = function (argv) {
             'the branch that should be created with the imported data [by default it is the \'master\']')
         .option('-w --overwrite [boolean]', 'if a project exist it will be deleted and created again')
         .option('-c --commit [string]', 'if given, the import will be a descendant of it')
-        .parse(argv);
+        .exitOverride();
+
+    try {
+        program.parse(argv);
+    } catch (e) {
+        program.outputHelp();
+        mainDeferred.reject(new SyntaxError('invalid argument'));
+        return mainDeferred.promise;
+    }
 
     if (program.mongoDatabaseUri) {
         // this line throws a TypeError for invalid databaseConnectionString

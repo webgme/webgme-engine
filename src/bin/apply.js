@@ -53,8 +53,14 @@ main = function (argv) {
             }
         };
 
+    // Commander v7+ no longer exposes options as direct properties by default
+    // (it prefers `program.opts()`), but this CLI and its tests read `program.projectName`,
+    // `program.target`, etc. Keep the legacy access pattern for backwards compatibility.
+    program.storeOptionsAsProperties();
+
     program
         .version('0.2.0')
+        .argument('<patch-file>', 'Path to patch json file')
         .usage('<patch-file> [options]')
         .option('-m, --mongo-database-uri [url]',
             'URI of the MongoDB [by default we use the one from the configuration file]')
@@ -63,7 +69,15 @@ main = function (argv) {
         .option('-o, --owner [string]', 'the owner of the project [by default, the user is the owner]')
         .option('-t, --target [branch/commit]', 'the target where we should apply the patch [mandatory]')
         .option('-n, --no-update', 'show if we should not update the branch [by default it is false]')
-        .parse(argv);
+        .exitOverride();
+
+    try {
+        program.parse(argv);
+    } catch (e) {
+        program.outputHelp();
+        mainDeferred.reject(new SyntaxError('invalid argument'));
+        return mainDeferred.promise;
+    }
 
     if (program.mongoDatabaseUri) {
         // this line throws a TypeError for invalid databaseConnectionString
