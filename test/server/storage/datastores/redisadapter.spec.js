@@ -24,7 +24,7 @@ describe('RedisAdapter', function () {
         before(function (done) {
             redisAdapter.openDatabase()
                 .then(function () {
-                    return Q.ninvoke(redisAdapter.client, 'flushdb');
+                    return redisAdapter.redisCommand('FLUSHDB');
                 })
                 .nodeify(done);
         });
@@ -46,7 +46,7 @@ describe('RedisAdapter', function () {
         before(function (done) {
             redisAdapter.openDatabase()
                 .then(function () {
-                    return Q.ninvoke(redisAdapter.client, 'flushdb');
+                    return redisAdapter.redisCommand('FLUSHDB');
                 })
                 .nodeify(done);
         });
@@ -64,7 +64,7 @@ describe('RedisAdapter', function () {
         before(function (done) {
             redisAdapter.openDatabase()
                 .then(function () {
-                    return Q.ninvoke(redisAdapter.client, 'flushdb');
+                    return redisAdapter.redisCommand('FLUSHDB');
                 })
                 .nodeify(done);
         });
@@ -82,7 +82,7 @@ describe('RedisAdapter', function () {
         before(function (done) {
             redisAdapter.openDatabase()
                 .then(function () {
-                    return Q.ninvoke(redisAdapter.client, 'flushdb');
+                    return redisAdapter.redisCommand('FLUSHDB');
                 })
                 .nodeify(done);
         });
