@@ -21,15 +21,29 @@ var exports = {},
 
 function EventGenerator() {
 
-    var pub = redis.createClient('redis://127.0.0.1:6379');
+    var pub = redis.createClient({url: 'redis://127.0.0.1:6379'}),
+        readyPromise = typeof pub.connect === 'function' ? pub.connect() : Promise.resolve();
 
     function stop() {
-        pub.quit();
+        readyPromise
+            .then(function () {
+                return pub.quit();
+            })
+            .catch(function () {
+                // ignore teardown errors in tests
+            });
     }
 
     function send(channel, eventType, eventData) {
         var msg = MSG.encode(['uid', {data: [eventType, eventData]}, {}]);
-        pub.publish(channel, msg);
+        readyPromise
+            .then(function () {
+                return pub.publish(channel, msg);
+            })
+            .catch(function (err) {
+                // eslint-disable-next-line no-console
+                console.error('failed to publish redis message in test fixture', err);
+            });
     }
 
     return {

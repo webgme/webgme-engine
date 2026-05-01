@@ -65,16 +65,30 @@ describe('Webhook Manager', function () {
     }
 
     function EventGeneratorRedis() {
-        var pub = redis.createClient('redis://127.0.0.1:6379');
+        var pub = redis.createClient({url: 'redis://127.0.0.1:6379'}),
+            readyPromise = typeof pub.connect === 'function' ? pub.connect() : Promise.resolve();
 
         function stop() {
-            pub.quit();
+            readyPromise
+                .then(function () {
+                    return pub.quit();
+                })
+                .catch(function () {
+                    // ignore teardown errors in tests
+                });
         }
 
         function send(eventType, eventData) {
             var msg = MSG.encode(['uid', {data: [eventType, eventData]}, {}]),
                 channel = 'socket.io#/#anything';
-            pub.publish(channel, msg);
+            readyPromise
+                .then(function () {
+                    return pub.publish(channel, msg);
+                })
+                .catch(function (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('failed to publish redis message in test fixture', err);
+                });
         }
 
         return {
@@ -94,7 +108,12 @@ describe('Webhook Manager', function () {
         it('should forward ' + event + ' event [' + type + ']', function (done) {
             var eventGenerator = EventGenerator === EventGeneratorRedis ? (new EventGenerator()) : EventGenerator,
                 eventData = {projectId: projectId, anything: 'really'},
+                handled = false,
                 hookListener = getHookListener(function (req) {
+                    if (handled) {
+                        return;
+                    }
+                    handled = true;
                     expect(req.body.event).to.equal(event);
                     expect(req.body.data).to.eql(eventData);
                     eventGenerator.stop();

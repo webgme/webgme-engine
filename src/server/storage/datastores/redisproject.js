@@ -38,7 +38,7 @@ function RedisProject(projectId, adapter) {
         } else if (!REGEXP.HASH.test(hash)) {
             deferred.reject(new Error('loadObject - invalid hash :' + hash));
         } else {
-            Q.ninvoke(adapter.client, 'hget', projectId, hash)
+            adapter.redisCommand('HGET', [projectId, hash])
                 .then(function (result) {
                     // Bulk string reply: the value associated with field,
                     // or nil when field is not present in the hash or key does not exist.
@@ -62,12 +62,12 @@ function RedisProject(projectId, adapter) {
         } else if (typeof object._id !== 'string' || !REGEXP.HASH.test(object._id)) {
             deferred.reject(new Error('object._id is not a valid hash.'));
         } else {
-            Q.ninvoke(adapter.client, 'hsetnx', projectId, object._id, JSON.stringify(object))
+            adapter.redisCommand('HSETNX', [projectId, object._id, JSON.stringify(object)])
                 .then(function (result) {
                     // 1 if field is a new field in the hash and value was set.
                     // 0 if field already exists in the hash and no operation was performed.
                     if (result === 0) {
-                        Q.ninvoke(adapter.client, 'hget', projectId, object._id)
+                        adapter.redisCommand('HGET', [projectId, object._id])
                             .then(function (objectStr) {
                                 var errMsg;
                                 if (CANON.stringify(object) === CANON.stringify(JSON.parse(objectStr))) {
@@ -88,8 +88,8 @@ function RedisProject(projectId, adapter) {
                             .catch(deferred.reject);
                     } else {
                         if (object.type === CONSTANTS.COMMIT_TYPE) {
-                            Q.ninvoke(adapter.client, 'hset', projectId + adapter.CONSTANTS.COMMITS,
-                                object._id, object.time)
+                            adapter.redisCommand('HSET', [projectId + adapter.CONSTANTS.COMMITS,
+                                object._id, object.time])
                                 .then(function () {
                                     deferred.resolve();
                                 })
@@ -105,7 +105,7 @@ function RedisProject(projectId, adapter) {
     };
 
     this.getBranches = function (callback) {
-        return Q.ninvoke(adapter.client, 'hgetall', projectId + adapter.CONSTANTS.BRANCHES)
+        return adapter.redisCommand('HGETALL', [projectId + adapter.CONSTANTS.BRANCHES])
             .then(function (result) {
                 return result || {};
             })
@@ -113,7 +113,7 @@ function RedisProject(projectId, adapter) {
     };
 
     this.getBranchHash = function (branch, callback) {
-        return Q.ninvoke(adapter.client, 'hget', projectId + adapter.CONSTANTS.BRANCHES, branch)
+        return adapter.redisCommand('HGET', [projectId + adapter.CONSTANTS.BRANCHES, branch])
             .then(function (branchHash) {
                 return branchHash || '';
             }).nodeify(callback);
@@ -124,7 +124,7 @@ function RedisProject(projectId, adapter) {
             branchesHashMap = projectId + adapter.CONSTANTS.BRANCHES;
 
         if (oldhash === newhash) {
-            Q.ninvoke(adapter.client, 'hget', branchesHashMap, branch)
+            adapter.redisCommand('HGET', [branchesHashMap, branch])
                 .then(function (branchHash) {
                     branchHash = branchHash || '';
                     if (branchHash === oldhash) {
@@ -135,10 +135,10 @@ function RedisProject(projectId, adapter) {
                 })
                 .catch(deferred.reject);
         } else if (newhash === '') {
-            Q.ninvoke(adapter.client, 'hget', branchesHashMap, branch)
+            adapter.redisCommand('HGET', [branchesHashMap, branch])
                 .then(function (branchHash) {
                     if (branchHash === oldhash) {
-                        Q.ninvoke(adapter.client, 'hdel', branchesHashMap, branch)
+                        adapter.redisCommand('HDEL', [branchesHashMap, branch])
                             .then(deferred.resolve);
                     } else if (branchHash === null) {
                         deferred.resolve();
@@ -148,7 +148,7 @@ function RedisProject(projectId, adapter) {
                 })
                 .catch(deferred.reject);
         } else if (oldhash === '') {
-            Q.ninvoke(adapter.client, 'hsetnx', branchesHashMap, branch, newhash)
+            adapter.redisCommand('HSETNX', [branchesHashMap, branch, newhash])
                 .then(function (result) {
                     // 1 if field is a new field in the hash and value was set.
                     // 0 if field already exists in the hash and no operation was performed.
@@ -160,10 +160,10 @@ function RedisProject(projectId, adapter) {
                 })
                 .catch(deferred.reject);
         } else {
-            Q.ninvoke(adapter.client, 'hget', branchesHashMap, branch)
+            adapter.redisCommand('HGET', [branchesHashMap, branch])
                 .then(function (branchHash) {
                     if (branchHash === oldhash) {
-                        Q.ninvoke(adapter.client, 'hset', branchesHashMap, branch, newhash)
+                        adapter.redisCommand('HSET', [branchesHashMap, branch, newhash])
                             .then(function () {
                                 deferred.resolve();
                             })
@@ -179,7 +179,7 @@ function RedisProject(projectId, adapter) {
     };
 
     this.getCommits = function (before, number, callback) {
-        return Q.ninvoke(adapter.client, 'hgetall', projectId + adapter.CONSTANTS.COMMITS)
+        return adapter.redisCommand('HGETALL', [projectId + adapter.CONSTANTS.COMMITS])
             .then(function (result) {
                 var i,
                     hashArray,
@@ -208,7 +208,7 @@ function RedisProject(projectId, adapter) {
 
                 if (hashArray.length > 0) {
                     hashArray.unshift(projectId);
-                    return Q.ninvoke(adapter.client, 'hmget', hashArray);
+                    return adapter.redisCommand('HMGET', hashArray);
                 } else {
                     return [];
                 }
@@ -224,7 +224,7 @@ function RedisProject(projectId, adapter) {
     this.createTag = function (name, commitHash, callback) {
         var deferred = Q.defer();
 
-        Q.ninvoke(adapter.client, 'hsetnx', projectId + adapter.CONSTANTS.TAGS, name, commitHash)
+        adapter.redisCommand('HSETNX', [projectId + adapter.CONSTANTS.TAGS, name, commitHash])
             .then(function (result) {
                 // 1 if field is a new field in the hash and value was set.
                 // 0 if field already exists in the hash and no operation was performed.
@@ -240,12 +240,12 @@ function RedisProject(projectId, adapter) {
     };
 
     this.deleteTag = function (name, callback) {
-        return Q.ninvoke(adapter.client, 'hdel', projectId + adapter.CONSTANTS.TAGS, name)
+        return adapter.redisCommand('HDEL', [projectId + adapter.CONSTANTS.TAGS, name])
             .nodeify(callback);
     };
 
     this.getTags = function (callback) {
-        return Q.ninvoke(adapter.client, 'hgetall', projectId + adapter.CONSTANTS.TAGS)
+        return adapter.redisCommand('HGETALL', [projectId + adapter.CONSTANTS.TAGS])
             .then(function (result) {
                 return result || {};
             })

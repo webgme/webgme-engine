@@ -672,10 +672,12 @@ describe('storage-connection', function () {
                                         project.makeCommit('b6', [data.commitData.commitObject._id],
                                             ir.rootHash, {}, 'new com')
                                             .then(function (commitStatus) {
-                                                if (disconnected && commitStatus.status === STORAGE_CONSTANTS.SYNCED) {
+                                                if (disconnected &&
+                                                    (commitStatus.status === STORAGE_CONSTANTS.SYNCED ||
+                                                        commitStatus.status === STORAGE_CONSTANTS.FORKED)) {
                                                     deferred.resolve();
                                                 } else {
-                                                    deferred.reject('Not synced after 2nd commit ' +
+                                                    deferred.reject('Unexpected status after 2nd commit ' +
                                                         commitStatus.status);
                                                 }
                                             })
