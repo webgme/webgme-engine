@@ -27,6 +27,7 @@ var main = function (argv) {
         syntaxFailure = false;
 
     logger.debug(argv);
+    program.storeOptionsAsProperties();
     program
         .version('0.2.0')
         .option('-m, --mongo-database-uri [url]',

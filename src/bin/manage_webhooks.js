@@ -92,8 +92,9 @@ function main(argv) {
     program
         .command('listAll <projectName>')
         .description('list all webhooks registered for given project')
-        .action(function (projectName, options) {
-            getMetadataStorageAndProjectId(options.parent.mongoDatabaseUri, projectName, options.parent.owner)
+        .action(function (projectName, options, command) {
+            var parentOpts = command.parent.opts();
+            getMetadataStorageAndProjectId(parentOpts.mongoDatabaseUri, projectName, parentOpts.owner)
                 .then(function (d) {
                     return d.store.getProjectHooks(d.projectId);
                 })
@@ -112,8 +113,9 @@ function main(argv) {
     program
         .command('list <projectName> <webhookId>')
         .description('lists a specific webhook')
-        .action(function (projectName, webhookId, options) {
-            getMetadataStorageAndProjectId(options.parent.mongoDatabaseUri, projectName, options.parent.owner)
+        .action(function (projectName, webhookId, options, command) {
+            var parentOpts = command.parent.opts();
+            getMetadataStorageAndProjectId(parentOpts.mongoDatabaseUri, projectName, parentOpts.owner)
                 .then(function (d) {
                     return d.store.getProjectHook(d.projectId, webhookId);
                 })
@@ -135,8 +137,9 @@ function main(argv) {
         .option('-e, --events [string]',
             'events it should be triggered by (comma separated with no spaces) default [].', list)
         .option('-d, --descriptor [string]', 'description of the hook', 'No description given')
-        .action(function (projectName, webhookId, url, options) {
-            getMetadataStorageAndProjectId(options.parent.mongoDatabaseUri, projectName, options.parent.owner)
+        .action(function (projectName, webhookId, url, options, command) {
+            var parentOpts = command.parent.opts();
+            getMetadataStorageAndProjectId(parentOpts.mongoDatabaseUri, projectName, parentOpts.owner)
                 .then(function (d) {
                     return d.store.addProjectHook(d.projectId, webhookId, {
                         url: url,
@@ -166,8 +169,9 @@ function main(argv) {
             'events it should be triggered by (comma separated with no spaces).', list)
         .option('-d, --descriptor [string]', 'description of the hook')
         .option('-a, --deactivate [boolean]', 'deactivate the webhook')
-        .action(function (projectName, webhookId, options) {
-            getMetadataStorageAndProjectId(options.parent.mongoDatabaseUri, projectName, options.parent.owner)
+        .action(function (projectName, webhookId, options, command) {
+            var parentOpts = command.parent.opts();
+            getMetadataStorageAndProjectId(parentOpts.mongoDatabaseUri, projectName, parentOpts.owner)
                 .then(function (d) {
                     var updateData = {
                         url: options.url,
@@ -198,8 +202,9 @@ function main(argv) {
     program
         .command('remove <projectName> <webhookId>')
         .description('removes given webhook')
-        .action(function (projectName, webhookId, options) {
-            getMetadataStorageAndProjectId(options.parent.mongoDatabaseUri, projectName, options.parent.owner)
+        .action(function (projectName, webhookId, options, command) {
+            var parentOpts = command.parent.opts();
+            getMetadataStorageAndProjectId(parentOpts.mongoDatabaseUri, projectName, parentOpts.owner)
                 .then(function (d) {
                     return d.store.removeProjectHook(d.projectId, webhookId);
                 })

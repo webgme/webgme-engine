@@ -51,6 +51,8 @@ main = function (argv) {
         },
         badArgument = false;
 
+    program.storeOptionsAsProperties();
+
     program
         .version('0.2.0')
         .option('-m, --mongo-database-uri [url]',
