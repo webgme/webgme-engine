@@ -8,7 +8,8 @@
 'use strict';
 
 var io = require('socket.io'),
-    redis = require('socket.io-redis'),
+    redis = require('redis'),
+    createRedisAdapter = require('@socket.io/redis-adapter').createAdapter,
     Q = require('q'),
     UTIL = require('../../utils'),
     DocumentServer = require('./documentserver'),
@@ -23,23 +24,52 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         metadataStorage = gmeAuth.metadataStorage,
         authorizer = gmeAuth.authorizer,
         projectAuthParams = {
-            entityType: authorizer.ENTITY_TYPES.PROJECT
+            entityType: authorizer.ENTITY_TYPES.PROJECT,
         },
         documents = {
             //<docId> : { otServer: DocumentServer, users: {}, disconnectedUsers: {} }
         }, // TODO: This is a single state on one server!
+        redisPubClient = null,
+        redisSubClient = null,
         webSocket = io();
 
     const socketRouters = {};
 
     logger.debug('ctor');
 
+    function getRoomNames(socket) {
+        if (socket.rooms && typeof socket.rooms.forEach === 'function') {
+            return Array.from(socket.rooms);
+        }
+
+        return Object.keys(socket.rooms || {});
+    }
+
+    function hasRoom(socket, roomName) {
+        if (socket.rooms && typeof socket.rooms.has === 'function') {
+            return socket.rooms.has(roomName);
+        }
+
+        return Object.hasOwn(socket.rooms || {}, roomName);
+    }
+
+    function joinRoom(socket, roomName) {
+        return Q(socket.join(roomName));
+    }
+
+    function leaveRoom(socket, roomName) {
+        return Q(socket.leave(roomName));
+    }
+
     function getErrorHandler(callback) {
         return function (err) {
-            if (err.message.includes('Not authorized to') || err.message.includes('Project does not exist')) {
+            if (
+                err.message.includes('Not authorized to') ||
+        err.message.includes('Project does not exist')
+            ) {
                 logger.warn(err.message);
             } else {
-                logger.error(err.stack, '\n', (new Error('Caught by')).stack);
+                logger.error(err.stack, '\n', new Error('Caught by').stack);
             }
 
             callback && callback(err.message);
@@ -49,7 +79,11 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     function parseCookiesFromHandshake(socket) {
         let cookies = {};
 
-        if (socket.handshake && socket.handshake.headers && socket.handshake.headers.cookie) {
+        if (
+            socket.handshake &&
+      socket.handshake.headers &&
+      socket.handshake.headers.cookie
+        ) {
             // We try to dig it from the cookie.
             cookies = URL.parseCookie(socket.handshake.headers.cookie);
         }
@@ -61,14 +95,19 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         var deferred = Q.defer();
 
         if (gmeConfig.authentication.enable === true) {
-            gmeAuth.verifyJWToken(token)
+            gmeAuth
+                .verifyJWToken(token)
                 .then(function (result) {
                     // Check if token is about to expire
                     if (result.renew === true) {
-                        logger.debug('JWT_ABOUT_TO_EXPIRE for user', result.content.userId, socket.id);
+                        logger.debug(
+                            'JWT_ABOUT_TO_EXPIRE for user',
+                            result.content.userId,
+                            socket.id,
+                        );
                         socket.emit(CONSTANTS.JWT_ABOUT_TO_EXPIRE, {
                             exp: result.content.exp,
-                            iat: result.content.iat
+                            iat: result.content.iat,
                         });
                     }
 
@@ -126,29 +165,36 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 branchName: branchName,
                 userId: userId,
                 socketId: socket.id,
-                join: true
+                join: true,
             };
 
-        if (Object.hasOwn(socket.rooms, roomName) === true) {
+        if (hasRoom(socket, roomName) === true) {
             // Socket is already in given room - no need to account for it.
             logger.debug('socket already in room', socket.id, roomName);
             deferred.resolve();
         } else {
-            Q.ninvoke(socket, 'join', roomName)
+            joinRoom(socket, roomName)
                 .then(function () {
                     var eventData = {
                         projectId: projectId,
                         branchName: branchName,
                         userId: userId,
                         socketId: socket.id,
-                        webgmeToken: token
+                        webgmeToken: token,
                     };
 
-                    logger.debug('socket joined room', socket.id, notificationData.userId, roomName);
+                    logger.debug(
+                        'socket joined room',
+                        socket.id,
+                        notificationData.userId,
+                        roomName,
+                    );
 
                     notificationData.type = CONSTANTS.BRANCH_ROOM_SOCKETS;
 
-                    socket.broadcast.to(roomName).emit(CONSTANTS.NOTIFICATION, notificationData);
+                    socket.broadcast
+                        .to(roomName)
+                        .emit(CONSTANTS.NOTIFICATION, notificationData);
 
                     storage.dispatchEvent(CONSTANTS.BRANCH_JOINED, eventData);
                     deferred.resolve();
@@ -161,7 +207,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         return deferred.promise;
     }
 
-    function leaveBranchRoom(socket, projectId, branchName/*, disconnected*/) {
+    function leaveBranchRoom(socket, projectId, branchName /*, disconnected*/) {
         var deferred = Q.defer(),
             roomName = projectId + CONSTANTS.ROOM_DIVIDER + branchName,
             userId = socket.userId,
@@ -169,19 +215,26 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 projectId: projectId,
                 branchName: branchName,
                 userId: userId,
-                socketId: socket.id
+                socketId: socket.id,
             };
 
-        if (Object.hasOwn(socket.rooms, roomName) === false) {
+        if (hasRoom(socket, roomName) === false) {
             // Socket was never in or had already left given room - no need to account for it.
             logger.debug('socket already left room', socket.id, roomName);
             deferred.resolve();
         } else {
             notificationData.type = CONSTANTS.BRANCH_ROOM_SOCKETS;
-            socket.broadcast.to(roomName).emit(CONSTANTS.NOTIFICATION, notificationData);
-            Q.ninvoke(socket, 'leave', roomName)
+            socket.broadcast
+                .to(roomName)
+                .emit(CONSTANTS.NOTIFICATION, notificationData);
+            leaveRoom(socket, roomName)
                 .then(function () {
-                    logger.debug('socket left room', socket.id, notificationData.userId, roomName);
+                    logger.debug(
+                        'socket left room',
+                        socket.id,
+                        notificationData.userId,
+                        roomName,
+                    );
                     storage.dispatchEvent(CONSTANTS.BRANCH_LEFT, notificationData);
                     deferred.resolve();
                 })
@@ -197,11 +250,15 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         if (Object.keys(documents[docId].users).length === 0) {
             logger.debug('No more connected sockets in document ...');
             if (Object.keys(documents[docId].disconnectedUsers).length === 0) {
-                logger.debug('... no disconnectedUsers either will close the document.');
+                logger.debug(
+                    '... no disconnectedUsers either will close the document.',
+                );
                 delete documents[docId];
             } else {
-                logger.debug('.. there are disconnected users - setting timeout to close doc',
-                    gmeConfig.documentEditing.disconnectTimeout);
+                logger.debug(
+                    '.. there are disconnected users - setting timeout to close doc',
+                    gmeConfig.documentEditing.disconnectTimeout,
+                );
                 documents[docId].timeoutId = setTimeout(function () {
                     delete documents[docId];
                 }, gmeConfig.documentEditing.disconnectTimeout);
@@ -210,11 +267,15 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     }
 
     storage.addEventListener(CONSTANTS.PROJECT_DELETED, function (_s, data) {
-        getEmitter(data).to(CONSTANTS.DATABASE_ROOM).emit(CONSTANTS.PROJECT_DELETED, data);
+        getEmitter(data)
+            .to(CONSTANTS.DATABASE_ROOM)
+            .emit(CONSTANTS.PROJECT_DELETED, data);
     });
 
     storage.addEventListener(CONSTANTS.PROJECT_CREATED, function (_s, data) {
-        getEmitter(data).to(CONSTANTS.DATABASE_ROOM).emit(CONSTANTS.PROJECT_CREATED, data);
+        getEmitter(data)
+            .to(CONSTANTS.DATABASE_ROOM)
+            .emit(CONSTANTS.PROJECT_CREATED, data);
     });
 
     storage.addEventListener(CONSTANTS.BRANCH_DELETED, function (_s, data) {
@@ -226,7 +287,9 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     });
 
     storage.addEventListener(CONSTANTS.BRANCH_HASH_UPDATED, function (_s, data) {
-        getEmitter(data).to(data.projectId).emit(CONSTANTS.BRANCH_HASH_UPDATED, data);
+        getEmitter(data)
+            .to(data.projectId)
+            .emit(CONSTANTS.BRANCH_HASH_UPDATED, data);
     });
 
     storage.addEventListener(CONSTANTS.COMMIT, function (_s, data) {
@@ -251,17 +314,42 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
         logger.debug('start');
 
         // webSocket = io.listen(server || gmeConfig.server.port, gmeConfig.socketIO.serverOptions);
-        webSocket.listen(server || gmeConfig.server.port, gmeConfig.socketIO.serverOptions);
+        webSocket.listen(
+            server || gmeConfig.server.port,
+            gmeConfig.socketIO.serverOptions,
+        );
 
         if (gmeConfig.socketIO.adapter.type.toLowerCase() === 'redis') {
-            logger.info('redis adapter:', JSON.stringify(gmeConfig.socketIO.adapter.options));
-            webSocket.adapter(redis(gmeConfig.socketIO.adapter.options.uri));
+            var redisUrl =
+        gmeConfig.socketIO.adapter.options &&
+        gmeConfig.socketIO.adapter.options.uri
+            ? gmeConfig.socketIO.adapter.options.uri
+            : 'redis://127.0.0.1:6379';
+
+            logger.info(
+                'redis adapter:',
+                JSON.stringify(gmeConfig.socketIO.adapter.options),
+            );
+            redisPubClient = redis.createClient({ url: redisUrl });
+            redisSubClient = redisPubClient.duplicate();
+            webSocket.adapter(createRedisAdapter(redisPubClient, redisSubClient));
+
+            Q.all([Q(redisPubClient.connect()), Q(redisSubClient.connect())]).catch(
+                function (err) {
+                    logger.error('Failed connecting redis adapter clients', err);
+                },
+            );
         }
 
         logger.debug('listening');
 
         webSocket.use(function (socket, next) {
-            getUserIdFromToken(socket, parseCookiesFromHandshake(socket)[gmeConfig.authentication.jwt.cookieId])
+            getUserIdFromToken(
+                socket,
+                parseCookiesFromHandshake(socket)[
+                    gmeConfig.authentication.jwt.cookieId
+                ],
+            )
                 .then(function (userId) {
                     logger.debug('User connected and authenticated', userId);
                     socket.userId = userId;
@@ -272,18 +360,17 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
         webSocket.on('connection', function (socket) {
             logger.debug('New socket connected', socket.id);
+            var didHandleDisconnecting = false;
 
-            // Inject into socket.onclose in order to see which rooms socket was in.
-            var originalOnClose = socket.onclose;
-            socket.onclose = function () {
-                var i,
-                    roomIds,
-                    projectIdBranchName,
-                    document,
-                    roomDividerCnt;
+            function handleSocketDisconnecting() {
+                var i, roomIds, projectIdBranchName, document, roomDividerCnt;
+                if (didHandleDisconnecting) {
+                    return;
+                }
+                didHandleDisconnecting = true;
 
                 if (webSocket) {
-                    roomIds = Object.keys(socket.rooms);
+                    roomIds = getRoomNames(socket);
                     for (i = 0; i < roomIds.length; i += 1) {
                         // This is not the prettiest, but we know that branchRooms
                         // are divided by one ROOM_DIVIDER (projectId % branchName),
@@ -295,48 +382,78 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             logger.debug('Disconnected was in branchRoom', roomIds[i]);
                             projectIdBranchName = roomIds[i].split(CONSTANTS.ROOM_DIVIDER);
                             // We cannot wait for this since socket.onclose is synchronous.
-                            leaveBranchRoom(socket, projectIdBranchName[0], projectIdBranchName[1])
-                                .fail(function (err) {
-                                    logger.error(err);
-                                });
+                            leaveBranchRoom(
+                                socket,
+                                projectIdBranchName[0],
+                                projectIdBranchName[1],
+                            ).fail(function (err) {
+                                logger.error(err);
+                            });
                         } else if (roomDividerCnt === 4) {
-                            logger.debug('Disconnected socket was in document room', roomIds[i]);
-                            if (Object.hasOwn(documents, roomIds[i])) {
+                            logger.debug(
+                                'Disconnected socket was in document room',
+                                roomIds[i],
+                            );
+                            if (
+                                Object.hasOwn(documents, roomIds[i]) &&
+                Object.hasOwn(documents[roomIds[i]].users, socket.id)
+                            ) {
+                                // eslint-disable-line max-len
                                 document = documents[roomIds[i]];
-                                socket.broadcast.to(roomIds[i]).emit(CONSTANTS.DOCUMENT_SELECTION, {
-                                    docId: roomIds[i],
-                                    socketId: socket.id,
-                                    userId: socket.userId,
-                                    selection: null
-                                });
+                                socket.broadcast
+                                    .to(roomIds[i])
+                                    .emit(CONSTANTS.DOCUMENT_SELECTION, {
+                                        docId: roomIds[i],
+                                        socketId: socket.id,
+                                        userId: socket.userId,
+                                        selection: null,
+                                    });
 
-                                document.disconnectedUsers[document.users[socket.id].sessionId] =
-                                    document.users[socket.id].watchers;
+                                document.disconnectedUsers[
+                                    document.users[socket.id].sessionId
+                                ] = document.users[socket.id].watchers;
 
                                 delete document.users[socket.id];
 
-                                socket.leave(roomIds[i]);
+                                leaveRoom(socket, roomIds[i]);
                                 logger.debug('socket left document room.');
                                 triggerDocumentRemoval(roomIds[i]);
                             } else {
-                                logger.error('No document server object for active room');
+                                logger.debug(
+                                    'No tracked document/socket state for room at disconnect',
+                                    roomIds[i],
+                                );
                             }
                         }
                     }
                 }
+            }
 
-                originalOnClose.apply(socket, arguments);
-            };
+            // Socket.io v4 emits "disconnecting" before rooms are left.
+            socket.on('disconnecting', handleSocketDisconnecting);
+
+            // Keep legacy behavior for older socket.io versions.
+            if (typeof socket.onclose === 'function') {
+                var originalOnClose = socket.onclose;
+                socket.onclose = function () {
+                    handleSocketDisconnecting();
+                    originalOnClose.apply(socket, arguments);
+                };
+            }
 
             socket.on('disconnect', function () {
                 // When this event is triggered, the disconnect socket has already left all rooms.
-                logger.debug('disconnect socket is in rooms: ', socket.id, Object.keys(socket.rooms));
+                logger.debug(
+                    'disconnect socket is in rooms: ',
+                    socket.id,
+                    getRoomNames(socket),
+                );
             });
 
             socket.on('getConnectionInfo', function (data, callback) {
                 var info = {
                     userId: null,
-                    serverVersion: PACKAGE_JSON.version
+                    serverVersion: PACKAGE_JSON.version,
                 };
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
@@ -348,7 +465,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             // Watchers
             socket.on('watchDatabase', function (data, callback) {
-                logger.debug('watchDatabase', {metadata: data});
+                logger.debug('watchDatabase', { metadata: data });
                 if (data && data.join) {
                     socket.join(CONSTANTS.DATABASE_ROOM);
                 } else {
@@ -359,7 +476,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             });
 
             socket.on('watchProject', function (data, callback) {
-                logger.debug('watchProject', {metadata: data});
+                logger.debug('watchProject', { metadata: data });
                 data = data || {};
                 projectAccess(socket, data.webgmeToken, data.projectId)
                     .then(function (access) {
@@ -369,7 +486,10 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 logger.debug('socket joined room', data.projectId);
                                 callback();
                             } else {
-                                logger.warn('socket not authorized to join room', data.projectId);
+                                logger.warn(
+                                    'socket not authorized to join room',
+                                    data.projectId,
+                                );
                                 callback('No read access for ' + data.projectId);
                             }
                         } else {
@@ -383,25 +503,33 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             socket.on('watchBranch', function (data, callback) {
                 // This is emitted from clients that got disconnected while having branches open.
-                logger.debug('watchBranch', {metadata: data});
+                logger.debug('watchBranch', { metadata: data });
                 data = data || {};
                 projectAccess(socket, data.webgmeToken, data.projectId)
                     .then(function (access) {
                         if (data.join) {
                             if (access.read) {
-                                joinBranchRoom(socket, data.webgmeToken, data.projectId, data.branchName)
-                                    .fail(function (err) {
-                                        logger.error(err);
-                                    });
+                                joinBranchRoom(
+                                    socket,
+                                    data.webgmeToken,
+                                    data.projectId,
+                                    data.branchName,
+                                ).fail(function (err) {
+                                    logger.error(err);
+                                });
                             } else {
-                                logger.warn('socket not authorized to join room', data.projectId);
+                                logger.warn(
+                                    'socket not authorized to join room',
+                                    data.projectId,
+                                );
                                 throw new Error('No read access for ' + data.projectId);
                             }
                         } else {
-                            leaveBranchRoom(socket, data.projectId, data.branchName)
-                                .fail(function (err) {
+                            leaveBranchRoom(socket, data.projectId, data.branchName).fail(
+                                function (err) {
                                     logger.error(err);
-                                });
+                                },
+                            );
                         }
                     })
                     .then(function () {
@@ -412,9 +540,8 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             // Model editing
             socket.on('openProject', function (data, callback) {
-                var branches,
-                    access;
-                logger.debug('openProject', {metadata: data});
+                var branches, access;
+                logger.debug('openProject', { metadata: data });
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
                         data.username = userId;
@@ -425,11 +552,12 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         return projectAccess(socket, data.webgmeToken, data.projectId);
                     })
                     .then(function (access_) {
-                        var username = data.username || this.gmeConfig.authentication.guestAccount;
+                        var username =
+              data.username || this.gmeConfig.authentication.guestAccount;
                         access = access_;
                         return metadataStorage.updateProjectInfo(data.projectId, {
-                            viewedAt: (new Date()).toISOString(),
-                            viewer: username
+                            viewedAt: new Date().toISOString(),
+                            viewer: username,
                         });
                     })
                     .then(function () {
@@ -439,12 +567,12 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             });
 
             socket.on('closeProject', function (data, callback) {
-                logger.debug('closeProject', {metadata: data});
+                logger.debug('closeProject', { metadata: data });
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
                         return metadataStorage.updateProjectInfo(data.projectId, {
-                            viewedAt: (new Date()).toISOString(),
-                            viewer: userId || this.gmeConfig.authentication.guestAccount
+                            viewedAt: new Date().toISOString(),
+                            viewer: userId || this.gmeConfig.authentication.guestAccount,
                         });
                     })
                     .then(function () {
@@ -455,7 +583,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
 
             socket.on('openBranch', function (data, callback) {
                 var latestCommitData;
-                logger.debug('openBranch', {metadata: data});
+                logger.debug('openBranch', { metadata: data });
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
                         data.username = userId;
@@ -464,10 +592,14 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     })
                     .then(function (commitData) {
                         latestCommitData = commitData;
-                        joinBranchRoom(socket, data.webgmeToken, data.projectId, data.branchName)
-                            .fail(function (err) {
-                                logger.error(err);
-                            });
+                        joinBranchRoom(
+                            socket,
+                            data.webgmeToken,
+                            data.projectId,
+                            data.branchName,
+                        ).fail(function (err) {
+                            logger.error(err);
+                        });
                     })
                     .then(function () {
                         callback(null, latestCommitData);
@@ -476,12 +608,13 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             });
 
             socket.on('closeBranch', function (data, callback) {
-                logger.debug('closeBranch', {metadata: data});
+                logger.debug('closeBranch', { metadata: data });
                 data = data || {};
-                leaveBranchRoom(socket, data.projectId, data.branchName)
-                    .fail(function (err) {
+                leaveBranchRoom(socket, data.projectId, data.branchName).fail(
+                    function (err) {
                         logger.error(err);
-                    });
+                    },
+                );
 
                 callback(null);
             });
@@ -492,9 +625,14 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (userId) {
                         var roomName;
                         if (data.branchName) {
-                            roomName = data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName;
-                            if (Object.hasOwn(socket.rooms, roomName)) {
-                                logger.debug('Committer is in the branch-room', userId, roomName);
+                            roomName =
+                data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName;
+                            if (hasRoom(socket, roomName)) {
+                                logger.debug(
+                                    'Committer is in the branch-room',
+                                    userId,
+                                    roomName,
+                                );
                                 data.socket = socket;
                             }
                         }
@@ -503,19 +641,22 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         return storage.makeCommit(data);
                     })
                     .then(function (status) {
-                        var now = (new Date()).toISOString();
+                        var now = new Date().toISOString();
 
                         commitStatus = status;
                         return metadataStorage.updateProjectInfo(data.projectId, {
                             modifiedAt: now,
                             viewedAt: now,
                             viewer: data.username,
-                            modifier: data.username
+                            modifier: data.username,
                         });
                     })
                     .then(function () {
                         var tokenPromise;
-                        if (commitStatus.status === CONSTANTS.FORKED && gmeConfig.storage.autoMerge.enable) {
+                        if (
+                            commitStatus.status === CONSTANTS.FORKED &&
+              gmeConfig.storage.autoMerge.enable
+                        ) {
                             // Commit was forked and auto-merge is enabled. First get a new token for the worker.
                             if (gmeConfig.authentication.enable === true) {
                                 tokenPromise = gmeAuth.regenerateJWToken(data.webgmeToken);
@@ -530,31 +671,39 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                         projectId: data.projectId,
                                         mine: commitStatus.hash,
                                         theirs: data.branchName,
-                                        webgmeToken: token
+                                        webgmeToken: token,
                                     };
 
-                                    workerManager.request(workerParameters, function (err, result) {
-                                        if (err) {
-                                            logger.error('Merging failed', err);
-                                        } else if (result.conflict && result.conflict.items.length > 0) {
-                                            logger.info('Merge resulted in conflict', commitStatus);
-                                        } else if (result.updatedBranch) {
-                                            logger.info('Merge successful', commitStatus);
-                                            callback(null, {
-                                                status: CONSTANTS.MERGED,
-                                                hash: commitStatus.hash,
-                                                theirHash: result.theirCommitHash,
-                                                mergeHash: result.finalCommitHash
-                                            });
-                                            return;
-                                        } else {
-                                            logger.error('No conflict nor an updateBranch, this should not happen.');
-                                        }
+                                    workerManager.request(
+                                        workerParameters,
+                                        function (err, result) {
+                                            if (err) {
+                                                logger.error('Merging failed', err);
+                                            } else if (
+                                                result.conflict &&
+                        result.conflict.items.length > 0
+                                            ) {
+                                                logger.info('Merge resulted in conflict', commitStatus);
+                                            } else if (result.updatedBranch) {
+                                                logger.info('Merge successful', commitStatus);
+                                                callback(null, {
+                                                    status: CONSTANTS.MERGED,
+                                                    hash: commitStatus.hash,
+                                                    theirHash: result.theirCommitHash,
+                                                    mergeHash: result.finalCommitHash,
+                                                });
+                                                return;
+                                            } else {
+                                                logger.error(
+                                                    'No conflict nor an updateBranch, this should not happen.',
+                                                );
+                                            }
 
-                                        // In the cases where the merged failed or resulted in conflicts we just return
-                                        // the original FORKED commit-status.
-                                        callback(null, commitStatus);
-                                    });
+                                            // In the cases where the merged failed or resulted in
+                                            // conflicts we just return the original FORKED commit-status.
+                                            callback(null, commitStatus);
+                                        },
+                                    );
                                 })
                                 .catch(getErrorHandler(callback));
                         } else {
@@ -592,7 +741,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 var status;
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (Object.hasOwn(socket.rooms, data.projectId)) {
+                        if (hasRoom(socket, data.projectId)) {
                             data.socket = socket;
                         }
 
@@ -600,15 +749,16 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         return storage.setBranchHash(data);
                     })
                     .then(function (result) {
-                        var now = (new Date()).toISOString(),
-                            username = data.username || this.gmeConfig.authentication.guestAccount;
+                        var now = new Date().toISOString(),
+                            username =
+                data.username || this.gmeConfig.authentication.guestAccount;
                         status = result;
 
                         return metadataStorage.updateProjectInfo(data.projectId, {
                             modifiedAt: now,
                             viewedAt: now,
                             viewer: username,
-                            modifier: username
+                            modifier: username,
                         });
                     })
                     .then(function () {
@@ -645,7 +795,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('deleteProject', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (Object.hasOwn(socket.rooms, CONSTANTS.DATABASE_ROOM)) {
+                        if (hasRoom(socket, CONSTANTS.DATABASE_ROOM)) {
                             data.socket = socket;
                         }
 
@@ -661,7 +811,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('createProject', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (Object.hasOwn(socket.rooms, CONSTANTS.DATABASE_ROOM)) {
+                        if (hasRoom(socket, CONSTANTS.DATABASE_ROOM)) {
                             data.socket = socket;
                         }
 
@@ -677,7 +827,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('transferProject', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (Object.hasOwn(socket.rooms, CONSTANTS.DATABASE_ROOM)) {
+                        if (hasRoom(socket, CONSTANTS.DATABASE_ROOM)) {
                             data.socket = socket;
                         }
 
@@ -693,7 +843,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('duplicateProject', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        if (Object.hasOwn(socket.rooms, CONSTANTS.DATABASE_ROOM)) {
+                        if (hasRoom(socket, CONSTANTS.DATABASE_ROOM)) {
                             data.socket = socket;
                         }
 
@@ -830,10 +980,15 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                     .then(function (newToken) {
                         data.webgmeToken = newToken;
                         //TODO this should probably come from authenticator and not the request!!!
-                        if (gmeConfig.authentication.enable === true &&
-                            gmeConfig.authentication.azureActiveDirectory.enable === true &&
-                            gmeConfig.authentication.azureActiveDirectory.accessScope) {
-                            data.aadToken = cookies[gmeConfig.authentication.azureActiveDirectory.cookieId] || null;
+                        if (
+                            gmeConfig.authentication.enable === true &&
+              gmeConfig.authentication.azureActiveDirectory.enable === true &&
+              gmeConfig.authentication.azureActiveDirectory.accessScope
+                        ) {
+                            data.aadToken =
+                cookies[
+                    gmeConfig.authentication.azureActiveDirectory.cookieId
+                ] || null;
                         }
                         workerManager.request(data, function (err, result) {
                             if (err) {
@@ -854,26 +1009,38 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('notification', function (data, callback) {
                 getUserIdFromToken(socket, data && data.webgmeToken)
                     .then(function (userId) {
-                        logger.debug('Incoming notification from', userId, {metadata: data});
+                        logger.debug('Incoming notification from', userId, {
+                            metadata: data,
+                        });
                         data.userId = userId;
                         data.socketId = socket.id;
                         delete data.webgmeToken;
 
                         if (data.type === CONSTANTS.PLUGIN_NOTIFICATION) {
-                            if (data.notification.toBranch &&
-                                typeof data.projectId === 'string' && typeof data.branchName === 'string') {
-                                webSocket.to(data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName)
+                            if (
+                                data.notification.toBranch &&
+                typeof data.projectId === 'string' &&
+                typeof data.branchName === 'string'
+                            ) {
+                                webSocket
+                                    .to(data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName)
                                     .emit(CONSTANTS.NOTIFICATION, data);
                             } else if (data.originalSocketId) {
-                                webSocket.to(data.originalSocketId).emit(CONSTANTS.NOTIFICATION, data);
+                                webSocket
+                                    .to(data.originalSocketId)
+                                    .emit(CONSTANTS.NOTIFICATION, data);
                             } else {
-                                throw new Error('PLUGIN_NOTIFICATION requires provided originalSocketId to emit to.');
+                                throw new Error(
+                                    'PLUGIN_NOTIFICATION requires provided originalSocketId to emit to.',
+                                );
                             }
                         } else if (data.type === CONSTANTS.ADD_ON_NOTIFICATION) {
-                            socket.broadcast.to(data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName)
+                            socket.broadcast
+                                .to(data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName)
                                 .emit(CONSTANTS.NOTIFICATION, data);
                         } else if (data.type === CONSTANTS.CLIENT_STATE_NOTIFICATION) {
-                            socket.broadcast.to(data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName)
+                            socket.broadcast
+                                .to(data.projectId + CONSTANTS.ROOM_DIVIDER + data.branchName)
                                 .emit(CONSTANTS.NOTIFICATION, data);
                         } else {
                             throw new Error('Unknown notification type: "' + data.type + '"');
@@ -889,8 +1056,14 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             socket.on('watchDocument', function (data, callback) {
                 projectAccess(socket, data && data.webgmeToken, data && data.projectId)
                     .then(function (access) {
-                        var docId = data.join ? [data.projectId, data.branchName, data.nodeId, data.attrName]
-                                .join(CONSTANTS.ROOM_DIVIDER) : data.docId,
+                        var docId = data.join
+                                ? [
+                                    data.projectId,
+                                    data.branchName,
+                                    data.nodeId,
+                                    data.attrName,
+                                ].join(CONSTANTS.ROOM_DIVIDER)
+                                : data.docId,
                             eventData;
 
                         if (!gmeConfig.documentEditing.enable) {
@@ -901,21 +1074,36 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             throw new Error('data.watcherId was not provided!');
                         }
 
-                        logger.debug('watchDocument', docId, 'join?', data.join, 'rejoin?', data.rejoin);
+                        logger.debug(
+                            'watchDocument',
+                            docId,
+                            'join?',
+                            data.join,
+                            'rejoin?',
+                            data.rejoin,
+                        );
 
                         if (data.join === true) {
                             if (!access.read) {
-                                logger.warn('socket not authorized to join document room', docId);
+                                logger.warn(
+                                    'socket not authorized to join document room',
+                                    docId,
+                                );
                                 throw new Error('No read access for ' + data.projectId);
                             }
 
                             if (Object.hasOwn(documents, docId) === false) {
                                 logger.debug('First user joining document, will create it..');
                                 documents[docId] = {
-                                    otServer: new DocumentServer(logger, data.attrValue, docId, gmeConfig),
+                                    otServer: new DocumentServer(
+                                        logger,
+                                        data.attrValue,
+                                        docId,
+                                        gmeConfig,
+                                    ),
                                     users: {},
                                     disconnectedUsers: {},
-                                    timeoutId: null
+                                    timeoutId: null,
                                 };
                             } else {
                                 clearTimeout(documents[docId].timeoutId);
@@ -927,7 +1115,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                     sessionId: data.sessionId,
                                     userId: socket.userId,
                                     access: access,
-                                    watchers: [data.watcherId]
+                                    watchers: [data.watcherId],
                                 };
 
                                 socket.join(docId);
@@ -941,12 +1129,17 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 watcherId: data.watcherId,
                                 document: documents[docId].otServer.document,
                                 revision: documents[docId].otServer.operations.length,
-                                clients: documents[docId].users
+                                clients: documents[docId].users,
                             });
                         } else if (data.rejoin === true) {
                             if (!access.read) {
-                                logger.warn('socket not authorized to join document room', docId);
-                                throw new Error('No longer has read access to ' + data.projectId);
+                                logger.warn(
+                                    'socket not authorized to join document room',
+                                    docId,
+                                );
+                                throw new Error(
+                                    'No longer has read access to ' + data.projectId,
+                                );
                             }
 
                             // The document will be removed after config.documentEditing.disconnectTimeout
@@ -956,21 +1149,41 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                             // that edits made while disconnected could be lost).
                             if (Object.hasOwn(documents, docId) === false) {
                                 throw new Error('Document room was closed ' + docId);
-                            } else if (Object.hasOwn(documents[docId].disconnectedUsers, data.sessionId) === false) {
-                                throw new Error('Document room was closed ' + docId + ' and then reopened.');
-                            } else if (documents[docId].disconnectedUsers[data.sessionId].indexOf(
-                                data.watcherId) === -1) {
-                                throw new Error('Document room to rejoin ' + docId + ' did not have current watcher.');
+                            } else if (
+                                Object.hasOwn(
+                                    documents[docId].disconnectedUsers,
+                                    data.sessionId,
+                                ) === false
+                            ) {
+                                throw new Error(
+                                    'Document room was closed ' + docId + ' and then reopened.',
+                                );
+                            } else if (
+                                documents[docId].disconnectedUsers[data.sessionId].indexOf(
+                                    data.watcherId,
+                                ) === -1
+                            ) {
+                                throw new Error(
+                                    'Document room to rejoin ' +
+                    docId +
+                    ' did not have current watcher.',
+                                );
                             }
 
                             documents[docId].otServer.getOperationsSince(data.revision);
 
                             documents[docId].disconnectedUsers[data.sessionId].splice(
-                                documents[docId].disconnectedUsers[data.sessionId].indexOf(data.watcherId), 1);
+                                documents[docId].disconnectedUsers[data.sessionId].indexOf(
+                                    data.watcherId,
+                                ),
+                                1,
+                            );
 
                             clearTimeout(documents[docId].timeoutId);
 
-                            if (documents[docId].disconnectedUsers[data.sessionId].length === 0) {
+                            if (
+                                documents[docId].disconnectedUsers[data.sessionId].length === 0
+                            ) {
                                 delete documents[docId].disconnectedUsers[data.sessionId];
                             }
 
@@ -980,7 +1193,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                     userId: socket.userId,
                                     sessionId: data.sessionId,
                                     access: access,
-                                    watchers: [data.watcherId]
+                                    watchers: [data.watcherId],
                                 };
 
                                 socket.join(docId);
@@ -993,31 +1206,44 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                                 watcherId: data.watcherId,
                                 str: documents[docId].otServer.document,
                                 revision: documents[docId].otServer.operations.length,
-                                operations: documents[docId].otServer.getOperationsSince(data.revision),
-                                clients: documents[docId].users
+                                operations: documents[docId].otServer.getOperationsSince(
+                                    data.revision,
+                                ),
+                                clients: documents[docId].users,
                             });
                         } else {
-                            if (Object.hasOwn(documents, docId) &&
-                                Object.hasOwn(documents[docId].users, socket.id) &&
-                                documents[docId].users[socket.id].watchers.indexOf(data.watcherId) > -1) {
-
+                            if (
+                                Object.hasOwn(documents, docId) &&
+                Object.hasOwn(documents[docId].users, socket.id) &&
+                documents[docId].users[socket.id].watchers.indexOf(
+                    data.watcherId,
+                ) > -1
+                            ) {
                                 eventData = {
                                     docId: data.docId,
                                     socketId: socket.id,
                                     userId: socket.userId,
                                     watcherId: data.watcherId,
-                                    selection: null
+                                    selection: null,
                                 };
 
                                 if (documents[docId].users[socket.id].watchers.length > 1) {
-                                    webSocket.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                                    webSocket
+                                        .to(data.docId)
+                                        .emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
                                 } else {
-                                    socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                                    socket.broadcast
+                                        .to(data.docId)
+                                        .emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
                                 }
 
                                 // Remove the watcherId
                                 documents[docId].users[socket.id].watchers.splice(
-                                    documents[docId].users[socket.id].watchers.indexOf(data.watcherId), 1);
+                                    documents[docId].users[socket.id].watchers.indexOf(
+                                        data.watcherId,
+                                    ),
+                                    1,
+                                );
 
                                 if (documents[docId].users[socket.id].watchers.length === 0) {
                                     // Last watcher from this socket - leave the room and clean-up.
@@ -1038,21 +1264,26 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             });
 
             socket.on(CONSTANTS.DOCUMENT_OPERATION, function (data, callback) {
-                var wrappedOperation,
-                    eventData;
+                var wrappedOperation, eventData;
 
                 try {
                     if (typeof data.watcherId !== 'string') {
                         throw new Error('data.watcherId not provided!');
                     }
 
-                    if (Object.hasOwn(documents, data.docId) === false ||
-                        Object.hasOwn(documents[data.docId].users, socket.id) === false) {
-                        throw new Error('Client not watching document - cannot send operation!');
+                    if (
+                        Object.hasOwn(documents, data.docId) === false ||
+            Object.hasOwn(documents[data.docId].users, socket.id) === false
+                    ) {
+                        throw new Error(
+                            'Client not watching document - cannot send operation!',
+                        );
                     }
 
                     if (documents[data.docId].users[socket.id].access.write !== true) {
-                        throw new Error('Not Authorized to open document. Does not have write access to document');
+                        throw new Error(
+                            'Not Authorized to open document. Does not have write access to document',
+                        );
                     }
 
                     data.userId = documents[data.docId].users[socket.id].userId;
@@ -1065,13 +1296,17 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         socketId: socket.id,
                         userId: socket.userId,
                         operation: wrappedOperation.wrapped.toJSON(),
-                        selection: wrappedOperation.selection
+                        selection: wrappedOperation.selection,
                     };
                     // and then broadcast or emit the operation.
                     if (documents[data.docId].users[socket.id].watchers.length > 1) {
-                        webSocket.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
+                        webSocket
+                            .to(data.docId)
+                            .emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
                     } else {
-                        socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
+                        socket.broadcast
+                            .to(data.docId)
+                            .emit(CONSTANTS.DOCUMENT_OPERATION, eventData);
                     }
                 } catch (err) {
                     getErrorHandler(callback)(err);
@@ -1079,34 +1314,43 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
             });
 
             socket.on(CONSTANTS.DOCUMENT_SELECTION, function (data, callback) {
-                var transformedSelection,
-                    eventData;
+                var transformedSelection, eventData;
 
                 try {
                     if (typeof data.watcherId !== 'string') {
                         throw new Error('data.watcherId not provided!');
                     }
 
-                    if (Object.hasOwn(documents, data.docId) === false ||
-                        Object.hasOwn(documents[data.docId].users, socket.id) === false) {
-                        throw new Error('Client not watching document - cannot send selection!');
+                    if (
+                        Object.hasOwn(documents, data.docId) === false ||
+            Object.hasOwn(documents[data.docId].users, socket.id) === false
+                    ) {
+                        throw new Error(
+                            'Client not watching document - cannot send selection!',
+                        );
                     }
 
-
-                    transformedSelection = documents[data.docId].otServer.onSelection(data.revision, data.selection);
+                    transformedSelection = documents[data.docId].otServer.onSelection(
+                        data.revision,
+                        data.selection,
+                    );
 
                     eventData = {
                         docId: data.docId,
                         socketId: socket.id,
                         userId: socket.userId,
                         watcherId: data.watcherId,
-                        selection: transformedSelection
+                        selection: transformedSelection,
                     };
 
                     if (documents[data.docId].users[socket.id].watchers.length > 1) {
-                        webSocket.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                        webSocket
+                            .to(data.docId)
+                            .emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
                     } else {
-                        socket.broadcast.to(data.docId).emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
+                        socket.broadcast
+                            .to(data.docId)
+                            .emit(CONSTANTS.DOCUMENT_SELECTION, eventData);
                     }
 
                     callback && callback();
@@ -1124,16 +1368,23 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                         callback(err, result);
                     }
                 }
-                const {routerId, messageType, payload} = data;
+                const { routerId, messageType, payload } = data;
                 if (routerId) {
                     if (socketRouters[routerId]) {
                         switch (messageType) {
                             case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.CONNECT:
-                                socketRouters[routerId][messageType](socket, errorHandlingCallback);
+                                socketRouters[routerId][messageType](
+                                    socket,
+                                    errorHandlingCallback,
+                                );
                                 break;
                             case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.DISCONNECT:
                             case CONSTANTS.WEBSOCKET_ROUTER_MESSAGE_TYPES.MESSAGE:
-                                socketRouters[routerId][messageType](socket.id, payload, errorHandlingCallback);
+                                socketRouters[routerId][messageType](
+                                    socket.id,
+                                    payload,
+                                    errorHandlingCallback,
+                                );
                                 break;
                             default:
                                 callback('Unkown message type! [' + messageType + ']');
@@ -1149,7 +1400,7 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
     };
 
     this.stop = function () {
-        //disconnect clients
+    //disconnect clients
         if (webSocket) {
             Object.keys(documents).forEach(function (docId) {
                 logger.warn('Document room was open - will close it', docId);
@@ -1161,33 +1412,55 @@ function WebSocket(storage, mainLogger, gmeConfig, gmeAuth, workerManager) {
                 delete documents[docId];
             });
             webSocket.close();
+
+            if (redisPubClient) {
+                redisPubClient.quit().catch(function (err) {
+                    logger.error('Failed to quit redis pub client', err);
+                });
+                redisPubClient = null;
+            }
+
+            if (redisSubClient) {
+                redisSubClient.quit().catch(function (err) {
+                    logger.error('Failed to quit redis sub client', err);
+                });
+                redisSubClient = null;
+            }
         }
     };
 
     this.getStatus = function () {
-        return Object.keys(webSocket.sockets.sockets)
-            .map(function (socketId) {
-                var socket = webSocket.sockets.sockets[socketId],
-                    branchRooms = [];
-
-                Object.keys(socket.rooms).forEach(function (roomName) {
-                    var pieces = roomName.split(CONSTANTS.ROOM_DIVIDER);
-
-                    if (pieces.length === 2) {
-                        branchRooms.push({
-                            projectId: pieces[0],
-                            branchName: pieces[1],
-                        });
-                    }
-                });
-
-                return {
-                    socketId: socketId,
-                    userId: socket.userId,
-                    connectedSince: socket.handshake && socket.handshake.time,
-                    branchRooms: branchRooms
-                };
+        var sockets = webSocket.sockets.sockets,
+            socketEntries =
+        sockets && typeof sockets.entries === 'function'
+            ? Array.from(sockets.entries())
+            : Object.keys(sockets || {}).map(function (socketId) {
+                return [socketId, sockets[socketId]];
             });
+
+        return socketEntries.map(function (entry) {
+            var socketId = entry[0],
+                socket = entry[1],
+                branchRooms = [];
+
+            getRoomNames(socket).forEach(function (roomName) {
+                var pieces = roomName.split(CONSTANTS.ROOM_DIVIDER);
+
+                if (pieces.length === 2) {
+                    branchRooms.push({
+                        projectId: pieces[0],
+                        branchName: pieces[1],
+                    });
+                }
+            });
+
+            return {
+                socketId: socketId,
+                userId: socket.userId,
+                connectedSince: socket.handshake && socket.handshake.time,
+                branchRooms: branchRooms,
+            };
+        });
     };
 
     this.handleWebsocketRouterMessages = function (routerId, handleObject) {
