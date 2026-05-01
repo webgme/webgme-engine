@@ -10,7 +10,8 @@ var //MongoURI = require('mongo-uri'),
     main;
 
 main = function (argv) {
-    var program = require('commander'),
+    var Command = require('commander').Command,
+        program = new Command(),
         //userManager = require('./usermanager'),
         args = Array.prototype.slice.call(argv),
         //uri,
