@@ -4,7 +4,7 @@
   "description": "WebGME server and Client API without a GUI",
   "main": "index.js",
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19.0"
   },
   "scripts": {
     "start": "node ./src/bin/start_server.js",
@@ -45,6 +45,7 @@
   "homepage": "https://github.com/webgme/webgme-engine#README.md",
   "dependencies": {
     "@azure/msal-node": "^2.9.2",
+    "@redocly/cli": "^2.30.3",
     "@socket.io/redis-adapter": "^8.3.0",
     "adm-zip": "^0.5.10",
     "agentkeepalive": "^4.5.0",
@@ -76,7 +77,6 @@
     "nodemailer": "^8",
     "pug": "^3.0.0",
     "q": "^1.5.1",
-    "raml2html": "^7.8.0",
     "redis": "^5.12.1",
     "requirejs": "^2.3.6",
     "requirejs-text": "^2.0.16",
@@ -84,6 +84,7 @@
     "socket.io-client": "^4",
     "superagent": "^10.3.0",
     "underscore": "^1.13.6",
+    "webapi-parser": "^0.5.0",
     "webgme-ot": "0.0.16",
     "webgme-rust": "0.1.0",
     "winston": "^2.4.7"
