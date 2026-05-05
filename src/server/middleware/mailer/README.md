@@ -2,7 +2,7 @@
 Here, we collect some example setup and usage guidance related to the e-mail services that made available to your WebGME environment.
 
 ### Setup-scenarios
-For further information on different setup informations, please check out the [nodemailer](https://nodemailer.com/about/) and [gmeConfig](https://github.com/webgme/webgme-engine/blob/master/config/README.md) descriptions.
+For further information on different setup informations, please check out the [nodemailer](https://nodemailer.com/about/) and [gmeConfig](https://github.com/webgme/webgme-engine/blob/main/config/README.md) descriptions.
 #### Gmail
 Probably the easiest way to drive your e-mail services is to connect it to a gmail account. Just follow these steps and you should be good to go:
 - Go to your [google account](https://myaccount.google.com/) and make sure that among the security settings you turn on the `Less secure app access` - otherwise google will block your login attempts.
@@ -26,7 +26,7 @@ config.mailer.pwd = 'myVerySecretPassword';
 ### Usage
 As we setup our mailer service, here are some ways how you can use it.
 #### Password reset
-Accidents happen and so far, the only way to give a user a new password in this case was to contact the maintainer of the deployment who was able to set some password using the built-in [usermanager](https://github.com/webgme/webgme-engine/blob/master/src/bin/usermanager.js#L126-L147) command. Now, with careful setup the default [profile page](https://github.com/webgme/user-management-page) can provide a 'reset' functionality to the user, that is combined with the mailer service. The following elements of your configuration must be set on top of the [basic mailer settings](#Setup-scenarios):
+Accidents happen and so far, the only way to give a user a new password in this case was to contact the maintainer of the deployment who was able to set some password using the built-in [usermanager](https://github.com/webgme/webgme-engine/blob/main/src/bin/usermanager.js#L126-L147) command. Now, with careful setup the default [profile page](https://github.com/webgme/user-management-page) can provide a 'reset' functionality to the user, that is combined with the mailer service. The following elements of your configuration must be set on top of the [basic mailer settings](#Setup-scenarios):
 ```
 config.authentication.allowPasswordReset = true; /* to allow reset functionality */
 config.authentication.allowedResetInterval = 3600000; /* interval of allowed reset requests that should be long enough so malicious actors cannot abuse it */

@@ -30,9 +30,9 @@ ubuntu
 `NODE_ENV=mine npm start`
 
 ## Setting parameters via WEBGME_* env vars
-Since [v2.22.2](https://github.com/webgme/webgme-engine/blob/master/CHANGELOG.md#v2222-2018-12-11) individual configuration parameters can be set using environment variables.
+Since [v2.22.2](https://github.com/webgme/webgme-engine/blob/main/CHANGELOG.md#v2222-2018-12-11) individual configuration parameters can be set using environment variables.
 
-Important! - before attempting to set any of these make sure the `config/index.js` in your repository requires and calls `overrideFromEnv(config)` (was not generated in `webgme-cli < 2.8.2`). If not you can copy the content of this [index.js](https://github.com/webgme/bindings/blob/master/config/index.js) and override your file.
+Important! - before attempting to set any of these make sure the `config/index.js` in your repository requires and calls `overrideFromEnv(config)` (was not generated in `webgme-cli < 2.8.2`). If not you can copy the content of this [index.js](https://github.com/webgme/bindings/blob/main/config/index.js) and override your file.
 
 To set a configuration variable `config.<configGroup>.<configSubGroup1>.<configSubGroup2>.<cfgName>=<value>` defined the env var `WEBGME_<configGroup>_<configSubGroup1>_<configSubGroup2>_<cfgName>=<value>`. For example:
 
@@ -66,7 +66,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.authentication.adminAccount = null`
  - If specified, will create an admin account at the given username at server startup. By default a random password will be generated and logged in the terminal - to specify a password separate it with a `:`, e.g. `'admin:password'`. (Once the admin exists the password will not be updated at startup.)
 - `config.authentication.allowUserRegistration = true`
- - Allows user-creation via the REST api without being an authenticated site admin. Provide a path to a module if you want to add your own custom registration path (see [default register end-point](https://github.com/webgme/webgme/blob/master/src/server/api/defaultRegisterEndPoint.js) for structure).
+ - Allows user-creation via the REST api without being an authenticated site admin. Provide a path to a module if you want to add your own custom registration path (see [default register end-point](https://github.com/webgme/webgme/blob/main/src/server/api/defaultRegisterEndPoint.js) for structure).
 - `config.authentication.registeredUsersCanCreate = true`
  - Use this option if user registration is set to `true` and you want to control if registered users should be able to create projects directly after registered (site-admins can edit the `canCreate` property post-hoc for existing users).
 - `config.authentication.inferredUsersCanCreate = false`
@@ -217,7 +217,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 
 #### mailer
 - `config.mailer.enable = false`
- - Switch to turn on the mail sending services of WebGME. To see what this service can do, please check the [mailer readme](https://github.com/webgme/webgme-engine/blob/master/src/server/middleware/mailer/README.md).
+ - Switch to turn on the mail sending services of WebGME. To see what this service can do, please check the [mailer readme](https://github.com/webgme/webgme-engine/blob/main/src/server/middleware/mailer/README.md).
 - `config.mailer.service = ''`
  - Allows for shorthand configuraiton of SMTP servers for known services like gmail. For furhter details on what can be configured, please check [nodemailer](https://nodemailer.com/about/).
 - `config.mailer.host = ''`
