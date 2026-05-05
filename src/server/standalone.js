@@ -39,6 +39,7 @@ const getClientConfig = require('../../config/getclientconfig');
 const GmeAuth = require('./middleware/auth/gmeauth');
 const Logger = require('./logger');
 const AADClient = require('./middleware/auth/WebgmeAADClient');
+const aadVerify = require('./middleware/auth/verifyAADToken');
 
 const AddOnEventPropagator = require('../addon/addoneventpropagator');
 const webgmeUtils = require('../utils');
@@ -690,7 +691,6 @@ class StandAloneServer {
                 //device access to use webgme related services - only available when access Scope is used
                 if (__gmeConfig.authentication.azureActiveDirectory.accessScope) {
 
-                    const aadVerify = require('azure-ad-verify-token-commonjs');
                     const verify = aadVerify.verify;
                     const voptions = {
                         jwksUri: __gmeConfig.authentication.azureActiveDirectory.jwksUri, 

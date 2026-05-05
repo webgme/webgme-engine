@@ -5,7 +5,7 @@ const msal = require('@azure/msal-node');
 const jwt = require('jsonwebtoken');
 const GUID = requireJS('common/util/guid');
 const Q = require('q');
-const aadVerify = require('azure-ad-verify-token-commonjs').verify;
+const aadVerify = require('./verifyAADToken').verify;
 
 class WebGMEAADClient {
     constructor(gmeConfig, gmeAuth, logger) {
