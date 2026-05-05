@@ -17,7 +17,6 @@ const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
-const multipart = require('connect-multiparty');
 const cors = require('cors');
 const Http = require('http');
 const ejs = require('ejs');
@@ -175,8 +174,11 @@ class StandAloneServer {
         this.__app.use(cookieParser());
         this.__app.use(bodyParser.json(gmeConfig.server.bodyParser.json));
         this.__app.use(bodyParser.urlencoded({extended: true}));
+        this.__app.use((req, res, next) => {
+            req.body = req.body || {};
+            next();
+        });
         this.__app.use(methodOverride());
-        this.__app.use(multipart({defer: true})); // required to upload files. (body parser should not be used!)
 
         this.__logger.debug('Collecting valid self-addresses');
         const networkIfs = OS.networkInterfaces();
