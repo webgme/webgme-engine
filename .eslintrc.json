@@ -2,6 +2,14 @@
   "env": {
     "es6": true
   },
+  "overrides": [
+    {
+      "files": ["src/server/middleware/auth/verifyAADToken.js"],
+      "parserOptions": {
+        "ecmaVersion": 2022
+      }
+    }
+  ],
   "parserOptions": {
     "ecmaVersion": 2018
   },
