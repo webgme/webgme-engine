@@ -1117,7 +1117,10 @@ function createAPI(app, mountPath, middlewareOpts) {
             } else {
                 return ensureOrgOrSiteAdmin(req, res)
                     .then(function () {
-                        return gmeAuth.removeOrganizationByOrgId(req.params.orgId, req.body.info);
+                        return gmeAuth.removeOrganizationByOrgId(
+                            req.params.orgId,
+                            req.body && req.body.info
+                        );
                     });
             }
         }
