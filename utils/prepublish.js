@@ -7,11 +7,9 @@
 'use strict';
 
 function prepublish(jsdocConfigPath) {
-    var raml2html = require('raml2html'),
-        path = require('path'),
-        fs = require('fs'),
+    var path = require('path'),
         childProcess = require('child_process'),
-        configWithDefaultTemplates = raml2html.getConfigForTheme();
+        buildRestApiDocs = require('./build_rest_api_docs');
 
     if (process.env.TRAVIS_LINT_TEST) {
         console.warn('LINT_TEST defined - skipping build completely');
@@ -20,9 +18,9 @@ function prepublish(jsdocConfigPath) {
 
     console.log('Generating REST API docs ...');
     const ramlPath = path.join(__dirname, '..', 'src', 'server', 'api', 'webgme-api-v1.raml');
-    raml2html.render(ramlPath, configWithDefaultTemplates)
-        .then(function (indexHtml) {
-            fs.writeFileSync(path.join(__dirname, '..', 'docs', 'REST', 'index.html'), indexHtml);
+    const restIndexPath = path.join(__dirname, '..', 'docs', 'REST', 'index.html');
+    buildRestApiDocs(ramlPath, restIndexPath)
+        .then(function () {
             console.log('Done with REST API docs!');
         }, function (err) {
             console.error('Failed generating REST API docs!', err);
