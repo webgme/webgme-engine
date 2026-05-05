@@ -174,6 +174,10 @@ class StandAloneServer {
         this.__app.use(cookieParser());
         this.__app.use(bodyParser.json(gmeConfig.server.bodyParser.json));
         this.__app.use(bodyParser.urlencoded({extended: true}));
+        this.__app.use((req, res, next) => {
+            req.body = req.body || {};
+            next();
+        });
         this.__app.use(methodOverride());
 
         this.__logger.debug('Collecting valid self-addresses');
