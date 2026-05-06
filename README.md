@@ -60,3 +60,6 @@ The path to the app-dir is configurable via `gmeConfig.client.appDir`.
 * `test-karma` - test directory for tests running inside a browser.
 * `test-tmp` - temporary files generate during tests.
 * `utils` - postinstall, prebublish and build scripts.
+
+## Developers
+Use `./release.sh <semantic_version>` to release, e.g. `release.sh 2.31.0` and follow instructions.
