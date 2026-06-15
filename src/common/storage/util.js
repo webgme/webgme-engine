@@ -171,6 +171,177 @@ define([
         return deferred.promise;
     }
 
+    function _getProjectTraverser(project) {
+        if (typeof project.traverse === 'function') {
+            return project;
+        }
+
+        if (project._dbProject && typeof project._dbProject.traverse === 'function') {
+            return project._dbProject;
+        }
+
+        return null;
+    }
+
+    function _getProjectObjectInserter(project) {
+        if (project._dbProject && typeof project._dbProject.insertObject === 'function') {
+            return project._dbProject;
+        }
+
+        return null;
+    }
+
+    function _traverseProjectObjects(project, visitFn) {
+        var traverser = _getProjectTraverser(project),
+            deferred = Q.defer();
+
+        if (!traverser) {
+            deferred.reject(new Error('Project does not support traverse.'));
+            return deferred.promise;
+        }
+
+        Q.ninvoke(traverser, 'traverse', visitFn)
+            .then(deferred.resolve)
+            .catch(deferred.reject);
+
+        return deferred.promise;
+    }
+
+    function _collectAllRepositoryObjects(project) {
+        var deferred = Q.defer(),
+            objects = [],
+            error = null;
+
+        _traverseProjectObjects(project, function (object, next) {
+            error = error || null;
+            objects.push(object);
+            next(error);
+        })
+            .then(function () {
+                if (error) {
+                    deferred.reject(error);
+                } else {
+                    deferred.resolve(objects);
+                }
+            })
+            .catch(deferred.reject);
+
+        return deferred.promise;
+    }
+
+    function _isRepositoryCoreObject(object, branchNames) {
+        var id = object[CONSTANTS.MONGO_ID];
+
+        if (!id || typeof id !== 'string') {
+            return false;
+        }
+
+        if (id === CONSTANTS.EMPTY_PROJECT_DATA || id === 'TAGS') {
+            return false;
+        }
+
+        if (REGEXP.RAW_BRANCH.test(id)) {
+            return false;
+        }
+
+        if (branchNames && Object.hasOwn(branchNames, id)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    function _collectAssetHashesFromObject(object, assets) {
+        var key;
+
+        if (object.atr) {
+            for (key in object.atr) {
+                if (typeof object.atr[key] === 'string' && REGEXP.BLOB_HASH.test(object.atr[key])) {
+                    assets[object.atr[key]] = true;
+                }
+            }
+        }
+    }
+
+    function _collectRepositoryHashes(objects) {
+        var hashes = {
+                objects: [],
+                assets: {}
+            },
+            assets = {},
+            i,
+            object;
+
+        for (i = 0; i < objects.length; i += 1) {
+            object = objects[i];
+            hashes.objects.push(object[CONSTANTS.MONGO_ID]);
+            _collectAssetHashesFromObject(object, assets);
+        }
+
+        hashes.assets = Object.keys(assets);
+        return hashes;
+    }
+
+    function _resolveDefaultBranchCompat(project, branches, parameters) {
+        var deferred = Q.defer(),
+            branchName = parameters.defaultBranchName,
+            branchNames = Object.keys(branches);
+
+        if (typeof branchName !== 'string') {
+            if (branchNames.indexOf('master') > -1) {
+                branchName = 'master';
+            } else if (branchNames.length > 0) {
+                branchName = branchNames[0];
+            } else {
+                deferred.resolve({
+                    branchName: null,
+                    commitHash: null,
+                    rootHash: null
+                });
+                return deferred.promise;
+            }
+        }
+
+        if (!Object.hasOwn(branches, branchName)) {
+            deferred.reject(new Error('Unknown default branch [' + branchName + ']'));
+            return deferred.promise;
+        }
+
+        Q.ninvoke(project, 'loadObject', branches[branchName])
+            .then(function (commitObject) {
+                deferred.resolve({
+                    branchName: branchName,
+                    commitHash: branches[branchName],
+                    rootHash: commitObject.root
+                });
+            })
+            .catch(deferred.reject);
+
+        return deferred.promise;
+    }
+
+    function _assertRepositoryProjectJson(projectJson) {
+        if (projectJson.formatVersion !== CONSTANTS.PROJECT_JSON_FORMAT_VERSION) {
+            throw new Error('Unsupported project json formatVersion [' + projectJson.formatVersion + ']');
+        }
+
+        if (projectJson.exportMode !== CONSTANTS.REPOSITORY_EXPORT_MODE) {
+            throw new Error('Unsupported project json exportMode [' + projectJson.exportMode + ']');
+        }
+
+        if (!projectJson.objects || projectJson.objects instanceof Array === false) {
+            throw new Error('Repository project json is missing objects array.');
+        }
+
+        if (!projectJson.branches || typeof projectJson.branches !== 'object') {
+            throw new Error('Repository project json is missing branches object.');
+        }
+
+        if (!projectJson.tags || typeof projectJson.tags !== 'object') {
+            throw new Error('Repository project json is missing tags object.');
+        }
+    }
+
     return {
         CONSTANTS: CONSTANTS,
         getProjectFullNameFromProjectId: function (projectId) {
@@ -320,6 +491,140 @@ define([
                 rootHash, toPersist, options.commitMessage || defaultCommitMessage)
                 .then(function (commitResult) {
                     deferred.resolve(commitResult);
+                })
+                .catch(deferred.reject);
+
+            return deferred.promise.nodeify(callback);
+        },
+
+        /**
+         * Extracts a serializable json representation of the full project repository,
+         * including all stored objects, branches, tags, and commit history.
+         *
+         * @param {ProjectInterface} project
+         * @param {object} [parameters]
+         * @param {string} [parameters.kind] - If not given will assign the one in project.
+         * @param {string} [parameters.defaultBranchName] - Branch used for v1 compatible fields.
+         * @param {function} callback
+         */
+        getProjectWithHistory: function (project, parameters, callback) {
+            var deferred = Q.defer(),
+                rawJson,
+                allObjects,
+                repositoryObjects,
+                branches,
+                tags,
+                commits;
+
+            parameters = parameters || {};
+
+            Q.all([
+                project.getBranches(),
+                project.getTags(),
+                _collectAllRepositoryObjects(project),
+                project.getProjectInfo()
+            ])
+                .then(function (res) {
+                    branches = res[0];
+                    tags = res[1];
+                    allObjects = res[2];
+
+                    repositoryObjects = allObjects.filter(function (object) {
+                        return _isRepositoryCoreObject(object, branches);
+                    });
+
+                    commits = repositoryObjects.filter(function (object) {
+                        return object.type === CONSTANTS.COMMIT_TYPE;
+                    }).sort(function (a, b) {
+                        return a.time - b.time;
+                    });
+
+                    return _resolveDefaultBranchCompat(project, branches, parameters)
+                        .then(function (compat) {
+                            var info = res[3];
+
+                            rawJson = {
+                                formatVersion: CONSTANTS.PROJECT_JSON_FORMAT_VERSION,
+                                exportMode: CONSTANTS.REPOSITORY_EXPORT_MODE,
+                                projectId: project.projectId,
+                                kind: typeof parameters.kind === 'string' ? parameters.kind : info.info.kind,
+                                branchName: compat.branchName,
+                                commitHash: compat.commitHash,
+                                rootHash: compat.rootHash,
+                                branches: branches,
+                                tags: tags,
+                                commits: commits,
+                                hashes: _collectRepositoryHashes(repositoryObjects),
+                                objects: repositoryObjects
+                            };
+
+                            deferred.resolve(rawJson);
+                        });
+                })
+                .catch(deferred.reject);
+
+            return deferred.promise.nodeify(callback);
+        },
+
+        /**
+         * Inserts a repository project json into the storage, restoring branches and tags.
+         *
+         * @param {ProjectInterface} project
+         * @param {object} projectJson
+         * @param {function(Error, object)} callback
+         */
+        insertProjectWithHistory: function (project, projectJson, callback) {
+            var deferred = Q.defer(),
+                inserter = _getProjectObjectInserter(project),
+                branchNames,
+                tagNames;
+
+            try {
+                _assertRepositoryProjectJson(projectJson);
+            } catch (err) {
+                deferred.reject(err);
+                return deferred.promise.nodeify(callback);
+            }
+
+            if (!inserter) {
+                deferred.reject(new Error('Project does not support direct object insertion.'));
+                return deferred.promise.nodeify(callback);
+            }
+
+            Q.allSettled(projectJson.objects.map(function (object) {
+                return Q.ninvoke(inserter, 'insertObject', object);
+            }))
+                .then(function (insertResults) {
+                    var failedInserts = [],
+                        j;
+
+                    for (j = 0; j < insertResults.length; j += 1) {
+                        if (insertResults[j].state === 'rejected') {
+                            failedInserts.push(insertResults[j].reason);
+                        }
+                    }
+
+                    if (failedInserts.length > 0) {
+                        throw failedInserts[0];
+                    }
+
+                    branchNames = Object.keys(projectJson.branches);
+                    return Q.all(branchNames.map(function (branchName) {
+                        return Q.ninvoke(project, 'setBranchHash', branchName, '', projectJson.branches[branchName]);
+                    }));
+                })
+                .then(function () {
+                    tagNames = Object.keys(projectJson.tags);
+                    return Q.all(tagNames.map(function (tagName) {
+                        return Q.ninvoke(project, 'createTag', tagName, projectJson.tags[tagName]);
+                    }));
+                })
+                .then(function () {
+                    deferred.resolve({
+                        projectId: projectJson.projectId,
+                        branches: projectJson.branches,
+                        tags: projectJson.tags
+                    });
                 })
                 .catch(deferred.reject);
 

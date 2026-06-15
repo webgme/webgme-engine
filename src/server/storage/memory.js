@@ -142,6 +142,55 @@ function Memory(mainLogger, gmeConfig) {
             return deferred.promise.nodeify(callback);
         };
 
+        this.traverse = function (visitFn, callback) {
+            var deferred = Q.defer(),
+                objects = [],
+                i,
+                key,
+                keyArray,
+                item,
+                object,
+                idx = 0,
+                prefix = database + SEPARATOR + projectId + SEPARATOR,
+                error = null;
+
+            for (i = 0; i < storage.length; i += 1) {
+                key = storage.key(i);
+                if (key.indexOf(prefix) === 0) {
+                    keyArray = key.split(SEPARATOR);
+                    if (keyArray[2]) {
+                        item = storage.getItem(key);
+                        if (typeof item === 'string') {
+                            objects.push(JSON.parse(item));
+                        } else if (item && typeof item === 'object') {
+                            objects.push(item);
+                        }
+                    }
+                }
+            }
+
+            function processNext() {
+                if (idx >= objects.length) {
+                    if (error) {
+                        deferred.reject(error);
+                    } else {
+                        deferred.resolve();
+                    }
+                    return;
+                }
+
+                visitFn(objects[idx], function (err) {
+                    error = error || err;
+                    idx += 1;
+                    processNext();
+                });
+            }
+
+            processNext();
+
+            return deferred.promise.nodeify(callback);
+        };
+
         this.getBranches = function (callback) {
             var deferred = Q.defer(),
                 branchNames = {},
