@@ -58,7 +58,7 @@ describe('Storage project history io', function () {
             })
             .then(function (featureCommit) {
                 featureCommitHash = featureCommit.hash;
-                return project.createTag('release-1', masterCommitHash);
+                return project.createTag('release_1', masterCommitHash);
             })
             .nodeify(function (err) {
                 if (err) {
@@ -104,7 +104,7 @@ describe('Storage project history io', function () {
                     feature: featureCommitHash
                 });
                 expect(projectJson.tags).to.deep.equal({
-                    'release-1': masterCommitHash
+                    release_1: masterCommitHash
                 });
                 expect(projectJson.commits.length).to.be.at.least(2);
                 expect(projectJson.objects.every(function (object) {
