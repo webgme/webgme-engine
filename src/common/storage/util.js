@@ -184,11 +184,23 @@ define([
     }
 
     function _getProjectObjectInserter(project) {
+        if (typeof project.persistObject === 'function') {
+            return project;
+        }
+
         if (project._dbProject && typeof project._dbProject.insertObject === 'function') {
             return project._dbProject;
         }
 
         return null;
+    }
+
+    function _persistRepositoryObject(project, inserter, object) {
+        if (inserter === project) {
+            return Q.ninvoke(project, 'persistObject', object);
+        }
+
+        return Q.ninvoke(inserter, 'insertObject', object);
     }
 
     function _traverseProjectObjects(project, visitFn) {
@@ -209,20 +221,14 @@ define([
 
     function _collectAllRepositoryObjects(project) {
         var deferred = Q.defer(),
-            objects = [],
-            error = null;
+            objects = [];
 
         _traverseProjectObjects(project, function (object, next) {
-            error = error || null;
             objects.push(object);
-            next(error);
+            next();
         })
             .then(function () {
-                if (error) {
-                    deferred.reject(error);
-                } else {
-                    deferred.resolve(objects);
-                }
+                deferred.resolve(objects);
             })
             .catch(deferred.reject);
 
@@ -236,7 +242,7 @@ define([
             return false;
         }
 
-        if (id === CONSTANTS.EMPTY_PROJECT_DATA || id === 'TAGS') {
+        if (id === CONSTANTS.EMPTY_PROJECT_DATA || id === CONSTANTS.TAGS_DOCUMENT_ID) {
             return false;
         }
 
@@ -592,7 +598,7 @@ define([
             }
 
             Q.allSettled(projectJson.objects.map(function (object) {
-                return Q.ninvoke(inserter, 'insertObject', object);
+                return _persistRepositoryObject(project, inserter, object);
             }))
                 .then(function (insertResults) {
                     var failedInserts = [],

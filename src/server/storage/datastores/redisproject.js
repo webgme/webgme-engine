@@ -251,6 +251,41 @@ function RedisProject(projectId, adapter) {
             })
             .nodeify(callback);
     };
+
+    this.traverse = function (visitFn, callback) {
+        return adapter.redisCommand('HGETALL', [projectId])
+            .then(function (result) {
+                var keys = Object.keys(result || {}),
+                    idx = 0,
+                    deferred = Q.defer();
+
+                function processNext() {
+                    if (idx >= keys.length) {
+                        deferred.resolve();
+                        return;
+                    }
+
+                    if (!REGEXP.HASH.test(keys[idx])) {
+                        idx += 1;
+                        processNext();
+                        return;
+                    }
+
+                    visitFn(JSON.parse(result[keys[idx]]), function (err) {
+                        if (err) {
+                            deferred.reject(err);
+                        } else {
+                            idx += 1;
+                            processNext();
+                        }
+                    });
+                }
+
+                processNext();
+                return deferred.promise;
+            })
+            .nodeify(callback);
+    };
 }
 
 module.exports = RedisProject;

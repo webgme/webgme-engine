@@ -156,3 +156,11 @@ That streaming layout is not implemented yet; the current API returns a single i
 
 - File-based SQLite storage plan: see `docs/filestorage-sqlite-plan.md` on the `filestorage` branch
 - v1 snapshot export: `getProjectJson` in `src/common/storage/util.js`
+
+## Testing
+
+Integration tests in `test/common/storage/project.historyio.spec.js` use in-memory project storage but still require **MongoDB** for auth setup (`clearDBAndGetGMEAuth`). Start Mongo before running:
+
+```bash
+npm run test_ci -- --grep "Storage project history io"
+```

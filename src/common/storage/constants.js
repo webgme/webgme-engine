@@ -92,6 +92,7 @@
             'icon'
         ],
         EMPTY_PROJECT_DATA: 'empty',
+        TAGS_DOCUMENT_ID: 'TAGS',
         PROJECT_JSON_FORMAT_VERSION: 2,
         REPOSITORY_EXPORT_MODE: 'repository',
         PROJECT_ID_SEP: '+',

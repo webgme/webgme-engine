@@ -149,7 +149,6 @@ function Memory(mainLogger, gmeConfig) {
                 key,
                 keyArray,
                 item,
-                object,
                 idx = 0,
                 prefix = database + SEPARATOR + projectId + SEPARATOR,
                 error = null;

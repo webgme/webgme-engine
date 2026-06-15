@@ -1,7 +1,7 @@
 /*eslint-env node, mocha*/
 
 /**
- * @author webgme / historyio
+ * @author pmeijer / https://github.com/pmeijer
  */
 
 var testFixture = require('../../_globals.js');
@@ -21,7 +21,8 @@ describe('Storage project history io', function () {
         rootHash,
         initialCommitHash,
         masterCommitHash,
-        featureCommitHash;
+        featureCommitHash,
+        setupFailed = false;
 
     before(function (done) {
         testFixture.clearDBAndGetGMEAuth(gmeConfig, projectName)
@@ -58,15 +59,33 @@ describe('Storage project history io', function () {
                 featureCommitHash = featureCommit.hash;
                 return project.createTag('release-1', masterCommitHash);
             })
-            .nodeify(done);
+            .nodeify(function (err) {
+                if (err) {
+                    setupFailed = true;
+                }
+                done(err);
+            });
     });
 
     after(function (done) {
+        if (!storage) {
+            done();
+            return;
+        }
+
         storage.closeDatabase()
             .then(function () {
-                return gmeAuth.unload();
+                if (gmeAuth) {
+                    return gmeAuth.unload();
+                }
             })
             .nodeify(done);
+    });
+
+    beforeEach(function () {
+        if (setupFailed) {
+            throw new Error('Skipping tests because project setup failed (is MongoDB running?)');
+        }
     });
 
     it('should export full repository metadata with v1 compatible fields', function (done) {
