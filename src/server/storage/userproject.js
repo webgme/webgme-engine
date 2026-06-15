@@ -281,6 +281,10 @@ function UserProject(dbProject, storage, mainLogger, gmeConfig) {
         return self._dbProject.traverse(visitFn, callback);
     };
 
+    this.dumpProject = function (callback) {
+        return self._dbProject.dumpProject(callback);
+    };
+
     this.persistObject = function (object, callback) {
         return self._dbProject.insertObject(object, callback);
     };

@@ -190,6 +190,73 @@ function Memory(mainLogger, gmeConfig) {
             return deferred.promise.nodeify(callback);
         };
 
+        this.dumpProject = function (callback) {
+            var deferred = Q.defer(),
+                branches = {},
+                tags = {},
+                objects = [],
+                commits = [],
+                prefix = database + SEPARATOR + projectId + SEPARATOR,
+                i,
+                key,
+                keyArray,
+                item,
+                object;
+
+            for (i = 0; i < storage.length; i += 1) {
+                key = storage.key(i);
+                if (key.indexOf(prefix) !== 0) {
+                    continue;
+                }
+
+                keyArray = key.split(SEPARATOR);
+                if (!keyArray[2]) {
+                    continue;
+                }
+
+                if (keyArray[2] === TAGS) {
+                    item = storage.getItem(key);
+                    tags = Object.assign({}, item || {});
+                    continue;
+                }
+
+                if (REGEXP.RAW_BRANCH.test(keyArray[2])) {
+                    item = storage.getItem(key);
+                    if (typeof item === 'string') {
+                        item = JSON.parse(item);
+                    }
+                    branches[keyArray[2].slice(1)] = item.hash;
+                    continue;
+                }
+
+                item = storage.getItem(key);
+                if (typeof item === 'string') {
+                    object = JSON.parse(item);
+                } else {
+                    object = item;
+                }
+
+                if (object.type === CONSTANT.COMMIT_TYPE) {
+                    commits.push(object);
+                } else {
+                    objects.push(object);
+                }
+            }
+
+            commits.sort(function (a, b) {
+                return a.time - b.time;
+            });
+
+            deferred.resolve({
+                objects: objects,
+                commits: commits,
+                branches: branches,
+                tags: tags
+            });
+
+            return deferred.promise.nodeify(callback);
+        };
+
         this.getBranches = function (callback) {
             var deferred = Q.defer(),
                 branchNames = {},

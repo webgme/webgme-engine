@@ -171,16 +171,26 @@ define([
         return deferred.promise;
     }
 
-    function _getProjectTraverser(project) {
-        if (typeof project.traverse === 'function') {
+    function _getProjectDumper(project) {
+        if (typeof project.dumpProject === 'function') {
             return project;
         }
 
-        if (project._dbProject && typeof project._dbProject.traverse === 'function') {
+        if (project._dbProject && typeof project._dbProject.dumpProject === 'function') {
             return project._dbProject;
         }
 
         return null;
+    }
+
+    function _dumpProjectRecords(project) {
+        var dumper = _getProjectDumper(project);
+
+        if (!dumper) {
+            return Q.reject(new Error('Project does not support dumpProject.'));
+        }
+
+        return Q.ninvoke(dumper, 'dumpProject');
     }
 
     function _getProjectObjectInserter(project) {
@@ -203,58 +213,106 @@ define([
         return Q.ninvoke(inserter, 'insertObject', object);
     }
 
-    function _traverseProjectObjects(project, visitFn) {
-        var traverser = _getProjectTraverser(project),
-            deferred = Q.defer();
-
-        if (!traverser) {
-            deferred.reject(new Error('Project does not support traverse.'));
-            return deferred.promise;
+    function _enqueueSnapshotReference(value, queue, visited) {
+        if (typeof value === 'string' && REGEXP.HASH.test(value) && !visited[value]) {
+            visited[value] = true;
+            queue.push(value);
         }
-
-        Q.ninvoke(traverser, 'traverse', visitFn)
-            .then(deferred.resolve)
-            .catch(deferred.reject);
-
-        return deferred.promise;
     }
 
-    function _collectAllRepositoryObjects(project) {
-        var deferred = Q.defer(),
-            objects = [];
+    function _collectSnapshotClosureFromObjects(objects, rootHash) {
+        var objectsById = {},
+            queue = [rootHash],
+            visited = {},
+            result = [],
+            assets = {},
+            i,
+            hash,
+            object,
+            key;
 
-        _traverseProjectObjects(project, function (object, next) {
-            objects.push(object);
-            next();
-        })
-            .then(function () {
-                deferred.resolve(objects);
-            })
-            .catch(deferred.reject);
+        for (i = 0; i < objects.length; i += 1) {
+            objectsById[objects[i][CONSTANTS.MONGO_ID]] = objects[i];
+        }
 
-        return deferred.promise;
+        if (!objectsById[rootHash]) {
+            throw new Error('Cannot extract snapshot, root object [' + rootHash + '] is not in objects.');
+        }
+
+        visited[rootHash] = true;
+
+        while (queue.length > 0) {
+            hash = queue.shift();
+            object = objectsById[hash];
+            if (!object) {
+                continue;
+            }
+
+            result.push(object);
+
+            for (key in object) {
+                if (Object.hasOwn(object, key)) {
+                    _enqueueSnapshotReference(object[key], queue, visited);
+                }
+            }
+
+            if (object.atr) {
+                for (key in object.atr) {
+                    if (typeof object.atr[key] === 'string' && REGEXP.BLOB_HASH.test(object.atr[key])) {
+                        assets[object.atr[key]] = true;
+                    }
+                }
+            }
+
+            if (object.ovr && object.ovr.sharded === true) {
+                for (key in object.ovr) {
+                    _enqueueSnapshotReference(object.ovr[key], queue, visited);
+                }
+            }
+        }
+
+        return {
+            objects: result,
+            hashes: {
+                objects: result.map(function (obj) {
+                    return obj[CONSTANTS.MONGO_ID];
+                }),
+                assets: Object.keys(assets)
+            }
+        };
     }
 
-    function _isRepositoryCoreObject(object, branchNames) {
-        var id = object[CONSTANTS.MONGO_ID];
+    function _extractV1SnapshotFromRepositoryJson(projectJson) {
+        var rootHash = projectJson.rootHash,
+            commitHash = projectJson.commitHash,
+            commits = projectJson.commits || [],
+            snapshot,
+            i;
 
-        if (!id || typeof id !== 'string') {
-            return false;
+        if (!rootHash && commitHash) {
+            for (i = 0; i < commits.length; i += 1) {
+                if (commits[i]._id === commitHash) {
+                    rootHash = commits[i].root;
+                    break;
+                }
+            }
         }
 
-        if (id === CONSTANTS.EMPTY_PROJECT_DATA || id === CONSTANTS.TAGS_DOCUMENT_ID) {
-            return false;
+        if (!rootHash) {
+            throw new Error('Cannot extract v1 snapshot from repository json without rootHash.');
         }
 
-        if (REGEXP.RAW_BRANCH.test(id)) {
-            return false;
-        }
+        snapshot = _collectSnapshotClosureFromObjects(projectJson.objects || [], rootHash);
 
-        if (branchNames && Object.hasOwn(branchNames, id)) {
-            return false;
-        }
-
-        return true;
+        return {
+            projectId: projectJson.projectId,
+            kind: projectJson.kind,
+            branchName: projectJson.branchName,
+            commitHash: commitHash,
+            rootHash: rootHash,
+            hashes: snapshot.hashes,
+            objects: snapshot.objects
+        };
     }
 
     function _collectAssetHashesFromObject(object, assets) {
@@ -269,19 +327,21 @@ define([
         }
     }
 
-    function _collectRepositoryHashes(objects) {
+    function _collectRepositoryHashes(objects, commits) {
         var hashes = {
                 objects: [],
                 assets: {}
             },
             assets = {},
-            i,
-            object;
+            i;
 
         for (i = 0; i < objects.length; i += 1) {
-            object = objects[i];
-            hashes.objects.push(object[CONSTANTS.MONGO_ID]);
-            _collectAssetHashesFromObject(object, assets);
+            hashes.objects.push(objects[i][CONSTANTS.MONGO_ID]);
+            _collectAssetHashesFromObject(objects[i], assets);
+        }
+
+        for (i = 0; i < commits.length; i += 1) {
+            hashes.objects.push(commits[i][CONSTANTS.MONGO_ID]);
         }
 
         hashes.assets = Object.keys(assets);
@@ -337,6 +397,10 @@ define([
 
         if (!projectJson.objects || projectJson.objects instanceof Array === false) {
             throw new Error('Repository project json is missing objects array.');
+        }
+
+        if (!projectJson.commits || projectJson.commits instanceof Array === false) {
+            throw new Error('Repository project json is missing commits array.');
         }
 
         if (!projectJson.branches || typeof projectJson.branches !== 'object') {
@@ -477,11 +541,21 @@ define([
         insertProjectJson: function (project, projectJson, options, callback) {
             var deferred = Q.defer(),
                 toPersist = {},
-                rootHash = projectJson.rootHash,
-                defaultCommitMessage = 'Importing contents of [' +
-                    projectJson.projectId + '@' + rootHash + ']',
-                objects = projectJson.objects,
+                rootHash,
+                defaultCommitMessage,
+                objects,
                 i;
+
+            if (projectJson.formatVersion === CONSTANTS.PROJECT_JSON_FORMAT_VERSION &&
+                projectJson.exportMode === CONSTANTS.REPOSITORY_EXPORT_MODE) {
+
+                projectJson = _extractV1SnapshotFromRepositoryJson(projectJson);
+            }
+
+            rootHash = projectJson.rootHash;
+            defaultCommitMessage = 'Importing contents of [' +
+                    projectJson.projectId + '@' + rootHash + ']';
+            objects = projectJson.objects;
 
             for (i = 0; i < objects.length; i += 1) {
                 // we have to patch the object right before import, for smoother usage experience
@@ -516,38 +590,20 @@ define([
         getProjectWithHistory: function (project, parameters, callback) {
             var deferred = Q.defer(),
                 rawJson,
-                allObjects,
-                repositoryObjects,
-                branches,
-                tags,
-                commits;
+                dump;
 
             parameters = parameters || {};
 
             Q.all([
-                project.getBranches(),
-                project.getTags(),
-                _collectAllRepositoryObjects(project),
+                _dumpProjectRecords(project),
                 project.getProjectInfo()
             ])
                 .then(function (res) {
-                    branches = res[0];
-                    tags = res[1];
-                    allObjects = res[2];
+                    dump = res[0];
 
-                    repositoryObjects = allObjects.filter(function (object) {
-                        return _isRepositoryCoreObject(object, branches);
-                    });
-
-                    commits = repositoryObjects.filter(function (object) {
-                        return object.type === CONSTANTS.COMMIT_TYPE;
-                    }).sort(function (a, b) {
-                        return a.time - b.time;
-                    });
-
-                    return _resolveDefaultBranchCompat(project, branches, parameters)
+                    return _resolveDefaultBranchCompat(project, dump.branches, parameters)
                         .then(function (compat) {
-                            var info = res[3];
+                            var info = res[1];
 
                             rawJson = {
                                 formatVersion: CONSTANTS.PROJECT_JSON_FORMAT_VERSION,
@@ -557,11 +613,11 @@ define([
                                 branchName: compat.branchName,
                                 commitHash: compat.commitHash,
                                 rootHash: compat.rootHash,
-                                branches: branches,
-                                tags: tags,
-                                commits: commits,
-                                hashes: _collectRepositoryHashes(repositoryObjects),
-                                objects: repositoryObjects
+                                branches: dump.branches,
+                                tags: dump.tags,
+                                commits: dump.commits,
+                                hashes: _collectRepositoryHashes(dump.objects, dump.commits),
+                                objects: dump.objects
                             };
 
                             deferred.resolve(rawJson);
@@ -597,7 +653,7 @@ define([
                 return deferred.promise.nodeify(callback);
             }
 
-            Q.allSettled(projectJson.objects.map(function (object) {
+            Q.allSettled(projectJson.objects.concat(projectJson.commits).map(function (object) {
                 return _persistRepositoryObject(project, inserter, object);
             }))
                 .then(function (insertResults) {

@@ -4,7 +4,8 @@
  * @author pmeijer / https://github.com/pmeijer
  */
 
-var testFixture = require('../../_globals.js');
+var testFixture = require('../../_globals.js'),
+    Q = testFixture.Q;
 
 describe('Storage project history io', function () {
     'use strict';
@@ -106,8 +107,11 @@ describe('Storage project history io', function () {
                     'release-1': masterCommitHash
                 });
                 expect(projectJson.commits.length).to.be.at.least(2);
-                expect(projectJson.objects.length).to.be.at.least(projectJson.commits.length);
-                expect(projectJson.hashes.objects.length).to.equal(projectJson.objects.length);
+                expect(projectJson.objects.every(function (object) {
+                    return object.type !== CONSTANTS.COMMIT_TYPE;
+                })).to.equal(true);
+                expect(projectJson.hashes.objects.length).to.equal(
+                    projectJson.objects.length + projectJson.commits.length);
             })
             .nodeify(done);
     });
@@ -158,6 +162,42 @@ describe('Storage project history io', function () {
                     return commit._id;
                 }));
                 expect(reloadedJson.objects.length).to.equal(exportedJson.objects.length);
+            })
+            .nodeify(done);
+    });
+
+    it('should import v2 repository json via v1 insertProjectJson as snapshot only', function (done) {
+        var exportedJson,
+            importProjectName = projectName + 'Snapshot',
+            importedProject;
+
+        storageUtil.getProjectWithHistory(project, {defaultBranchName: 'master'})
+            .then(function (projectJson) {
+                exportedJson = projectJson;
+                return storage.createProject({
+                    projectName: importProjectName,
+                    username: gmeConfig.authentication.guestAccount
+                });
+            })
+            .then(function (newProject) {
+                importedProject = newProject;
+                return storageUtil.insertProjectJson(newProject, exportedJson, {
+                    branch: 'master',
+                    commitMessage: 'v1 snapshot import from v2'
+                });
+            })
+            .then(function () {
+                return Q.all([
+                    importedProject.getBranches(),
+                    importedProject.getTags(),
+                    storageUtil.getProjectWithHistory(importedProject)
+                ]);
+            })
+            .then(function (res) {
+                expect(res[0]).to.deep.equal({master: res[0].master});
+                expect(Object.hasOwn(res[0], 'feature')).to.equal(false);
+                expect(res[1]).to.deep.equal({});
+                expect(res[2].commits.length).to.be.below(exportedJson.commits.length);
             })
             .nodeify(done);
     });

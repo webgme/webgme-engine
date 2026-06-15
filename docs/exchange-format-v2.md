@@ -10,16 +10,38 @@ The v1 format exports only the **object closure reachable from a single branch, 
 - Tags not on the exported head
 - Unreachable objects still present in storage (old commits, abandoned data)
 
-v2 exports the **full project repository**: all stored objects plus explicit branch, tag, and commit listings.
+v2 exports the **full project repository**: core objects, all commits, branches, and tags — using the same raw-storage read path as `duplicateProject`, normalized into JSON.
+
+## Storage adapter: `dumpProject`
+
+Each database adapter implements `dumpProject()` on the opened project. It reads **all raw storage** and returns a classified structure:
+
+```javascript
+{
+  objects: [ /* core / patch / shard records — no commits */ ],
+  commits: [ /* commit objects, sorted by time */ ],
+  branches: { master: '#...', feature: '#...' },
+  tags: { 'release-1': '#...' }
+}
+```
+
+| Backend | Raw read (same idea as copy) |
+|---------|------------------------------|
+| Mongo | `collection.find({})`, classify each document |
+| Redis | `HGETALL` object hash + branch/tag maps |
+| Memory | scan prefixed keys, classify each entry |
+
+`getProjectWithHistory` calls `dumpProject` and wraps the result in the exchange JSON. No graph walk, no `traverse` in the export path.
 
 ## API
 
 | Function | Purpose |
 |----------|---------|
 | `getProjectWithHistory(project, parameters)` | Export full repository to JSON |
-| `insertProjectWithHistory(project, projectJson)` | Import a v2 repository dump |
+| `insertProjectWithHistory(project, projectJson)` | Import a v2 repository dump (full history) |
+| `insertProjectJson(project, projectJson, options)` | Import a snapshot; **auto-detects v2** and imports only the default-branch snapshot |
 
-Both live in `src/common/storage/util.js` alongside `getProjectJson` / `insertProjectJson`.
+Both export/import pairs live in `src/common/storage/util.js` alongside `getProjectJson`.
 
 Package layout (`.webgmex` zip with `project.json`) is unchanged; only the JSON schema differs when v2 fields are present.
 
@@ -77,23 +99,23 @@ v1 exports omit both fields. Importers that only understand v1 continue to use t
   ],
 
   "hashes": {
-    "objects": ["#first", "#abc123", "#def789", "#root456"],
+    "objects": ["#abc123", "#def789", "#root456"],
     "assets": []
   },
 
   "objects": [
-    { "_id": "#root456", "type": "..." },
-    { "_id": "#first", "type": "commit", "time": 1710000000000, "root": "#root456", "parents": ["#initial"] },
-    { "_id": "#abc123", "type": "commit", "time": 1710000001000, "root": "#root456", "parents": ["#first"] }
+    { "_id": "#root456", "type": "..." }
   ]
 }
 ```
+
+Commit objects appear **only** in `commits`, not in `objects`. `hashes.objects` lists ids from both arrays.
 
 ### Field reference
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `formatVersion` | yes | Must be `2` for v2 import |
+| `formatVersion` | yes | Must be `2` for v2 full import |
 | `exportMode` | yes | Must be `"repository"` |
 | `projectId` | yes | Project identifier (`owner+name`) |
 | `kind` | yes | Project kind string |
@@ -102,38 +124,47 @@ v1 exports omit both fields. Importers that only understand v1 continue to use t
 | `rootHash` | no | Root object of default branch head (v1 compat) |
 | `branches` | yes | Map of branch name → commit hash |
 | `tags` | yes | Map of tag name → commit hash |
-| `commits` | yes | Commit objects sorted by ascending `time` (convenience listing) |
-| `hashes.objects` | yes | All exported object ids |
-| `hashes.assets` | yes | Blob hashes referenced from exported objects |
-| `objects` | yes | All repository objects except branch/tag index records |
+| `commits` | yes | Commit objects sorted by ascending `time` |
+| `hashes.objects` | yes | Ids from `objects` **and** `commits` |
+| `hashes.assets` | yes | Blob hashes referenced from `objects` |
+| `objects` | yes | Core / patch / shard records only (no commits, no branch/tag index records) |
 
 ### What is excluded from `objects`
 
-Records stored only as storage indices are omitted because they are represented in `branches` / `tags`:
+Records stored only as storage indices:
 
 - Mongo branch documents (`_id` matching `*branchName`)
 - The `TAGS` document
 - The `empty` project marker
-- In-memory branch pointer records (matched by branch name)
-
-Commit objects **are included** in `objects` and duplicated in `commits` for convenience.
+- All commit objects (they live in `commits`)
 
 ## Backward compatibility
 
 ### Export
 
-`getProjectWithHistory` always sets v1-compatible top-level fields from the default branch (`master` if present, otherwise the first branch). Older importers that call `insertProjectJson` and ignore unknown fields can still import the default snapshot if they only read v1 fields — though they will not restore full history.
+`getProjectWithHistory` always sets v1-compatible top-level fields (`branchName`, `commitHash`, `rootHash`) from the default branch (`master` if present, otherwise the first branch).
 
 ### Import
 
-| Input | Handler |
-|-------|---------|
-| v1 (`formatVersion` absent) | Use existing `insertProjectJson` |
-| v2 (`formatVersion: 2`) | Use `insertProjectWithHistory` |
+| Goal | Handler | Behaviour |
+|------|---------|-----------|
+| v1 snapshot | `insertProjectJson` | Unchanged for plain v1 JSON |
+| v1 snapshot **from v2 file** | `insertProjectJson` | Detects `formatVersion: 2`, extracts object closure from `rootHash` / default branch, **ignores** other branches, tags, and commit history; creates one new commit |
+| v2 full history | `insertProjectWithHistory` | Restores all `objects`, `commits`, `branches`, and `tags` |
+
+#### v1 import from a v2 package
+
+Older tooling that calls `insertProjectJson` (or the `import` bin) does **not** need a separate code path. When `formatVersion === 2`:
+
+1. Read `rootHash` (or resolve it from `commitHash` via the `commits` list)
+2. Walk the **object closure** from `rootHash` through `objects` only (same rules as `getProjectJson`)
+3. Call `makeCommit` with that subset — one branch, no tags, no other branches
+
+So a v2 `.webgmex` file is safe to hand to legacy import: you get the latest default-branch snapshot, not the full repository.
 
 `insertProjectWithHistory`:
 
-1. Inserts every object in `objects` via the database project adapter
+1. Inserts every record in `objects` and `commits`
 2. Restores each branch with `setBranchHash(branch, '', commitHash)`
 3. Restores each tag with `createTag(name, commitHash)`
 

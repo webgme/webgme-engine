@@ -328,6 +328,57 @@ function Mongo(mainLogger, gmeConfig) {
             return deferred.promise.nodeify(callback);
         };
 
+        this.dumpProject = function (callback) {
+            return Q(collection.find({}).toArray())
+                .then(function (docs) {
+                    var branches = {},
+                        tags = {},
+                        objects = [],
+                        commits = [],
+                        i,
+                        doc,
+                        id;
+
+                    for (i = 0; i < docs.length; i += 1) {
+                        doc = docs[i];
+                        id = doc._id;
+
+                        if (id === CONSTANTS.EMPTY_PROJECT_DATA) {
+                            continue;
+                        }
+
+                        if (id === self.CONSTANTS.TAGS) {
+                            tags = Object.assign({}, doc);
+                            delete tags._id;
+                            continue;
+                        }
+
+                        if (REGEXP.RAW_BRANCH.test(id)) {
+                            branches[id.slice(1)] = doc.hash;
+                            continue;
+                        }
+
+                        if (doc.type === CONSTANTS.COMMIT_TYPE) {
+                            commits.push(doc);
+                        } else {
+                            objects.push(doc);
+                        }
+                    }
+
+                    commits.sort(function (a, b) {
+                        return a.time - b.time;
+                    });
+
+                    return {
+                        objects: objects,
+                        commits: commits,
+                        branches: branches,
+                        tags: tags
+                    };
+                })
+                .nodeify(callback);
+        };
+
         async function traverseAsync(visitFn) {
             const cursor = collection.find();
             cursor.batchSize(1000);
