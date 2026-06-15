@@ -348,7 +348,7 @@ function Mongo(mainLogger, gmeConfig) {
                         }
 
                         if (id === self.CONSTANTS.TAGS) {
-                            tags = Object.assign({}, doc);
+                            tags = doc;
                             delete tags._id;
                             continue;
                         }

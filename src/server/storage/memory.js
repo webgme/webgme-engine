@@ -215,8 +215,7 @@ function Memory(mainLogger, gmeConfig) {
                 }
 
                 if (keyArray[2] === TAGS) {
-                    item = storage.getItem(key);
-                    tags = Object.assign({}, item || {});
+                    tags = storage.getItem(key) || {};
                     continue;
                 }
 
