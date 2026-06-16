@@ -34,6 +34,7 @@ define([
      * @param {string} [parameters.branchName] - The tree at the given branch.
      * @param {string} [parameters.tagName] - The tree at the given tag.
      * @param {boolean} [parameters.withAssets=false] - Bundle the encountered assets linked from attributes.
+     * @param {boolean} [parameters.withHistory=false] - Export full repository history (v2 format). Requires withAssets.
      * @param {string} [parameters.kind] - If not given will use the one defined in project (if any).
      * @param {string} [parameters.outName] - Name of the output blob (.webgmex will be appended).
      * @param {function} [callback]
@@ -45,15 +46,29 @@ define([
      * @returns {Promise}
      */
     exports.exportProjectToFile = function exportProjectToFile(project, blobClient, parameters, callback) {
-        var fileName;
+        var fileName,
+            projectJsonPromise;
 
-        return storageUtils.getProjectJson(project, {
-            branchName: parameters.branchName,
-            commitHash: parameters.commitHash,
-            rootHash: parameters.rootHash,
-            tagName: parameters.tagName,
-            kind: parameters.kind
-        })
+        if (parameters.withHistory === true) {
+            if (parameters.withAssets !== true) {
+                return Q.reject(new Error('Export with history requires withAssets to be true.')).nodeify(callback);
+            }
+
+            projectJsonPromise = storageUtils.getProjectWithHistory(project, {
+                kind: parameters.kind,
+                defaultBranchName: parameters.branchName
+            });
+        } else {
+            projectJsonPromise = storageUtils.getProjectJson(project, {
+                branchName: parameters.branchName,
+                commitHash: parameters.commitHash,
+                rootHash: parameters.rootHash,
+                tagName: parameters.tagName,
+                kind: parameters.kind
+            });
+        }
+
+        return projectJsonPromise
             .then(function (rawJson) {
                 fileName = typeof parameters.outName === 'string' ?
                     parameters.outName :

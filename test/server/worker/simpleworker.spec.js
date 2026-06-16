@@ -1863,6 +1863,118 @@ describe('Simple worker', function () {
             .done();
     });
 
+    it('should exportProjectToFile with history as v2 repository export', function (done) {
+        var worker = getSimpleWorker(),
+            AdmZip = require('adm-zip'),
+            STORAGE_CONSTANTS = testFixture.requirejs('common/storage/constants'),
+            blobClient = new BlobClient(gmeConfig, logger.fork('BlobClientHistoryExport'));
+
+        worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
+            .then(function (msg) {
+                expect(msg.pid).equal(process.pid);
+                expect(msg.type).equal(CONSTANTS.msgTypes.initialized);
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.exportProjectToFile,
+                    projectId: baseProjectContext.id,
+                    branchName: 'master',
+                    withAssets: true,
+                    withHistory: true
+                });
+            })
+            .then(function (msg) {
+                expect(msg.error).equal(null);
+                expect(msg.result.hash).to.be.a('string');
+
+                return blobClient.getObject(msg.result.hash);
+            })
+            .then(function (buffer) {
+                var zip = new AdmZip(buffer),
+                    projectJson = JSON.parse(zip.readAsText('project.json', 'utf8'));
+
+                expect(projectJson.formatVersion).to.equal(STORAGE_CONSTANTS.PROJECT_JSON_FORMAT_VERSION);
+                expect(projectJson.exportMode).to.equal(STORAGE_CONSTANTS.REPOSITORY_EXPORT_MODE);
+                expect(Object.hasOwn(projectJson.branches, 'master')).to.equal(true);
+                expect(Object.hasOwn(projectJson.branches, 'corruptBranch')).to.equal(true);
+                expect(projectJson.commits.length).to.be.at.least(1);
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
+    it('should importProjectFromFile with history and restore branches', function (done) {
+        var worker = getSimpleWorker(),
+            blobHash,
+            blobClient = new BlobClient(gmeConfig, logger.fork('BlobClientHistoryImport')),
+            importProjectName = 'historyExportImport',
+            importProjectId = testFixture.projectName2Id(importProjectName);
+
+        worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig})
+            .then(function () {
+                return worker.send({
+                    command: CONSTANTS.workerCommands.exportProjectToFile,
+                    projectId: baseProjectContext.id,
+                    branchName: 'master',
+                    withAssets: true,
+                    withHistory: true
+                });
+            })
+            .then(function (msg) {
+                expect(msg.error).equal(null);
+                blobHash = msg.result.hash;
+
+                return worker.send({
+                    command: CONSTANTS.workerCommands.importProjectFromFile,
+                    projectName: importProjectName,
+                    branchName: 'master',
+                    blobHash: blobHash,
+                    withHistory: true
+                });
+            })
+            .then(function (msg) {
+                expect(msg.error).equal(null);
+                expect(msg.result).to.equal(importProjectId);
+
+                return storage.getProjects({
+                    branches: true,
+                    projectId: importProjectId
+                });
+            })
+            .then(function (projects) {
+                expect(projects.length).to.equal(1);
+                expect(Object.hasOwn(projects[0].branches, 'master')).to.equal(true);
+                expect(Object.hasOwn(projects[0].branches, 'corruptBranch')).to.equal(true);
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
+    it('should fail to importProjectFromFile with history from v1 export', function (done) {
+        var worker = getSimpleWorker(),
+            blobHash,
+            blobClient = new BlobClient(gmeConfig, logger.fork('BlobClientHistoryImportFail'));
+
+        blobClient.putFile('empty.webgmex', fs.readFileSync('./test/server/worker/simpleworker/empty.webgmex'))
+            .then(function (hash) {
+                blobHash = hash;
+                return worker.send({command: CONSTANTS.workerCommands.initialize, gmeConfig: gmeConfig});
+            })
+            .then(function () {
+                return worker.send({
+                    command: CONSTANTS.workerCommands.importProjectFromFile,
+                    projectName: 'historyImportV1Fail',
+                    branchName: 'master',
+                    blobHash: blobHash,
+                    withHistory: true
+                });
+            })
+            .catch(function (err) {
+                expect(err.message).to.contain('v2 repository export');
+            })
+            .finally(restoreProcessFunctions)
+            .nodeify(done);
+    });
+
     //importProjectFromFile
     it('should importProjectFromFile.', function (done) {
         var worker = getSimpleWorker(),
