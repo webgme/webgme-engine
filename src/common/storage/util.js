@@ -672,7 +672,7 @@ define([
 
                     branchNames = Object.keys(projectJson.branches);
                     return Q.all(branchNames.map(function (branchName) {
-                        return Q.ninvoke(project, 'setBranchHash', branchName, '', projectJson.branches[branchName]);
+                        return Q.ninvoke(project, 'createBranch', branchName, projectJson.branches[branchName]);
                     }));
                 })
                 .then(function () {

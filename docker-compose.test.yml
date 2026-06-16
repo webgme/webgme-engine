@@ -1,0 +1,33 @@
+# Local test dependencies for webgme-engine.
+#
+# Usage:
+#   docker compose -f docker-compose.test.yml up -d --wait
+#   npm test
+#   docker compose -f docker-compose.test.yml down -v
+#
+# Matches CI versions (.github/workflows/node.js.yml): MongoDB 8, Redis 6.
+# Tests read mongodb://127.0.0.1:27017/webgme_tests and redis://127.0.0.1:6379.
+
+services:
+  mongo:
+    image: mongo:8
+    ports:
+      - "27017:27017"
+    tmpfs:
+      - /data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
