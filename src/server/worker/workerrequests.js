@@ -628,13 +628,24 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     commitMessage = 'Imported project from uploaded blob ' + res.blobHash + '.';
                 }
 
-                if (parameters.withHistory === true &&
-                    (res.projectJson.formatVersion !== STORAGE_CONSTANTS.PROJECT_JSON_FORMAT_VERSION ||
-                        res.projectJson.exportMode !== STORAGE_CONSTANTS.REPOSITORY_EXPORT_MODE)) {
-                    throw new Error('Import with history requires a v2 repository export (.webgmex with full history).');
+                var requestedHistory = parameters.withHistory === true,
+                    isV2HistoryExport = res.projectJson.formatVersion ===
+                        STORAGE_CONSTANTS.PROJECT_JSON_FORMAT_VERSION &&
+                        res.projectJson.exportMode === STORAGE_CONSTANTS.REPOSITORY_EXPORT_MODE,
+                    historyImportNote = null;
+
+                if (requestedHistory && !isV2HistoryExport) {
+                    historyImportNote = 'The import file has no repository history; the project was imported as a snapshot.';
                 }
 
-                if (parameters.withHistory === true) {
+                function attachHistoryImportNote(result) {
+                    if (historyImportNote) {
+                        result.historyImportNote = historyImportNote;
+                    }
+                    return result;
+                }
+
+                if (requestedHistory && isV2HistoryExport) {
                     return _withServerStorage(webgmeToken, function (safeStorage, userId) {
                         return _createProjectWithHistoryOnServer(safeStorage, userId, projectName, ownerId,
                             parameters.branchName || 'master', res.projectJson);
@@ -649,11 +660,13 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                                 getNetworkStatusChangeHandler(finish));
                             return _createProjectFromRawJson(storage, projectName, ownerId,
                                 parameters.branchName || 'master', res.projectJson, commitMessage);
-                        });
+                        })
+                        .then(attachHistoryImportNote);
                 }
 
                 return _createProjectFromRawJson(storage, projectName, ownerId,
-                    parameters.branchName || 'master', res.projectJson, commitMessage);
+                    parameters.branchName || 'master', res.projectJson, commitMessage)
+                    .then(attachHistoryImportNote);
             })
             .nodeify(finish);
     }
@@ -1830,7 +1843,6 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             };
 
             seedProject(webgmeToken, parameters.projectName, parameters.ownerId, params, function (err, res) {
-                res = res ? res.projectId : res;
                 callback(err, res);
             });
         },

@@ -1933,7 +1933,7 @@ describe('Simple worker', function () {
             })
             .then(function (msg) {
                 expect(msg.error).equal(null);
-                expect(msg.result).to.equal(importProjectId);
+                expect(msg.result.projectId).to.equal(importProjectId);
 
                 return storage.getProjects({
                     branches: true,
@@ -1949,10 +1949,12 @@ describe('Simple worker', function () {
             .nodeify(done);
     });
 
-    it('should fail to importProjectFromFile with history from v1 export', function (done) {
+    it('should importProjectFromFile with history from v1 export as snapshot with note', function (done) {
         var worker = getSimpleWorker(),
             blobHash,
-            blobClient = new BlobClient(gmeConfig, logger.fork('BlobClientHistoryImportFail'));
+            blobClient = new BlobClient(gmeConfig, logger.fork('BlobClientHistoryImportV1')),
+            projectName = 'historyImportV1Fallback',
+            projectId = testFixture.projectName2Id(projectName);
 
         blobClient.putFile('empty.webgmex', fs.readFileSync('./test/server/worker/simpleworker/empty.webgmex'))
             .then(function (hash) {
@@ -1962,14 +1964,16 @@ describe('Simple worker', function () {
             .then(function () {
                 return worker.send({
                     command: CONSTANTS.workerCommands.importProjectFromFile,
-                    projectName: 'historyImportV1Fail',
+                    projectName: projectName,
                     branchName: 'master',
                     blobHash: blobHash,
                     withHistory: true
                 });
             })
-            .catch(function (err) {
-                expect(err.message).to.contain('v2 repository export');
+            .then(function (msg) {
+                expect(msg.error).equal(null);
+                expect(msg.result.projectId).to.equal(projectId);
+                expect(msg.result.historyImportNote).to.contain('no repository history');
             })
             .finally(restoreProcessFunctions)
             .nodeify(done);
@@ -2005,8 +2009,8 @@ describe('Simple worker', function () {
                 expect(msg.error).equal(null);
 
                 expect(msg.result).not.equal(null);
-                expect(typeof msg.result).to.equal('string');
-                expect(msg.result).to.equal(projectId);
+                expect(typeof msg.result).to.equal('object');
+                expect(msg.result.projectId).to.equal(projectId);
 
                 return storage.getProjects({
                     info: true,
@@ -2051,8 +2055,8 @@ describe('Simple worker', function () {
                 expect(msg.error).equal(null);
 
                 expect(msg.result).not.equal(null);
-                expect(typeof msg.result).to.equal('string');
-                expect(msg.result).to.equal(projectId);
+                expect(typeof msg.result).to.equal('object');
+                expect(msg.result.projectId).to.equal(projectId);
 
                 return storage.getProjects({
                     info: true,
@@ -2096,8 +2100,8 @@ describe('Simple worker', function () {
                 expect(msg.error).equal(null);
 
                 expect(msg.result).not.equal(null);
-                expect(typeof msg.result).to.equal('string');
-                expect(msg.result).to.equal(projectId);
+                expect(typeof msg.result).to.equal('object');
+                expect(msg.result.projectId).to.equal(projectId);
 
                 return storage.getProjects({
                     info: true,
