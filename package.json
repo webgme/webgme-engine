@@ -77,7 +77,7 @@
     "mongo-uri": "^0.1.2",
     "mongodb": "^7",
     "ncp": "^2.0.0",
-    "nodemailer": "^8",
+    "nodemailer": "^9",
     "pug": "^3.0.0",
     "q": "^1.5.1",
     "redis": "^5.12.1",
