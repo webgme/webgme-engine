@@ -154,8 +154,7 @@ describe('AddOnGenerator', function () {
     describe('Generated File(s)', function () {
         var files;
         before(function (done) {
-            var config = Object.create(pluginConfig);
-            config.addOnId += '2';
+            var config = Object.assign({}, pluginConfig, {addOnId: pluginConfig.addOnId + '2'});
             runPlugin('AddOnGenerator', config, function (err, result) {
                 files = result.artifact.addedFiles;
                 expect(result.success).to.equal(true);
