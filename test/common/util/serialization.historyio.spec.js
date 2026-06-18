@@ -14,7 +14,6 @@ describe('Serialization history io', function () {
         expect = testFixture.expect,
         logger = testFixture.logger.fork('SerializationHistoryIO'),
         projectName = 'serializationHistoryIO',
-        storageUtil = testFixture.requirejs('common/storage/util'),
         serialization = testFixture.requirejs('common/util/serialization'),
         CONSTANTS = testFixture.requirejs('common/storage/constants'),
         project,
