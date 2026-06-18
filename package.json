@@ -28,7 +28,8 @@
     "users": "node ./src/bin/usermanager.js",
     "clean_up": "node ./src/bin/clean_up.js",
     "stats": "node ./src/bin/storage_stats.js",
-    "lint": "node ./node_modules/eslint/bin/eslint.js ."
+    "lint": "node ./node_modules/eslint/bin/eslint.js .",
+    "lint:fix": "node ./node_modules/eslint/bin/eslint.js . --fix"
   },
   "repository": {
     "type": "git",
