@@ -171,6 +171,247 @@ define([
         return deferred.promise;
     }
 
+    function _getProjectDumper(project) {
+        if (typeof project.dumpProject === 'function') {
+            return project;
+        }
+
+        if (project._dbProject && typeof project._dbProject.dumpProject === 'function') {
+            return project._dbProject;
+        }
+
+        return null;
+    }
+
+    function _dumpProjectRecords(project) {
+        var dumper = _getProjectDumper(project);
+
+        if (!dumper) {
+            return Q.reject(new Error('Project does not support dumpProject.'));
+        }
+
+        return Q.ninvoke(dumper, 'dumpProject');
+    }
+
+    function _getProjectObjectInserter(project) {
+        if (typeof project.persistObject === 'function') {
+            return project;
+        }
+
+        if (project._dbProject && typeof project._dbProject.insertObject === 'function') {
+            return project._dbProject;
+        }
+
+        return null;
+    }
+
+    function _persistRepositoryObject(project, inserter, object) {
+        if (inserter === project) {
+            return Q.ninvoke(project, 'persistObject', object);
+        }
+
+        return Q.ninvoke(inserter, 'insertObject', object);
+    }
+
+    function _enqueueSnapshotReference(value, queue, visited) {
+        if (typeof value === 'string' && REGEXP.HASH.test(value) && !visited[value]) {
+            visited[value] = true;
+            queue.push(value);
+        }
+    }
+
+    function _collectSnapshotClosureFromObjects(objects, rootHash) {
+        var objectsById = {},
+            queue = [rootHash],
+            visited = {},
+            result = [],
+            assets = {},
+            i,
+            hash,
+            object,
+            key;
+
+        for (i = 0; i < objects.length; i += 1) {
+            objectsById[objects[i][CONSTANTS.MONGO_ID]] = objects[i];
+        }
+
+        if (!objectsById[rootHash]) {
+            throw new Error('Cannot extract snapshot, root object [' + rootHash + '] is not in objects.');
+        }
+
+        visited[rootHash] = true;
+
+        while (queue.length > 0) {
+            hash = queue.shift();
+            object = objectsById[hash];
+            if (!object) {
+                continue;
+            }
+
+            result.push(object);
+
+            for (key in object) {
+                if (Object.hasOwn(object, key)) {
+                    _enqueueSnapshotReference(object[key], queue, visited);
+                }
+            }
+
+            if (object.atr) {
+                for (key in object.atr) {
+                    if (typeof object.atr[key] === 'string' && REGEXP.BLOB_HASH.test(object.atr[key])) {
+                        assets[object.atr[key]] = true;
+                    }
+                }
+            }
+
+            if (object.ovr && object.ovr.sharded === true) {
+                for (key in object.ovr) {
+                    _enqueueSnapshotReference(object.ovr[key], queue, visited);
+                }
+            }
+        }
+
+        return {
+            objects: result,
+            hashes: {
+                objects: result.map(function (obj) {
+                    return obj[CONSTANTS.MONGO_ID];
+                }),
+                assets: Object.keys(assets)
+            }
+        };
+    }
+
+    function _extractV1SnapshotFromRepositoryJson(projectJson) {
+        var rootHash = projectJson.rootHash,
+            commitHash = projectJson.commitHash,
+            commits = projectJson.commits || [],
+            snapshot,
+            i;
+
+        if (!rootHash && commitHash) {
+            for (i = 0; i < commits.length; i += 1) {
+                if (commits[i]._id === commitHash) {
+                    rootHash = commits[i].root;
+                    break;
+                }
+            }
+        }
+
+        if (!rootHash) {
+            throw new Error('Cannot extract v1 snapshot from repository json without rootHash.');
+        }
+
+        snapshot = _collectSnapshotClosureFromObjects(projectJson.objects || [], rootHash);
+
+        return {
+            projectId: projectJson.projectId,
+            kind: projectJson.kind,
+            branchName: projectJson.branchName,
+            commitHash: commitHash,
+            rootHash: rootHash,
+            hashes: snapshot.hashes,
+            objects: snapshot.objects
+        };
+    }
+
+    function _collectAssetHashesFromObject(object, assets) {
+        var key;
+
+        if (object.atr) {
+            for (key in object.atr) {
+                if (typeof object.atr[key] === 'string' && REGEXP.BLOB_HASH.test(object.atr[key])) {
+                    assets[object.atr[key]] = true;
+                }
+            }
+        }
+    }
+
+    function _collectRepositoryHashes(objects, commits) {
+        var hashes = {
+                objects: [],
+                assets: {}
+            },
+            assets = {},
+            i;
+
+        for (i = 0; i < objects.length; i += 1) {
+            hashes.objects.push(objects[i][CONSTANTS.MONGO_ID]);
+            _collectAssetHashesFromObject(objects[i], assets);
+        }
+
+        for (i = 0; i < commits.length; i += 1) {
+            hashes.objects.push(commits[i][CONSTANTS.MONGO_ID]);
+        }
+
+        hashes.assets = Object.keys(assets);
+        return hashes;
+    }
+
+    function _resolveDefaultBranchCompat(project, branches, parameters) {
+        var deferred = Q.defer(),
+            branchName = parameters.defaultBranchName,
+            branchNames = Object.keys(branches);
+
+        if (typeof branchName !== 'string') {
+            if (branchNames.indexOf('master') > -1) {
+                branchName = 'master';
+            } else if (branchNames.length > 0) {
+                branchName = branchNames[0];
+            } else {
+                deferred.resolve({
+                    branchName: null,
+                    commitHash: null,
+                    rootHash: null
+                });
+                return deferred.promise;
+            }
+        }
+
+        if (!Object.hasOwn(branches, branchName)) {
+            deferred.reject(new Error('Unknown default branch [' + branchName + ']'));
+            return deferred.promise;
+        }
+
+        Q.ninvoke(project, 'loadObject', branches[branchName])
+            .then(function (commitObject) {
+                deferred.resolve({
+                    branchName: branchName,
+                    commitHash: branches[branchName],
+                    rootHash: commitObject.root
+                });
+            })
+            .catch(deferred.reject);
+
+        return deferred.promise;
+    }
+
+    function _assertRepositoryProjectJson(projectJson) {
+        if (projectJson.formatVersion !== CONSTANTS.PROJECT_JSON_FORMAT_VERSION) {
+            throw new Error('Unsupported project json formatVersion [' + projectJson.formatVersion + ']');
+        }
+
+        if (projectJson.exportMode !== CONSTANTS.REPOSITORY_EXPORT_MODE) {
+            throw new Error('Unsupported project json exportMode [' + projectJson.exportMode + ']');
+        }
+
+        if (!projectJson.objects || projectJson.objects instanceof Array === false) {
+            throw new Error('Repository project json is missing objects array.');
+        }
+
+        if (!projectJson.commits || projectJson.commits instanceof Array === false) {
+            throw new Error('Repository project json is missing commits array.');
+        }
+
+        if (!projectJson.branches || typeof projectJson.branches !== 'object') {
+            throw new Error('Repository project json is missing branches object.');
+        }
+
+        if (!projectJson.tags || typeof projectJson.tags !== 'object') {
+            throw new Error('Repository project json is missing tags object.');
+        }
+    }
+
     return {
         CONSTANTS: CONSTANTS,
         getProjectFullNameFromProjectId: function (projectId) {
@@ -300,11 +541,21 @@ define([
         insertProjectJson: function (project, projectJson, options, callback) {
             var deferred = Q.defer(),
                 toPersist = {},
-                rootHash = projectJson.rootHash,
-                defaultCommitMessage = 'Importing contents of [' +
-                    projectJson.projectId + '@' + rootHash + ']',
-                objects = projectJson.objects,
+                rootHash,
+                defaultCommitMessage,
+                objects,
                 i;
+
+            if (projectJson.formatVersion === CONSTANTS.PROJECT_JSON_FORMAT_VERSION &&
+                projectJson.exportMode === CONSTANTS.REPOSITORY_EXPORT_MODE) {
+
+                projectJson = _extractV1SnapshotFromRepositoryJson(projectJson);
+            }
+
+            rootHash = projectJson.rootHash;
+            defaultCommitMessage = 'Importing contents of [' +
+                    projectJson.projectId + '@' + rootHash + ']';
+            objects = projectJson.objects;
 
             for (i = 0; i < objects.length; i += 1) {
                 // we have to patch the object right before import, for smoother usage experience
@@ -320,6 +571,122 @@ define([
                 rootHash, toPersist, options.commitMessage || defaultCommitMessage)
                 .then(function (commitResult) {
                     deferred.resolve(commitResult);
+                })
+                .catch(deferred.reject);
+
+            return deferred.promise.nodeify(callback);
+        },
+
+        /**
+         * Extracts a serializable json representation of the full project repository,
+         * including all stored objects, branches, tags, and commit history.
+         *
+         * @param {ProjectInterface} project
+         * @param {object} [parameters]
+         * @param {string} [parameters.kind] - If not given will assign the one in project.
+         * @param {string} [parameters.defaultBranchName] - Branch used for v1 compatible fields.
+         * @param {function} callback
+         */
+        getProjectWithHistory: function (project, parameters, callback) {
+            var deferred = Q.defer(),
+                rawJson,
+                dump;
+
+            parameters = parameters || {};
+
+            Q.all([
+                _dumpProjectRecords(project),
+                project.getProjectInfo()
+            ])
+                .then(function (res) {
+                    dump = res[0];
+
+                    return _resolveDefaultBranchCompat(project, dump.branches, parameters)
+                        .then(function (compat) {
+                            var info = res[1];
+
+                            rawJson = {
+                                formatVersion: CONSTANTS.PROJECT_JSON_FORMAT_VERSION,
+                                exportMode: CONSTANTS.REPOSITORY_EXPORT_MODE,
+                                projectId: project.projectId,
+                                kind: typeof parameters.kind === 'string' ? parameters.kind : info.info.kind,
+                                branchName: compat.branchName,
+                                commitHash: compat.commitHash,
+                                rootHash: compat.rootHash,
+                                branches: dump.branches,
+                                tags: dump.tags,
+                                commits: dump.commits,
+                                hashes: _collectRepositoryHashes(dump.objects, dump.commits),
+                                objects: dump.objects
+                            };
+
+                            deferred.resolve(rawJson);
+                        });
+                })
+                .catch(deferred.reject);
+
+            return deferred.promise.nodeify(callback);
+        },
+
+        /**
+         * Inserts a repository project json into the storage, restoring branches and tags.
+         *
+         * @param {ProjectInterface} project
+         * @param {object} projectJson
+         * @param {function(Error, object)} callback
+         */
+        insertProjectWithHistory: function (project, projectJson, callback) {
+            var deferred = Q.defer(),
+                inserter = _getProjectObjectInserter(project),
+                branchNames,
+                tagNames;
+
+            try {
+                _assertRepositoryProjectJson(projectJson);
+            } catch (err) {
+                deferred.reject(err);
+                return deferred.promise.nodeify(callback);
+            }
+
+            if (!inserter) {
+                deferred.reject(new Error('Project does not support direct object insertion.'));
+                return deferred.promise.nodeify(callback);
+            }
+
+            Q.allSettled(projectJson.objects.concat(projectJson.commits).map(function (object) {
+                return _persistRepositoryObject(project, inserter, object);
+            }))
+                .then(function (insertResults) {
+                    var failedInserts = [],
+                        j;
+
+                    for (j = 0; j < insertResults.length; j += 1) {
+                        if (insertResults[j].state === 'rejected') {
+                            failedInserts.push(insertResults[j].reason);
+                        }
+                    }
+
+                    if (failedInserts.length > 0) {
+                        throw failedInserts[0];
+                    }
+
+                    branchNames = Object.keys(projectJson.branches);
+                    return Q.all(branchNames.map(function (branchName) {
+                        return Q.ninvoke(project, 'createBranch', branchName, projectJson.branches[branchName]);
+                    }));
+                })
+                .then(function () {
+                    tagNames = Object.keys(projectJson.tags);
+                    return Q.all(tagNames.map(function (tagName) {
+                        return Q.ninvoke(project, 'createTag', tagName, projectJson.tags[tagName]);
+                    }));
+                })
+                .then(function () {
+                    deferred.resolve({
+                        projectId: projectJson.projectId,
+                        branches: projectJson.branches,
+                        tags: projectJson.tags
+                    });
                 })
                 .catch(deferred.reject);
 

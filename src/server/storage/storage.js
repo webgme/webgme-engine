@@ -249,7 +249,7 @@ Storage.prototype.makeCommit = function (data, callback) {
                         project.insertObject(data.commitObject)
                             .then(function () {
                                 var newHash = data.commitObject[CONSTANTS.MONGO_ID],
-                                    oldHash = data.oldHash || data.commitObject.parents[0],
+                                    oldHash = data.oldHash || data.commitObject.parents[0] || '',
                                     result = {
                                         status: null, // SYNCED, FORKED, (MERGED)
                                         hash: newHash

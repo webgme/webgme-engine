@@ -10,14 +10,22 @@ define(['common/Constants', 'common/regexp'], function (CONSTANTS, REGEXP) {
 
     function gmeServerRequest(client, logger, state, storage) {
 
-        function importProjectFromFile(projectName, branchName, blobHash, ownerId, url, callback) {
-            var parameters = {
+        function importProjectFromFile(projectName, branchName, blobHash, ownerId, url, withHistory, callback) {
+            var parameters;
+
+            if (typeof withHistory === 'function') {
+                callback = withHistory;
+                withHistory = false;
+            }
+
+            parameters = {
                 command: CONSTANTS.SERVER_WORKER_REQUESTS.IMPORT_PROJECT_FROM_FILE,
                 projectName: projectName,
                 blobHash: blobHash,
                 branchName: branchName,
                 ownerId: ownerId,
-                url: url
+                url: url,
+                withHistory: withHistory === true
             };
 
             logger.debug('creating project from package', parameters);
@@ -323,13 +331,21 @@ define(['common/Constants', 'common/regexp'], function (CONSTANTS, REGEXP) {
         }
 
         //package save
-        function exportProjectToFile(projectId, branchName, commitHash, withAssets, callback) {
-            var parameters = {
+        function exportProjectToFile(projectId, branchName, commitHash, withAssets, withHistory, callback) {
+            var parameters;
+
+            if (typeof withHistory === 'function') {
+                callback = withHistory;
+                withHistory = false;
+            }
+
+            parameters = {
                 command: CONSTANTS.SERVER_WORKER_REQUESTS.EXPORT_PROJECT_TO_FILE,
                 projectId: projectId,
                 branchName: branchName,
                 commitHash: commitHash,
-                withAssets: withAssets
+                withAssets: withAssets,
+                withHistory: withHistory === true
             };
 
             logger.debug('exportProjectToFile, parameters', parameters);

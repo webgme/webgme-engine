@@ -24,7 +24,12 @@ var Core = requireJS('common/core/coreQ'),
     AdmZip = require('adm-zip'),
     Q = require('q'),
 
-    PluginNodeManager = require('../../plugin/nodemanager');
+    PluginNodeManager = require('../../plugin/nodemanager'),
+    GmeAuth = require('../middleware/auth/gmeauth'),
+    SafeStorage = require('../storage/safestorage'),
+    MongoAdapter = require('../storage/mongo'),
+    MemoryAdapter = require('../storage/memory'),
+    RedisAdapter = require('../storage/datastores/redisadapter');
 
 /**
  *
@@ -103,6 +108,89 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 finishFn(new Error('Unexpected network status: ' + status));
             }
         };
+    }
+
+    function _createServerDatabaseAdapter(mainLogger) {
+        var dbType = gmeConfig.storage.database.type.toLowerCase();
+
+        if (dbType === 'mongo') {
+            return new MongoAdapter(mainLogger, gmeConfig);
+        } else if (dbType === 'redis') {
+            return new RedisAdapter(mainLogger, gmeConfig);
+        } else if (dbType === 'memory') {
+            return new MemoryAdapter(mainLogger, gmeConfig);
+        }
+
+        throw new Error('Unknown storage.database.type [' + gmeConfig.storage.database.type + ']');
+    }
+
+    function _withServerStorage(webgmeToken, fn) {
+        var gmeAuth = new GmeAuth(null, gmeConfig),
+            safeStorage,
+            userId;
+
+        return Q.ninvoke(gmeAuth, 'connect')
+            .then(function () {
+                if (gmeConfig.authentication.enable === false || !webgmeToken) {
+                    userId = gmeConfig.authentication.guestAccount;
+                    return;
+                }
+
+                return Q.ninvoke(gmeAuth, 'verifyJWToken', webgmeToken)
+                    .then(function (result) {
+                        userId = result.content.userId;
+                    });
+            })
+            .then(function () {
+                safeStorage = new SafeStorage(_createServerDatabaseAdapter(logger), logger, gmeConfig, gmeAuth);
+                return Q.ninvoke(safeStorage, 'openDatabase');
+            })
+            .then(function () {
+                return fn(safeStorage, userId);
+            })
+            .finally(function () {
+                if (safeStorage) {
+                    return Q.ninvoke(safeStorage, 'closeDatabase');
+                }
+            })
+            .finally(function () {
+                if (gmeAuth) {
+                    return gmeAuth.unload();
+                }
+            });
+    }
+
+    function _openServerProject(safeStorage, userId, projectId) {
+        return Q.ninvoke(safeStorage, 'openProject', {
+            projectId: projectId,
+            username: userId
+        });
+    }
+
+    function _createProjectWithHistoryOnServer(safeStorage, userId, projectName, ownerId, branchName, projectJson) {
+        var result = {
+                projectId: null,
+                branchName: branchName,
+                commitHash: projectJson.commitHash,
+                branches: null,
+                tags: null
+            };
+
+        return Q.ninvoke(safeStorage, 'createProject', {
+            projectName: projectName,
+            ownerId: ownerId || userId,
+            kind: projectJson.kind
+        })
+            .then(function (project) {
+                result.projectId = project.projectId;
+                return storageUtils.insertProjectWithHistory(project, projectJson);
+            })
+            .then(function (insertResult) {
+                result.branchName = projectJson.branchName || branchName;
+                result.branches = insertResult.branches;
+                result.tags = insertResult.tags;
+                return result;
+            });
     }
 
     function _getCoreAndRootNode(storage, projectId, commitHash, branchName, tagName, callback) {
@@ -473,6 +561,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} [parameters.branchName] - If type === db, optional commit-hash to seed from
      * if given branchName will not be used.
      * @param {string} [parameters.kind]
+     * @param {boolean} [parameters.withHistory=false] - Import full repository history from v2 export.
      * @param {function} callback
      * @param {string} callback.projectId
      * @param {string} callback.branchName
@@ -504,26 +593,28 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             return;
         }
 
-        getConnectedStorage(webgmeToken)
-            .then(function (storage_) {
-                storage = storage_;
-                storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
-                    getNetworkStatusChangeHandler(finish));
-                logger.debug('seedProject - storage is connected');
+        function loadSeedProjectJson() {
+            if (parameters.type === 'file') {
+                logger.debug('seedProject - seeding from file:', parameters.seedName);
+                return _getProjectJsonFromFileSeed(parameters.seedName, webgmeToken);
+            } else if (parameters.type === 'db') {
+                logger.debug('seedProject - seeding from existing project:', parameters.seedName);
+                return getConnectedStorage(webgmeToken)
+                    .then(function (storage_) {
+                        storage = storage_;
+                        storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                            getNetworkStatusChangeHandler(finish));
+                        return _getProjectJsonFromProject(storage, parameters.seedName, parameters.seedBranch,
+                            parameters.seedCommit);
+                    });
+            } else if (parameters.type === 'blob') {
+                return _getProjectJsonFromBlob(getBlobClient(webgmeToken), parameters.seedName, true);
+            }
 
-                if (parameters.type === 'file') {
-                    logger.debug('seedProject - seeding from file:', parameters.seedName);
-                    return _getProjectJsonFromFileSeed(parameters.seedName, webgmeToken);
-                } else if (parameters.type === 'db') {
-                    logger.debug('seedProject - seeding from existing project:', parameters.seedName);
-                    return _getProjectJsonFromProject(storage, parameters.seedName, parameters.seedBranch,
-                        parameters.seedCommit);
-                } else if (parameters.type === 'blob') {
-                    return _getProjectJsonFromBlob(getBlobClient(webgmeToken), parameters.seedName, true);
-                } else {
-                    throw new Error('Unknown seeding type [' + parameters.type + ']');
-                }
-            })
+            return Q.reject(new Error('Unknown seeding type [' + parameters.type + ']'));
+        }
+
+        loadSeedProjectJson()
             .then(function (res) {
                 var commitMessage = 'Seeded project from ';
                 // First set the correct kind of the project.
@@ -537,8 +628,45 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     commitMessage = 'Imported project from uploaded blob ' + res.blobHash + '.';
                 }
 
+                var requestedHistory = parameters.withHistory === true,
+                    isV2HistoryExport = res.projectJson.formatVersion ===
+                        STORAGE_CONSTANTS.PROJECT_JSON_FORMAT_VERSION &&
+                        res.projectJson.exportMode === STORAGE_CONSTANTS.REPOSITORY_EXPORT_MODE,
+                    historyImportNote = null;
+
+                if (requestedHistory && !isV2HistoryExport) {
+                    historyImportNote = 'The import file has no repository history; the project was imported as a snapshot.';
+                }
+
+                function attachHistoryImportNote(result) {
+                    if (historyImportNote) {
+                        result.historyImportNote = historyImportNote;
+                    }
+                    return result;
+                }
+
+                if (requestedHistory && isV2HistoryExport) {
+                    return _withServerStorage(webgmeToken, function (safeStorage, userId) {
+                        return _createProjectWithHistoryOnServer(safeStorage, userId, projectName, ownerId,
+                            parameters.branchName || 'master', res.projectJson);
+                    });
+                }
+
+                if (parameters.type !== 'db') {
+                    return getConnectedStorage(webgmeToken)
+                        .then(function (storage_) {
+                            storage = storage_;
+                            storage.addEventListener(storage.CONSTANTS.NETWORK_STATUS_CHANGED,
+                                getNetworkStatusChangeHandler(finish));
+                            return _createProjectFromRawJson(storage, projectName, ownerId,
+                                parameters.branchName || 'master', res.projectJson, commitMessage);
+                        })
+                        .then(attachHistoryImportNote);
+                }
+
                 return _createProjectFromRawJson(storage, projectName, ownerId,
-                    parameters.branchName || 'master', res.projectJson, commitMessage);
+                    parameters.branchName || 'master', res.projectJson, commitMessage)
+                    .then(attachHistoryImportNote);
             })
             .nodeify(finish);
     }
@@ -796,6 +924,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} [parameters.branchName] - The tree at the given branch.
      * @param {string} [parameters.tagName] - The tree at the given tag.
      * @param {boolean} [parameters.withAssets=false] - Bundle the encountered assets linked from attributes.
+     * @param {boolean} [parameters.withHistory=false] - Export full repository history (v2 format). Requires withAssets.
      * @param {string} [parameters.kind] - If not given will use the one defined in project (if any).
      * @param {function} callback
      */
@@ -819,6 +948,16 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             };
 
         logger.debug('exportProjectToFile', {metadata: parameters});
+
+        if (parameters.withHistory === true) {
+            return _withServerStorage(webgmeToken, function (safeStorage, userId) {
+                return _openServerProject(safeStorage, userId, parameters.projectId)
+                    .then(function (project) {
+                        return serialization.exportProjectToFile(project, getBlobClient(webgmeToken), parameters);
+                    });
+            })
+                .nodeify(finish);
+        }
 
         getConnectedStorage(webgmeToken, parameters.projectId)
             .then(function (res) {
@@ -1699,11 +1838,11 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                 type: 'blob',
                 seedName: parameters.blobHash,
 
-                kind: parameters.kind
+                kind: parameters.kind,
+                withHistory: parameters.withHistory === true
             };
 
             seedProject(webgmeToken, parameters.projectName, parameters.ownerId, params, function (err, res) {
-                res = res ? res.projectId : res;
                 callback(err, res);
             });
         },

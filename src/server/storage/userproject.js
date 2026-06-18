@@ -276,6 +276,18 @@ function UserProject(dbProject, storage, mainLogger, gmeConfig) {
     this.getUserId = function () {
         return this.userName;
     };
+
+    this.traverse = function (visitFn, callback) {
+        return self._dbProject.traverse(visitFn, callback);
+    };
+
+    this.dumpProject = function (callback) {
+        return self._dbProject.dumpProject(callback);
+    };
+
+    this.persistObject = function (object, callback) {
+        return self._dbProject.insertObject(object, callback);
+    };
 }
 
 UserProject.prototype = Object.create(ProjectInterface.prototype);

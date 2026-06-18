@@ -251,6 +251,84 @@ function RedisProject(projectId, adapter) {
             })
             .nodeify(callback);
     };
+
+    this.dumpProject = function (callback) {
+        return Q.all([
+            adapter.redisCommand('HGETALL', [projectId]),
+            adapter.redisCommand('HGETALL', [projectId + adapter.CONSTANTS.BRANCHES]),
+            adapter.redisCommand('HGETALL', [projectId + adapter.CONSTANTS.TAGS])
+        ])
+            .then(function (result) {
+                var objectEntries = result[0] || {},
+                    branches = result[1] || {},
+                    tags = result[2] || {},
+                    objects = [],
+                    commits = [],
+                    hashKeys = Object.keys(objectEntries),
+                    i,
+                    object;
+
+                for (i = 0; i < hashKeys.length; i += 1) {
+                    if (!REGEXP.HASH.test(hashKeys[i])) {
+                        continue;
+                    }
+
+                    object = JSON.parse(objectEntries[hashKeys[i]]);
+                    if (object.type === CONSTANTS.COMMIT_TYPE) {
+                        commits.push(object);
+                    } else {
+                        objects.push(object);
+                    }
+                }
+
+                commits.sort(function (a, b) {
+                    return a.time - b.time;
+                });
+
+                return {
+                    objects: objects,
+                    commits: commits,
+                    branches: branches,
+                    tags: tags
+                };
+            })
+            .nodeify(callback);
+    };
+
+    this.traverse = function (visitFn, callback) {
+        return adapter.redisCommand('HGETALL', [projectId])
+            .then(function (result) {
+                var keys = Object.keys(result || {}),
+                    idx = 0,
+                    deferred = Q.defer();
+
+                function processNext() {
+                    if (idx >= keys.length) {
+                        deferred.resolve();
+                        return;
+                    }
+
+                    if (!REGEXP.HASH.test(keys[idx])) {
+                        idx += 1;
+                        processNext();
+                        return;
+                    }
+
+                    visitFn(JSON.parse(result[keys[idx]]), function (err) {
+                        if (err) {
+                            deferred.reject(err);
+                        } else {
+                            idx += 1;
+                            processNext();
+                        }
+                    });
+                }
+
+                processNext();
+                return deferred.promise;
+            })
+            .nodeify(callback);
+    };
 }
 
 module.exports = RedisProject;
