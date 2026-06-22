@@ -154,7 +154,8 @@ describe('VisualizerGenerator', function () {
             };
 
         before(function (done) {
-            var config = Object.assign({}, pluginConfig, {visualizerID: visualizerID});
+            var config = Object.create(pluginConfig);
+            config.visualizerID = visualizerID ;
             runPlugin('VisualizerGenerator', config, function (err, result) {
                 files = result.artifact.addedFiles;
                 expect(result.success).to.equal(true);

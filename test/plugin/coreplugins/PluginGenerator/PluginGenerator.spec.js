@@ -131,7 +131,8 @@ describe('PluginGenerator', function () {
     });
 
     it('space in pluginID should generate invalid files', function (done) {
-        var config = Object.assign({}, pluginConfig, {pluginID: 'I have a space'});
+        var config = Object.create(pluginConfig);
+        config.pluginID = 'I have a space';
         runPlugin('PluginGenerator', config, function (err, result) {
             var files = result.artifact.addedFiles,
                 keys = Object.keys(files),
@@ -176,7 +177,8 @@ describe('PluginGenerator', function () {
     });
 
     it('configStructure = true should generate two valid js files', function (done) {
-        var config = Object.assign({}, pluginConfig, {configStructure: true});
+        var config = Object.create(pluginConfig);
+        config.configStructure = true;
         runPlugin('PluginGenerator', config, function (err, result) {
             var files = result.artifact.addedFiles,
                 keys = Object.keys(files),
@@ -197,7 +199,9 @@ describe('PluginGenerator', function () {
     });
 
     it('configStructure = true should generate two valid js files', function (done) {
-        var config = Object.assign({}, pluginConfig, {meta: false, configStructure: true});
+        var config = Object.create(pluginConfig);
+        config.meta = false;
+        config.configStructure = true;
         runPlugin('PluginGenerator', config, function (err, result) {
             var files = result.artifact.addedFiles,
                 keys = Object.keys(files),
@@ -218,7 +222,8 @@ describe('PluginGenerator', function () {
     });
 
     it('language = Python should generate 2 valid js files and three py-files', function (done) {
-        var config = Object.assign({}, pluginConfig, {language: 'Python'});
+        var config = Object.create(pluginConfig);
+        config.language = 'Python';
         runPlugin('PluginGenerator', config, function (err, result) {
             var files = result.artifact.addedFiles,
                 keys = Object.keys(files);

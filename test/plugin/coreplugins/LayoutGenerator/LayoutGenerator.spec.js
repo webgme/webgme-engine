@@ -153,7 +153,8 @@ describe('LayoutGenerator', function () {
             };
 
         before(function (done) {
-            var config = Object.assign({}, pluginConfig, {layoutID: layoutID});
+            var config = Object.create(pluginConfig);
+            config.layoutID = layoutID ;
             runPlugin('LayoutGenerator', config, function (err, result) {
                 files = result.artifact.addedFiles;
                 expect(result.success).to.equal(true);

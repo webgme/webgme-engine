@@ -169,12 +169,12 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
 
     function _createProjectWithHistoryOnServer(safeStorage, userId, projectName, ownerId, branchName, projectJson) {
         var result = {
-            projectId: null,
-            branchName: branchName,
-            commitHash: projectJson.commitHash,
-            branches: null,
-            tags: null
-        };
+                projectId: null,
+                branchName: branchName,
+                commitHash: projectJson.commitHash,
+                branches: null,
+                tags: null
+            };
 
         return Q.ninvoke(safeStorage, 'createProject', {
             projectName: projectName,
@@ -635,8 +635,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
                     historyImportNote = null;
 
                 if (requestedHistory && !isV2HistoryExport) {
-                    historyImportNote = 'The import file has no repository history; the project was ' +
-                    ' imported as a snapshot.';
+                    historyImportNote = 'The import file has no repository history; the project was imported as a snapshot.';
                 }
 
                 function attachHistoryImportNote(result) {
@@ -925,8 +924,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
      * @param {string} [parameters.branchName] - The tree at the given branch.
      * @param {string} [parameters.tagName] - The tree at the given tag.
      * @param {boolean} [parameters.withAssets=false] - Bundle the encountered assets linked from attributes.
-     * @param {boolean} [parameters.withHistory=false] - Export full repository history (v2 format) -
-     *  requires withAssets to be true.
+     * @param {boolean} [parameters.withHistory=false] - Export full repository history (v2 format). Requires withAssets.
      * @param {string} [parameters.kind] - If not given will use the one defined in project (if any).
      * @param {function} callback
      */
@@ -1845,7 +1843,7 @@ function WorkerRequests(mainLogger, gmeConfig, webgmeUrl) {
             };
 
             seedProject(webgmeToken, parameters.projectName, parameters.ownerId, params, function (err, res) {
-                callback(err, res);
+                callback(err, res ? res.projectId : res);
             });
         },
         exportSelectionToFile: exportSelectionToFile,

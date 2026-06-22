@@ -12,7 +12,7 @@ var mimeModule = require('mime'),
     BlobMetadata = requireJS('blob/BlobMetadata'),
     ASSERT = requireJS('common/util/assert'),
     express = require('express'),
-    contentDisposition = require('content-disposition').create;
+    contentDisposition = require('content-disposition');
 
 function createExpressBlob(options) {
     var __app = express.Router(),
