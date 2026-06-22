@@ -1905,7 +1905,6 @@ describe('Simple worker', function () {
     it('should importProjectFromFile with history and restore branches', function (done) {
         var worker = getSimpleWorker(),
             blobHash,
-            blobClient = new BlobClient(gmeConfig, logger.fork('BlobClientHistoryImport')),
             importProjectName = 'historyExportImport',
             importProjectId = testFixture.projectName2Id(importProjectName);
 
