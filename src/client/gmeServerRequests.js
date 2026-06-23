@@ -31,10 +31,25 @@ define(['common/Constants', 'common/regexp'], function (CONSTANTS, REGEXP) {
             logger.debug('creating project from package', parameters);
 
             storage.simpleRequest(parameters, function (err, result) {
+                var projectId,
+                    importDetails;
+
                 if (err) {
                     logger.error(err);
+                    callback(err);
+                    return;
                 }
-                callback(err, result);
+
+                if (typeof result === 'string') {
+                    projectId = result;
+                } else if (result && typeof result.projectId === 'string') {
+                    projectId = result.projectId;
+                    importDetails = result;
+                } else {
+                    projectId = result;
+                }
+
+                callback(null, projectId, importDetails);
             });
         }
 

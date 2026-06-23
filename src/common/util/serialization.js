@@ -34,8 +34,8 @@ define([
      * @param {string} [parameters.branchName] - The tree at the given branch.
      * @param {string} [parameters.tagName] - The tree at the given tag.
      * @param {boolean} [parameters.withAssets=false] - Bundle the encountered assets linked from attributes.
-     * @param {boolean} [parameters.withHistory=false] - Export full repository history (v2 format) -
-     *  requires withAssets to be true.
+     * @param {boolean} [parameters.withHistory=false] - Export full repository history (v2 format).
+     *  Requires withAssets.
      * @param {string} [parameters.kind] - If not given will use the one defined in project (if any).
      * @param {string} [parameters.outName] - Name of the output blob (.webgmex will be appended).
      * @param {function} [callback]
