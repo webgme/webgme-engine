@@ -22,6 +22,7 @@ function getClientConfig(gmeConfig) {
     delete clientConfig.authentication.jwt.tokenGenerator;
     delete clientConfig.authentication.salts;
     delete clientConfig.authentication.authorizer;
+    delete clientConfig.authentication.gmeAuth;
     delete clientConfig.authentication.adminAccount;
     delete clientConfig.authentication.allowedResetInterval;
     delete clientConfig.authentication.resetTimeout;

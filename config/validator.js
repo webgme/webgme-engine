@@ -134,6 +134,8 @@ function validateConfig(configOrFileName) {
     assertBoolean('config.authentication.inferredUsersCanCreate', config.authentication.inferredUsersCanCreate);
     assertBoolean('config.authentication.newUserNeedsVerification', config.authentication.newUserNeedsVerification);
     assertBoolean('config.authentication.guestCanCreate', config.authentication.guestCanCreate);
+    assertObject('config.authentication.gmeAuth', config.authentication.gmeAuth);
+    assertString('config.authentication.gmeAuth.path', config.authentication.gmeAuth.path);
     assertString('config.authentication.guestAccount', config.authentication.guestAccount);
     assertString('config.authentication.logOutUrl', config.authentication.logOutUrl);
     assertNumber('config.authentication.salts', config.authentication.salts);
