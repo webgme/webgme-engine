@@ -17,6 +17,9 @@ var path = require('path'),
 
         authentication: {
             enable: false,
+            gmeAuth: {
+                path: path.join(__dirname, '../src/server/middleware/auth/gmeauth'),
+            },
             authorizer: {
                 path: path.join(__dirname, '../src/server/middleware/auth/defaultauthorizer'),
                 options: {}

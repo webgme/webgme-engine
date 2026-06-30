@@ -36,7 +36,6 @@ const API = require('./api');
 const Mailer = require('./middleware/mailer/mailer');
 
 const getClientConfig = require('../../config/getclientconfig');
-const GmeAuth = require('./middleware/auth/gmeauth');
 const Logger = require('./logger');
 const AADClient = require('./middleware/auth/WebgmeAADClient');
 const aadVerify = require('./middleware/auth/verifyAADToken');
@@ -105,6 +104,7 @@ class StandAloneServer {
         this.__isRunning = false;
         this.__httpServer = null;
         this.__app = new Express();
+        const GmeAuth = require(gmeConfig.authentication.gmeAuth.path);
         this.__gmeAuth = new GmeAuth(null, gmeConfig);
         this.__database = null;
         this.__serverUrl = '';

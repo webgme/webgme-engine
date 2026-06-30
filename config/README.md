@@ -80,6 +80,8 @@ Modification of arrays is not support, but non-existing config sub-group (object
  Given router will be mounted at `/profile`.
 - `config.authentication.salts = 10`
  - Strength of the salting of the users' passwords [bcrypt](https://github.com/dcodeIO/bcrypt.js).
+- `config.authentication.gmeAuth.path = './src/server/middleware/auth/gmeauth'`
+ - Path (absolute) to module implementing the server-side auth provider (`connect`, `unload`, `metadataStorage`, `authorizer`, user/org APIs). Defaults to the MongoDB-backed `gmeauth`. For fully in-memory local deployments with `config.authentication.enable = false` and `config.storage.database.type = 'memory'`, use `./src/server/middleware/auth/memorygmeauth` to avoid a MongoDB dependency for auth metadata.
 - `config.authentication.authorizer.path = './src/server/middleware/auth/defaultauthorizer'`
  - Path (absolute) to module implementing `AuthorizerBase` (located next to `deafultauthorizer`) for getting and setting authorization regarding projects and project creation.
 - `config.authentication.authorizer.options = {}`
@@ -336,7 +338,7 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.storage.autoMerge.enable = false`
  - (N.B. Experimental feature) If enable, incoming commits to branches that initially were `FORKED` will be attempted to be merged with the head of the branch. Use with caution as larger (+100k nodes) projects can slow down the commit rate.
 - `config.storage.database.type = 'mongo'`
- - Type of database to store the data (metadata e.g. _users is always stored in mongo), can be `'mongo'`, `'redis'` or `'memory'`.
+ - Type of database to store the project data, can be `'mongo'`, `'redis'` or `'memory'`. Auth metadata (`_users`, `_projects`) is stored in MongoDB by default via `config.authentication.gmeAuth.path`; use `memorygmeauth` with auth disabled for a fully in-memory setup without MongoDB.
 - `config.storage.database.options = '{}'`
  - Options passed to database client (unless mongo is specified, in that case `config.mongo.options` are used).
 
