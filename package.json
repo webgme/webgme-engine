@@ -101,5 +101,10 @@
     "msgpack-js": "^0.3.0",
     "pkginfo": "^0.4.1",
     "rimraf": "^6"
+  },
+  "overrides": {
+    "webapi-parser": {
+      "ajv": "6.15.0"
+    }
   }
 }
