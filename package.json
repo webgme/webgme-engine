@@ -101,5 +101,9 @@
     "msgpack-js": "^0.3.0",
     "pkginfo": "^0.4.1",
     "rimraf": "^6"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.0.5",
+    "qs": "^6.16.0"
   }
 }
