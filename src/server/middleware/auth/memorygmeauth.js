@@ -115,6 +115,10 @@ function MemoryGMEAuth(session, gmeConfig) {
             return Q.resolve(userData).nodeify(callback);
         }
 
+        if (userData.passwordHash === null || userData.passwordHash === undefined) {
+            return Q.reject(new Error('incorrect password for user [' + userId + ']')).nodeify(callback);
+        }
+
         if (password === userData.passwordHash || password === userData._plainPassword) {
             return Q.resolve(userData).nodeify(callback);
         }
@@ -231,14 +235,16 @@ function MemoryGMEAuth(session, gmeConfig) {
         users[userId] = {
             _id: userId,
             email: email,
-            passwordHash: password,
-            _plainPassword: password,
+            passwordHash: password === null || password === undefined ? null : password,
+            _plainPassword: password === null || password === undefined ? null : password,
             canCreate: canCreate === true,
             siteAdmin: options.siteAdmin === true,
-            data: {},
-            settings: {},
+            displayName: options.displayName,
+            data: options.data || {},
+            settings: options.settings || {},
             orgs: [],
-            disabled: false
+            disabled: options.disabled === true,
+            oauthIdentities: options.oauthIdentities || {}
         };
 
         self.dispatchEvent(CONSTANTS.USER_CREATED, { userId: userId });
@@ -508,12 +514,37 @@ function MemoryGMEAuth(session, gmeConfig) {
         return authorizer.setAccessRights(userId, projectId, rights, projectAuthParams, callback);
     }
 
+    function findUserByOAuthIdentity(providerName, subject, callback) {
+        var ids = Object.keys(users),
+            i,
+            rec;
+        for (i = 0; i < ids.length; i += 1) {
+            rec = users[ids[i]];
+            if (rec && rec.oauthIdentities && rec.oauthIdentities[providerName] === subject) {
+                return Q.resolve(_cloneUser(rec)).nodeify(callback);
+            }
+        }
+        return Q.resolve(null).nodeify(callback);
+    }
+
+    function linkOAuthIdentity(userId, providerName, subject, callback) {
+        var rec = _getUserRecord(userId);
+        if (!rec) {
+            return Q.reject(new Error('no such user [' + userId + ']')).nodeify(callback);
+        }
+        rec.oauthIdentities = rec.oauthIdentities || {};
+        rec.oauthIdentities[providerName] = subject;
+        return Q.resolve(_cloneUser(rec)).nodeify(callback);
+    }
+
     this.unload = unload;
     this.connect = connect;
 
     this.listUsers = listUsers;
     this.getUser = getUser;
     this.addUser = addUser;
+    this.findUserByOAuthIdentity = findUserByOAuthIdentity;
+    this.linkOAuthIdentity = linkOAuthIdentity;
     this.updateUser = updateUser;
     this.updateUserDataField = updateUserDataField;
     this.setUserDataField = setUserDataField;

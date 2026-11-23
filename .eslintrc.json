@@ -4,7 +4,11 @@
   },
   "overrides": [
     {
-      "files": ["src/server/middleware/auth/verifyAADToken.js"],
+      "files": [
+        "src/server/middleware/auth/verifyAADToken.js",
+        "src/server/middleware/auth/verifyOAuthToken.js",
+        "test/server/middleware/auth/mockOAuthServer.js"
+      ],
       "parserOptions": {
         "ecmaVersion": 2022
       }
