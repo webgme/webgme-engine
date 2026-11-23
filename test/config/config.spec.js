@@ -364,3 +364,239 @@ describe('configuration and components', function () {
         });
     });
 });
+
+describe('authentication.oauth and capability flags', function () {
+    const {expect} = require('chai');
+    const path = require('path');
+    const {validateConfig} = require('../../config/validator');
+    const getClientConfig = require('../../config/getclientconfig');
+
+    function freshDefaultConfig() {
+        const resolved = require.resolve('../../config/config.default.js');
+        delete require.cache[resolved];
+        return require('../../config/config.default.js');
+    }
+
+    function validOidcOAuthConfig() {
+        return {
+            enable: true,
+            providerName: 'keycloak',
+            discoveryUrl: 'https://idp.example.com/.well-known/openid-configuration',
+            authorizationUrl: null,
+            tokenUrl: null,
+            userInfoUrl: null,
+            endSessionUrl: null,
+            clientId: 'webgme-client',
+            clientSecret: null,
+            redirectUri: 'https://webgme.example.com/oauth/callback',
+            scopes: ['openid', 'profile', 'email'],
+            usePKCE: true,
+            loginRoute: '/oauth/login',
+            callbackRoute: '/oauth/callback',
+            tokenRoute: '/oauth/token',
+            jwksUri: null,
+            issuer: null,
+            audience: null,
+            algorithms: ['RS256'],
+            acceptExternalBearerJwt: false,
+            claims: {
+                subject: 'sub',
+                username: 'preferred_username',
+                email: 'email',
+                displayName: 'name',
+            },
+            userIdPrefix: 'oauth_',
+            autoCreateUser: true,
+            usersCanCreate: null,
+            stateCookieId: 'webgme_oauth_state',
+            stateTtlSec: 600,
+            extraAuthorizeParams: {},
+        };
+    }
+
+    it('should validate a minimal OIDC discovery OAuth config with PKCE', function () {
+        const cfg = freshDefaultConfig();
+        cfg.authentication.enable = true;
+        cfg.authentication.oauth = validOidcOAuthConfig();
+        expect(() => validateConfig(cfg)).to.not.throw();
+    });
+
+    it('should validate plain OAuth 2.0 endpoints without discoveryUrl when clientSecret is set', function () {
+        const cfg = freshDefaultConfig();
+        cfg.authentication.enable = true;
+        cfg.authentication.oauth = validOidcOAuthConfig();
+        cfg.authentication.oauth.discoveryUrl = null;
+        cfg.authentication.oauth.usePKCE = false;
+        cfg.authentication.oauth.clientSecret = 'super-secret';
+        cfg.authentication.oauth.authorizationUrl = 'https://idp.example.com/authorize';
+        cfg.authentication.oauth.tokenUrl = 'https://idp.example.com/token';
+        cfg.authentication.oauth.userInfoUrl = 'https://idp.example.com/userinfo';
+        expect(() => validateConfig(cfg)).to.not.throw();
+    });
+
+    it('should allow oauth.tokenRoute = null when oauth is enabled', function () {
+        const cfg = freshDefaultConfig();
+        cfg.authentication.oauth = validOidcOAuthConfig();
+        cfg.authentication.oauth.tokenRoute = null;
+        expect(() => validateConfig(cfg)).to.not.throw();
+    });
+
+    it('should reject invalid oauth.providerName characters', function () {
+        ['bad.name', 'bad$name', 'bad name'].forEach((badName) => {
+            const cfg = freshDefaultConfig();
+            cfg.authentication.oauth = validOidcOAuthConfig();
+            cfg.authentication.oauth.providerName = badName;
+            expect(() => validateConfig(cfg)).to.throw(/providerName/);
+        });
+    });
+
+    it('should throw when oauth.enable = true and clientId or redirectUri is missing', function () {
+        const cfgMissingClient = freshDefaultConfig();
+        cfgMissingClient.authentication.oauth = validOidcOAuthConfig();
+        cfgMissingClient.authentication.oauth.clientId = null;
+        expect(() => validateConfig(cfgMissingClient)).to.throw(/clientId/);
+
+        const cfgMissingRedirect = freshDefaultConfig();
+        cfgMissingRedirect.authentication.oauth = validOidcOAuthConfig();
+        cfgMissingRedirect.authentication.oauth.redirectUri = '';
+        expect(() => validateConfig(cfgMissingRedirect)).to.throw(/redirectUri/);
+    });
+
+    it('should throw when discoveryUrl is unset and endpoints are missing', function () {
+        const cfgNoAuth = freshDefaultConfig();
+        cfgNoAuth.authentication.oauth = validOidcOAuthConfig();
+        cfgNoAuth.authentication.oauth.discoveryUrl = null;
+        cfgNoAuth.authentication.oauth.tokenUrl = 'https://idp.example.com/token';
+        cfgNoAuth.authentication.oauth.userInfoUrl = 'https://idp.example.com/userinfo';
+        expect(() => validateConfig(cfgNoAuth)).to.throw(/authorizationUrl/);
+
+        const cfgNoUserInfoOrJwks = freshDefaultConfig();
+        cfgNoUserInfoOrJwks.authentication.oauth = validOidcOAuthConfig();
+        cfgNoUserInfoOrJwks.authentication.oauth.discoveryUrl = null;
+        cfgNoUserInfoOrJwks.authentication.oauth.authorizationUrl = 'https://idp.example.com/authorize';
+        cfgNoUserInfoOrJwks.authentication.oauth.tokenUrl = 'https://idp.example.com/token';
+        expect(() => validateConfig(cfgNoUserInfoOrJwks)).to.throw(/userInfoUrl or jwksUri/);
+    });
+
+    it('should throw when usePKCE is false and clientSecret is missing', function () {
+        const cfg = freshDefaultConfig();
+        cfg.authentication.oauth = validOidcOAuthConfig();
+        cfg.authentication.oauth.usePKCE = false;
+        cfg.authentication.oauth.clientSecret = null;
+        expect(() => validateConfig(cfg)).to.throw(/clientSecret/);
+    });
+
+    it('should throw when acceptExternalBearerJwt = true without discoveryUrl and jwksUri/issuer', function () {
+        const cfg = freshDefaultConfig();
+        cfg.authentication.oauth = validOidcOAuthConfig();
+        cfg.authentication.oauth.discoveryUrl = null;
+        cfg.authentication.oauth.authorizationUrl = 'https://idp.example.com/authorize';
+        cfg.authentication.oauth.tokenUrl = 'https://idp.example.com/token';
+        cfg.authentication.oauth.userInfoUrl = 'https://idp.example.com/userinfo';
+        cfg.authentication.oauth.acceptExternalBearerJwt = true;
+        expect(() => validateConfig(cfg)).to.throw(/jwksUri/);
+
+        cfg.authentication.oauth.jwksUri = 'https://idp.example.com/jwks';
+        expect(() => validateConfig(cfg)).to.throw(/issuer/);
+    });
+
+    it('should reject non-leading-slash or duplicate OAuth routes', function () {
+        const cfgBadSlash = freshDefaultConfig();
+        cfgBadSlash.authentication.oauth = validOidcOAuthConfig();
+        cfgBadSlash.authentication.oauth.loginRoute = 'oauth/login';
+        expect(() => validateConfig(cfgBadSlash)).to.throw(/start with "\/"/);
+
+        const cfgDupLoginCallback = freshDefaultConfig();
+        cfgDupLoginCallback.authentication.oauth = validOidcOAuthConfig();
+        cfgDupLoginCallback.authentication.oauth.callbackRoute = '/oauth/login';
+        expect(() => validateConfig(cfgDupLoginCallback)).to.throw(/distinct/);
+
+        const cfgDupToken = freshDefaultConfig();
+        cfgDupToken.authentication.oauth = validOidcOAuthConfig();
+        cfgDupToken.authentication.oauth.tokenRoute = '/oauth/login';
+        expect(() => validateConfig(cfgDupToken)).to.throw(/distinct/);
+    });
+
+    it('should reject invalid stateTtlSec and capability flag types', function () {
+        const cfgTtl = freshDefaultConfig();
+        cfgTtl.authentication.oauth = validOidcOAuthConfig();
+        cfgTtl.authentication.oauth.stateTtlSec = 0;
+        expect(() => validateConfig(cfgTtl)).to.throw(/stateTtlSec/);
+
+        const cfgPwLogin = freshDefaultConfig();
+        cfgPwLogin.authentication.allowPasswordLogin = 'no';
+        expect(() => validateConfig(cfgPwLogin)).to.throw(/allowPasswordLogin/);
+
+        const cfgTokens = freshDefaultConfig();
+        cfgTokens.authentication.enableAccessTokens = 'yes';
+        expect(() => validateConfig(cfgTokens)).to.throw(/enableAccessTokens/);
+
+        ['invalid', null, []].forEach((badVal) => {
+            const cfgPageOpts = freshDefaultConfig();
+            cfgPageOpts.authentication.userManagementPageOptions = badVal;
+            expect(() => validateConfig(cfgPageOpts)).to.throw(/userManagementPageOptions/);
+        });
+    });
+
+    it('should sanitize OAuth secrets and userManagementPageOptions in getClientConfig', function () {
+        const cfg = freshDefaultConfig();
+        cfg.authentication.oauth = validOidcOAuthConfig();
+        cfg.authentication.oauth.clientSecret = 'top-secret-value';
+        cfg.authentication.oauth.tokenUrl = 'https://idp.example.com/token';
+        cfg.authentication.oauth.userInfoUrl = 'https://idp.example.com/userinfo';
+        cfg.authentication.oauth.jwksUri = 'https://idp.example.com/jwks';
+        cfg.authentication.userManagementPage = path.join(__dirname, 'dummy');
+        cfg.authentication.userManagementPageOptions = {secretToken: 'should-not-leak'};
+
+        const clientCfg = getClientConfig(cfg);
+        expect(clientCfg.authentication.userManagementPageOptions).to.equal(undefined);
+        expect(clientCfg.authentication.oauth).to.deep.equal({
+            enable: true,
+            providerName: 'keycloak',
+            loginRoute: '/oauth/login',
+        });
+        expect(clientCfg.authentication.oauth.clientSecret).to.equal(undefined);
+        expect(clientCfg.authentication.oauth.tokenUrl).to.equal(undefined);
+        expect(clientCfg.authentication.oauth.userInfoUrl).to.equal(undefined);
+        expect(clientCfg.authentication.oauth.jwksUri).to.equal(undefined);
+    });
+
+    it('should validate config.oauth-github.js and config.oauth-google.js presets with env vars', function () {
+        const oldId = process.env.OAUTH_CLIENT_ID;
+        const oldSecret = process.env.OAUTH_CLIENT_SECRET;
+
+        function loadPreset(relPath) {
+            delete require.cache[require.resolve('../../config/config.default.js')];
+            const presetResolved = require.resolve(relPath);
+            delete require.cache[presetResolved];
+            return require(presetResolved);
+        }
+
+        try {
+            process.env.OAUTH_CLIENT_ID = 'test-oauth-id';
+            process.env.OAUTH_CLIENT_SECRET = 'test-oauth-secret';
+
+            const ghCfg = loadPreset('../../config/config.oauth-github.js');
+            expect(() => validateConfig(ghCfg)).to.not.throw();
+            expect(ghCfg.authentication.oauth.providerName).to.equal('github');
+            expect(ghCfg.authentication.oauth.usePKCE).to.equal(false);
+
+            const googleCfg = loadPreset('../../config/config.oauth-google.js');
+            expect(() => validateConfig(googleCfg)).to.not.throw();
+            expect(googleCfg.authentication.oauth.providerName).to.equal('google');
+            expect(googleCfg.authentication.oauth.usePKCE).to.equal(true);
+        } finally {
+            if (oldId === undefined) {
+                delete process.env.OAUTH_CLIENT_ID;
+            } else {
+                process.env.OAUTH_CLIENT_ID = oldId;
+            }
+            if (oldSecret === undefined) {
+                delete process.env.OAUTH_CLIENT_SECRET;
+            } else {
+                process.env.OAUTH_CLIENT_SECRET = oldSecret;
+            }
+            delete require.cache[require.resolve('../../config/config.default.js')];
+        }
+    });
+});

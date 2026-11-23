@@ -8,13 +8,13 @@ on: [push, pull_request]
 jobs:
   lint:
     name: testing
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         node: [22, 24]
         mongodb-version: [8]
-        python-version: [3.8]
+        python-version: ['3.12']
         redis-version: [6]
 
     steps:

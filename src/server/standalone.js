@@ -39,6 +39,7 @@ const getClientConfig = require('../../config/getclientconfig');
 const Logger = require('./logger');
 const AADClient = require('./middleware/auth/WebgmeAADClient');
 const aadVerify = require('./middleware/auth/verifyAADToken');
+const OAuthClient = require('./middleware/auth/WebgmeOAuthClient');
 
 const AddOnEventPropagator = require('../addon/addoneventpropagator');
 const webgmeUtils = require('../utils');
@@ -206,6 +207,12 @@ class StandAloneServer {
         this.__middlewareOptions.server = this;
 
         this.__aadClient = new AADClient(gmeConfig, this.__gmeAuth, this.__logger);
+        if (gmeConfig.authentication.enable && gmeConfig.authentication.oauth &&
+            gmeConfig.authentication.oauth.enable) {
+            this.__oauthClient = new OAuthClient(gmeConfig, this.__gmeAuth, this.__logger);
+        } else {
+            this.__oauthClient = null;
+        }
     }
 
     getUrl() {
@@ -302,6 +309,12 @@ class StandAloneServer {
             }
     
             if (authorization && authorization.indexOf('Basic') === 0) {
+                if (__gmeConfig.authentication.allowPasswordLogin === false) {
+                    __logger.debug('Basic authentication rejected because allowPasswordLogin is false');
+                    res.status(401);
+                    next(new Error('Password authentication is disabled'));
+                    return;
+                }
                 __logger.debug('Basic authentication request');
                 // FIXME: ':' should not be in username nor in password
                 split = Buffer.from(authorization.substr('Basic '.length), 'base64').toString('utf8').split(':');
@@ -350,6 +363,22 @@ class StandAloneServer {
                         }
                     })
                     .catch(err => {
+                        if (err.name !== 'TokenExpiredError' && this.__oauthClient &&
+                            __gmeConfig.authentication.oauth.acceptExternalBearerJwt) {
+                            this.__oauthClient.resolveUserFromExternalJwt(token)
+                                .then(userId => {
+                                    req.userData = {
+                                        userId: userId,
+                                    };
+                                    next();
+                                })
+                                .catch(oauthErr => {
+                                    __logger.error('External Bearer verification failed', {metadata: oauthErr});
+                                    res.status(oauthErr.statusCode || 401);
+                                    next(oauthErr);
+                                });
+                            return;
+                        }
                         if (err.name === 'TokenExpiredError') {
                             if (res.getHeader('X-WebGME-Media-Type') || !__gmeConfig.authentication.logInUrl) {
                                 res.status(401);
@@ -424,9 +453,9 @@ class StandAloneServer {
                             return Q(null);
                         }
                     })
-                    .then(token => {
-                        if (token) {
-                            res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, token.accessToken);
+                    .then(aadToken => {
+                        if (aadToken) {
+                            res.cookie(__gmeConfig.authentication.azureActiveDirectory.cookieId, aadToken.accessToken);
                         }
                         if (webgmeTokenResult.renew === true) {
                             __gmeAuth.regenerateJWToken(token)
@@ -530,8 +559,13 @@ class StandAloneServer {
         };
     
         const mountUserManagementPage = () => {
-            var userComponent = require(__gmeConfig.authentication.userManagementPage);
-            userComponent.initialize(this.__middlewareOptions);
+            const userComponent = require(__gmeConfig.authentication.userManagementPage);
+            const componentOptions = Object.assign(
+                {},
+                this.__middlewareOptions,
+                __gmeConfig.authentication.userManagementPageOptions || {}
+            );
+            userComponent.initialize(componentOptions);
             __routeComponents.push(userComponent);
             __app.use('/profile', userComponent.router);
         };
@@ -568,9 +602,16 @@ class StandAloneServer {
 
         // adding all routes
         const buildRoutes = () => {
-            this.__tokenServer = new TokenServer(this.__middlewareOptions);
-            __app.use('/rest/tokens', this.__tokenServer.router);
-            this.__middlewareOptions.accessTokens = this.__tokenServer.tokens;
+            if (__gmeConfig.authentication.enableAccessTokens !== false) {
+                this.__tokenServer = new TokenServer(this.__middlewareOptions);
+                __app.use('/rest/tokens', this.__tokenServer.router);
+                this.__middlewareOptions.accessTokens = this.__tokenServer.tokens;
+            } else {
+                this.__tokenServer = null;
+                this.__middlewareOptions.accessTokens = {
+                    setUserFromToken: () => Promise.resolve()
+                };
+            }
 
             if (__gmeConfig.executor.enable) {
                 this.__executorServer = new ExecutorServer(this.__middlewareOptions);
@@ -642,7 +683,23 @@ class StandAloneServer {
                         }
                     }
 
+                    if (this.__oauthClient) {
+                        res.clearCookie(__gmeConfig.authentication.oauth.stateCookieId, {path: '/'});
+                    }
+
                     res.clearCookie(__gmeConfig.authentication.jwt.cookieId);
+
+                    if (!logOutUrl && this.__oauthClient) {
+                        this.__oauthClient.getLogoutUrl()
+                            .then(oauthLogoutUrl => {
+                                res.redirect(oauthLogoutUrl || redirectUrl || getLogInUrl(req) || '/');
+                            })
+                            .catch(() => {
+                                res.redirect(redirectUrl || getLogInUrl(req) || '/');
+                            });
+                        return;
+                    }
+
                     res.redirect(logOutUrl || redirectUrl || getLogInUrl(req) || '/');
                 }
             });
@@ -651,7 +708,11 @@ class StandAloneServer {
                 const userId = req.body.userId;
                 const password = req.body.password;
 
-                if (__gmeConfig.authentication.enable) {
+                if (__gmeConfig.authentication.enable === false) {
+                    res.sendStatus(404);
+                } else if (__gmeConfig.authentication.allowPasswordLogin === false) {
+                    res.status(403).json({error: 'Password login is disabled'});
+                } else {
                     __gmeAuth.generateJWToken(userId, password)
                         .then(token => {
                             res.cookie(__gmeConfig.authentication.jwt.cookieId, token);
@@ -661,8 +722,6 @@ class StandAloneServer {
                             __logger.error('Failed login', err);
                             res.sendStatus(401);
                         });
-                } else {
-                    res.sendStatus(404);
                 }
             });
 
@@ -726,6 +785,29 @@ class StandAloneServer {
                         } else {
                             res.sendStatus(403);
                         }
+                    });
+                }
+            }
+
+            // Generic external OAuth 2.0 / OIDC routes
+            if (this.__oauthClient) {
+                const oauthCfg = __gmeConfig.authentication.oauth;
+
+                __app.get(oauthCfg.loginRoute, (req, res) => {
+                    this.__oauthClient.login(req, res);
+                });
+
+                __app.get(oauthCfg.callbackRoute, (req, res) => {
+                    this.__oauthClient.handleCallback(req, res);
+                });
+
+                if (oauthCfg.tokenRoute) {
+                    __app.get(oauthCfg.tokenRoute, (req, res) => {
+                        this.__oauthClient.exchangeBearerToken(req, res);
+                    });
+
+                    __app.post(oauthCfg.tokenRoute, (req, res) => {
+                        this.__oauthClient.exchangeBearerToken(req, res);
                     });
                 }
             }

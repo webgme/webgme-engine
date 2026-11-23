@@ -340,6 +340,8 @@ function GMEAuth(session, gmeConfig) {
 
                 if (userId === gmeConfig.authentication.guestAccount && gmeConfig.authentication.allowGuests === true) {
                     return Q(true);
+                } else if (!userData.passwordHash) {
+                    return Q(false);
                 } else {
                     return Q.ninvoke(bcrypt, 'compare', password, userData.passwordHash);
                 }
@@ -887,6 +889,7 @@ function GMEAuth(session, gmeConfig) {
         // FIXME: this will not update the users correctly
         var deferred = Q.defer(),
             rejected = false,
+            safeOpts = options || {},
             data = {
                 _id: userId,
                 email: email,
@@ -896,36 +899,40 @@ function GMEAuth(session, gmeConfig) {
                 projects: {},
                 type: CONSTANTS.USER,
                 orgs: [],
-                siteAdmin: options.siteAdmin,
-                displayName: options.displayName,
+                siteAdmin: safeOpts.siteAdmin,
+                displayName: safeOpts.displayName,
                 disabled: false,
-                aadId: options.aadId
+                aadId: safeOpts.aadId,
+                oauthIdentities: safeOpts.oauthIdentities || {},
             };
 
-        if (Object.hasOwn(options, 'data')) {
-            if (UTIL.isTrueObject(options.data)) {
-                data.data = options.data;
+        if (Object.hasOwn(safeOpts, 'data')) {
+            if (UTIL.isTrueObject(safeOpts.data)) {
+                data.data = safeOpts.data;
             } else {
-                deferred.reject(new Error('supplied userData.data is not an object [' + options.data + ']'));
+                deferred.reject(new Error('supplied userData.data is not an object [' + safeOpts.data + ']'));
                 rejected = true;
             }
         }
 
-        if (Object.hasOwn(options, 'settings')) {
-            if (UTIL.isTrueObject(options.settings)) {
-                data.settings = options.settings;
+        if (Object.hasOwn(safeOpts, 'settings')) {
+            if (UTIL.isTrueObject(safeOpts.settings)) {
+                data.settings = safeOpts.settings;
             } else {
-                deferred.reject(new Error('supplied userData.settings is not an object [' + options.settings + ']'));
+                deferred.reject(new Error('supplied userData.settings is not an object [' + safeOpts.settings + ']'));
                 rejected = true;
             }
         }
 
-        if (typeof options.disabled === 'boolean') {
-            data.disabled = options.disabled;
+        if (typeof safeOpts.disabled === 'boolean') {
+            data.disabled = safeOpts.disabled;
         }
 
         if (rejected === false) {
-            Q.ninvoke(bcrypt, 'hash', password, gmeConfig.authentication.salts)
+            var hashPromise = password === null || password === undefined ?
+                Q(null) : Q.ninvoke(bcrypt, 'hash', password, gmeConfig.authentication.salts);
+
+            hashPromise
                 .then(function (hash) {
                     data.passwordHash = hash;
                     return collection.findOne({ email: email, _id: { $ne: userId } });
@@ -936,7 +943,7 @@ function GMEAuth(session, gmeConfig) {
                         throw new Error('email address already in use');
                     }
 
-                    if (!options.overwrite) {
+                    if (!safeOpts.overwrite) {
                         return collection.insertOne(data);
                     } else {
                         return collection.replaceOne({ _id: userId }, data, { upsert: true });
@@ -954,9 +961,9 @@ function GMEAuth(session, gmeConfig) {
                     }
 
                     // Do not dispatch if disabled user or existing user was overwritten.
-                    if (!data.disabled && !(options.overwrite && res.matchedCount !== 0)) {
+                    if (!data.disabled && !(safeOpts.overwrite && res.matchedCount !== 0)) {
                         self.dispatchEvent(CONSTANTS.USER_CREATED, { userId: userId });
-                        if (!options.guestOrAdmin && gmeConfig.authentication.enable) {
+                        if (!safeOpts.guestOrAdmin && gmeConfig.authentication.enable) {
                             return addUserToPublicOrgs();
                         }
                     }
@@ -1436,12 +1443,50 @@ function GMEAuth(session, gmeConfig) {
         return deferred.promise.nodeify(callback);
     }
 
+    function findUserByOAuthIdentity(providerName, subject, callback) {
+        var query = { type: { $ne: CONSTANTS.ORGANIZATION } };
+        query['oauthIdentities.' + providerName] = subject;
+
+        return collection.findOne(query)
+            .then(function (userData) {
+                if (!userData) {
+                    return null;
+                }
+                delete userData.passwordHash;
+                delete userData.resetHash;
+                delete userData.lastReset;
+                userData.data = userData.data || {};
+                userData.settings = userData.settings || {};
+                return userData;
+            })
+            .nodeify(callback);
+    }
+
+    function linkOAuthIdentity(userId, providerName, subject, callback) {
+        var updateDoc = {};
+        updateDoc['oauthIdentities.' + providerName] = subject;
+
+        return collection.updateOne(
+            { _id: userId, type: { $ne: CONSTANTS.ORGANIZATION } },
+            { $set: updateDoc }
+        )
+            .then(function (res) {
+                if (res.matchedCount === 0) {
+                    return Q.reject(new Error('no such user [' + userId + ']'));
+                }
+                return getUser(userId);
+            })
+            .nodeify(callback);
+    }
+
     this.unload = unload;
     this.connect = connect;
 
     this.listUsers = listUsers;
     this.getUser = getUser;
     this.addUser = addUser;
+    this.findUserByOAuthIdentity = findUserByOAuthIdentity;
+    this.linkOAuthIdentity = linkOAuthIdentity;
     this.updateUser = updateUser;
     this.updateUserDataField = updateUserDataField;
     this.setUserDataField = setUserDataField;

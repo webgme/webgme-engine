@@ -28,6 +28,15 @@ function getClientConfig(gmeConfig) {
     delete clientConfig.authentication.resetTimeout;
     delete clientConfig.authentication.resetUrl;
     delete clientConfig.authentication.azureActiveDirectory;
+    delete clientConfig.authentication.userManagementPageOptions;
+
+    if (gmeConfig.authentication && gmeConfig.authentication.oauth) {
+        clientConfig.authentication.oauth = {
+            enable: Boolean(gmeConfig.authentication.oauth.enable),
+            providerName: gmeConfig.authentication.oauth.providerName,
+            loginRoute: gmeConfig.authentication.oauth.loginRoute,
+        };
+    }
 
     delete clientConfig.executor.nonce;
     delete clientConfig.mailer;

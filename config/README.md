@@ -114,6 +114,83 @@ Modification of arrays is not support, but non-existing config sub-group (object
  - The maximum interval of validity of the reset. This means that the password has to be changed within this interval (otherwise the user has to wait until a new request can be made).
 - `config.authentication.resetUrl = '/profile/reset'`
  - Location of the reset page where the user should be guided to input the new password. The whole reset procedure can be done with purely REST API calls, but it is usually safer to include an email in the process.
+- `config.authentication.useEmailForId = false`
+ - When set to true, externally verified JWT emails are used to resolve or infer WebGME user accounts.
+- `config.authentication.allowPasswordLogin = true`
+ - Controls whether `POST /login` and HTTP `Basic` authentication are accepted. Set to `false` when delegating all logins to an external OAuth/OIDC authorization server.
+- `config.authentication.enableAccessTokens = true`
+ - Controls whether long-lived token management endpoints at `/rest/tokens` are mounted.
+- `config.authentication.userManagementPageOptions = {}`
+ - Optional plain configuration object forwarded to `config.authentication.userManagementPage.initialize(middlewareOptions)` alongside `middlewareOptions`.
+
+##### oauth
+- `config.authentication.oauth.enable = false`
+ - Enables generic external OAuth 2.0 / OIDC authentication. Works with external authorization servers (Keycloak, Auth0, Authentik, Dex, Okta, etc.) via OIDC discovery or explicit OAuth 2.0 endpoints, keeping OAuth providers external to WebGME (only WebGME user records and provider subject links are stored).
+- `config.authentication.oauth.providerName = 'oauth'`
+ - Logical identifier for the external provider (used as key in `oauthIdentities` and exposed in `/gmeConfig.json` as safe public metadata).
+- `config.authentication.oauth.discoveryUrl = null`
+ - Optional OIDC `.well-known/openid-configuration` URL. When set, lazily discovers missing `authorizationUrl`, `tokenUrl`, `userInfoUrl`, `jwksUri`, `issuer`, and `endSessionUrl`.
+- `config.authentication.oauth.authorizationUrl = null`
+ - Authorization endpoint URL (required if `discoveryUrl` is not set).
+- `config.authentication.oauth.tokenUrl = null`
+ - Token exchange endpoint URL (required if `discoveryUrl` is not set).
+- `config.authentication.oauth.userInfoUrl = null`
+ - OAuth 2.0 / OIDC UserInfo endpoint URL. Required when no `id_token` / `jwksUri` is used.
+- `config.authentication.oauth.endSessionUrl = null`
+ - Optional OP end-session endpoint redirected to by `/logout` when `config.authentication.logOutUrl` is empty.
+- `config.authentication.oauth.clientId = null`
+ - Public OAuth 2.0 client identifier.
+- `config.authentication.oauth.clientSecret = null`
+ - Optional confidential client secret (required if `usePKCE = false`).
+- `config.authentication.oauth.redirectUri = null`
+ - Exact callback URL registered at the external authorization server (matches `callbackRoute`).
+- `config.authentication.oauth.scopes = ['openid', 'profile', 'email']`
+ - Scopes requested during authorization.
+- `config.authentication.oauth.usePKCE = true`
+ - Enables RFC 7636 PKCE (`S256`) code challenge verification on authorization & token requests.
+- `config.authentication.oauth.loginRoute = '/oauth/login'`
+ - Express mount path starting the external authorization redirect.
+- `config.authentication.oauth.callbackRoute = '/oauth/callback'`
+ - Express callback path receiving `?code=...&state=...`.
+- `config.authentication.oauth.tokenRoute = '/oauth/token'`
+ - Optional endpoint (set to `null` to disable) accepting an externally issued Bearer JWT (`Authorization: Bearer ...`) and exchanging it for a WebGME session JWT cookie.
+- `config.authentication.oauth.jwksUri = null`
+ - JWKS endpoint for verifying `id_token` / external Bearer JWT signatures.
+- `config.authentication.oauth.issuer = null`
+ - Expected `iss` claim when verifying JWTs via JWKS.
+- `config.authentication.oauth.audience = null`
+ - Optional expected `aud` claim (defaults to `clientId` for both `id_token` and external Bearer JWT verification when unset).
+- `config.authentication.oauth.algorithms = ['RS256']`
+ - Allowed asymmetric JWT signing algorithms for JWKS verification.
+- `config.authentication.oauth.acceptExternalBearerJwt = false`
+ - When `true`, `ensureAuthenticated` also accepts externally issued Bearer JWTs directly on API requests (verified against `jwksUri`/`issuer`) without exchanging at `tokenRoute`.
+- `config.authentication.oauth.claims = { subject: 'sub', username: 'preferred_username', email: 'email', displayName: 'name' }`
+ - Mapping from external OIDC/UserInfo claims to WebGME user fields.
+- `config.authentication.oauth.userIdPrefix = 'oauth_'`
+ - Prefix used when generating deterministic WebGME `_id`s from the external `subject` if the `username` claim is absent or sanitizes empty.
+- `config.authentication.oauth.autoCreateUser = true`
+ - Automatically provisions a passwordless WebGME user (`passwordHash: null`) in `_users` on first verified external login.
+- `config.authentication.oauth.usersCanCreate = null`
+ - Sets `canCreate` for auto-provisioned OAuth users (`true`/`false`), or inherits `config.authentication.inferredUsersCanCreate` when `null`.
+- `config.authentication.oauth.stateCookieId = 'webgme_oauth_state'`
+ - Name of the stateless AES-256-GCM encrypted `HttpOnly` cookie holding transient PKCE/state/nonce data.
+- `config.authentication.oauth.stateTtlSec = 600`
+ - Validity window in seconds for the OAuth authorization state cookie.
+- `config.authentication.oauth.extraAuthorizeParams = {}`
+ - Optional extra query parameters merged into the authorize URL (e.g., `{ prompt: 'login' }`).
+
+###### Example provider configs (GitHub & Google / Gmail)
+Ready-to-run configuration presets are included in [config/config.oauth-github.js](./config.oauth-github.js) and [config/config.oauth-google.js](./config.oauth-google.js):
+
+- **GitHub OAuth App** (`NODE_ENV=oauth-github`):
+  1. Create an OAuth App at <https://github.com/settings/developers> with Authorization callback URL `http://localhost:8888/oauth/callback`.
+  2. Start MongoDB locally, then run:
+     `OAUTH_CLIENT_ID=<your-client-id> OAUTH_CLIENT_SECRET=<your-client-secret> NODE_ENV=oauth-github npm start`
+- **Google Identity / Gmail OIDC** (`NODE_ENV=oauth-google`):
+  1. In Google Cloud Console -> APIs & Services -> Credentials -> Create OAuth 2.0 Client ID (type **Web application**), add authorized redirect URI `http://localhost:8888/oauth/callback`.
+  2. Start MongoDB locally, then run:
+     `OAUTH_CLIENT_ID=<your-client-id> OAUTH_CLIENT_SECRET=<your-client-secret> NODE_ENV=oauth-google npm start`
+- Make sure the hostname you open in the browser (`localhost` vs `127.0.0.1`) matches `config.authentication.oauth.redirectUri` so the short-lived `webgme_oauth_state` cookie is sent back on `/oauth/callback`.
 
 ##### azureActiveDirectory
 - `config.authentication.azureActiveDirectory.enable = false`

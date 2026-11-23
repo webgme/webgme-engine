@@ -100,6 +100,123 @@ function assertFileExists(name, path) {
     }
 }
 
+function assertPlainObject(name, value) {
+    if (!value || typeof value !== 'object' || value instanceof Array) {
+        throwTypeMiss(name, value, 'plain object');
+    }
+}
+
+function assertNonEmptyString(name, value) {
+    assertString(name, value);
+    if (value.trim() === '') {
+        throwValidationError(name, 'must be a non-empty string.');
+    }
+}
+
+function validateOAuthConfig(oauth) {
+    assertPlainObject('config.authentication.oauth', oauth);
+    assertBoolean('config.authentication.oauth.enable', oauth.enable);
+
+    if (!oauth.enable) {
+        return;
+    }
+
+    assertNonEmptyString('config.authentication.oauth.providerName', oauth.providerName);
+    if (!/^[0-9a-zA-Z_-]+$/.test(oauth.providerName)) {
+        throwValidationError(
+            'config.authentication.oauth.providerName',
+            'may only contain letters, digits, "_" and "-".'
+        );
+    }
+    assertNonEmptyString('config.authentication.oauth.clientId', oauth.clientId);
+    assertNonEmptyString('config.authentication.oauth.redirectUri', oauth.redirectUri);
+    assertNonEmptyString('config.authentication.oauth.stateCookieId', oauth.stateCookieId);
+
+    assertString('config.authentication.oauth.discoveryUrl', oauth.discoveryUrl, true);
+    assertString('config.authentication.oauth.authorizationUrl', oauth.authorizationUrl, true);
+    assertString('config.authentication.oauth.tokenUrl', oauth.tokenUrl, true);
+    assertString('config.authentication.oauth.userInfoUrl', oauth.userInfoUrl, true);
+    assertString('config.authentication.oauth.endSessionUrl', oauth.endSessionUrl, true);
+    assertString('config.authentication.oauth.clientSecret', oauth.clientSecret, true);
+    assertString('config.authentication.oauth.jwksUri', oauth.jwksUri, true);
+    assertString('config.authentication.oauth.issuer', oauth.issuer, true);
+    assertString('config.authentication.oauth.audience', oauth.audience, true);
+    assertString('config.authentication.oauth.userIdPrefix', oauth.userIdPrefix);
+
+    assertBoolean('config.authentication.oauth.usePKCE', oauth.usePKCE);
+    assertBoolean('config.authentication.oauth.autoCreateUser', oauth.autoCreateUser);
+    assertBoolean('config.authentication.oauth.acceptExternalBearerJwt', oauth.acceptExternalBearerJwt);
+
+    if (oauth.usersCanCreate !== null && typeof oauth.usersCanCreate !== 'boolean') {
+        throwTypeMiss('config.authentication.oauth.usersCanCreate', oauth.usersCanCreate, 'boolean or null');
+    }
+
+    assertNumber('config.authentication.oauth.stateTtlSec', oauth.stateTtlSec);
+    if (oauth.stateTtlSec <= 0) {
+        throwValidationError('config.authentication.oauth.stateTtlSec', 'must be greater than 0.');
+    }
+
+    assertArray('config.authentication.oauth.scopes', oauth.scopes);
+    oauth.scopes.forEach(function (scope, idx) {
+        assertString('config.authentication.oauth.scopes[' + idx + ']', scope);
+    });
+
+    assertArray('config.authentication.oauth.algorithms', oauth.algorithms);
+    if (oauth.algorithms.length === 0) {
+        throwValidationError('config.authentication.oauth.algorithms', 'must contain at least one algorithm.');
+    }
+    oauth.algorithms.forEach(function (alg, idx) {
+        assertNonEmptyString('config.authentication.oauth.algorithms[' + idx + ']', alg);
+    });
+
+    assertNonEmptyString('config.authentication.oauth.loginRoute', oauth.loginRoute);
+    assertNonEmptyString('config.authentication.oauth.callbackRoute', oauth.callbackRoute);
+    if (oauth.loginRoute.charAt(0) !== '/' || oauth.callbackRoute.charAt(0) !== '/') {
+        throwValidationError('config.authentication.oauth', 'route paths must start with "/".');
+    }
+    if (oauth.loginRoute === oauth.callbackRoute) {
+        throwValidationError('config.authentication.oauth', 'loginRoute and callbackRoute must be distinct.');
+    }
+
+    if (oauth.tokenRoute !== null) {
+        assertNonEmptyString('config.authentication.oauth.tokenRoute', oauth.tokenRoute);
+        if (oauth.tokenRoute.charAt(0) !== '/') {
+            throwValidationError('config.authentication.oauth', 'route paths must start with "/".');
+        }
+        if (oauth.tokenRoute === oauth.loginRoute || oauth.tokenRoute === oauth.callbackRoute) {
+            throwValidationError('config.authentication.oauth',
+                'loginRoute, callbackRoute, and tokenRoute must be distinct.');
+        }
+    }
+
+    assertPlainObject('config.authentication.oauth.claims', oauth.claims);
+    assertNonEmptyString('config.authentication.oauth.claims.subject', oauth.claims.subject);
+    assertString('config.authentication.oauth.claims.username', oauth.claims.username, true);
+    assertString('config.authentication.oauth.claims.email', oauth.claims.email, true);
+    assertString('config.authentication.oauth.claims.displayName', oauth.claims.displayName, true);
+
+    assertPlainObject('config.authentication.oauth.extraAuthorizeParams', oauth.extraAuthorizeParams);
+
+    if (!oauth.discoveryUrl) {
+        assertNonEmptyString('config.authentication.oauth.authorizationUrl', oauth.authorizationUrl);
+        assertNonEmptyString('config.authentication.oauth.tokenUrl', oauth.tokenUrl);
+        if (!oauth.userInfoUrl && !oauth.jwksUri) {
+            throwValidationError('config.authentication.oauth',
+                'must define either userInfoUrl or jwksUri when discoveryUrl is not set.');
+        }
+    }
+
+    if (oauth.acceptExternalBearerJwt && !oauth.discoveryUrl) {
+        assertNonEmptyString('config.authentication.oauth.jwksUri', oauth.jwksUri);
+        assertNonEmptyString('config.authentication.oauth.issuer', oauth.issuer);
+    }
+
+    if (!oauth.usePKCE && !oauth.clientSecret) {
+        throwValidationError('config.authentication.oauth',
+            'requires clientSecret when usePKCE is false.');
+    }
+}
+
 // We will fail as early as possible
 function validateConfig(configOrFileName) {
     var expectedKeys = [],
@@ -161,10 +278,18 @@ function validateConfig(configOrFileName) {
     assertNumber('config.authentication.allowedResetInterval', config.authentication.allowedResetInterval);
     assertNumber('config.authentication.resetTimeout', config.authentication.resetTimeout);
     assertBoolean('config.authentication.useEmailforId', config.authentication.useEmailForId);
+    assertBoolean('config.authentication.allowPasswordLogin', config.authentication.allowPasswordLogin);
+    assertBoolean('config.authentication.enableAccessTokens', config.authentication.enableAccessTokens);
+    assertPlainObject(
+        'config.authentication.userManagementPageOptions',
+        config.authentication.userManagementPageOptions
+    );
 
     if (config.authentication.adminAccount) {
         assertString('config.authentication.adminAccount', config.authentication.adminAccount);
     }
+
+    validateOAuthConfig(config.authentication.oauth);
 
     assertObject('config.authentication.azureActiveDirectory', 
         config.authentication.azureActiveDirectory);
