@@ -44,6 +44,7 @@ class MockOAuthServer {
         this.lastAuthorizeQuery = null;
         this.lastTokenBody = null;
         this.lastUserInfoAuth = null;
+        this.lastUserInfoUserAgent = null;
 
         this.reset();
     }
@@ -54,10 +55,12 @@ class MockOAuthServer {
         this.lastAuthorizeQuery = null;
         this.lastTokenBody = null;
         this.lastUserInfoAuth = null;
+        this.lastUserInfoUserAgent = null;
         this.behavior = {
             issueIdToken: true,
             authorizeError: null,
             authorizeErrorDescription: null,
+            tokenErrorIn200: null,
             wrongNonce: false,
             forgedSignature: false,
             userInfoSubjectMismatch: false,
@@ -221,6 +224,12 @@ class MockOAuthServer {
             });
             this.lastTokenBody = bodyObj;
 
+            if (this.behavior.tokenErrorIn200) {
+                res.writeHead(200, {'Content-Type': 'application/json'});
+                res.end(JSON.stringify(this.behavior.tokenErrorIn200));
+                return;
+            }
+
             const code = bodyObj.code;
             const entry = code ? this.__codes.get(code) : null;
             if (code) {
@@ -281,6 +290,7 @@ class MockOAuthServer {
 
         if (req.method === 'GET' && pathname === '/userinfo') {
             this.lastUserInfoAuth = req.headers.authorization || null;
+            this.lastUserInfoUserAgent = req.headers['user-agent'] || null;
             if (!this.behavior.returnUserInfo) {
                 res.writeHead(404, {'Content-Type': 'application/json'});
                 res.end(JSON.stringify({error: 'not_found'}));

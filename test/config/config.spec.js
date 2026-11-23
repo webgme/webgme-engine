@@ -560,4 +560,43 @@ describe('authentication.oauth and capability flags', function () {
         expect(clientCfg.authentication.oauth.userInfoUrl).to.equal(undefined);
         expect(clientCfg.authentication.oauth.jwksUri).to.equal(undefined);
     });
+
+    it('should validate config.oauth-github.js and config.oauth-google.js presets with env vars', function () {
+        const oldId = process.env.OAUTH_CLIENT_ID;
+        const oldSecret = process.env.OAUTH_CLIENT_SECRET;
+
+        function loadPreset(relPath) {
+            delete require.cache[require.resolve('../../config/config.default.js')];
+            const presetResolved = require.resolve(relPath);
+            delete require.cache[presetResolved];
+            return require(presetResolved);
+        }
+
+        try {
+            process.env.OAUTH_CLIENT_ID = 'test-oauth-id';
+            process.env.OAUTH_CLIENT_SECRET = 'test-oauth-secret';
+
+            const ghCfg = loadPreset('../../config/config.oauth-github.js');
+            expect(() => validateConfig(ghCfg)).to.not.throw();
+            expect(ghCfg.authentication.oauth.providerName).to.equal('github');
+            expect(ghCfg.authentication.oauth.usePKCE).to.equal(false);
+
+            const googleCfg = loadPreset('../../config/config.oauth-google.js');
+            expect(() => validateConfig(googleCfg)).to.not.throw();
+            expect(googleCfg.authentication.oauth.providerName).to.equal('google');
+            expect(googleCfg.authentication.oauth.usePKCE).to.equal(true);
+        } finally {
+            if (oldId === undefined) {
+                delete process.env.OAUTH_CLIENT_ID;
+            } else {
+                process.env.OAUTH_CLIENT_ID = oldId;
+            }
+            if (oldSecret === undefined) {
+                delete process.env.OAUTH_CLIENT_SECRET;
+            } else {
+                process.env.OAUTH_CLIENT_SECRET = oldSecret;
+            }
+            delete require.cache[require.resolve('../../config/config.default.js')];
+        }
+    });
 });

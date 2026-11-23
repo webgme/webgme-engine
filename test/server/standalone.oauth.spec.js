@@ -699,4 +699,108 @@ describe('standalone server generic external OAuth 2.0 / OIDC', function () {
         expect(renewedCookies[cfg.authentication.jwt.cookieId]).to.be.an('object');
         expect(renewedCookies[cfg.authentication.jwt.cookieId].value).to.be.a('string').and.not.equal('');
     });
+
+    it('should support GitHub-style OAuth claims, sanitize hyphenated logins for projects, & handle HTTP 200 errors',
+        async function () {
+            const {baseUrl} = await startHarness({
+                behavior: {
+                    issueIdToken: false,
+                    requireClientSecret: 'gh-secret',
+                    nextUser: {
+                        sub: 987654,
+                        preferredUsername: undefined,
+                        email: null,
+                        name: 'Octo Cat',
+                        extraClaims: {
+                            id: 987654,
+                            login: 'octo-cat-dev',
+                        },
+                    },
+                },
+                customizeConfig: (cfg, op) => {
+                    cfg.authentication.oauth.providerName = 'github';
+                    cfg.authentication.oauth.discoveryUrl = null;
+                    cfg.authentication.oauth.usePKCE = false;
+                    cfg.authentication.oauth.clientSecret = 'gh-secret';
+                    cfg.authentication.oauth.authorizationUrl = op.authorizationUrl;
+                    cfg.authentication.oauth.tokenUrl = op.tokenUrl;
+                    cfg.authentication.oauth.userInfoUrl = op.userInfoUrl;
+                    cfg.authentication.oauth.tokenRoute = null;
+                    cfg.authentication.oauth.userIdPrefix = 'gh_';
+                    cfg.authentication.oauth.claims = {
+                        subject: 'id',
+                        username: 'login',
+                        email: 'email',
+                        displayName: 'name',
+                    };
+                },
+            });
+
+            const agent = superagent.agent();
+            const flow = await performOAuthLogin(agent, baseUrl);
+            expect(flow.cbRes.status).to.equal(302);
+            expect(mockOAuth.lastUserInfoUserAgent).to.equal('webgme-engine');
+
+            const userRes = await agent.get(baseUrl + '/api/user').ok(() => true);
+            expect(userRes.status).to.equal(200);
+            expect(userRes.body._id).to.equal('octo_cat_dev');
+            expect(userRes.body.oauthIdentities).to.deep.equal({github: '987654'});
+
+            const projRes = await agent
+                .put(baseUrl + '/api/projects/octo_cat_dev/GitHubProj')
+                .send({type: 'file', seedName: 'EmptyProject'})
+                .ok(() => true);
+            expect(projRes.status).to.equal(204);
+
+            // Simulate GitHub returning HTTP 200 with { error: 'bad_verification_code' }
+            const ghTokenErr = {error: 'bad_verification_code'};
+            ghTokenErr['error_description'] = 'The code passed is incorrect or expired.';
+            mockOAuth.setBehavior({tokenErrorIn200: ghTokenErr});
+            const errAgent = superagent.agent();
+            const errFlow = await performOAuthLogin(errAgent, baseUrl);
+            expect(errFlow.cbRes.status).to.equal(401);
+        }
+    );
+
+    it('should support Google-style OIDC claims with dotted email usernames and allow project creation',
+        async function () {
+            const {baseUrl} = await startHarness({
+                behavior: {
+                    requireClientSecret: 'google-secret',
+                    nextUser: {
+                        sub: '1122334455',
+                        preferredUsername: undefined,
+                        email: 'alice.smith@gmail.com',
+                        name: 'Alice Smith',
+                    },
+                },
+                customizeConfig: (cfg) => {
+                    cfg.authentication.oauth.providerName = 'google';
+                    cfg.authentication.oauth.clientSecret = 'google-secret';
+                    cfg.authentication.oauth.userIdPrefix = 'google_';
+                    cfg.authentication.oauth.claims = {
+                        subject: 'sub',
+                        username: 'email',
+                        email: 'email',
+                        displayName: 'name',
+                    };
+                },
+            });
+
+            const agent = superagent.agent();
+            const flow = await performOAuthLogin(agent, baseUrl);
+            expect(flow.cbRes.status).to.equal(302);
+
+            const userRes = await agent.get(baseUrl + '/api/user').ok(() => true);
+            expect(userRes.status).to.equal(200);
+            expect(userRes.body._id).to.equal('alice_smith_gmail_com');
+            expect(userRes.body.email).to.equal('alice.smith@gmail.com');
+
+            const projRes = await agent
+                .put(baseUrl + '/api/projects/alice_smith_gmail_com/GoogleProj')
+                .send({type: 'file', seedName: 'EmptyProject'})
+                .ok(() => true);
+            expect(projRes.status).to.equal(204);
+        }
+    );
 });

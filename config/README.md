@@ -179,6 +179,19 @@ Modification of arrays is not support, but non-existing config sub-group (object
 - `config.authentication.oauth.extraAuthorizeParams = {}`
  - Optional extra query parameters merged into the authorize URL (e.g., `{ prompt: 'login' }`).
 
+###### Example provider configs (GitHub & Google / Gmail)
+Ready-to-run configuration presets are included in [config/config.oauth-github.js](./config.oauth-github.js) and [config/config.oauth-google.js](./config.oauth-google.js):
+
+- **GitHub OAuth App** (`NODE_ENV=oauth-github`):
+  1. Create an OAuth App at <https://github.com/settings/developers> with Authorization callback URL `http://localhost:8888/oauth/callback`.
+  2. Start MongoDB locally, then run:
+     `OAUTH_CLIENT_ID=<your-client-id> OAUTH_CLIENT_SECRET=<your-client-secret> NODE_ENV=oauth-github npm start`
+- **Google Identity / Gmail OIDC** (`NODE_ENV=oauth-google`):
+  1. In Google Cloud Console -> APIs & Services -> Credentials -> Create OAuth 2.0 Client ID (type **Web application**), add authorized redirect URI `http://localhost:8888/oauth/callback`.
+  2. Start MongoDB locally, then run:
+     `OAUTH_CLIENT_ID=<your-client-id> OAUTH_CLIENT_SECRET=<your-client-secret> NODE_ENV=oauth-google npm start`
+- Make sure the hostname you open in the browser (`localhost` vs `127.0.0.1`) matches `config.authentication.oauth.redirectUri` so the short-lived `webgme_oauth_state` cookie is sent back on `/oauth/callback`.
+
 ##### azureActiveDirectory
 - `config.authentication.azureActiveDirectory.enable = false`
  - When set to true, WebGME will try to authenticate users with the configured azure endpoints. It is also going to

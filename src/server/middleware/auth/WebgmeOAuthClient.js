@@ -106,7 +106,10 @@ class WebGMEOAuthClient {
             this.__metadataPromise = (async () => {
                 const res = await fetch(cfg.discoveryUrl, {
                     method: 'GET',
-                    headers: {Accept: 'application/json'},
+                    headers: {
+                        Accept: 'application/json',
+                        'User-Agent': 'webgme-engine',
+                    },
                 });
                 if (!res.ok) {
                     throw new Error('Failed to fetch OIDC discovery document: HTTP ' + res.status);
@@ -221,6 +224,7 @@ class WebGMEOAuthClient {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 Accept: 'application/json',
+                'User-Agent': 'webgme-engine',
             },
             body: body.toString(),
         });
@@ -231,7 +235,16 @@ class WebGMEOAuthClient {
             throw err;
         }
 
-        return tokenRes.json();
+        const tokenBody = await tokenRes.json();
+        if (tokenBody && tokenBody.error) {
+            const err = new Error(
+                'OAuth token endpoint returned error: ' + String(tokenBody['error_description'] || tokenBody.error)
+            );
+            err.statusCode = 401;
+            throw err;
+        }
+
+        return tokenBody;
     }
 
     async __fetchUserInfo(meta, accessToken) {
@@ -240,6 +253,7 @@ class WebGMEOAuthClient {
             headers: {
                 Authorization: 'Bearer ' + accessToken,
                 Accept: 'application/json',
+                'User-Agent': 'webgme-engine',
             },
         });
         if (!res.ok) {
@@ -250,14 +264,21 @@ class WebGMEOAuthClient {
         return res.json();
     }
 
+    __getSafeUserIdPrefix() {
+        const raw = typeof this.__oauthCfg.userIdPrefix === 'string' ?
+            this.__oauthCfg.userIdPrefix.replace(/[^0-9a-zA-Z_]/g, '_') : '';
+        const stripped = raw.replace(/^_+/, '');
+        return stripped || 'oauth_';
+    }
+
     __buildSanitizedUserId(rawCandidate, subject) {
-        const prefix = typeof this.__oauthCfg.userIdPrefix === 'string' ? this.__oauthCfg.userIdPrefix : 'oauth_';
+        const prefix = this.__getSafeUserIdPrefix();
         const cleanCandidate = typeof rawCandidate === 'string' ?
-            rawCandidate.trim().replace(/[^0-9a-zA-Z_.-]/g, '_') : '';
-        if (cleanCandidate && cleanCandidate.length >= 2) {
+            rawCandidate.trim().replace(/[^0-9a-zA-Z_]/g, '_').replace(/^_+/, '') : '';
+        if (cleanCandidate && cleanCandidate.length >= 2 && cleanCandidate.toLowerCase() !== 'system') {
             return cleanCandidate;
         }
-        const cleanSub = String(subject || '').trim().replace(/[^0-9a-zA-Z_.-]/g, '_');
+        const cleanSub = String(subject || '').trim().replace(/[^0-9a-zA-Z_]/g, '_').replace(/^_+/, '');
         if (cleanSub) {
             return prefix + cleanSub;
         }
@@ -276,13 +297,14 @@ class WebGMEOAuthClient {
             return candidate;
         }
 
-        const prefix = typeof this.__oauthCfg.userIdPrefix === 'string' ? this.__oauthCfg.userIdPrefix : 'oauth_';
+        const prefix = this.__getSafeUserIdPrefix();
         const hashSuffix = crypto
             .createHash('sha256')
             .update(providerName + ':' + String(subject))
             .digest('hex')
             .slice(0, 8);
-        candidate = prefix + preferredId.replace(/[^0-9a-zA-Z_.-]/g, '_') + '_' + hashSuffix;
+        const safePreferred = String(preferredId || '').replace(/[^0-9a-zA-Z_]/g, '_').replace(/^_+/, '');
+        candidate = prefix + (safePreferred || 'user') + '_' + hashSuffix;
         return candidate;
     }
 
