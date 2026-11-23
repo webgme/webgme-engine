@@ -14,7 +14,7 @@ jobs:
       matrix:
         node: [22, 24]
         mongodb-version: [8]
-        python-version: [3.8]
+        python-version: ['3.12']
         redis-version: [6]
 
     steps:
