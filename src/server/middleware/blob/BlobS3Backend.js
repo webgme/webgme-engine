@@ -9,12 +9,20 @@
 
 var fs = require('fs'),
     crypto = require('crypto'),
-    AWS = require('aws-sdk'),
-
     GUID = requireJS('common/util/guid'),
-
     StringStreamReader = require('../../util/StringStreamReader'),
     BlobBackendBase = require('./BlobBackendBase');
+
+// Import S3 client and command classes from AWS SDK v3
+const {
+    S3Client,
+    GetObjectCommand,
+    PutObjectCommand,
+    CopyObjectCommand,
+    DeleteObjectCommand,
+    HeadObjectCommand,
+    ListObjectsCommand
+} = require('@aws-sdk/client-s3');
 
 var BlobS3Backend = function (gmeConfig, logger) {
     BlobBackendBase.call(this, gmeConfig, logger);
@@ -29,23 +37,24 @@ var BlobS3Backend = function (gmeConfig, logger) {
     // 127.0.0.1 wg-metadata.localhost
     // 127.0.0.1 wg-temp.localhost
 
-    AWS.config.update(this.awsConfig);
-    this.s3 = new AWS.S3();
+    // Build S3 client options respecting v2 config keys where possible
+    var s3Options = {
+        region: this.awsConfig.region,
+        endpoint: this.awsConfig.endpoint,
+        forcePathStyle: this.awsConfig.s3ForcePathStyle,
+        // v2 maxRetries counts retries only; v3 maxAttempts counts total attempts
+        maxAttempts: (typeof this.awsConfig.maxRetries === 'number') ? this.awsConfig.maxRetries + 1 : undefined
+    };
+    // Remove undefined properties to avoid SDK warnings
+    Object.keys(s3Options).forEach(key => s3Options[key] === undefined && delete s3Options[key]);
 
-    // also tried creating an `EndPoint`:
-    this.s3.endpoint = new AWS.Endpoint(this.awsConfig.endpoint);
+    this.s3 = new S3Client(s3Options);
 
     // Uncomment to create buckets at start-up when developing
     // [this.tempBucket, this.contentBucket, this.metadataBucket].forEach( bucket => {
-    //     this.s3.createBucket({
-    //         Bucket: bucket
-    //     }, function(err, data) {
-    //         if (err) {
-    //             console.log(err, err.stack);
-    //         } else {
-    //             console.log(data);
-    //         }
-    //     });
+    //     this.s3.send(new CreateBucketCommand({ Bucket: bucket }))
+    //         .then(() => console.log('Bucket created'))
+    //         .catch(err => console.log(err, err.stack));
     // });
 };
 
@@ -57,44 +66,33 @@ BlobS3Backend.prototype.constructor = BlobS3Backend;
 
 
 BlobS3Backend.prototype.putObject = function (readStream, bucket, callback) {
-    // TODO generate a GUID or something for the temporary filename to allow parallel functioning
     var self = this,
         tempName = GUID() + '.tbf', // TODO: create this in the system temp folder
         shasum = crypto.createHash(this.shaMethod),
         size = 0;
 
-    // body must be a string or a readable file stream.
     var ready = function (body) {
-        self.s3.putObject({Bucket: self.tempBucket, Key: tempName, Body: body}, function (err/*, data*/) {
-            // TODO: error handling here
-            if (err) {
-                callback(err);
-                return;
-            }
-
-            var hash = shasum.digest('hex');
-
-            self.s3.copyObject({
-                CopySource: self.tempBucket + '/' + tempName,
-                Bucket: bucket,
-                Key: hash
-            }, function (err/*, data*/) {
-                if (err) {
-                    callback(err);
-                    return;
-                }
-
-                self.s3.deleteObject({Bucket: self.tempBucket, Key: tempName}, function (err/*, data*/) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }
-
-                    callback(null, hash, size);
-                });
-
-            });
-        });
+        // Upload temporary object
+        self.s3.send(new PutObjectCommand({ Bucket: self.tempBucket, Key: tempName, Body: body }))
+            .then(() => {
+                var hash = shasum.digest('hex');
+                // Copy to final bucket/key
+                return self.s3.send(new CopyObjectCommand({
+                    CopySource: self.tempBucket + '/' + tempName,
+                    Bucket: bucket,
+                    Key: hash
+                }))
+                    .then(() => hash);
+            })
+            .then(hash => {
+                // Delete temporary object
+                return self.s3.send(new DeleteObjectCommand({ Bucket: self.tempBucket, Key: tempName }))
+                    .then(() => ({ hash: hash }));
+            })
+            .then(res => {
+                callback(null, res.hash, size);
+            })
+            .catch(callback);
     };
 
     if (readStream instanceof StringStreamReader) {
@@ -105,7 +103,7 @@ BlobS3Backend.prototype.putObject = function (readStream, bucket, callback) {
     } else if (readStream instanceof fs.ReadStream) {
         readStream.on('data', function (chunk) {
             shasum.update(chunk);
-            size += chunk.length; //TODO does it really have a length field always???
+            size += chunk.length;
         });
         ready(readStream);
     } else {
@@ -117,7 +115,7 @@ BlobS3Backend.prototype.putObject = function (readStream, bucket, callback) {
 
             readStream2.on('data', function (chunk) {
                 shasum.update(chunk);
-                size += chunk.length; //TODO does it really have a length field always???
+                size += chunk.length;
             });
 
             readStream2.on('close', function () {
@@ -138,41 +136,37 @@ BlobS3Backend.prototype.getObject = function (hash, writeStream, bucket, callbac
             Key: hash
         };
 
-    self.s3.getObject(obj).createReadStream().pipe(writeStream);
-
-    writeStream.on('finish', function () {
-        // FIXME: any error handling here?
-        // FIXME: get the last modified date for the object
-        self.s3.headObject(obj, function (err, data) {
-            if (err) {
-                callback(err);
-                return;
-            }
-
-            callback(null, {lastModified: (new Date(data.LastModified)).toISOString()});
-        });
-
-    });
+    // Retrieve object and pipe its Body (a readable stream) directly
+    self.s3.send(new GetObjectCommand(obj))
+        .then(data => {
+            data.Body.pipe(writeStream);
+            writeStream.on('finish', function () {
+                // After writing, retrieve metadata via headObject
+                self.s3.send(new HeadObjectCommand(obj))
+                    .then(meta => {
+                        callback(null, { lastModified: (new Date(meta.LastModified)).toISOString() });
+                    })
+                    .catch(callback);
+            });
+        })
+        .catch(callback);
 };
 
 BlobS3Backend.prototype.listObjects = function (bucket, callback) {
     var self = this;
 
-    // FIXME: this returns only with the first 1000 objects
-    self.s3.listObjects({Bucket: bucket}, function (err, data) {
-        if (err) {
-            callback(err);
-            return;
-        }
-
-        var hashes = [];
-
-        for (var i = 0; i < data.Contents.length; i += 1) {
-            hashes.push(data.Contents[i].Key);
-        }
-
-        callback(null, hashes);
-    });
+    // NOTE: this returns only the first 1000 objects (pagination not handled)
+    self.s3.send(new ListObjectsCommand({ Bucket: bucket }))
+        .then(data => {
+            var hashes = [];
+            if (data.Contents) {
+                for (var i = 0; i < data.Contents.length; i += 1) {
+                    hashes.push(data.Contents[i].Key);
+                }
+            }
+            callback(null, hashes);
+        })
+        .catch(callback);
 };
 
 module.exports = BlobS3Backend;
